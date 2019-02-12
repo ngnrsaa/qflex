@@ -96,7 +96,8 @@ class MKLTensor
     const vector<string> & get_indices() const;
 
     /**
-    * Set inidices.
+    * Set inidices. This function is deprecated. Use rename_index() or
+    * set_dimensions_and_indices().
     * @param const reference to vector<string> of indices.
     */
     void set_indices(const vector<string> & indices);
@@ -108,10 +109,19 @@ class MKLTensor
     const vector<int> & get_dimensions() const;
 
     /**
-    * Set dimensions.
+    * Set dimensions. This function is deprecated. Use rename_index() or
+    * set_dimensions_and_indices().
     * @param const reference to vector<int> of dimensions.
     */
     void set_dimensions(const vector<int> & dimensions);
+
+    /**
+    * Set dimensions and indices.
+    * @param const reference to vector<string> of indices.
+    * @param const reference to vector<int> of dimensions.
+    */
+    void set_indices_and_dimensions(const vector<string> & indices,
+                                    const vector<int> & dimensions);
 
     /**
     * Get index_to_dimension dictionary (or unordered_map).

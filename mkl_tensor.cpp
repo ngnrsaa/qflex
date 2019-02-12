@@ -100,6 +100,8 @@ unordered_map<string,vector<int>> _REORDER_MAPS;
 void MKLTensor::_init(const vector<string> & indices,
                       const vector<int> & dimensions)
 {
+  assert (indices.size()==dimensions.size()
+          && "indices and dimensions should have equal size.");
   _indices = indices;
   _dimensions = dimensions;
   for (int i=0; i<_dimensions.size(); ++i)
@@ -203,6 +205,14 @@ void MKLTensor::set_dimensions(const vector<int> & dimensions)
             && "The dimensions must match the size of the MKLTensor.");
   }
   _dimensions = dimensions;
+}
+
+void MKLTensor::set_indices_and_dimensions(const vector<string> & indices,
+                                           const vector<int> & dimensions)
+{
+  // The following line takes care of the total size of the dimensions.
+  set_dimensions(dimensions);
+  _init(indices, dimensions);
 }
 
 const unordered_map<string,int> &
