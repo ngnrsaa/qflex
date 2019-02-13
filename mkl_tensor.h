@@ -17,7 +17,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <complex>
-#include <mkl.h>
+#include <mkl.h> // Change to appropriate BLAS
 
 using namespace std;
 
