@@ -430,9 +430,9 @@ int main(int argc, char **argv) {
     talsh::Tensor Tsh(H_5_legs_c.get_dimensions(), H_5_legs_c.data());
     //TensContraction contraction("D(d,e,f,h,i)+=L(a,b,c,d,e,f,g)*R(a,b,c,h,g,i)", &Tsh, &Rsh, &Ssh);
     TensContraction contraction("D(i,h,g,e,d)+=L(g,f,e,d,c,b,a)*R(i,f,h,c,b,a)", &Tsh, &Rsh, &Ssh);
-    int errc = contraction.execute(DEV_NVIDIA_GPU,0);
+    int errc = contraction.execute(DEV_HOST,0);
     assert(errc==TALSH_SUCCESS);
-    assert(contraction.sync(DEV_NVIDIA_GPU,0));
+    assert(contraction.sync(DEV_HOST,0));
     // ADDED TALSH UP TO HERE
     // ADDED TALSH
     //multiply(H_7_legs_a, H_6_legs_a, H_5_legs_c, scratch);
