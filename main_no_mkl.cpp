@@ -64,23 +64,19 @@ int main(int argc, char **argv) {
   vector<vector<int>> qubits_A({{3,9},{4,9},{4,10},{5,9},{5,10},
                                 {6,9},{6,10},{7,9}});
 
-
-  // Initialize TALSH
-  talsh::initialize();
+  // Declaring and then filling 2D grid of tensors.
+  vector<vector<vector<s_type>>> tensor_data_grid(I);
+  for (int i=0; i<I; ++i)
   {
-    // Declaring and then filling 2D grid of tensors.
-    vector<vector<vector<s_type>>> tensor_data_grid(I);
-    for (int i=0; i<I; ++i)
-    {
-      tensor_data_grid[i] = vector<vector<s_type>>(J);
-    }
-    google_circuit_file_to_grid_of_tensors(filename, I, J, initial_conf,
-                 final_conf_B, qubits_A, qubits_off, tensor_data_grid);
+    tensor_data_grid[i] = vector<vector<s_type>>(J);
   }
-  // Shut down TALSH
-  talsh::shutdown();
-
-  
+  /*
+  google_circuit_file_to_grid_of_tensors(filename, I, J, initial_conf,
+               final_conf_B, qubits_A, qubits_off, tensor_data_grid);
+  */
+  s_type * data = new s_type[10];
+  vector<int> dimensions({2,5});
+  talsh::Tensor T(dimensions, data);
 
   return 0;
 } 
