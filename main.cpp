@@ -69,10 +69,10 @@ int main(int argc, char **argv) {
   talsh::initialize();
   {
     // Declaring and then filling 2D grid of tensors.
-    vector<vector<vector<s_type>>> tensor_data_grid(I);
+    vector<vector<talsh::Tensor *>> tensor_data_grid(I);
     for (int i=0; i<I; ++i)
     {
-      tensor_data_grid[i] = vector<vector<s_type>>(J);
+      tensor_data_grid[i] = vector<talsh::Tensor *>(J);
     }
     google_circuit_file_to_grid_of_tensors(filename, I, J, initial_conf,
                  final_conf_B, qubits_A, qubits_off, tensor_data_grid);

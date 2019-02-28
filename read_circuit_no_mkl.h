@@ -210,6 +210,20 @@ string pattern_from_vector(vector<string> pattern_vector)
 
 
 /**
+* Return volume of tensor from dimensions.
+* @param dims vector<int> vector of dimensions.
+* @return size_t with the volume given the set of dimensions.
+*/
+size_t volume_from_dims(vector<int> dims)
+{
+  size_t volume = 1;
+  for (auto v : dims)
+    volume *= v;
+  return volume;
+}
+
+
+/**
 * Read circuit from file and fill in a 3D grid of tensors with the indices
 * labelled as "(i1,j1,k1),(i2,j2,k2)", where i1<=i2, j1<=j2, and k1<=k2.
 * I*J must be equal to the number of qubits; K must be equal to
@@ -223,15 +237,15 @@ string pattern_from_vector(vector<string> pattern_vector)
 * @param final_conf_B string with 0s and 1s with the output configuration on B.
 * @param A vector<vector<int>> with the coords. of the qubits in A.
 * @param off vector<vector<int>> with the coords. of the qubits turned off.
-* @param grid_of_tensors referenced to a vector<vector<MKLTensor>>
-* with tensors at * each position of the grid.
+* @param grid_of_tensors reference to a vector<vector<talsh::Tensor *>>
+* pointers a talsh::Tensor on each position of the grid.
 * 
 * the circuit.
 */
 void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
         string initial_conf, string final_conf_B,
         vector<vector<int>> A, vector<vector<int>> off,
-        vector<vector<vector<s_type>>> & grid_of_tensors)
+        vector<vector<talsh::Tensor *>> & grid_of_tensors)
 {
   // Open file.
   auto io = ifstream(filename);
@@ -282,7 +296,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     }
     string delta_gate = (initial_conf[idx]=='0')?"delta_0":"delta_1";
     vector<s_type> gate_vector(_GATES_DATA.at(delta_gate));
-    s_type * gate_data = new s_type[gate_vector.size()];
+    s_type * gate_data = (s_type *) malloc(gate_vector.size()*sizeof(s_type));
     for (size_t p=0; p<gate_vector.size(); ++p)
       *(gate_data+p) = gate_vector[p];
     vector<int> dims({DIM});
@@ -324,7 +338,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
         continue;
       }
       vector<s_type> gate_vector(_GATES_DATA.at(gate));
-      s_type * gate_data = new s_type[gate_vector.size()];
+      s_type * gate_data = (s_type *) malloc(gate_vector.size()*sizeof(s_type));
       for (size_t p=0; p<gate_vector.size(); ++p)
         *(gate_data+p) = gate_vector[p];
       vector<int> dims({DIM,DIM});
@@ -348,7 +362,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       }
       // Gate 1
       vector<s_type> gate_vector_1(_GATES_DATA.at("cz_q1"));
-      s_type * gate_data_1 = new s_type[gate_vector_1.size()];
+      s_type * gate_data_1 = (s_type *) malloc(gate_vector_1.size()*sizeof(s_type));
       for (size_t p=0; p<gate_vector_1.size(); ++p)
         *(gate_data_1+p) = gate_vector_1[p];
       vector<int> dims({DIM,DIM,DIM});
@@ -357,14 +371,14 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       gate_data_1 = NULL;
       grid_of_lists_of_dims[i_j_1[0]][i_j_1[1]].push_back(dims);
       vector<int> bond_type;
-      if (i_j_1[0]>i_j_2[0]) bond_type = {2, 0};
+      if (i_j_1[0]<i_j_2[0]) bond_type = {2, 0};
       else if (i_j_1[1]<i_j_2[1]) bond_type = {3, 1};
-      else if (i_j_1[0]<i_j_2[0]) bond_type = {0, 2};
+      else if (i_j_1[0]>i_j_2[0]) bond_type = {0, 2};
       else if (i_j_1[1]>i_j_2[1]) bond_type = {1, 3};
       grid_of_lists_of_bonds[i_j_1[0]][i_j_1[1]].push_back(bond_type[0]);
       // Gate 2
       vector<s_type> gate_vector_2(_GATES_DATA.at("cz_q2"));
-      s_type * gate_data_2 = new s_type[gate_vector_2.size()];
+      s_type * gate_data_2 = (s_type *) malloc(gate_vector_2.size()*sizeof(s_type));
       for (size_t p=0; p<gate_vector_2.size(); ++p)
         *(gate_data_2+p) = gate_vector_2[p];
       grid_of_lists_of_tensors[i_j_2[0]][i_j_2[1]].push_back(
@@ -376,34 +390,28 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
 
   }
 
-  // Insert Hadamards and deltas to last layer.
-  idx = 0;
-  for (int q=0; q<num_qubits; ++q)
+
+  // Grid of tensors with out of order indexes, of final out of order dims,
+  // of final out of order volumes, of out of order bond types,
+  // of new to old bond positions, and of number of each bond type
+  vector<vector<talsh::Tensor *>> grid_of_ooo_tensors(I);
+  vector<vector<vector<int>>> grid_of_ooo_dims(I);
+  vector<vector<size_t>> grid_of_ooo_volumes(I);
+  vector<vector<vector<int>>> grid_of_ooo_bond_types(I);
+  vector<vector<vector<int>>> grid_of_new_to_old_bond_positions(I);
+  vector<vector<vector<int>>> grid_of_number_of_bond_types(I);
+  for (int i=0; i<I; ++i)
   {
-    vector<int> i_j = _q_to_i_j(q, J);
-    int i = i_j[0], j = i_j[1];
-    if (find(off.begin(),off.end(), vector<int>({i,j}))!=off.end())
-    { continue; }
-    if (find(A.begin(),A.end(),vector<int>({i,j}))!=A.end()) { continue; }
-    string delta_gate = (final_conf_B[idx]=='0')?"delta_0":"delta_1";
-    vector<s_type> gate_vector(_GATES_DATA.at(delta_gate));
-    s_type * gate_data = new s_type[gate_vector.size()];
-    for (size_t p=0; p<gate_vector.size(); ++p)
-      *(gate_data+p) = gate_vector[p];
-    vector<int> dims({DIM});
-    grid_of_lists_of_tensors[i][j].push_back(talsh::Tensor(dims, gate_data));
-    gate_data = NULL;
-    grid_of_lists_of_dims[i][j].push_back(dims);
-    grid_of_lists_of_bonds[i][j].push_back(-1);
-    ++idx; // Move in B only.
+    grid_of_ooo_tensors[i] = vector<talsh::Tensor *>(J);
+    grid_of_ooo_dims[i] = vector<vector<int>>(J);
+    grid_of_ooo_volumes[i] = vector<size_t>(J);
+    grid_of_ooo_bond_types[i] = vector<vector<int>>(J);
+    grid_of_new_to_old_bond_positions[i] = vector<vector<int>>(J);
+    grid_of_number_of_bond_types[i] = vector<vector<int>>(J, vector<int>(4,0));
   }
 
 
   // Contract each list of tensors onto a single one
-  // Reuse pointer to data for all iterations
-  vector<s_type *> data(2);
-  data[0] = new s_type[(int)pow(2,20)];
-  data[1] = new s_type[(int)pow(2,20)];
   for (int q=0; q<num_qubits; ++q)
   {
     vector<int> i_j = _q_to_i_j(q, J);
@@ -414,6 +422,11 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     int current_rank(1), new_tensor_rank, new_rank;
     string pattern_D(""), pattern_L, pattern_R;
     //cout << i << " " << j << endl;
+    // Reuse pointer to data for all iterations
+    vector<s_type *> data(2);
+    data[0] = (s_type *) malloc((int)pow(2,20)*sizeof(s_type));
+    data[1] = (s_type *) malloc((int)pow(2,20)*sizeof(s_type));
+    vector<int> dims_S, dims_T;
     int idx = 0;
     // Assume there is at least 2 tensors per world-line
     for (int k=1; k<grid_of_lists_of_tensors[i][j].size(); ++k)
@@ -462,8 +475,8 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       if (pattern_D[pattern_D.length()]==',')
         pattern_D.erase(pattern_D.length());
       string pattern = "D("+pattern_D+")+=L("+pattern_L+")*R("+pattern_R+")";
-      vector<int> dims_S(current_rank,DIM);
-      vector<int> dims_T(new_rank,DIM);
+      dims_S = vector<int>(current_rank,DIM);
+      dims_T = vector<int>(new_rank,DIM);
       talsh::Tensor S(dims_S, data[-idx+1]);
       talsh::Tensor T(dims_T, data[idx]);
       //cout << k << " " << pattern << endl;
@@ -488,14 +501,109 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       current_rank = new_rank;
       idx = -idx + 1;
     }
+    grid_of_ooo_tensors[i][j] = new talsh::Tensor(dims_T, data[-idx+1]);
+    grid_of_ooo_dims[i][j] = dims_T;
+    grid_of_ooo_volumes[i][j] = volume_from_dims(dims_T);
     for (auto v : data)
       v = NULL;
   }
 
-  // Allocate memory for each q. Try using malloc(). Then reorder (remember we
-  // have a grid of bonds to help with this step.
 
   // Reorder data by multiplying times the identity
+  // Create grid of new to old bond positions and grid of number of bonds of
+  // each type
+  for (int q=0; q<num_qubits; ++q)
+  {
+    vector<int> i_j = _q_to_i_j(q, J);
+    int i = i_j[0], j = i_j[1];
+    if (find(off.begin(),off.end(), vector<int>({i,j}))!=off.end())
+    { continue; }
+    for (auto v : grid_of_lists_of_bonds[i][j])
+    {
+      if (v>=0)
+        grid_of_ooo_bond_types[i][j].push_back(v);
+    }
+    // Loop over bond types
+    for (int b=0; b<4; ++b)
+    {
+      for (int p=0; p<grid_of_ooo_bond_types[i][j].size(); ++p)
+      {
+        int v = grid_of_ooo_bond_types[i][j][p];
+        if (v==b)
+        {
+          grid_of_new_to_old_bond_positions[i][j].push_back(p);
+          grid_of_number_of_bond_types[i][j][b] += 1;
+        }
+      }
+    }
+  }
+  // Reorder tensors
+  for (int q=0; q<num_qubits; ++q)
+  {
+    vector<int> i_j = _q_to_i_j(q, J);
+    int i = i_j[0], j = i_j[1];
+    if (find(off.begin(),off.end(), vector<int>({i,j}))!=off.end())
+    { continue; }
+    vector<int> dims_T(grid_of_ooo_dims[i][j].size());
+    for (int p=0; p<dims_T.size(); ++p)
+      dims_T[p] = grid_of_ooo_dims[i][j][grid_of_new_to_old_bond_positions[i][j][p]];
+    s_type * data_T = (s_type *) malloc(grid_of_ooo_volumes[i][j]*sizeof(s_type));
+    talsh::Tensor T(dims_T, data_T);
+    vector<s_type> vector_I(_GATES_DATA.at("I"));
+    s_type * data_I = (s_type *) malloc(vector_I.size()*sizeof(s_type));
+    for (size_t p=0; p<vector_I.size(); ++p)
+      *(data_I+p) = vector_I[p];
+    vector<int> dims_I({DIM,DIM});
+    talsh::Tensor I(dims_I, data_I);
+    data_T = NULL;
+    data_I = NULL;
+    vector<string> pattern_vector_D({_ALPHABET[1]});
+    for (auto v : grid_of_new_to_old_bond_positions[i][j])
+      pattern_vector_D.push_back(_ALPHABET[v+2]);
+    string pattern_L(pattern_from_vector(vector<string>(_ALPHABET.cbegin()+2,
+                                         _ALPHABET.cbegin()+dims_T.size()+1)));
+    pattern_L = _ALPHABET[0] + "," + pattern_L;
+    string pattern_D(pattern_from_vector(pattern_vector_D));
+    string pattern_R(pattern_from_vector(vector<string>(_ALPHABET.cbegin(),
+                                         _ALPHABET.cbegin()+2)));
+    string pattern = "D("+pattern_D+")+=L("+pattern_L+")*R("+pattern_R+")";
+    cout << endl << pattern << endl;
+    T.print();
+    grid_of_ooo_tensors[i][j]->print();
+    I.print();
+    /*
+    TensContraction contraction(pattern, &T, &(*grid_of_ooo_tensors[i][j]), &I);
+    int errc = contraction.execute(DEV_HOST,0);
+    assert(errc==TALSH_SUCCESS);
+    assert(contraction.sync(DEV_HOST,0));
+    */
+  }
+  
+
+  /*
+  // Insert deltas to last layer.
+  idx = 0;
+  for (int q=0; q<num_qubits; ++q)
+  {
+    vector<int> i_j = _q_to_i_j(q, J);
+    int i = i_j[0], j = i_j[1];
+    if (find(off.begin(),off.end(), vector<int>({i,j}))!=off.end())
+    { continue; }
+    if (find(A.begin(),A.end(),vector<int>({i,j}))!=A.end()) { continue; }
+    string delta_gate = (final_conf_B[idx]=='0')?"delta_0":"delta_1";
+    vector<s_type> gate_vector(_GATES_DATA.at(delta_gate));
+    s_type * gate_data = (s_type *) malloc(gate_vector.size()*sizeof(s_type));
+    for (size_t p=0; p<gate_vector.size(); ++p)
+      *(gate_data+p) = gate_vector[p];
+    vector<int> dims({DIM});
+    grid_of_lists_of_tensors[i][j].push_back(talsh::Tensor(dims, gate_data));
+    gate_data = NULL;
+    grid_of_lists_of_dims[i][j].push_back(dims);
+    grid_of_lists_of_bonds[i][j].push_back(-1);
+    ++idx; // Move in B only.
+  }
+  */
+  
 
 }
 
