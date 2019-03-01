@@ -245,8 +245,16 @@ size_t volume_from_dims(vector<int> dims)
 void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
         string initial_conf, string final_conf_B,
         vector<vector<int>> A, vector<vector<int>> off,
-        vector<vector<talsh::Tensor *>> & grid_of_tensors)
+        vector<vector<talsh::Tensor *>> & grid_of_tensors,
+        vector<s_type *> & tensors_data,
+        vector<size_t> & volumes)
 {
+
+  int errc;
+
+  // Vector of pointers to data that should be deleted at the end
+  vector<s_type *> delete_this;
+
   // Open file.
   auto io = ifstream(filename);
   assert(io.good() && "Cannot open file.");
@@ -301,7 +309,8 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       *(gate_data+p) = gate_vector[p];
     vector<int> dims({DIM});
     grid_of_lists_of_tensors[i][j].push_back(talsh::Tensor(dims, gate_data));
-    gate_data = NULL;
+    delete_this.push_back(gate_data);
+    gate_data = nullptr;
     grid_of_lists_of_dims[i][j].push_back(dims);
     grid_of_lists_of_bonds[i][j].push_back(-1);
     ++idx;
@@ -344,7 +353,8 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       vector<int> dims({DIM,DIM});
       grid_of_lists_of_tensors[i_j_1[0]][i_j_1[1]].push_back(
         talsh::Tensor(dims, gate_data));
-      gate_data = NULL;
+      delete_this.push_back(gate_data);
+      gate_data = nullptr;
       grid_of_lists_of_dims[i_j_1[0]][i_j_1[1]].push_back(dims);
       grid_of_lists_of_bonds[i_j_1[0]][i_j_1[1]].push_back(-1);
     }
@@ -368,7 +378,8 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       vector<int> dims({DIM,DIM,DIM});
       grid_of_lists_of_tensors[i_j_1[0]][i_j_1[1]].push_back(
         talsh::Tensor(dims, gate_data_1));
-      gate_data_1 = NULL;
+      delete_this.push_back(gate_data_1);
+      gate_data_1 = nullptr;
       grid_of_lists_of_dims[i_j_1[0]][i_j_1[1]].push_back(dims);
       vector<int> bond_type;
       if (i_j_1[0]<i_j_2[0]) bond_type = {2, 0};
@@ -383,7 +394,8 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
         *(gate_data_2+p) = gate_vector_2[p];
       grid_of_lists_of_tensors[i_j_2[0]][i_j_2[1]].push_back(
         talsh::Tensor(dims, gate_data_2));
-      gate_data_2 = NULL;
+      delete_this.push_back(gate_data_2);
+      gate_data_2 = nullptr;
       grid_of_lists_of_dims[i_j_2[0]][i_j_2[1]].push_back(dims);
       grid_of_lists_of_bonds[i_j_2[0]][i_j_2[1]].push_back(bond_type[1]);
     }
@@ -421,11 +433,19 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     // Rank of the delta tensor is 1
     int current_rank(1), new_tensor_rank, new_rank;
     string pattern_D(""), pattern_L, pattern_R;
-    //cout << i << " " << j << endl;
     // Reuse pointer to data for all iterations
     vector<s_type *> data(2);
-    data[0] = (s_type *) malloc((int)pow(2,20)*sizeof(s_type));
-    data[1] = (s_type *) malloc((int)pow(2,20)*sizeof(s_type));
+    size_t max_volume = 1; // Max volume for the temporary tensors
+    for (auto v : grid_of_lists_of_dims[i][j])
+    {
+      for (int t=1; t<v.size()-1; ++t)
+      {
+        max_volume *= v[t];
+      }
+    }
+    max_volume *= DIM; // For the output index
+    data[0] = (s_type *) malloc(max_volume*sizeof(s_type));
+    data[1] = (s_type *) malloc(max_volume*sizeof(s_type));
     vector<int> dims_S, dims_T;
     int idx = 0;
     // Assume there is at least 2 tensors per world-line
@@ -485,7 +505,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
         TensContraction contraction(pattern, &T,
                                          &grid_of_lists_of_tensors[i][j][1],
                                          &grid_of_lists_of_tensors[i][j][0]);
-        int errc = contraction.execute(DEV_HOST,0);
+        errc = contraction.execute(DEV_HOST,0);
         assert(errc==TALSH_SUCCESS);
         assert(contraction.sync(DEV_HOST,0));
       }
@@ -494,7 +514,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
         TensContraction contraction(pattern, &T,
                                          &grid_of_lists_of_tensors[i][j][k],
                                          &S);
-        int errc = contraction.execute(DEV_HOST,0);
+        errc = contraction.execute(DEV_HOST,0);
         assert(errc==TALSH_SUCCESS);
         assert(contraction.sync(DEV_HOST,0));
       }
@@ -504,8 +524,10 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     grid_of_ooo_tensors[i][j] = new talsh::Tensor(dims_T, data[-idx+1]);
     grid_of_ooo_dims[i][j] = dims_T;
     grid_of_ooo_volumes[i][j] = volume_from_dims(dims_T);
-    for (auto v : data)
-      v = NULL;
+    delete_this.push_back(data[0]);
+    data[0] = nullptr;
+    delete_this.push_back(data[1]);
+    data[1] = nullptr;
   }
 
 
@@ -570,7 +592,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
                                          _ALPHABET.cbegin()+2)));
     string pattern = "D("+pattern_D+")+=L("+pattern_L+")*R("+pattern_R+")";
     TensContraction contraction(pattern, &T, &I, grid_of_ooo_tensors[i][j]);
-    int errc = contraction.execute(DEV_HOST,0);
+    errc = contraction.execute(DEV_HOST,0);
     assert(errc==TALSH_SUCCESS);
     assert(contraction.sync(DEV_HOST,0));
 
@@ -596,6 +618,8 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     if (find(A.begin(),A.end(), vector<int>({i,j}))!=A.end()) // Not contracted
     {
       grid_of_tensors[i][j] = new talsh::Tensor(super_dims, data_T);
+      tensors_data.push_back(data_T);
+      volumes.push_back(volume_from_dims(super_dims));
     }
     else
     {
@@ -606,6 +630,8 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
         *(gate_data+p) = gate_vector[p];
       vector<int> dims_delta({DIM});
       talsh::Tensor delta(dims_delta, gate_data);
+      delete_this.push_back(gate_data);
+      gate_data = nullptr;
       vector<int> dims_B(dims_T.cbegin()+1, dims_T.cend());
       s_type * data_B = (s_type *) malloc(
               volume_from_dims(dims_B)*sizeof(s_type));
@@ -626,14 +652,26 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       grid_of_tensors[i][j] = new talsh::Tensor(
                           vector<int>(super_dims.cbegin()+1,super_dims.cend()),
                           data_B);
+      tensors_data.push_back(data_B);
+      volumes.push_back(volume_from_dims(dims_B));
+      delete_this.push_back(data_T);
+      data_B = nullptr;
       ++idx;
     }
 
-    data_T = NULL;
-    data_I = NULL;
+    data_T = nullptr;
+    delete_this.push_back(data_I);
+    data_I = nullptr;
 
   }
 
+  // Delete all pointers that should be deleted
+  for (auto v : delete_this)
+  {
+    delete [] v;
+    v = nullptr;
+  }
+  
 }
 
 
