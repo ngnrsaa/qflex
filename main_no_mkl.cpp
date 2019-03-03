@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
 
 
   // Vector of amplitudes with size num_Cs
-  vector<s_type> amplitudes(num_Cs);
+  vector<s_type> amplitudes;
 
   // Initialize TALSH
   talsh::initialize();
@@ -86,7 +86,6 @@ int main(int argc, char **argv) {
     google_circuit_file_to_grid_of_tensors(filename, I, J, initial_conf,
                  final_conf_B, qubits_A, qubits_off, tensor_grid, delete_this,
                  volumes);
-    cout << *delete_this[0] << endl;
 
     // Allocate talsh::Tensors involved in the contraction
     vector<int> dims_2(2, super_dim);
@@ -147,37 +146,37 @@ int main(int argc, char **argv) {
     errc = talsh::pinHostMemory(data_2_legs_b,vol_2*sizeof(s_type));
     assert(errc==0);
     s_type * data_3_legs_a = (s_type *) malloc(vol_3*sizeof(s_type));
-    errc = talsh::pinHostMemory(data_3_legs_a,vol_2*sizeof(s_type));
+    errc = talsh::pinHostMemory(data_3_legs_a,vol_3*sizeof(s_type));
     assert(errc==0);
     s_type * data_3_legs_b = (s_type *) malloc(vol_3*sizeof(s_type));
-    errc = talsh::pinHostMemory(data_3_legs_b,vol_2*sizeof(s_type));
+    errc = talsh::pinHostMemory(data_3_legs_b,vol_3*sizeof(s_type));
     assert(errc==0);
     s_type * data_4_legs_a = (s_type *) malloc(vol_4*sizeof(s_type));
-    errc = talsh::pinHostMemory(data_4_legs_a,vol_2*sizeof(s_type));
+    errc = talsh::pinHostMemory(data_4_legs_a,vol_4*sizeof(s_type));
     assert(errc==0);
     s_type * data_4_legs_b = (s_type *) malloc(vol_4*sizeof(s_type));
-    errc = talsh::pinHostMemory(data_4_legs_b,vol_2*sizeof(s_type));
+    errc = talsh::pinHostMemory(data_4_legs_b,vol_4*sizeof(s_type));
     assert(errc==0);
     s_type * data_4_legs_c = (s_type *) malloc(vol_4*sizeof(s_type));
-    errc = talsh::pinHostMemory(data_4_legs_c,vol_2*sizeof(s_type));
+    errc = talsh::pinHostMemory(data_4_legs_c,vol_4*sizeof(s_type));
     assert(errc==0);
     s_type * data_5_legs_a = (s_type *) malloc(vol_5*sizeof(s_type));
-    errc = talsh::pinHostMemory(data_5_legs_a,vol_2*sizeof(s_type));
+    errc = talsh::pinHostMemory(data_5_legs_a,vol_5*sizeof(s_type));
     assert(errc==0);
     s_type * data_5_legs_b = (s_type *) malloc(vol_5*sizeof(s_type));
-    errc = talsh::pinHostMemory(data_5_legs_b,vol_2*sizeof(s_type));
+    errc = talsh::pinHostMemory(data_5_legs_b,vol_5*sizeof(s_type));
     assert(errc==0);
     s_type * data_6_legs_a = (s_type *) malloc(vol_6*sizeof(s_type));
-    errc = talsh::pinHostMemory(data_6_legs_a,vol_2*sizeof(s_type));
+    errc = talsh::pinHostMemory(data_6_legs_a,vol_6*sizeof(s_type));
     assert(errc==0);
     s_type * data_6_legs_b = (s_type *) malloc(vol_6*sizeof(s_type));
-    errc = talsh::pinHostMemory(data_6_legs_b,vol_2*sizeof(s_type));
+    errc = talsh::pinHostMemory(data_6_legs_b,vol_6*sizeof(s_type));
     assert(errc==0);
     s_type * data_7_legs_a = (s_type *) malloc(vol_7*sizeof(s_type));
-    errc = talsh::pinHostMemory(data_7_legs_a,vol_2*sizeof(s_type));
+    errc = talsh::pinHostMemory(data_7_legs_a,vol_7*sizeof(s_type));
     assert(errc==0);
     s_type * data_7_legs_b = (s_type *) malloc(vol_7*sizeof(s_type));
-    errc = talsh::pinHostMemory(data_7_legs_b,vol_2*sizeof(s_type));
+    errc = talsh::pinHostMemory(data_7_legs_b,vol_7*sizeof(s_type));
     assert(errc==0);
     delete_this.push_back(data_2_legs_a);
     delete_this.push_back(data_2_legs_b);
@@ -229,11 +228,11 @@ int main(int argc, char **argv) {
     // Start contracting.
     // It's working, but I haven't respected the ordering criterion!
     // Level 1
-    TensContraction tc("D(c,d,b)+=L(a,b)*R(a,c,d)",
+    TensContraction tcg("D(c,d,b)+=L(a,b)*R(a,c,d)",
                         &H_3_legs_a, tensor_grid[4][1], tensor_grid[5][1]);
-    errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_HOST,0));
-    tc = TensContraction("D(d,b,c)+=L(a,b,c)*R(a,d)",
+    errc = tcg.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
+    assert(tcg.sync(DEV_HOST,0));
+    TensContraction tc("D(d,b,c)+=L(a,b,c)*R(a,d)",
                         &H_3_legs_b, &H_3_legs_a, tensor_grid[6][1]);
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
@@ -315,8 +314,8 @@ int main(int argc, char **argv) {
     assert(tc.sync(DEV_HOST,0));
     tc = TensContraction("D(i,h,c,d,e,f,g)+=L(a,b,c,d,e,f,g)*R(h,b,a,i)",
                         &H_7_legs_b, &H_7_legs_a, tensor_grid[7][5]);
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
+    errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
+    assert(tc.sync(DEV_HOST,0));
     tc = TensContraction("D(a,i,h,d,e,f,g)+=L(a,b,c,d,e,f,g)*R(h,c,b,i)",
                         &H_7_legs_a, &H_7_legs_b, tensor_grid[6][5]);
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
@@ -426,6 +425,8 @@ int main(int argc, char **argv) {
         string delta_gate = (final_conf_A[c][t]=='0')?"delta_0":"delta_1";
         vector<s_type> gate_vector(_GATES_DATA.at(delta_gate));
         s_type * gate_data = (s_type *) malloc(gate_vector.size()*sizeof(s_type));
+        errc = talsh::pinHostMemory(gate_data,gate_vector.size()*sizeof(s_type));
+        assert(errc==0);
         for (size_t p=0; p<gate_vector.size(); ++p)
           *(gate_data+p) = gate_vector[p];
         vector<int> dims_delta({DIM});
@@ -534,7 +535,6 @@ int main(int argc, char **argv) {
     cout << "\n";
   }
 
-  
 
   return 0;
 } 

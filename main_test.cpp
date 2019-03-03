@@ -12,8 +12,6 @@
 #include <fstream>
 #include <sstream>
 
-#include "mkl_tensor.h"
-
 #include "talshxx.hpp"
 #include "talsh_wrapper.h"
 
@@ -22,48 +20,69 @@
 using namespace std;
 using namespace chrono;
 
+
 // Input: I J K fidelity filename initial_conf (optional) final_conf (optional)
 int main(int argc, char **argv) {
 
-
-  s_type * scratch = new s_type[100];
-
+  // Initialize TALSH
   talsh::initialize();
   {
+    int errc;
+    size_t super_dim = (size_t)pow(2,3);
 
-    vector<s_type> data_A({{0.8,0.1},{-0.3,0.5},{0.3,-0.9},{0.1,-0.1},
-                           {-0.9,0.9},{-0.1,0.8},{0.7,0.7},{0.1,0.3}});
-    vector<s_type> data_B({{0.1,0.2},{-0.2,-0.5},{-0.3,-0.7},{-0.7,-0.2},
-                           {-0.2,-0.3},{-0.9,0.9},{-0.4,0.3},{0.2,0.2}});
-    MKLTensor A({"a","b","c"}, {2,2,2}, data_A);
-    MKLTensor B({"c","a","d"}, {2,2,2}, data_B);
-    MKLTensor C({""}, {8});
-    // MKLTensor
-    //multiply(A, B, C, scratch);
-    // MKLTensor up to here
-    // TALSH
-    C.set_indices_and_dimensions({"b","d"}, {2,2});
-    talsh::Tensor Rsh(A.get_dimensions(), A.data());
-    talsh::Tensor Ssh(B.get_dimensions(), B.data());
-    talsh::Tensor Tsh(C.get_dimensions(), C.data());
-    //TensContraction contraction("D(b,d)+=L(a,b,c)*R(c,a,d)", &Tsh, &Rsh, &Ssh);
-    TensContraction contraction("D(d,b)+=L(c,b,a)*R(d,a,c)", &Tsh, &Rsh, &Ssh);
-    int errc = contraction.execute(DEV_NVIDIA_GPU,0);
-    assert(errc==TALSH_SUCCESS);
-    assert(contraction.sync(DEV_NVIDIA_GPU,0));
-    // TALSH up to here
-    C.print();
-    C.print_data();
-  
+    // Allocate talsh::Tensors involved in the contraction
+    vector<int> dims_2(2, super_dim);
+    vector<int> dims_3(3, super_dim);
+    vector<int> dims_4(4, super_dim);
+    vector<int> dims_5(5, super_dim);
+    vector<int> dims_6(6, super_dim);
+    vector<int> dims_7(7, super_dim);
+    size_t vol_2 = (size_t)pow(super_dim,2);
+    size_t vol_3 = (size_t)pow(super_dim,3);
+    size_t vol_4 = (size_t)pow(super_dim,4);
+    size_t vol_5 = (size_t)pow(super_dim,5);
+    size_t vol_6 = (size_t)pow(super_dim,6);
+    size_t vol_7 = (size_t)pow(super_dim,7);
+    s_type * data_L = (s_type *) malloc(vol_3*sizeof(s_type));
+    errc = talsh::pinHostMemory(data_L,vol_3*sizeof(s_type));
+    assert(errc==0);
+    s_type * data_R = (s_type *) malloc(vol_3*sizeof(s_type));
+    errc = talsh::pinHostMemory(data_R,vol_3*sizeof(s_type));
+    assert(errc==0);
+    s_type * data_D = (s_type *) malloc(vol_2*sizeof(s_type));
+    errc = talsh::pinHostMemory(data_D,vol_2*sizeof(s_type));
+    assert(errc==0);
+
+    // Set values
+    for (int p=0; p<vol_3; ++p)
+    {
+      *(data_L+p) = 1.0;
+      *(data_R+p) = 2.0;
+    }
+
+    talsh::Tensor L(dims_3, data_L);
+    talsh::Tensor R(dims_3, data_R);
+    talsh::Tensor D(dims_2, data_D);
     
+    TensContraction tc("D(b,d)+=L(a,b,c)*R(c,a,d)",
+                        &D, &L, &R);
+    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+    assert(tc.sync(DEV_NVIDIA_GPU,0));
 
+    for (int p=0; p<vol_2; ++p)
+    {
+      cout << *(data_D+p) << " ";
+    }
+
+    errc = talsh::unpinHostMemory(data_L); assert(errc == 0);
+    delete [] data_L; data_L = nullptr;
+    errc = talsh::unpinHostMemory(data_R); assert(errc == 0);
+    delete [] data_R; data_R = nullptr;
+    errc = talsh::unpinHostMemory(data_D); assert(errc == 0);
+    delete [] data_D; data_D = nullptr;
   }
+  // Shut down TALSH
   talsh::shutdown();
-
-
-  // Freeing scratch data: delete and NULL.
-  delete[] scratch;
-  scratch = NULL;
 
   return 0;
 } 

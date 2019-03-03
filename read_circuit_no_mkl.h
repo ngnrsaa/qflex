@@ -618,6 +618,8 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     if (find(A.begin(),A.end(), vector<int>({i,j}))!=A.end()) // Not contracted
     {
       grid_of_tensors[i][j] = new talsh::Tensor(super_dims, data_T);
+      errc = talsh::pinHostMemory(data_T,volume_from_dims(super_dims)*sizeof(s_type));
+      assert(errc==0);
       tensors_data.push_back(data_T);
       volumes.push_back(volume_from_dims(super_dims));
     }
@@ -652,6 +654,8 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       grid_of_tensors[i][j] = new talsh::Tensor(
                           vector<int>(super_dims.cbegin()+1,super_dims.cend()),
                           data_B);
+      errc = talsh::pinHostMemory(data_B,volume_from_dims(dims_B)*sizeof(s_type));
+      assert(errc==0);
       tensors_data.push_back(data_B);
       volumes.push_back(volume_from_dims(dims_B));
       delete_this.push_back(data_T);
