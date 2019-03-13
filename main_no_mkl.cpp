@@ -353,7 +353,6 @@ int main(int argc, char **argv) {
                         &H_7_legs_a, &H_7_legs_b, tensor_grid[3][6]);
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
-    // Up to here
     // Level 7
     tc = TensContraction("D(h,b,c,d,e,f,g)+=L(a,b,c,d,e,f,g)*R(h,a)",
                         &H_7_legs_b, &H_7_legs_a, tensor_grid[6][7]);
