@@ -27,43 +27,33 @@ int main(int argc, char **argv) {
   talsh::initialize();
   {
     int errc;
-    size_t super_dim = (size_t)pow(2,3);
+    size_t super_dim = (size_t)pow(2,4);
 
     // Allocate talsh::Tensors involved in the contraction
     vector<int> dims_2(2, super_dim);
-    vector<int> dims_3(3, super_dim);
+    vector<int> dims_4(4, super_dim);
+    vector<int> dims_7(7, super_dim);
     size_t vol_2 = (size_t)pow(super_dim,2);
-    size_t vol_3 = (size_t)pow(super_dim,3);
-    vector<s_type> data_L(vol_3, 1.0);
-    vector<s_type> data_R(vol_3, 1.0);
-    vector<s_type> data_D(vol_2, 1.0);
-
+    size_t vol_4 = (size_t)pow(super_dim,4);
+    size_t vol_7 = (size_t)pow(super_dim,7);
     
-    talsh::Tensor L(dims_3, data_L);
-    talsh::Tensor R(dims_3, data_R);
-    talsh::Tensor D(dims_2, s_type(1.0));
+    talsh::Tensor L(dims_7, s_type(0.0));
+    talsh::Tensor M(dims_7, s_type(0.0));
+    talsh::Tensor R(dims_4, s_type(0.0));
+    talsh::Tensor D(dims_7, s_type(0.0));
     
     // First product
-    TensContraction tc("D(b,d)+=L(a,b,c)*R(c,a,d)", &D, &L, &R);
-    errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
+    TensContraction tc("D(a,b,c,d,e,h,i)+=L(a,b,c,d,e,f,g)*R(f,g,h,i)", &D, &L, &R);
+    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
     s_type const * ptr_D;
     D.getDataAccessHostConst(&ptr_D);
-    for (int p=0; p<D.getVolume(); ++p)
-    {
-      cout << ptr_D[p] << endl;
-    }
 
     // Second product
-    tc = TensContraction("D(b,d)+=L(a,b,c)*R(c,a,d)", &D, &L, &R);
-    errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
+    tc = TensContraction("D(a,b,c,d,e,h,i)+=L(a,b,c,d,e,f,g)*R(f,g,h,i)", &L, &D, &R);
+    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
     D.getDataAccessHostConst(&ptr_D);
-    for (int p=0; p<D.getVolume(); ++p)
-    {
-      cout << ptr_D[p] << endl;
-    }
-    
 
   }
   // Shut down TALSH

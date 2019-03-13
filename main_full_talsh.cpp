@@ -74,7 +74,8 @@ int main(int argc, char **argv) {
   vector<s_type> amplitudes;
 
   // Initialize TALSH
-  talsh::initialize();
+  unsigned long size(12000000000);
+  talsh::initialize(&size);
   {
     int errc;
 
@@ -201,7 +202,9 @@ int main(int argc, char **argv) {
     assert(tc.sync(DEV_HOST,0));
     tc = TensContraction("D(a,i,h,d,e,f,g)+=L(a,b,c,d,e,f,g)*R(h,c,b,i)",
                         &H_7_legs_b, &H_7_legs_a, tensor_grid[7][4].get());
-    errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
+    errc = tc.execute(DEV_NVIDIA_GPU,0);
+    cout << errc << endl;
+    assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
     tc = TensContraction("D(a,b,i,h,e,f,g)+=L(a,b,c,d,e,f,g)*R(h,d,c,i)",
                         &H_7_legs_a, &H_7_legs_b, tensor_grid[6][4].get());
