@@ -137,7 +137,7 @@ class TensContraction{
     //Schedules a tensor contraction for execution on the given device:
     int execute(int device_kind, int device_id)
     {
-      int ierr = tensor0_->contractAccumulate(task_hl_.get(),index_pattern_,*tensor1_,*tensor2_,device_kind,device_id,alpha_);
+      int ierr = tensor0_->contractAccumulate(task_hl_.get(),index_pattern_,*tensor1_,*tensor2_,device_kind,device_id,alpha_,false);
       return ierr;
     }
 
