@@ -1,1 +1,44 @@
-icpc -mkl -o main -O3 -std=c++17 -march=native -qopenmp mkl_tensor.cpp main_bristlecone-70x4_new.cpp
+#### GNU
+### g++ -c main.cpp -I PATH_TO_TALSH/ -I PATH_TO_CUDA/include -O3 -fopenmp -std=c++17
+#g++ -c main.cpp -I ~/quantum_circuits_with_TN/TAL_SH/ -I /nasa/cuda/9.0/include -O3 -fopenmp -std=c++17
+### g++ main.o  PATH_TO_TALSH/libtalsh.a  -L PATH_TO_CUDA/lib64  -lcudart  -lcublas  -lgfortran  -fopenmp
+#g++ main.o  ~/quantum_circuits_with_TN/TAL_SH/libtalsh.a  -L /nasa/cuda/9.0/lib64  -lcudart  -lcublas  -lgfortran  -fopenmp
+
+
+#### INTEL
+#echo "icpc  -c mkl_tensor.cpp"
+#icpc  -mkl  -c mkl_tensor.cpp  -O3  -std=c++14  -march=native  -qopenmp
+#echo "icpc  -c main.cpp"
+#icpc  -mkl  -c main.cpp  -I ~/quantum_circuits_with_TN/TAL_SH/  -I /nasa/cuda/9.0/include  -O3  -std=c++14  -march=native  -qopenmp
+#echo "icpc  main.o mkl_tensor.o libtalsh.a"
+#icpc  -mkl  -o main main.o mkl_tensor.o ~/quantum_circuits_with_TN/TAL_SH/libtalsh.a  -L /nasa/cuda/9.0/lib64  -lcudart  -lcublas  -lifcore  -lifcoremt  -qopenmp  -O3  -std=c++14  -march=native
+
+
+#### INTEL NOCUDA
+#echo "icpc  -c mkl_tensor.cpp"
+#icpc  -mkl  -c mkl_tensor.cpp  -O3  -std=c++17  -march=native  -qopenmp
+#echo "icpc  -c main.cpp"
+#icpc  -mkl  -c main.cpp  -I ~/quantum_circuits_with_TN/TAL_SH/  -I /nasa/cuda/9.0/include  -O3  -std=c++17  -march=native  -qopenmp
+#echo "icpc  main.o mkl_tensor.o libtalsh.a"
+#icpc  -mkl  -o main main.o mkl_tensor.o ~/quantum_circuits_with_TN/TAL_SH/libtalsh.a  -L /nasa/cuda/9.0/lib64  -lifcore  -lifcoremt  -qopenmp  -O3  -std=c++17  -march=native
+
+
+#### INTEL CUDA, no MKLTensor
+#echo "icpc  -c main.cpp"
+#icpc  -mkl  -c main.cpp  -I ~/quantum_circuits_with_TN/TAL_SH/  -I /nasa/cuda/9.0/include  -O3  -std=c++17  -march=native  -qopenmp
+#echo "icpc  main.o libtalsh.a"
+#icpc  -mkl  -o main main.o ~/quantum_circuits_with_TN/TAL_SH/libtalsh.a  -L /nasa/cuda/9.0/lib64  -lcudart  -lcublas  -lifcore  -lifcoremt  -qopenmp  -O3  -std=c++17  -march=native
+
+
+#### INTEL NOCUDA, no MKLTensor
+echo "icpc  -c main.cpp"
+icpc  -mkl  -c main.cpp  -I ~/quantum_circuits_with_TN/TAL_SH/  -I /nasa/cuda/9.0/include  -O3  -std=c++14  -march=native  -qopenmp
+echo "icpc  main.o libtalsh.a"
+icpc  -mkl  -o main main.o ~/quantum_circuits_with_TN/TAL_SH/libtalsh.a  -L /nasa/cuda/9.0/lib64  -lifcore  -lifcoremt  -qopenmp  -O3  -std=c++14  -march=native
+
+
+#### GCC NOCUDA, no MKLTensor
+#echo "g++  -c main.cpp"
+#g++  -c main.cpp  -I ~/quantum_circuits_with_TN/TAL_SH/  -I /nasa/cuda/9.0/include  -O3  -std=c++14  -fopenmp
+#echo "g++  main.o  libtalsh.a"
+#g++  -o main  main.o ~/quantum_circuits_with_TN/TAL_SH/libtalsh.a  -L /nasa/cuda/9.0/lib64  -lgfortran  -fopenmp  -O3  -std=c++14
