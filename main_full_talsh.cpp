@@ -137,7 +137,7 @@ int main(int argc, char **argv) {
 
     // Start contracting.
     // It's working, but I haven't respected the ordering criterion!
-    // Level 1
+    // Level 1 (starting with 1)
     TensContraction tc("D(c,d,b)+=L(a,b)*R(a,c,d)", &H_3_legs_a,
                         tensor_grid[4][1].get(), tensor_grid[5][1].get());
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
@@ -147,8 +147,8 @@ int main(int argc, char **argv) {
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
 
-    // Level 2
-    tc = TensContraction("D(f,a,b,d,e)+=L(a,b,c)*R(c,d,e,f)", &H_5_legs_a,
+    // Level 2 (starting with 4)
+    tc = TensContraction("D(a,b,e,f,d)+=L(a,b,c)*R(d,c,e,f)", &H_5_legs_a,
                           &H_3_legs_b, tensor_grid[4][2].get());
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
@@ -160,6 +160,7 @@ int main(int argc, char **argv) {
                           &H_5_legs_b, tensor_grid[5][2].get());
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
+    // Correct
     tc = TensContraction("D(f,g,c,d,e)+=L(a,b,c,d,e)*R(b,a,f,g)", &H_5_legs_b,
                           &H_5_legs_a, tensor_grid[6][2].get());
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
@@ -169,7 +170,7 @@ int main(int argc, char **argv) {
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
 
-    // Level 3
+    // Level 3 (starting with 9)
     tc = TensContraction("D(a,b,c,d,f,g)+=L(a,b,c,d,e)*R(e,f,g)", &H_6_legs_a,
                           &H_5_legs_a, tensor_grid[3][3].get());
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
@@ -195,16 +196,14 @@ int main(int argc, char **argv) {
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
 
-    // Level 4
+    // Level 4 (starting with 15)
     tc = TensContraction("D(h,g,b,c,d,e,f)+=L(a,b,c,d,e,f)*R(g,a,h)",
                         &H_7_legs_a, &H_6_legs_b, tensor_grid[8][4].get());
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
     tc = TensContraction("D(a,i,h,d,e,f,g)+=L(a,b,c,d,e,f,g)*R(h,c,b,i)",
                         &H_7_legs_b, &H_7_legs_a, tensor_grid[7][4].get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0);
-    cout << errc << endl;
-    assert(errc==TALSH_SUCCESS);
+    errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
     tc = TensContraction("D(a,b,i,h,e,f,g)+=L(a,b,c,d,e,f,g)*R(h,d,c,i)",
                         &H_7_legs_a, &H_7_legs_b, tensor_grid[6][4].get());
@@ -223,7 +222,7 @@ int main(int argc, char **argv) {
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
 
-    // Level 5
+    // Level 5 (starting with 21)
     tc = TensContraction("D(h,b,c,d,e,f,g)+=L(a,b,c,d,e,f,g)*R(h,a)",
                         &H_7_legs_a, &H_7_legs_b, tensor_grid[8][5].get());
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
@@ -249,7 +248,7 @@ int main(int argc, char **argv) {
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
 
-    // Level 6
+    // Level 6 (starting with 27)
     tc = TensContraction("D(h,b,c,d,e,f,g)+=L(a,b,c,d,e,f,g)*R(h,a)",
                         &H_7_legs_a, &H_7_legs_b, tensor_grid[7][6].get());
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
@@ -271,7 +270,7 @@ int main(int argc, char **argv) {
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
 
-    // Level 7
+    // Level 7 (starting with 32)
     tc = TensContraction("D(h,b,c,d,e,f,g)+=L(a,b,c,d,e,f,g)*R(h,a)",
                         &H_7_legs_b, &H_7_legs_a, tensor_grid[6][7].get());
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
@@ -289,7 +288,7 @@ int main(int argc, char **argv) {
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
 
-    // Corner
+    // Corner (starting with 36)
     tc = TensContraction("D(h,b,c,d,e,f,g)+=L(a,b,c,d,e,f,g)*R(h,a)",
                         &H_7_legs_b, &H_7_legs_a, tensor_grid[5][8].get());
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
@@ -311,7 +310,7 @@ int main(int argc, char **argv) {
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
 
-    // Row 2
+    // Row 2 (starting with 41)
     tc = TensContraction("D(f,b,c,d,e)+=L(a,b,c,d,e)*R(f,a)",
                         &H_5_legs_b, &H_5_legs_a, tensor_grid[2][8].get());
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);

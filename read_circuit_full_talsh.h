@@ -289,7 +289,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     assert(initial_conf.size()==num_qubits-off.size()
             && "initial_conf must be of size equal to the number of qubits.");
     assert(final_conf_B.size()==num_qubits-off.size()-A.size()
-            && "final_conf_B must be of size equal to the number of qubits.");
+            && "final_conf_B must be of size equal to the number of qubits minus the number of qubits in A.");
   }
 
   // Create grid of vectors of tensors, of dims and of bonds
@@ -363,6 +363,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     // Push two-qubit gates
     if (q2>=0)
     {
+      // If either qubit is in 'off'
       if (find(off.begin(),off.end(),
                vector<int>({i_j_1[0],i_j_1[1]}))!=off.end()
           ||
@@ -390,23 +391,6 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     }
 
   }
-
-  /*
-  for (int i=0; i<I; ++i) for (int j=0; j<J; ++j)
-  {
-    cout << i << " " << j << endl;
-    for (auto v : grid_of_lists_of_tensors[i][j])
-    {
-      unsigned int num_dims;
-      int const * dims = v->getDimExtents(num_dims);
-      for (int d=0; d<num_dims; ++d)
-        cout << dims[d] << "\t";
-      cout << endl;
-      dims = nullptr;
-    }
-    cout << endl;
-  }
-  */
 
 
   // Grid of tensors with out of order indexes, of out of order bond types,
@@ -520,6 +504,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     }
   }
 
+
   // Reorder data by multiplying times the identity
   // Create grid of new to old bond positions and grid of number of bonds of
   // each type
@@ -530,8 +515,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     if (find(off.begin(),off.end(), vector<int>({i,j}))!=off.end())
     { continue; }
     for (auto v : grid_of_lists_of_bonds[i][j])
-    {
-      if (v>=0)
+    { if (v>=0)
         grid_of_ooo_bond_types[i][j].push_back(v);
     }
     // Loop over bond types
@@ -548,6 +532,30 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       }
     }
   }
+
+  // Because of multiplhying every new gate as the L tensor, and having the
+  // built tensor as R, the indexes are backwards. First, flip the entries
+  // of the map, so that they take into account the fact that indexes entering
+  // first were put last in the list (the 'old' part). Second, make sure to
+  // have the right destination, so that indexes that I want to put first are
+  // actually first.
+  for (int q=0; q<num_qubits; ++q)
+  {
+    vector<int> i_j = _q_to_i_j(q, J);
+    int i = i_j[0], j = i_j[1];
+    if (find(off.begin(),off.end(), vector<int>({i,j}))!=off.end())
+    { continue; }
+    vector<int> helper;
+    for (auto v : grid_of_new_to_old_bond_positions[i][j])
+      helper.push_back(v);
+    int size = helper.size();
+    for (int p=0; p<size; ++p)
+    {
+      // 'new' = 'old'
+      grid_of_new_to_old_bond_positions[i][j][p] = size-helper[p]-1;
+    }
+  }
+
   // Reorder tensors and bundle indexes
   idx = 0;
   for (int q=0; q<num_qubits; ++q)
@@ -563,8 +571,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     // The real index is in the first position
     for (int p=0; p<dims_T.size()-1; ++p)
     {
-      dims_T[p+1] = ooo_dims[grid_of_new_to_old_bond_positions[i][j][p]];
-      //grid_of_ooo_dims[i][j][grid_of_new_to_old_bond_positions[i][j][p]];
+      dims_T[p+1] = ooo_dims[grid_of_new_to_old_bond_positions[i][j][p]+1];
     }
     talsh::Tensor T(dims_T, s_type(0.0));
     vector<s_type> vector_I(_GATES_DATA.at("I"));
@@ -586,7 +593,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     assert(errc==TALSH_SUCCESS);
     assert(contraction.sync(DEV_HOST,0));
 
-    // Point data_T from a new tensor B (bundled) with indexes bundled.
+    // Bundle indexes: copy T to B, with the right bundled dimensions.
     // If the qubit is not contracted by a delta, don't do B, but the tensor
     // at the right position on the final grid.
     // If a qubit is contracted by delta, contract onto the 
