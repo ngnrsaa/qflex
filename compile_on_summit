@@ -14,13 +14,13 @@ LINK_TO_ESSL="-L${PATH_TO_ESSL}/lib64 -L${PATH_TO_XLF}/lib -lessl -lxlf90_r -lxl
 
 #### CUDA
 echo "g++  -c main.cpp"
-g++ -c main.cpp -DBLAS_ESSL -I ~/TAL_SH -I${PATH_TO_CUDA}/include -I${PATH_TO_ESSL}/include -O3 -fopenmp -std=c++14 -fPIC  -fpermissive
+g++ -c main.cpp -DBLAS_ESSL -I ~/TAL_SH -I${PATH_TO_CUDA}/include -I${PATH_TO_ESSL}/include -O3 -fopenmp -std=c++14 -fPIC
 echo "g++  main.o main.cpp"
-g++  main.o ~/TAL_SH/libtalsh.a ${LINK_TO_ESSL}  ${LINK_TO_CUDA} -fopenmp -lgfortran -fPIC -o main  -fpermissive
+g++  main.o ~/TAL_SH/libtalsh.a ${LINK_TO_ESSL}  ${LINK_TO_CUDA} -fopenmp -lgfortran -fPIC -o main
 
 
 #### NOCUDA
 #echo "g++  -c main.cpp"
-#g++ -c main.cpp -DBLAS_ESSL -I ~/TAL_SH -I${PATH_TO_CUDA}/include -I${PATH_TO_ESSL}/include -O3 -fopenmp -std=c++14 -fPIC  -fpermissive
+#g++ -c main.cpp -DBLAS_ESSL -I ~/TAL_SH -I${PATH_TO_CUDA}/include -I${PATH_TO_ESSL}/include -O3 -fopenmp -std=c++14 -fPIC
 #echo "g++  main.o main.cpp"
-#g++  main.o ~/TAL_SH/libtalsh.a ${LINK_TO_ESSL} -fopenmp -lgfortran -fPIC -o main  -fpermissive
+#g++  main.o ~/TAL_SH/libtalsh.a ${LINK_TO_ESSL} -fopenmp -lgfortran -fPIC -o main
