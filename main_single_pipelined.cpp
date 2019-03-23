@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
                                  {1,4},{1,5},{1,6},{1,7} });
 
 
-  int num_threads = 4;
+  int num_threads = 20;
   omp_set_num_threads(num_threads);
 
   // Vector of amplitudes with size num_Cs
@@ -435,6 +435,7 @@ int main(int argc, char **argv) {
           }
         }
       }
+      cout << endl;
     }
     /*
     // Row 2 (starting with 41)

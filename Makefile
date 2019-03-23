@@ -2,17 +2,18 @@ TARGET1 = qflex
 
 #Set these:
 CXX = mpicxx
-BLAS = MKL
+BLAS = ESSL
 FORT_LIB = -lgfortran
-TALSH_ROOT = /home/div/src/TAL_SH
+TALSH_ROOT = /ccs/home/villalonga/TAL_SH
 MKL_ROOT = /home/div/intel
-CUDA_ROOT = /usr/local/cuda
+CUDA_ROOT = /sw/summit/cuda/9.2.148
 #Done.
 
 
+OLCF_ESSL_ROOT = /sw/summit/essl/6.1.0-2/essl/6.1
 OLCF_XLF_ROOT = /sw/summit/xl/16.1.1-beta4/xlf/16.1.1
 BLAS_LIB_ESSL = -L$(OLCF_ESSL_ROOT)/lib64 -lessl -L$(OLCF_XLF_ROOT)/lib -lxlf90_r -lxlfmath
-BLAS_INC_ESSL = -D BLAS_ESSL
+BLAS_INC_ESSL = -DBLAS_ESSL
 
 BLAS_LIB_MKL = -L$(MKL_ROOT)/mkl/lib/intel64 -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lpthread -lm -ldl
 BLAS_INC_MKL = -I.
@@ -27,6 +28,7 @@ CUDA_LIB = -L$(CUDA_ROOT)/lib64 -lcublas -lcudart -lnvToolsExt
 CUDA_INC = -I$(CUDA_ROOT)/include
 
 TALSH_LIB = -L$(TALSH_ROOT) -ltalsh
+#TALSH_LIB = $(TALSH_ROOT)/libtalsh.a
 TALSH_INC = -I$(TALSH_ROOT)
 
 
