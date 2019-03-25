@@ -35,6 +35,7 @@
 #include "talshxx.hpp"
 #include "talsh_wrapper.h"
 
+#include <mpi.h>
 #include <omp.h>
 
 using namespace std;
@@ -43,6 +44,8 @@ using namespace chrono;
 
 // Input: I J K fidelity filename initial_conf (optional) final_conf (optional)
 int main(int argc, char **argv) {
+
+  MPI_Init(NULL, NULL);
 
   // Set precision for the printed floats.
   cout.precision(12);
@@ -457,6 +460,8 @@ int main(int argc, char **argv) {
          << imag(amplitudes[c]) << " ";
     cout << "\n";
   }
+
+  MPI_Finalize();
 
   return 0;
 } 
