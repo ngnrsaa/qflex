@@ -12,3 +12,5 @@
 *.a
 *.so
 *.x
+.*swp
+todo.txt

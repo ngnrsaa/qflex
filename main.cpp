@@ -385,7 +385,7 @@ int main(int argc, char **argv) {
                         &H_4_legs_c, &H_5_legs_a, tensor_grid[2][4].get());
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
-    // Finished contracting A
+    // Finished contracting B
 
 
     // Now contract C

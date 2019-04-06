@@ -16,20 +16,9 @@
 */
 
 
-/**
-* @file read_circuit.h
-* Helper functions to read quantum circuits from a file.
-* @see https://github.com/benjaminvillalonga/optimized_parallel_QC_with_TN
-*
-* @author Benjamin Villalonga
-* @date Created: September 2018
-* @date Modified: September 2018
-*/
-
 #ifndef READ_CIRCUIT_
 #define READ_CIRCUIT_
 
-#include <iostream>
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -38,6 +27,7 @@
 #include <ctime>
 #include <chrono>
 #include <cassert>
+#include <unordered_map>
 
 #include <iostream>
 #include <fstream>
@@ -667,6 +657,9 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       ++idx;
     }
   }
+
+  // Close io file
+  io.close();
 }
 
 

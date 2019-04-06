@@ -32,13 +32,16 @@ TALSH_LIB = -L$(TALSH_ROOT) -ltalsh
 TALSH_INC = -I$(TALSH_ROOT)
 
 
-OBJS1 = main.o
+OBJS1 = scheduler.o contraction.o
 
 $(TARGET1): $(OBJS1)
-	$(CXX) -o $(TARGET1).x -fopenmp -fPIC $(OBJS1) $(TALSH_LIB) $(BLAS_LIB) $(CUDA_LIB) $(FORT_LIB)
+	$(CXX) -o $(TARGET1).x -fopenmp -fPIC $(OBJS1) $(TALSH_LIB) $(BLAS_LIB) $(CUDA_LIB) $(FORT_LIB) -O3
 
-main.o: main.cpp
-	$(CXX) -c main.cpp $(TALSH_INC) $(BLAS_INC) $(CUDA_INC) -fopenmp -O3 -std=c++11 -fPIC
+scheduler.o: scheduler.cpp
+	$(CXX) -c scheduler.cpp  $(TALSH_INC) $(BLAS_INC) $(CUDA_INC) -fopenmp -O3 -std=c++11 -fPIC
+
+contraction.o: contraction.cpp
+	$(CXX) -c contraction.cpp $(TALSH_INC) $(BLAS_INC) $(CUDA_INC) -fopenmp -O3 -std=c++11 -fPIC
 
 .PHONY: clean
 clean:
