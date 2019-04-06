@@ -4,7 +4,8 @@ TARGET1 = qflex
 CXX = mpicxx
 BLAS = ESSL
 FORT_LIB = -lgfortran
-TALSH_ROOT = /ccs/home/villalonga/TAL_SH
+#TALSH_ROOT = /ccs/home/villalonga/TAL_SH
+TALSH_ROOT = /gpfs/alpine/proj-shared/phy136/Gordon-Bell/TAL_SH
 MKL_ROOT = /home/div/intel
 CUDA_ROOT = /sw/summit/cuda/9.2.148
 #Done.

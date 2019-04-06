@@ -57,26 +57,32 @@ int main(int argc, char *argv[]) {
   //////////////////////// Process 0
   if (rank==0)
   {
-    int num_entries = 40; // How many entries you want to run
+    int num_entries = 1000; // How many entries you want to run
     int entries_left = num_entries;
     vector<MPI_Request> requests(world_size, MPI_REQUEST_NULL);
+    vector<string> parameter_strings(world_size-1);
+    vector<string> input_strings(world_size-1);
+
+    // Output file
+    string out_filename = "output.txt";
+    ofstream out_file(out_filename);
 
     // Input variables (from file)
     // Open file
-    string filename("generate_input/input.txt");
-    auto io = ifstream(filename);
-    assert(io.good() && "Cannot open file.");
+    string in_filename("generate_input/input.txt");
+    auto in_file = ifstream(in_filename);
+    assert(in_file.good() && "Cannot open file.");
     // Gotten from the file.
     // Number of arguments per amplitude and number of amplitudes per line
     int num_args, num_amps; 
     // The first element should be the number of arguments per line
-    io >> num_args;
-    io >> num_amps;
+    in_file >> num_args;
+    in_file >> num_amps;
     int batch_size = num_args-2;
     vector<s_type> amplitudes(batch_size*num_amps*(world_size-1));
     // Grab lines one by one
     string line;
-    getline(io, line); // "Read" one line to start next time from the second.
+    getline(in_file, line); // "Read" one line to start next time from the second.
     // Send num_args
     for (int p=1; p<world_size; ++p)
     {
@@ -84,12 +90,13 @@ int main(int argc, char *argv[]) {
                MPI_COMM_WORLD);
     }
     // Send second line with metadata
-    if (getline(io, line)) if (line.size() && line[0] != '#')
+    if (getline(in_file, line)) if (line.size() && line[0] != '#')
     {
       for (int p=1; p<world_size; ++p)
       {
         MPI_Send(line.c_str(), line.size(), MPI_CHAR, p, 0,
                  MPI_COMM_WORLD);
+        parameter_strings[p-1] = line;
       }
     }
 
@@ -103,20 +110,35 @@ int main(int argc, char *argv[]) {
         if (requests[p]!=MPI_REQUEST_NULL) // First time is flag=true;
         {
           MPI_Request_get_status(requests[p], &flag, MPI_STATUS_IGNORE);
+          if (flag)
+          {
+            out_file << "\nProcess " << p << ": " << parameter_strings[p-1]
+                     << "\n";
+            out_file << input_strings[p-1] << "\n";
+            for (int a=0; a<batch_size*num_amps; ++a)
+            {
+              out_file << amplitudes[batch_size*num_amps*(p-1)+a].real()
+                       << " "<< amplitudes[batch_size*num_amps*(p-1)+a].imag()
+                       << " ";
+            }
+            out_file << "\n";
+            out_file << flush;
+          }
         }
         if (flag)
         {
-          if (getline(io, line)) if (line.size() && line[0] != '#')
+          if (getline(in_file, line)) if (line.size() && line[0] != '#')
           {
             MPI_Send(line.c_str(), line.size(), MPI_CHAR, p, 0,
                      MPI_COMM_WORLD);
+            input_strings[p-1] = line;
             --entries_left;
             // Time
             t1 = high_resolution_clock::now();
             duration<double> span = duration_cast<duration<double>>(t1 - t0);
             // Time
-            cout << span.count() << "s. Sent batch to process " << p
-                 << ". Entries left = " << entries_left << "\n";
+            //cout << span.count() << "s. Sent batch to process " << p
+            //     << ". Entries left = " << entries_left << "\n";
             MPI_Irecv(amplitudes.data()+batch_size*num_amps*(p-1),
                       batch_size*num_amps, MPI_COMPLEX, p, 0,
                       MPI_COMM_WORLD, &requests[p]);
@@ -133,14 +155,26 @@ int main(int argc, char *argv[]) {
       if (!flag)
       {
         MPI_Wait(&requests[p], MPI_STATUS_IGNORE);
+        out_file << "\nProcess " << p << ": " << parameter_strings[p-1]
+                 << "\n";
+        out_file << input_strings[p-1] << "\n";
+        for (int a=0; a<batch_size*num_amps; ++a)
+        {
+          out_file << amplitudes[batch_size*num_amps*(p-1)+a].real()
+                   << " "<< amplitudes[batch_size*num_amps*(p-1)+a].imag()
+                   << " ";
+        }
+        out_file << "\n";
+        out_file << flush;
       }
       // Send a dummy pointer to show that the we are done!
       MPI_Send(NULL, 0, MPI_CHAR, p, 0,
                MPI_COMM_WORLD);
     }
 
-    // Close file
-    io.close();
+    // Close files
+    out_file.close();
+    in_file.close();
 
     // Report total time
     t1 = high_resolution_clock::now();

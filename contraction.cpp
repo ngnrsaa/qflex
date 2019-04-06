@@ -81,14 +81,8 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
   vector<int> dims_5(5, super_dim);
   vector<int> dims_6(6, super_dim);
   vector<int> dims_7(7, super_dim);
-  size_t vol_2 = (size_t)pow(super_dim,2);
-  size_t vol_3 = (size_t)pow(super_dim,3);
-  size_t vol_4 = (size_t)pow(super_dim,4);
-  size_t vol_5 = (size_t)pow(super_dim,5);
-  size_t vol_6 = (size_t)pow(super_dim,6);
-  size_t vol_7 = (size_t)pow(super_dim,7);
+
   // First, tensors for region C. Done by hand right now. Change in future.
-  vector<shared_ptr<talsh::Tensor>> Cs; 
   Cs.push_back(shared_ptr<talsh::Tensor>(
                       new talsh::Tensor(dims_2, s_type(0.0))));
   Cs.push_back(shared_ptr<talsh::Tensor>(
@@ -143,7 +137,7 @@ void Contraction::contract(string input_string)
 {
   int errc;
 
-
+  // Input and output bit-strings
   string initial_conf, final_conf_B;
   vector<string> final_conf_A(num_Cs, "");
 
@@ -330,7 +324,6 @@ void Contraction::contract(string input_string)
     errc = tcg.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
     assert(tcg.sync(DEV_NVIDIA_GPU,0));
   }
-  cout << "Done GPU, corner!" << endl;
 
   // Corner (starting with 36) (only last one, because of sync on DEV_HOST)
   tc = TensContraction("D(h,d,e,f,g)+=L(a,b,c,d,e,f,g)*R(h,c,b,a)",
@@ -363,7 +356,6 @@ void Contraction::contract(string input_string)
   // Finished contracting B
 
 
-  /*
   // Now contract C
   for (int c=0; c<num_Cs; ++c)
   {
@@ -421,7 +413,6 @@ void Contraction::contract(string input_string)
     S->getDataAccessHostConst(&ptr_S);
     amplitudes[c] = ptr_S[0];
   }
-  */
 }
 
 
