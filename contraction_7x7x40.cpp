@@ -27,7 +27,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "contraction_51q.h"
+#include "contraction_7x7x40.h"
 #include "read_circuit_full_talsh.h"
 
 // Time
@@ -55,21 +55,9 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
   amplitudes.resize(num_amps*num_Cs);
   int num_qubits = I*J;
   // List of qubits to remove (off) and qubits in A.
-  qubits_off = vector<vector<int>>({
-    {0,0},{0,1},{0,2},{0,3},{0,4}            ,{0,7},{0,8},{0,9},{0,10},{0,11},
-    {1,0},{1,1},{1,2},{1,3}                        ,{1,8},{1,9},{1,10},{1,11},
-    {2,0},{2,1},{2,2},{2,3}                              ,{2,9},{2,10},{2,11},
-    {3,0},{3,1}                                                ,{3,10},{3,11},
-    {4,0}                                                      ,{4,10},{4,11},
-    {5,0}                                                ,{5,9},{5,10},{5,11},
-    {6,0}                                          ,{6,8},{6,9},{6,10},{6,11},
-    {7,0},{7,1}                              ,{7,7},{7,8},{7,9},{7,10},{7,11},
-    {8,0},{8,1},{8,2}                  ,{8,6},{8,7},{8,8},{8,9},{8,10},{8,11},
-    {9,0},{9,1},{9,2},{9,3},{9,4},{9,5},{9,6},{9,7},{9,8},{9,9},{9,10},{9,11},
-    {10,0},{10,1},{10,2},{10,3},{10,4},{10,5},{10,6},{10,7},{10,8},{10,9},{10,10},{10,11}
-    }); 
-  qubits_A = vector<vector<int>>({       {0,5},{0,6},
-                                  {1,4},{1,5},{1,6},{1,7} });
+  qubits_off = vector<vector<int>>({}); 
+  qubits_A = vector<vector<int>>({ {5,0},{5,1},{5,2},
+                                   {6,0},{6,1},{6,2} });
 
    
   int errc;
@@ -80,7 +68,6 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
   vector<int> dims_4(4, super_dim);
   vector<int> dims_5(5, super_dim);
   vector<int> dims_6(6, super_dim);
-  vector<int> dims_7(7, super_dim);
 
   // First, tensors for region C. Done by hand right now. Change in future.
   Cs.push_back(shared_ptr<talsh::Tensor>(
@@ -119,10 +106,6 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
             shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_6, s_type(0.0)));
   H_6_legs_b =
             shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_6, s_type(0.0)));
-  H_7_legs_a =
-            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_7, s_type(0.0)));
-  H_7_legs_b =
-            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_7, s_type(0.0)));
 
   // Finally, scalar S
   S = shared_ptr<talsh::Tensor>(new talsh::Tensor({}, s_type(0.0)));
@@ -170,6 +153,32 @@ void Contraction::contract(string input_string)
   duration<double> span = duration_cast<duration<double>>(t1 - t0);
   cout << "Time spent reading circuit is " << span.count() << endl;
 
+  // Slicing
+  talsh::Tensor tensor({3,4,5}, 0.0);
+  tensor.print();
+  cout << flush;
+  talsh::Tensor slice({1,2,3}, {2,2,2}, 0.0);
+  slice.print();
+  cout << flush;
+  talsh::TensorTask task_hl;
+  errc = tensor.extractSlice(&task_hl,slice,std::vector<int>{1,2,3},DEV_HOST,0);
+  bool done = tensor.sync();
+
+  s_type const * data_tensor;
+  s_type const * data_slice;
+  tensor.getDataAccessHostConst(&data_tensor);
+  slice.getDataAccessHostConst(&data_slice);
+  for (size_t p=0; p<tensor.getVolume(); ++p)
+    cout << data_tensor[p] << " ";
+  cout << "\n\n";
+  for (size_t p=0; p<slice.getVolume(); ++p)
+    cout << data_slice[p] << " ";
+  cout << "\n";
+  data_tensor = nullptr;
+  data_slice = nullptr;
+  // Slicing up to here
+
+  /*
   // Start actual contraction.
   // It's working, but I haven't respected the ordering criterion!
   // Level 1 (starting with 1)
@@ -421,6 +430,7 @@ void Contraction::contract(string input_string)
     S->getDataAccessHostConst(&ptr_S);
     amplitudes[c] = ptr_S[0];
   }
+  */
 }
 
 

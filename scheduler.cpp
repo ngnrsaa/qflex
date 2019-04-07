@@ -34,6 +34,8 @@ using namespace chrono;
 
 
 int main(int argc, char *argv[]) {
+  // Three things to take as arguments: input file, output file, number of
+  // amplitudes.
 
   // MPI
   // Initialize the MPI environment
@@ -65,7 +67,7 @@ int main(int argc, char *argv[]) {
   //////////////////////// Process 0
   if (rank==0)
   {
-    int num_entries = 1000; // How many entries you want to run
+    int num_entries = 100; // How many entries you want to run
     int entries_left = num_entries;
     vector<MPI_Request> requests(world_size, MPI_REQUEST_NULL);
     vector<string> parameter_strings(world_size-1);
