@@ -27,7 +27,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "contraction.h"
+#include "contraction_51q.h"
 #include "read_circuit_full_talsh.h"
 
 // Time

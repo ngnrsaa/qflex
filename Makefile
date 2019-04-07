@@ -8,6 +8,9 @@ FORT_LIB = -lgfortran
 TALSH_ROOT = /gpfs/alpine/proj-shared/phy136/Gordon-Bell/TAL_SH
 MKL_ROOT = /home/div/intel
 CUDA_ROOT = /sw/summit/cuda/9.2.148
+
+# Contraction can be _51q, _7x7x40, _8x8x32, ...
+CONTRACTION = _51q
 #Done.
 
 
@@ -33,16 +36,30 @@ TALSH_LIB = -L$(TALSH_ROOT) -ltalsh
 TALSH_INC = -I$(TALSH_ROOT)
 
 
-OBJS1 = scheduler.o contraction.o
+# Contraction
+CONTRACTION_FILENAME = contraction$(CONTRACTION)
+
+#OBJS1 = scheduler.o contraction.o
+#
+#$(TARGET1): $(OBJS1)
+#	$(CXX) -o $(TARGET1).x -fopenmp -fPIC $(OBJS1) $(TALSH_LIB) $(BLAS_LIB) $(CUDA_LIB) $(FORT_LIB) -O3
+#
+#scheduler.o: scheduler.cpp
+#	$(CXX) -c scheduler.cpp  $(TALSH_INC) $(BLAS_INC) $(CUDA_INC) -fopenmp -O3 -std=c++11 -fPIC
+#
+#contraction.o: contraction.cpp
+#	$(CXX) -c contraction.cpp $(TALSH_INC) $(BLAS_INC) $(CUDA_INC) -fopenmp -O3 -std=c++11 -fPIC
+
+OBJS1 = scheduler.o $(CONTRACTION_FILENAME).o
 
 $(TARGET1): $(OBJS1)
 	$(CXX) -o $(TARGET1).x -fopenmp -fPIC $(OBJS1) $(TALSH_LIB) $(BLAS_LIB) $(CUDA_LIB) $(FORT_LIB) -O3
 
 scheduler.o: scheduler.cpp
-	$(CXX) -c scheduler.cpp  $(TALSH_INC) $(BLAS_INC) $(CUDA_INC) -fopenmp -O3 -std=c++11 -fPIC
+	$(CXX) -c scheduler.cpp  $(TALSH_INC) $(BLAS_INC) $(CUDA_INC) -fopenmp -O3 -std=c++11 -fPIC -D$(CONTRACTION)
 
-contraction.o: contraction.cpp
-	$(CXX) -c contraction.cpp $(TALSH_INC) $(BLAS_INC) $(CUDA_INC) -fopenmp -O3 -std=c++11 -fPIC
+$(CONTRACTION_FILENAME).o: $(CONTRACTION_FILENAME).cpp
+	$(CXX) -c $(CONTRACTION_FILENAME).cpp $(TALSH_INC) $(BLAS_INC) $(CUDA_INC) -fopenmp -O3 -std=c++11 -fPIC
 
 .PHONY: clean
 clean:

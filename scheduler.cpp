@@ -18,8 +18,16 @@
 #include <thread>
 #include <stdlib.h>
 
-#include "contraction.h"
 #include "talshxx.hpp"
+#ifdef _51q
+#include "contraction_51q.h"
+#endif
+#ifdef _7x7x40
+#include "contraction_7x7x40.h"
+#endif
+#ifdef _8x8x32
+#include "contraction_8x8x32.h"
+#endif
 
 using namespace std;
 using namespace chrono;
