@@ -154,21 +154,16 @@ void Contraction::contract(string input_string)
   cout << "Time spent reading circuit is " << span.count() << endl;
 
   // Slicing
-  talsh::Tensor tensor({3,4,5}, 0.0);
-  tensor.print();
-  cout << flush;
-  talsh::Tensor slice({1,2,3}, {2,2,2}, 0.0);
-  slice.print();
-  cout << flush;
+  talsh::Tensor slice({32,1}, s_type(0.0));
   talsh::TensorTask task_hl;
-  errc = tensor.extractSlice(&task_hl,slice,std::vector<int>{1,2,3},DEV_HOST,0);
-  bool done = tensor.sync();
+  errc = tensor_grid[0][0]->extractSlice(&task_hl,slice,std::vector<int>{0,0},DEV_HOST,0);
+  bool done = tensor_grid[0][0]->sync();
 
   s_type const * data_tensor;
   s_type const * data_slice;
-  tensor.getDataAccessHostConst(&data_tensor);
+  tensor_grid[0][0]->getDataAccessHostConst(&data_tensor);
   slice.getDataAccessHostConst(&data_slice);
-  for (size_t p=0; p<tensor.getVolume(); ++p)
+  for (size_t p=0; p<tensor_grid[0][0]->getVolume(); ++p)
     cout << data_tensor[p] << " ";
   cout << "\n\n";
   for (size_t p=0; p<slice.getVolume(); ++p)

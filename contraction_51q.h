@@ -70,6 +70,7 @@ class Contraction
     **/
     void contract(string input_string);
 
+
     /**
     * Get const reference to amplitudes.
     **/
