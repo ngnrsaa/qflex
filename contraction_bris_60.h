@@ -106,7 +106,10 @@ class Contraction
                               H_4_legs_a, H_4_legs_b, H_4_legs_c,
                               H_5_legs_a, H_5_legs_b,
                               H_6_legs_a, H_6_legs_b,
-                              H_7_legs_a, H_7_legs_b;
+                              H_7_legs_a, H_7_legs_b, H_7_legs_c;
+
+    // Tensors to hold the slices.
+    shared_ptr<talsh::Tensor> S05, S06, S15, S16, S25, S26;
 
     // Finally, scalar S
     shared_ptr<talsh::Tensor> S;

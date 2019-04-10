@@ -63,6 +63,10 @@ class Contraction
     Contraction & operator=(Contraction && another) = default;
     ~Contraction() = default;
 
+    /**
+    * Load circuit from file place it in open_tensor_grid. Only output open.
+    **/
+    void load_circuit(string input_string);
 
     /**
     * Fills amplitudes with the appropriate contractions.
@@ -89,6 +93,10 @@ class Contraction
     vector<s_type> amplitudes;
     int num_args, num_amps;
 
+    // open_tensor_grid, universal to this object. Will be closed over and over
+    // again for each amplitude computation.
+    vector<vector<shared_ptr<talsh::Tensor>>> open_tensor_grid;
+
     // First, tensors for region C. Done by hand right now. Change in future.
     vector<shared_ptr<talsh::Tensor>> Cs; 
 
@@ -97,7 +105,8 @@ class Contraction
                               H_3_legs_a, H_3_legs_b,
                               H_4_legs_a, H_4_legs_b, H_4_legs_c,
                               H_5_legs_a, H_5_legs_b,
-                              H_6_legs_a, H_6_legs_b;
+                              H_6_legs_a, H_6_legs_b,
+                              H_7_legs_a, H_7_legs_b;
 
     // Finally, scalar S
     shared_ptr<talsh::Tensor> S;

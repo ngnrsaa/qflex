@@ -27,7 +27,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "contraction_51q.h"
+#include "contraction_bris_60.h"
 #include "read_circuit_full_talsh.h"
 
 // Time
@@ -58,23 +58,24 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
   qubits_off = vector<vector<int>>({
     {0,0},{0,1},{0,2},{0,3},{0,4}            ,{0,7},{0,8},{0,9},{0,10},{0,11},
     {1,0},{1,1},{1,2},{1,3}                        ,{1,8},{1,9},{1,10},{1,11},
-    {2,0},{2,1},{2,2},{2,3}                              ,{2,9},{2,10},{2,11},
+    {2,0},{2,1},{2,2}                                    ,{2,9},{2,10},{2,11},
     {3,0},{3,1}                                                ,{3,10},{3,11},
-    {4,0}                                                      ,{4,10},{4,11},
-    {5,0}                                                ,{5,9},{5,10},{5,11},
-    {6,0}                                          ,{6,8},{6,9},{6,10},{6,11},
-    {7,0},{7,1}                              ,{7,7},{7,8},{7,9},{7,10},{7,11},
-    {8,0},{8,1},{8,2}                  ,{8,6},{8,7},{8,8},{8,9},{8,10},{8,11},
-    {9,0},{9,1},{9,2},{9,3},{9,4},{9,5},{9,6},{9,7},{9,8},{9,9},{9,10},{9,11},
+    {4,0}                                                             ,{4,11},
+    {5,0}                                                             ,{5,11},
+    {6,0},{6,1}                                                ,{6,10},{6,11},
+    {7,0},{7,1},{7,2}                                    ,{7,9},{7,10},{7,11},
+    {8,0},{8,1},{8,2},{8,3}                        ,{8,8},{8,9},{8,10},{8,11},
+    {9,0},{9,1},{9,2},{9,3},{9,4}            ,{9,7},{9,8},{9,9},{9,10},{9,11},
     {10,0},{10,1},{10,2},{10,3},{10,4},{10,5},{10,6},{10,7},{10,8},{10,9},{10,10},{10,11}
     }); 
-  qubits_A = vector<vector<int>>({       {0,5},{0,6},
-                                  {1,4},{1,5},{1,6},{1,7} });
+  qubits_A = vector<vector<int>>({ {8,4},{8,5},{8,6},{8,7},
+                                         {9,5},{9,6}       });
 
    
   int errc;
 
   // Allocate talsh::Tensors involved in the contraction
+  vector<int> dims_1(1, super_dim);
   vector<int> dims_2(2, super_dim);
   vector<int> dims_3(3, super_dim);
   vector<int> dims_4(4, super_dim);
@@ -86,13 +87,13 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
   Cs.push_back(shared_ptr<talsh::Tensor>(
                       new talsh::Tensor(dims_2, s_type(0.0))));
   Cs.push_back(shared_ptr<talsh::Tensor>(
-                      new talsh::Tensor(dims_2, s_type(0.0))));
-  Cs.push_back(shared_ptr<talsh::Tensor>(
-                      new talsh::Tensor(dims_2, s_type(0.0))));
-  Cs.push_back(shared_ptr<talsh::Tensor>(
                       new talsh::Tensor(dims_4, s_type(0.0))));
   Cs.push_back(shared_ptr<talsh::Tensor>(
                       new talsh::Tensor(dims_4, s_type(0.0))));
+  Cs.push_back(shared_ptr<talsh::Tensor>(
+                      new talsh::Tensor(dims_2, s_type(0.0))));
+  Cs.push_back(shared_ptr<talsh::Tensor>(
+                      new talsh::Tensor(dims_2, s_type(0.0))));
   Cs.push_back(shared_ptr<talsh::Tensor>(
                       new talsh::Tensor(dims_2, s_type(0.0))));
 
@@ -123,6 +124,23 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
             shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_7, s_type(0.0)));
   H_7_legs_b =
             shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_7, s_type(0.0)));
+  H_7_legs_c =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_7, s_type(0.0)));
+
+  // Also, need tensors to hold slices.
+  vector<int> dims_S05(2, super_dim); dims_S05[1] = 1;
+  vector<int> dims_S06(2, super_dim); dims_S06[0] = 1;
+  vector<int> dims_S15(4, super_dim); dims_S15[3] = 1;
+  vector<int> dims_S16(4, super_dim); dims_S16[1] = 1;
+  vector<int> dims_S25(4, super_dim); dims_S25[3] = 1;
+  vector<int> dims_S26(4, super_dim); dims_S26[1] = 1;
+
+  S05 = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S05, s_type(0.0)));
+  S06 = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S06, s_type(0.0)));
+  S15 = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S15, s_type(0.0)));
+  S16 = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S16, s_type(0.0)));
+  S25 = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S25, s_type(0.0)));
+  S26 = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S26, s_type(0.0)));
 
   // Finally, scalar S
   S = shared_ptr<talsh::Tensor>(new talsh::Tensor({}, s_type(0.0)));
@@ -210,13 +228,43 @@ void Contraction::contract(string input_string)
   span = duration_cast<duration<double>>(t1 - t0);
   cout << "Time spent closing circuit is " << span.count() << endl;
   
+  // Slice tensors cut
+  t0 = high_resolution_clock::now();
+  bool done;
+  talsh::TensorTask task_hl;
+  errc = tensor_grid[0][5]->extractSlice(
+                          &task_hl,*S05,std::vector<int>{0,0},DEV_HOST,0);
+  done = tensor_grid[0][5]->sync();
+  task_hl.clean();
+  errc = tensor_grid[0][6]->extractSlice(
+                          &task_hl,*S06,std::vector<int>{0,0},DEV_HOST,0);
+  done = tensor_grid[0][6]->sync();
+  task_hl.clean();
+  errc = tensor_grid[1][5]->extractSlice(
+                          &task_hl,*S15,std::vector<int>{0,0,0,0},DEV_HOST,0);
+  done = tensor_grid[1][5]->sync();
+  task_hl.clean();
+  errc = tensor_grid[1][6]->extractSlice(
+                          &task_hl,*S16,std::vector<int>{0,0,0,0},DEV_HOST,0);
+  done = tensor_grid[1][6]->sync();
+  task_hl.clean();
+  errc = tensor_grid[2][5]->extractSlice(
+                          &task_hl,*S25,std::vector<int>{0,0,0,0},DEV_HOST,0);
+  done = tensor_grid[2][5]->sync();
+  task_hl.clean();
+  errc = tensor_grid[2][6]->extractSlice(
+                          &task_hl,*S26,std::vector<int>{0,0,0,0},DEV_HOST,0);
+  done = tensor_grid[2][6]->sync();
+  task_hl.clean();
+  span = duration_cast<duration<double>>(t1 - t0);
+  cout << "Time spent slicing tensors is " << span.count() << endl;
 
   t0 = high_resolution_clock::now();
   // Start actual contraction.
-  // It's working, but I haven't respected the ordering criterion!
-  // Level 1 (starting with 1)
+  // I'll follow L = inherited tensor, R = new tensor.
+  // Tensor A
   TensContraction tc("D(c,d,b)+=L(a,b)*R(a,c,d)", H_3_legs_a.get(),
-                      tensor_grid[4][1].get(), tensor_grid[5][1].get());
+                      tensor_grid[0][5].get(), tensor_grid[5][1].get());
   errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
   assert(tc.sync(DEV_NVIDIA_GPU,0));
   tc = TensContraction("D(d,b,c)+=L(a,b,c)*R(a,d)", H_3_legs_b.get(),
@@ -224,6 +272,7 @@ void Contraction::contract(string input_string)
   errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
   assert(tc.sync(DEV_NVIDIA_GPU,0));
 
+  /*
   // Level 2 (starting with 4)
   tc = TensContraction("D(a,b,e,f,d)+=L(a,b,c)*R(d,c,e,f)", H_5_legs_a.get(),
                         H_3_legs_b.get(), tensor_grid[4][2].get());
@@ -463,6 +512,7 @@ void Contraction::contract(string input_string)
   t1 = high_resolution_clock::now();
   span = duration_cast<duration<double>>(t1 - t0);
   cout << "Time contracting all Cs is " << span.count() << endl;
+  */
 }
 
 

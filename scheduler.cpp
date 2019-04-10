@@ -22,6 +22,9 @@
 #ifdef _51q
 #include "contraction_51q.h"
 #endif
+#ifdef _bris_60
+#include "contraction_bris_60.h"
+#endif
 #ifdef _7x7x40
 #include "contraction_7x7x40.h"
 #endif
@@ -34,6 +37,11 @@ using namespace chrono;
 
 
 int main(int argc, char *argv[]) {
+
+  // Read input parameters
+
+
+
   // Three things to take as arguments: input file, output file, number of
   // amplitudes.
 
@@ -67,19 +75,19 @@ int main(int argc, char *argv[]) {
   //////////////////////// Process 0
   if (rank==0)
   {
-    int num_entries = 1; // How many entries you want to run
+    int num_entries = 50; // How many entries you want to run
     int entries_left = num_entries;
     vector<MPI_Request> requests(world_size, MPI_REQUEST_NULL);
     vector<string> parameter_strings(world_size-1);
     vector<string> input_strings(world_size-1);
 
     // Output file
-    string out_filename = "output.txt";
+    string out_filename = "outputs/output_bris_60.txt";
     ofstream out_file(out_filename);
 
     // Input variables (from file)
     // Open file
-    string in_filename("generate_input/input.txt");
+    string in_filename("inputs/input_bris_60.txt");
     auto in_file = ifstream(in_filename);
     assert(in_file.good() && "Cannot open file.");
     // Gotten from the file.
@@ -219,15 +227,16 @@ int main(int argc, char *argv[]) {
     delete[] char_ptr;
     char_ptr = nullptr;
 
-    unsigned long mem_size(12000000000);
+    unsigned long mem_size(16000000000);
     talsh::initialize(&mem_size);
     {
       Contraction contraction(local_line, num_args, num_amps);
 
+      bool load_circuit(true);
+      t0 = high_resolution_clock::now();
       while (true)
       {
         // Start timer
-        t0 = high_resolution_clock::now();
         ///////////////// Get string
         MPI_Probe(0, 0, MPI_COMM_WORLD, &status);
         MPI_Get_count(&status, MPI_CHAR, &length);
@@ -240,9 +249,16 @@ int main(int argc, char *argv[]) {
         char_ptr = nullptr;
 
         // Computation
+        if (load_circuit) // load only once
+        {
+          contraction.load_circuit(local_line);
+          load_circuit = false;
+        }
         contraction.contract(local_line);
         t1 = high_resolution_clock::now();
         duration<double> span = duration_cast<duration<double>>(t1 - t0);
+        t0 = high_resolution_clock::now();
+        cout << "A round took " << span.count() << "s" << endl;
 
         ///////////////// Message back
         amplitudes = contraction.get_amplitudes();

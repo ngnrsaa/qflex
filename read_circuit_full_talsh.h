@@ -675,7 +675,6 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
 * @param J int with the second spatial dimension of the grid of qubits.
 * @param initial_conf string with 0s and 1s with the input configuration of
 * the circuit.
-* @param A vector<vector<int>> with the coords. of the qubits in A.
 * @param off vector<vector<int>> with the coords. of the qubits turned off.
 * @param grid_of_tensors reference to a
 * vector<vector<shared_ptr<talsh::Tensor>>>
@@ -683,8 +682,8 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
 * 
 * the circuit.
 */
-void google_circuit_file_to_grid_of_tensors_open(string filename, int I, int J,
-        string initial_conf, vector<vector<int>> A, vector<vector<int>> off,
+void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
+        string initial_conf, vector<vector<int>> off,
         vector<vector<shared_ptr<talsh::Tensor>>> & grid_of_tensors)
 {
 
@@ -710,8 +709,6 @@ void google_circuit_file_to_grid_of_tensors_open(string filename, int I, int J,
   {
     assert(initial_conf.size()==num_qubits-off.size()
             && "initial_conf must be of size equal to the number of qubits.");
-    assert(final_conf_B.size()==num_qubits-off.size()-A.size()
-            && "final_conf_B must be of size equal to the number of qubits minus the number of qubits in A.");
   }
 
   // Create grid of vectors of tensors, of dims and of bonds
@@ -1051,6 +1048,73 @@ void google_circuit_file_to_grid_of_tensors_open(string filename, int I, int J,
   io.close();
 }
 
+
+/**
+* Close circuit on B region.
+* @param filename string with the name of the circuit file.
+* @param I int with the first spatial dimension of the grid of qubits.
+* @param J int with the second spatial dimension of the grid of qubits.
+* @param final_conf_B string with 0s and 1s with the output configuration on B.
+* @param A vector<vector<int>> with the coords. of the qubits in A.
+* @param off vector<vector<int>> with the coords. of the qubits turned off.
+* @param grid_of_tensors reference to a
+* vector<vector<shared_ptr<talsh::Tensor>>>
+* pointers a talsh::Tensor on each position of the grid.
+* 
+* the circuit.
+*/
+void close_circuit(int I, int J, string final_conf_B, vector<vector<int>> A,
+            vector<vector<int>> off,
+            vector<vector<shared_ptr<talsh::Tensor>>> & open_grid_of_tensors,
+            vector<vector<shared_ptr<talsh::Tensor>>> & grid_of_tensors)
+{
+  
+  int errc;
+
+  // Reorder tensors and bundle indexes
+  int num_qubits = I*J;
+  int idx = 0;
+  string pattern_D(""), pattern_L(""), pattern_R("");
+  for (int q=0; q<num_qubits; ++q)
+  {
+    vector<int> i_j = _q_to_i_j(q, J);
+    int i = i_j[0], j = i_j[1];
+    if (find(off.begin(),off.end(), vector<int>({i,j}))!=off.end())
+    { continue; }
+
+    if (find(A.begin(),A.end(), vector<int>({i,j}))!=A.end()) // No delta
+    {
+      grid_of_tensors[i][j] = open_grid_of_tensors[i][j];
+    } else { // Contract with delta
+      vector<int> dims_open_T(dims_from_tensor(
+                                          open_grid_of_tensors[i][j].get()));
+      vector<int> dims_T(dims_open_T.cbegin()+1,dims_open_T.cend());
+      shared_ptr<talsh::Tensor> T(new talsh::Tensor(dims_T, s_type(0.0)));
+
+      string delta_gate = (final_conf_B[idx]=='0')?"delta_0":"delta_1";
+      vector<s_type> gate_vector(_GATES_DATA.at(delta_gate));
+      vector<int> dims_delta({DIM});
+      talsh::Tensor delta(dims_delta, gate_vector);
+
+      pattern_D = pattern_from_vector(vector<string>(_ALPHABET.cbegin()+1,
+                                     _ALPHABET.cbegin()+dims_open_T.size()));
+      pattern_L = _ALPHABET[0];
+      pattern_R = pattern_from_vector(vector<string>(_ALPHABET.cbegin(),
+                                     _ALPHABET.cbegin()+dims_open_T.size()));
+      string pattern_delta = "D("+pattern_D+")+=L("+pattern_L+
+                             ")*R("+pattern_R+")";
+      TensContraction contraction_delta(pattern_delta, T.get(),
+                                   &delta, open_grid_of_tensors[i][j].get());
+      errc = contraction_delta.execute(DEV_NVIDIA_GPU,0);
+      assert(errc==TALSH_SUCCESS);
+      assert(contraction_delta.sync(DEV_HOST,0));
+
+      grid_of_tensors[i][j] = T;
+      ++idx;
+    }
+  }
+ 
+}
 
 
 #endif
