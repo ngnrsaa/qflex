@@ -1,21 +1,3 @@
-/*
-
-  Copyright © 2019, United States Government, as represented by the Administrator
-  of the National Aeronautics and Space Administration. All rights reserved.
-  
-  The Flexible Quantum Circuit Simulator (qFlex)  platform is licensed under the
-  Apache License, Version 2.0 (the "License"); you may not use this file except in
-  compliance with the License. You may obtain a copy of the License at
-  http://www.apache.org/licenses/LICENSE-2.0. 
-  
-  Unless required by applicable law or agreed to in writing, software distributed
-  under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-  CONDITIONS OF ANY KIND, either express or implied. See the License for the
-  specific language governing permissions and limitations under the License.
-
-*/
-
-
 /**
 * @file mkl_tensor.cpp
 * Implementation of the MKLTensor class.
@@ -116,7 +98,7 @@ unordered_map<string,vector<int>> _REORDER_MAPS;
 ///////////////////////////// CLASS FUNCTIONS /////////////////////////////////
 
 void MKLTensor::_init(const vector<string> & indices,
-                      const vector<int> & dimensions)
+                      const vector<size_t> & dimensions)
 {
   assert (indices.size()==dimensions.size()
           && "indices and dimensions should have equal size.");
@@ -140,7 +122,7 @@ void MKLTensor::_copy(const MKLTensor & other)
   }
   _init(other.get_indices(), other.get_dimensions());
   #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
-  for (int p=0; p<other.size(); ++p)
+  for (size_t p=0; p<other.size(); ++p)
     *(_data+p) = *(other.data()+p);
 }
 
@@ -149,29 +131,29 @@ MKLTensor::MKLTensor()
   _data = NULL;
 }
 
-MKLTensor::MKLTensor(vector<string> indices, vector<int> dimensions)
+MKLTensor::MKLTensor(vector<string> indices, vector<size_t> dimensions)
 {
   _init(indices, dimensions);
-  int total_dim = 1;
+  size_t total_dim = 1;
   for (int i=0; i<indices.size(); ++i)
     total_dim *= dimensions[i];
   _data = new s_type[total_dim];
 }
 
-MKLTensor::MKLTensor(vector<string> indices, vector<int> dimensions,
+MKLTensor::MKLTensor(vector<string> indices, vector<size_t> dimensions,
                      const vector<s_type> & data) :
                      MKLTensor(indices, dimensions)
 {
   // Check that the data has the same length as this MKLTensor's size().
-  int this_size = size();
+  size_t this_size = size();
   assert (this_size==data.size()
           && "The vector data has to match the size of the MKLTensor.");
   // Fill in the _data.
-  for (int i=0; i<this_size; ++i)
+  for (size_t i=0; i<this_size; ++i)
     *(_data+i) = data[i];
 }
 
-MKLTensor::MKLTensor(vector<string> indices, vector<int> dimensions, s_type * data)
+MKLTensor::MKLTensor(vector<string> indices, vector<size_t> dimensions, s_type * data)
 {
   _init(indices, dimensions);
   _data = data;
@@ -206,17 +188,17 @@ void MKLTensor::set_indices(const vector<string> & indices)
   _indices = indices;
 }
 
-const vector<int> & MKLTensor::get_dimensions() const
+const vector<size_t> & MKLTensor::get_dimensions() const
 {
   return _dimensions;
 }
 
-void MKLTensor::set_dimensions(const vector<int> & dimensions)
+void MKLTensor::set_dimensions(const vector<size_t> & dimensions)
 {
   // Assert.
   if (_data)
   {
-    int total_dim = 1;
+    size_t total_dim = 1;
     for (int i=0; i<dimensions.size(); ++i)
       total_dim *= dimensions[i];
     assert (size()>=total_dim
@@ -226,14 +208,14 @@ void MKLTensor::set_dimensions(const vector<int> & dimensions)
 }
 
 void MKLTensor::set_indices_and_dimensions(const vector<string> & indices,
-                                           const vector<int> & dimensions)
+                                           const vector<size_t> & dimensions)
 {
   // The following line takes care of the total size of the dimensions.
   set_dimensions(dimensions);
   _init(indices, dimensions);
 }
 
-const unordered_map<string,int> &
+const unordered_map<string,size_t> &
              MKLTensor::get_index_to_dimension() const
 {
   return _index_to_dimension;
@@ -245,9 +227,9 @@ void MKLTensor::generate_index_to_dimension()
     _index_to_dimension[_indices[i]] = _dimensions[i];
 }
 
-int MKLTensor::size() const
+size_t MKLTensor::size() const
 {
-  int total_dim = 1;
+  size_t total_dim = 1;
   for (int i=0; i<_dimensions.size(); ++i)
     total_dim *= _dimensions[i];
   return total_dim;
@@ -263,7 +245,7 @@ const s_type * MKLTensor::data() const
   return _data;
 }
 
-void MKLTensor::project(string index, int index_value,
+void MKLTensor::project(string index, size_t index_value,
                         MKLTensor & projection_tensor) const
 {
   assert (index==_indices[0] && "index has to be indices[0].");
@@ -273,10 +255,10 @@ void MKLTensor::project(string index, int index_value,
   int projection_size = projection_tensor.size();
   int projection_begin = projection_size * index_value;
   #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
-  for (int p=0; p<projection_size; ++p)
+  for (size_t p=0; p<projection_size; ++p)
     *(projection_data+p) = *(_data+projection_begin+p);
   vector<string> projection_indices(_indices.begin()+1, _indices.end());
-  vector<int> projection_dimensions(_dimensions.begin()+1,
+  vector<size_t> projection_dimensions(_dimensions.begin()+1,
                                     _dimensions.end());
   projection_tensor.set_indices(projection_indices);
   projection_tensor.set_dimensions(projection_dimensions);
@@ -322,7 +304,7 @@ void MKLTensor::bundle(vector<string> indices_to_bundle, string bundled_index)
   }
   vector<string> new_indices(subtracted_indices);
   new_indices.insert(new_indices.begin()+bundled_idxpos, bundled_index);
-  vector<int> new_dimensions(new_indices.size());
+  vector<size_t> new_dimensions(new_indices.size());
   for (int i=0; i<new_dimensions.size(); ++i)
     new_dimensions[i] = _index_to_dimension[new_indices[i]];
   _indices = new_indices;
@@ -337,13 +319,13 @@ void MKLTensor::_naive_reorder(vector<string> new_ordering,
     return;
 
   vector<string> old_ordering(_indices);
-  vector<int> old_dimensions(_dimensions);
+  vector<size_t> old_dimensions(_dimensions);
   int num_indices = old_ordering.size();
-  int total_dim = size();
+  size_t total_dim = size();
 
   // Create map_old_to_new_idxpos from old to new indices, and new_dimensions.
   vector<int> map_old_to_new_idxpos(num_indices);
-  vector<int> new_dimensions(num_indices);
+  vector<size_t> new_dimensions(num_indices);
   for (int i=0; i<num_indices; ++i)
   {
     for (int j=0; j<num_indices; ++j)
@@ -358,8 +340,8 @@ void MKLTensor::_naive_reorder(vector<string> new_ordering,
   }
 
   // Create super dimensions (combined dimension of all to the right of i).
-  vector<int> old_super_dimensions(num_indices);
-  vector<int> new_super_dimensions(num_indices);
+  vector<size_t> old_super_dimensions(num_indices);
+  vector<size_t> new_super_dimensions(num_indices);
   old_super_dimensions[num_indices-1] = 1;
   new_super_dimensions[num_indices-1] = 1;
   for (int i=old_dimensions.size()-2; i>=0; --i)
@@ -374,7 +356,7 @@ void MKLTensor::_naive_reorder(vector<string> new_ordering,
   // Start moving data around.
   // First copy all data into scratch.
   #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
-  for (int p=0; p<total_dim; ++p)
+  for (size_t p=0; p<total_dim; ++p)
     *(scratch_copy+p) = *(_data+p);
 
   // No combined efficient mapping from old to new positions with actual
@@ -385,7 +367,7 @@ void MKLTensor::_naive_reorder(vector<string> new_ordering,
   // Position old and new.
   int po = 0, pn;
   // Counter of the values of each indices in the iteration (old ordering).
-  vector<int> old_counter(num_indices, 0);
+  vector<size_t> old_counter(num_indices, 0);
   // offset is important when doing this in blocks, as it's indeed implemented.
   int offset = 0;
   // internal_po keeps track of interations within a block.
@@ -426,7 +408,11 @@ void MKLTensor::_naive_reorder(vector<string> new_ordering,
         break;
     }
     // Copy data for this block, taking into account offset of small_map...
-    for (int p=0; p<min(MAX_RIGHT_DIM,total_dim); ++p)
+    // The following line is to avoid casting MAX_RIGHT_DIM to size_t
+    // every iteration. Note that it has to be size_t for min to work,
+    // since total_dim is size_t.
+    size_t effective_max = min((size_t)MAX_RIGHT_DIM,total_dim);
+    for (size_t p=0; p<effective_max; ++p)
       *(_data+small_map_old_to_new_position[p]) = *(scratch_copy+offset+p);
 
     offset += MAX_RIGHT_DIM;
@@ -442,14 +428,14 @@ void MKLTensor::_fast_reorder(vector<string> new_ordering,
 {
   // Create binary orderings.
   vector<string> old_ordering(_indices);
-  vector<int> old_dimensions(_dimensions);
+  vector<size_t> old_dimensions(_dimensions);
   int num_indices = old_ordering.size();
-  int total_dim = 1;
+  size_t total_dim = 1;
   for (int i=0; i<num_indices; ++i)
     total_dim *= old_dimensions[i];
   // Create map_old_to_new_idxpos from old to new indices, and new_dimensions.
   vector<int> map_old_to_new_idxpos(num_indices);
-  vector<int> new_dimensions(num_indices);
+  vector<size_t> new_dimensions(num_indices);
   for (int i=0; i<num_indices; ++i)
   {
     for (int j=0; j<num_indices; ++j)
@@ -643,9 +629,9 @@ void MKLTensor::_right_reorder(const vector<string> & old_ordering,
   int dim = 2;
   int num_indices = old_ordering.size();
   vector<int> map_old_to_new_idxpos(num_indices);
-  vector<int> old_dimensions(num_indices, dim);
-  vector<int> new_dimensions(num_indices, dim);
-  int total_dim = 1;
+  vector<size_t> old_dimensions(num_indices, dim);
+  vector<size_t> new_dimensions(num_indices, dim);
+  size_t total_dim = 1;
   for (int i=0; i<num_indices; ++i)
     total_dim *= old_dimensions[i];
   for (int i=0; i<num_indices; ++i)
@@ -712,9 +698,9 @@ void MKLTensor::_left_reorder(const vector<string> & old_ordering,
   int dim = 2;
   int num_indices = old_ordering.size();
   vector<int> map_old_to_new_idxpos(num_indices);
-  vector<int> old_dimensions(num_indices, dim);
-  vector<int> new_dimensions(num_indices, dim);
-  int total_dim = 1;
+  vector<size_t> old_dimensions(num_indices, dim);
+  vector<size_t> new_dimensions(num_indices, dim);
+  size_t total_dim = 1;
   for (int i=0; i<num_indices; ++i)
     total_dim *= old_dimensions[i];
   for (int i=0; i<num_indices; ++i)
@@ -744,12 +730,12 @@ void MKLTensor::_left_reorder(const vector<string> & old_ordering,
 
   // With the map_old_to_new_position, we are ready to move small chunks.
   int dim_left = total_dim;
-  int tensor_dim = size();
+  size_t tensor_dim = size();
   int dim_right = tensor_dim / dim_left; // Remember, it's all powers of 2,
                                          // so OK.
   // Copy.
   #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
-  for (int p=0; p<tensor_dim; ++p)
+  for (size_t p=0; p<tensor_dim; ++p)
   {
       *(scratch_copy+p) = *(_data+p);
   }
@@ -793,29 +779,29 @@ void MKLTensor::reorder(vector<string> new_ordering, s_type * scratch_copy)
 
 void MKLTensor::scalar_multiply(s_type scalar)
 {
-  int this_size = size();
+  size_t this_size = size();
   #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
-  for (int p=0; p<this_size; ++p)
+  for (size_t p=0; p<this_size; ++p)
     *(_data+p) = (*(_data+p)) * scalar;
 }
 
 double MKLTensor::tensor_norm() const
 {
   double total_norm(0.0);
-  int this_size = size();
-  for (int p=0; p<this_size; ++p)
+  size_t this_size = size();
+  for (size_t p=0; p<this_size; ++p)
   {
     total_norm += norm(*(_data+p));
   }
   return total_norm;
 }
 
-int MKLTensor::num_zeros() const
+size_t MKLTensor::num_zeros() const
 {
-  int count(0);
-  int this_size = size();
+  size_t count(0);
+  size_t this_size = size();
   s_type complex_0(0.);
-  for (int p=0; p<this_size; ++p)
+  for (size_t p=0; p<this_size; ++p)
   {
     if (*(_data+p)==complex_0)
       ++count;
@@ -840,7 +826,7 @@ void MKLTensor::print() const
 
 void MKLTensor::print_data() const
 {
-  for (int p=0; p<size(); ++p)
+  for (size_t p=0; p<size(); ++p)
     cout << *(_data+p) << " ";
   cout << endl;
 }
@@ -960,7 +946,7 @@ void multiply(MKLTensor & A, MKLTensor & B,
   // Set indices and dimensions of C.
   t0 = high_resolution_clock::now();
   vector<string> C_indices = _vector_union(left_indices, right_indices);
-  vector<int> C_dimensions(C_indices.size());
+  vector<size_t> C_dimensions(C_indices.size());
   for (int i=0; i<left_indices.size(); ++i)
     C_dimensions[i] = A.get_index_to_dimension().at(left_indices[i]);
   for (int i=0; i<right_indices.size(); ++i)
@@ -982,7 +968,7 @@ void _generate_binary_reordering_map(const vector<int>& map_old_to_new_idxpos,
   int dim = 2; // Hard coded!
   int num_indices = map_old_to_new_idxpos.size();
   // Assert
-  assert ((int)pow(dim,num_indices)==map_old_to_new_position.size()
+  assert ((size_t)pow(dim,num_indices)==map_old_to_new_position.size()
           && "Size of map has to be equal to 2^num_indices");
 
   // Define super dimensions. See _naive_reorder().
@@ -1000,7 +986,7 @@ void _generate_binary_reordering_map(const vector<int>& map_old_to_new_idxpos,
 
   // Iterate and generate map.
   vector<int> old_counter(num_indices, 0);
-  int po, pn; // Position of the data, old and new.
+  size_t po, pn; // Position of the data, old and new.
   int i, j;
   while(true)
   {
@@ -1025,7 +1011,7 @@ void _generate_binary_reordering_map(const vector<int>& map_old_to_new_idxpos,
 }
 
 string _reordering_to_string(const vector<int> & map_old_to_new_idxpos,
-                             const vector<int> & old_dimensions)
+                             const vector<size_t> & old_dimensions)
 {
   int num_indices = map_old_to_new_idxpos.size();
   string name(""); 
@@ -1097,9 +1083,9 @@ vector<string> _vector_concatenation(const vector<string> & v,
                                      const vector<string> & w)
 {
   vector<string> temp(v.size()+w.size());
-  for (int i=0; i<v.size(); ++i)
+  for (size_t i=0; i<v.size(); ++i)
     temp[i] = v[i];
-  for (int i=0; i<w.size(); ++i)
+  for (size_t i=0; i<w.size(); ++i)
     temp[i+v.size()] = w[i];
   return temp;
 }

@@ -1,21 +1,3 @@
-/*
-
-  Copyright © 2019, United States Government, as represented by the Administrator
-  of the National Aeronautics and Space Administration. All rights reserved.
-  
-  The Flexible Quantum Circuit Simulator (qFlex)  platform is licensed under the
-  Apache License, Version 2.0 (the "License"); you may not use this file except in
-  compliance with the License. You may obtain a copy of the License at
-  http://www.apache.org/licenses/LICENSE-2.0. 
-  
-  Unless required by applicable law or agreed to in writing, software distributed
-  under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-  CONDITIONS OF ANY KIND, either express or implied. See the License for the
-  specific language governing permissions and limitations under the License.
-
-*/
-
-
 /**
 * @file mkl_tensor.h
 * Definition of the MKLTensor class, which implements tensors with MKL's
@@ -35,7 +17,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <complex>
-#include <mkl.h> // Change to appropriate BLAS
+#include <mkl.h>
 
 using namespace std;
 
@@ -58,20 +40,20 @@ class MKLTensor
     /**
     * Creates an MKLTensor. New space is allocated.
     * @param indices vector<string> with the names of the indices in order.
-    * @param dimensions vector<int> with the ordered dimensions of the indices.
+    * @param dimensions vector<size_t> with the ordered dimensions of the indices.
     */
-    MKLTensor(vector<string> indices, vector<int> dimensions);
+    MKLTensor(vector<string> indices, vector<size_t> dimensions);
 
     /**
     * Creates an MKLTensor. New space is allocated and filled with a copy of
     * the vector's data. Useful for small tensors where the copying time is
     * negligible.
     * @param indices vector<string> with the names of the indices in order.
-    * @param dimensions vector<int> with the ordered dimensions of the indices.
+    * @param dimensions vector<size_t> with the ordered dimensions of the indices.
     * @param data vector<s_type> with the data to be copied. It has to match
     * in length the dimension of the MKLTensor, as given by the dimensions.
     */
-    MKLTensor(vector<string> indices, vector<int> dimensions,
+    MKLTensor(vector<string> indices, vector<size_t> dimensions,
               const vector<s_type> & data);
 
     /**
@@ -81,7 +63,7 @@ class MKLTensor
     * @param data pointer to the data of the tensor. It is responsibility of
     * the user to provide enough allocated memory to store the MKLTensor.
     */
-    MKLTensor(vector<string> indices, vector<int> dimensions, s_type * data);
+    MKLTensor(vector<string> indices, vector<size_t> dimensions, s_type * data);
 
     /**
     * Copy constructor: creates a new MKLTensor that is a copy of another.
@@ -124,14 +106,14 @@ class MKLTensor
     * Get dimensions.
     * @return const reference to vector<int> of dimensions.
     */
-    const vector<int> & get_dimensions() const;
+    const vector<size_t> & get_dimensions() const;
 
     /**
     * Set dimensions. This function is deprecated. Use rename_index() or
     * set_dimensions_and_indices().
     * @param const reference to vector<int> of dimensions.
     */
-    void set_dimensions(const vector<int> & dimensions);
+    void set_dimensions(const vector<size_t> & dimensions);
 
     /**
     * Set dimensions and indices.
@@ -139,13 +121,13 @@ class MKLTensor
     * @param const reference to vector<int> of dimensions.
     */
     void set_indices_and_dimensions(const vector<string> & indices,
-                                    const vector<int> & dimensions);
+                                    const vector<size_t> & dimensions);
 
     /**
     * Get index_to_dimension dictionary (or unordered_map).
     * @return const reference to unordered_map of index to dimensions.
     */
-    const unordered_map<string,int> & get_index_to_dimension() const;
+    const unordered_map<string,size_t> & get_index_to_dimension() const;
 
     /**
     * Generate index_to_dimension map from the object's indices and
@@ -157,7 +139,7 @@ class MKLTensor
     * Get size (total dimension) of the MKLTensor.
     * @return int with the number of elements in the MKLTensor.
     */
-    int size() const;
+    size_t size() const;
 
     /**
     * Get data.
@@ -184,7 +166,7 @@ class MKLTensor
     * with the right amount of allocated space can be passed. The indices and
     * dimensions will be initialized correctly from the project() function.
     */
-    void project(string index, int index_value,
+    void project(string index, size_t index_value,
                  MKLTensor & projection_tensor) const;
 
     /**
@@ -231,7 +213,7 @@ class MKLTensor
     * to debug contractions that zero out entries due to the range of values
     * s_type admits.
     */
-    int num_zeros() const;
+    size_t num_zeros() const;
 
     /**
     * Prints information about the MKLTensor.
@@ -246,8 +228,8 @@ class MKLTensor
   private:
     // Storage.
     vector<string> _indices;
-    vector<int> _dimensions;
-    unordered_map<string,int> _index_to_dimension;
+    vector<size_t> _dimensions;
+    unordered_map<string,size_t> _index_to_dimension;
     s_type * _data;
 
     // Private helper functions.
@@ -258,7 +240,7 @@ class MKLTensor
     * @param indices vector<string> with the names of the indices in order.
     * @param dimensions vector<int> with the ordered dimensions of the indices.
     */
-    void _init(const vector<string> & indices, const vector<int> & dimensions);
+    void _init(const vector<string> & indices, const vector<size_t> & dimensions);
 
     /**
     * Helper function for the destructor. Clear memory.
@@ -422,7 +404,7 @@ void _generate_binary_reordering_map(
 * @return string with the standard name of the ordering.
 */
 string _reordering_to_string(const vector<int> & map_old_to_new_idxpos,
-                             const vector<int> & old_dimensions);
+                             const vector<size_t> & old_dimensions);
 
 /**
 * Checks whether a particular string is in a vector<string>.
