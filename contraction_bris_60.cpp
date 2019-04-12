@@ -409,7 +409,7 @@ void Contraction::contract(string input_string)
     tc = TensContraction("D(b,e,c,d)+=L(a,b)*R(a,c,d,e)", H_2_legs_pp_a.get(),
                         S05.get(), S15.get());
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_HOST,0));
+    assert(tc.sync(DEV_NVIDIA_GPU,0));
     tc = TensContraction("D(a,b,e,d)+=L(a,b,c,d)*R(e,c)", H_2_legs_pp_b.get(),
                         H_2_legs_pp_a.get(), tensor_grid[1][4].get());
     errc = tc.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
