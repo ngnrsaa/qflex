@@ -38,9 +38,6 @@ using namespace chrono;
 
 int main(int argc, char *argv[]) {
 
-  // Read input parameters
-
-
 
   // Three things to take as arguments: input file, output file, number of
   // amplitudes.
@@ -75,6 +72,17 @@ int main(int argc, char *argv[]) {
   //////////////////////// Process 0
   if (rank==0)
   {
+    /*
+    // Read input parameters
+    if (argc<5) throw logic_error("ERROR: Not enough arguments.");
+    string in_filename = string(argv[1]);
+    string out_filename = string(argv[2]);
+    int space_GB = atoi(argv[3]);
+    size_t space_B = size_t(space_GB * 1000000000);
+    int num_entries = atoi(argv[4]);
+    */
+
+
     int num_entries = 5; // How many entries you want to run
     int entries_left = num_entries;
     vector<MPI_Request> requests(world_size, MPI_REQUEST_NULL);
@@ -82,7 +90,7 @@ int main(int argc, char *argv[]) {
     vector<string> input_strings(world_size-1);
 
     // Output file
-    string out_filename = "outputs/output_bris_60.txt";
+    string out_filename = "outputs/input_bris_60.txt";
     ofstream out_file(out_filename);
 
     // Input variables (from file)

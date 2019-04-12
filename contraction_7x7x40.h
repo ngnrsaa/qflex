@@ -103,13 +103,27 @@ class Contraction
     // Second, helper tensors.
     shared_ptr<talsh::Tensor> H_2_legs_a, H_2_legs_b,
                               H_3_legs_a, H_3_legs_b,
-                              H_4_legs_a, H_4_legs_b, H_4_legs_c,
+                              H_4_legs_a, H_4_legs_b,
                               H_5_legs_a, H_5_legs_b,
-                              H_6_legs_a, H_6_legs_b,
-                              H_7_legs_a, H_7_legs_b;
+                              H_6_legs_a, H_6_legs_b;
+
+    shared_ptr<talsh::Tensor> H_3_legs_p_a, H_3_legs_p_b,
+                              H_4_legs_p_a, H_4_legs_p_b,
+                              H_5_legs_p_a, H_5_legs_p_b,
+                              H_6_legs_p_a, H_6_legs_p_b,
+                              H_6_legs_pp_a, H_6_legs_pp_b;
+
+    // Third, region (reused) tensors.
+    shared_ptr<talsh::Tensor> B, pE;
+
+    // Tensors to hold the slices.
+    shared_ptr<talsh::Tensor> S26, S36, S62, S63;
 
     // Finally, scalar S
     shared_ptr<talsh::Tensor> S;
+
+    // Slice configurations
+    vector<vector<int>> slice_confs;
 
 
 };
