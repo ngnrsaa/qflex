@@ -62,6 +62,15 @@ int main(int argc, char *argv[]) {
 
   //////////////////////////////////////////////////////////
 
+  // Read input parameters
+  if (argc<5) throw logic_error("ERROR: Not enough arguments.");
+  string in_filename = string(argv[1]);
+  string out_filename = string(argv[2]);
+  int mem_size_GB = atoi(argv[3]);
+  unsigned long mem_size = mem_size_GB * size_t(1000000000);
+  int num_entries = atoi(argv[4]); // How many entries from input file to run
+
+
   // Timing variables.
   high_resolution_clock::time_point t0, t1;
   duration<double> time_span;
@@ -72,30 +81,17 @@ int main(int argc, char *argv[]) {
   //////////////////////// Process 0
   if (rank==0)
   {
-    /*
-    // Read input parameters
-    if (argc<5) throw logic_error("ERROR: Not enough arguments.");
-    string in_filename = string(argv[1]);
-    string out_filename = string(argv[2]);
-    int space_GB = atoi(argv[3]);
-    size_t space_B = size_t(space_GB * 1000000000);
-    int num_entries = atoi(argv[4]);
-    */
 
-
-    int num_entries = 5; // How many entries you want to run
     int entries_left = num_entries;
     vector<MPI_Request> requests(world_size, MPI_REQUEST_NULL);
     vector<string> parameter_strings(world_size-1);
     vector<string> input_strings(world_size-1);
 
     // Output file
-    string out_filename = "outputs/input_bris_60.txt";
     ofstream out_file(out_filename);
 
     // Input variables (from file)
     // Open file
-    string in_filename("inputs/input_bris_60.txt");
     auto in_file = ifstream(in_filename);
     assert(in_file.good() && "Cannot open file.");
     // Gotten from the file.
@@ -235,7 +231,6 @@ int main(int argc, char *argv[]) {
     delete[] char_ptr;
     char_ptr = nullptr;
 
-    unsigned long mem_size(16000000000);
     talsh::initialize(&mem_size);
     {
       Contraction contraction(local_line, num_args, num_amps);
