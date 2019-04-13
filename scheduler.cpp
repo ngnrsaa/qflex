@@ -42,6 +42,7 @@ int main(int argc, char *argv[]) {
   // Three things to take as arguments: input file, output file, number of
   // amplitudes.
 
+
   // MPI
   // Initialize the MPI environment
   MPI_Init(NULL, NULL);
@@ -94,6 +95,7 @@ int main(int argc, char *argv[]) {
 
     // Output file
     ofstream out_file(out_filename);
+    out_file.precision(7);
 
     // Input variables (from file)
     // Open file
@@ -106,7 +108,7 @@ int main(int argc, char *argv[]) {
     in_file >> num_args;
     in_file >> num_amps;
     int batch_size = num_args-2;
-    vector<s_type> amplitudes(batch_size*num_amps*(world_size));
+
     // Grab lines one by one
     string line;
     getline(in_file, line); // "Read" one line to start next from the second.
@@ -137,6 +139,16 @@ int main(int argc, char *argv[]) {
     in_file.close();
     line_idx = 0;
 
+    // Set up for messages and storage
+    vector<s_type> amplitudes(batch_size*num_amps*(world_size));
+    vector<s_type> amplitudes_out(batch_size*num_amps*num_entries);
+    vector<int> tasks_out(num_entries);
+    vector<double> peak_times_out(num_entries);
+    vector<string> input_strings_out(num_entries);
+    int idx_entry = 0;
+    // amplitudes buffer
+    vector<s_type> amplitudes_buffer(batch_size*num_amps*world_size);
+
     // Send messages
     while (entries_left>0)
     {
@@ -149,23 +161,26 @@ int main(int argc, char *argv[]) {
           MPI_Request_get_status(requests[p], &flag, MPI_STATUS_IGNORE);
           if (flag)
           {
-            out_file << "\nProcess " << p << ": " << parameter_strings[p]
-                     << "\n";
-            out_file << input_strings[p] << "\n";
             for (int a=0; a<batch_size*num_amps; ++a)
             {
-              out_file << amplitudes[batch_size*num_amps*(p)+a].real()
-                       << " "<< amplitudes[batch_size*num_amps*(p)+a].imag()
-                       << " ";
+              amplitudes[batch_size*num_amps*p+a] =
+                amplitudes_buffer[batch_size*num_amps*p+a];
+              amplitudes_out[batch_size*num_amps*idx_entry+a] =
+                amplitudes_buffer[batch_size*num_amps*p+a];
             }
-            out_file << "\n";
-            out_file << flush;
+            // Populate out vectors
+            tasks_out[idx_entry] = p;
+            input_strings_out[idx_entry] = input_strings[p];
+            peak_times_out[idx_entry] = 0.0;
+            ++idx_entry;
+            
             written[p] = true;
           }
         }
         if (flag)
         {
           line = input_lines[line_idx];
+          ++line_idx;
           {
             MPI_Send(line.c_str(), line.size(), MPI_CHAR, p, 0,
                      MPI_COMM_WORLD);
@@ -178,7 +193,7 @@ int main(int argc, char *argv[]) {
             // Time
             //cout << span.count() << "s. Sent batch to process " << p
             //     << ". Entries left = " << entries_left << "\n";
-            MPI_Irecv(amplitudes.data()+batch_size*num_amps*(p),
+            MPI_Irecv(amplitudes_buffer.data()+batch_size*num_amps*(p),
                       batch_size*num_amps, MPI_COMPLEX, p, 0,
                       MPI_COMM_WORLD, &requests[p]);
           }
@@ -194,17 +209,20 @@ int main(int argc, char *argv[]) {
       if (!flag || !written[p])
       {
         MPI_Wait(&requests[p], MPI_STATUS_IGNORE);
-        out_file << "\nProcess " << p << ": " << parameter_strings[p]
-                 << "\n";
-        out_file << input_strings[p] << "\n";
         for (int a=0; a<batch_size*num_amps; ++a)
         {
-          out_file << amplitudes[batch_size*num_amps*(p)+a].real()
-                   << " "<< amplitudes[batch_size*num_amps*(p)+a].imag()
-                   << " ";
+          amplitudes[batch_size*num_amps*p+a] =
+            amplitudes_buffer[batch_size*num_amps*p+a];
+          amplitudes_out[batch_size*num_amps*idx_entry+a] =
+            amplitudes_buffer[batch_size*num_amps*p+a];
         }
-        out_file << "\n";
-        out_file << flush;
+
+        // Populate out vectors
+        tasks_out[idx_entry] = p;
+        input_strings_out[idx_entry] = input_strings[p];
+        peak_times_out[idx_entry] = 0.0;
+        ++idx_entry;
+
         written[p] = true;
       }
       // Send a dummy pointer to show that the we are done!
@@ -212,12 +230,34 @@ int main(int argc, char *argv[]) {
                MPI_COMM_WORLD);
     }
 
+    // Write everything to file
+    t0 = high_resolution_clock::now();
+    out_file << "\n---------- BEGIN OUTPUT ------------\n";
+    for (int l=0; l<tasks_out.size(); ++l)
+    {
+      out_file << "\nProcess " << tasks_out[l]
+               << ": " << parameter_strings[tasks_out[l]] << "\n"
+               << input_strings_out[l] << "\n";
+      for (int a=0; a<batch_size*num_amps; ++a)
+      {
+        out_file << amplitudes_out[batch_size*num_amps*l+a].real()
+                 << " "<< amplitudes_out[batch_size*num_amps*l+a].imag()
+                 << " ";
+      }
+      out_file << "\n";
+      out_file << flush;
+    }
+    out_file << "\n------------ END OUTPUT ------------\n" << flush;
+    t1 = high_resolution_clock::now();
+    duration<double> span = duration_cast<duration<double>>(t1 - t0);
+    cout << "Writing took " << span.count() << endl;
+
     // Close files
     out_file.close();
 
     // Report total time
     t1 = high_resolution_clock::now();
-    duration<double> span = duration_cast<duration<double>>(t1 - t0);
+    span = duration_cast<duration<double>>(t1 - t0);
     cout << "Total time = " << span.count() << endl;
   }
 
