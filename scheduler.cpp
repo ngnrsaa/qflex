@@ -87,6 +87,9 @@ int main(int argc, char *argv[]) {
     vector<string> parameter_strings(world_size-1);
     vector<string> input_strings(world_size-1);
 
+    // Written?
+    vector<bool> written(world_size, false);
+
     // Output file
     ofstream out_file(out_filename);
 
@@ -145,6 +148,7 @@ int main(int argc, char *argv[]) {
             }
             out_file << "\n";
             out_file << flush;
+            written[p] = true;
           }
         }
         if (flag)
@@ -153,6 +157,7 @@ int main(int argc, char *argv[]) {
           {
             MPI_Send(line.c_str(), line.size(), MPI_CHAR, p, 0,
                      MPI_COMM_WORLD);
+            written[p] = false;
             input_strings[p-1] = line;
             --entries_left;
             // Time
@@ -188,6 +193,7 @@ int main(int argc, char *argv[]) {
         }
         out_file << "\n";
         out_file << flush;
+        written[p] = true;
       }
       // Send a dummy pointer to show that the we are done!
       MPI_Send(NULL, 0, MPI_CHAR, p, 0,
@@ -232,6 +238,7 @@ int main(int argc, char *argv[]) {
     char_ptr = nullptr;
 
     talsh::initialize(&mem_size);
+    cout << mem_size << endl << flush;
     {
       Contraction contraction(local_line, num_args, num_amps);
 
