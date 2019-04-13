@@ -332,11 +332,15 @@ void Contraction::contract(string input_string)
             *tensor_grid[2][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
     done = H_6_legs_a->sync();
 
-    // Contract AB: H_6_legs_c and H_6_legs_a onto AB.
+    // Contract AB: H_6_legs_c and H_6_legs_a onto AB. Time it!
+    t0 = high_resolution_clock::now();
     errc = AB->contractAccumulateXL(nullptr,
             "D(a,b,c,g,h,i)+=L(a,b,c,d,e,f)*R(f,e,d,g,h,i)", *H_6_legs_c,
             *H_6_legs_a, DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
     done = AB->sync();
+    t1 = high_resolution_clock::now();
+    span = duration_cast<duration<double>>(t1 - t0);
+    time_largest_contraction = double(span.count());
 
     // E
     // Slice tensor_grid[3][6] => S36
@@ -550,6 +554,11 @@ void Contraction::contract(string input_string)
 vector<s_type> const & Contraction::get_amplitudes() const
 {
   return amplitudes;
+}
+
+double Contraction::get_time_largest_contraction() const
+{
+  return time_largest_contraction;
 }
 
 /////////////////////////// EXTERNAL FUNCTIONS ////////////////////////////////

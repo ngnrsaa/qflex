@@ -79,6 +79,11 @@ class Contraction
     **/
     vector<s_type> const & get_amplitudes() const;
 
+    /**
+    * Get double with time of largest contraction.
+    **/
+    double get_time_largest_contraction() const;
+
   private:
     // Storage.
 
@@ -120,6 +125,9 @@ class Contraction
 
     // Slice configurations
     vector<vector<int>> slice_confs;
+
+    // Time largest contraction
+    double time_largest_contraction;
 
 
 };

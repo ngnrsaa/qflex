@@ -74,7 +74,8 @@ int main(int argc, char *argv[]) {
 
   // Timing variables.
   high_resolution_clock::time_point t0, t1;
-  duration<double> time_span;
+  high_resolution_clock::time_point t0_total, t1_total;
+  duration<double> span_total;
   t0 = high_resolution_clock::now();
 
   // Start here
@@ -140,14 +141,16 @@ int main(int argc, char *argv[]) {
     line_idx = 0;
 
     // Set up for messages and storage
-    vector<s_type> amplitudes(batch_size*num_amps*(world_size));
     vector<s_type> amplitudes_out(batch_size*num_amps*num_entries);
     vector<int> tasks_out(num_entries);
     vector<double> peak_times_out(num_entries);
     vector<string> input_strings_out(num_entries);
     int idx_entry = 0;
-    // amplitudes buffer
-    vector<s_type> amplitudes_buffer(batch_size*num_amps*world_size);
+    // amplitudes buffer. +1 is to receive the time_largest_contraction.
+    vector<s_type> amplitudes_buffer((batch_size*num_amps+1)*world_size);
+
+    // BEGIN TIMER
+    t0_total = high_resolution_clock::now();
 
     // Send messages
     while (entries_left>0)
@@ -163,15 +166,14 @@ int main(int argc, char *argv[]) {
           {
             for (int a=0; a<batch_size*num_amps; ++a)
             {
-              amplitudes[batch_size*num_amps*p+a] =
-                amplitudes_buffer[batch_size*num_amps*p+a];
               amplitudes_out[batch_size*num_amps*idx_entry+a] =
-                amplitudes_buffer[batch_size*num_amps*p+a];
+                amplitudes_buffer[(batch_size*num_amps+1)*p+a];
             }
             // Populate out vectors
             tasks_out[idx_entry] = p;
             input_strings_out[idx_entry] = input_strings[p];
-            peak_times_out[idx_entry] = 0.0;
+            peak_times_out[idx_entry] =
+              (double)amplitudes_buffer[(batch_size*num_amps+1)*(p+1)-1].real();
             ++idx_entry;
             
             written[p] = true;
@@ -193,8 +195,8 @@ int main(int argc, char *argv[]) {
             // Time
             //cout << span.count() << "s. Sent batch to process " << p
             //     << ". Entries left = " << entries_left << "\n";
-            MPI_Irecv(amplitudes_buffer.data()+batch_size*num_amps*(p),
-                      batch_size*num_amps, MPI_COMPLEX, p, 0,
+            MPI_Irecv(amplitudes_buffer.data()+(batch_size*num_amps+1)*(p),
+                      batch_size*num_amps+1, MPI_COMPLEX, p, 0,
                       MPI_COMM_WORLD, &requests[p]);
           }
         }
@@ -211,16 +213,15 @@ int main(int argc, char *argv[]) {
         MPI_Wait(&requests[p], MPI_STATUS_IGNORE);
         for (int a=0; a<batch_size*num_amps; ++a)
         {
-          amplitudes[batch_size*num_amps*p+a] =
-            amplitudes_buffer[batch_size*num_amps*p+a];
           amplitudes_out[batch_size*num_amps*idx_entry+a] =
-            amplitudes_buffer[batch_size*num_amps*p+a];
+            amplitudes_buffer[(batch_size*num_amps+1)*p+a];
         }
 
         // Populate out vectors
         tasks_out[idx_entry] = p;
         input_strings_out[idx_entry] = input_strings[p];
-        peak_times_out[idx_entry] = 0.0;
+        peak_times_out[idx_entry] =
+          (double)amplitudes_buffer[(batch_size*num_amps+1)*(p+1)-1].real();
         ++idx_entry;
 
         written[p] = true;
@@ -230,13 +231,21 @@ int main(int argc, char *argv[]) {
                MPI_COMM_WORLD);
     }
 
+    // END TIMER
+    t1_total = high_resolution_clock::now();
+    span_total = duration_cast<duration<double>>(t1_total - t0_total);
+    double total_time = span_total.count();
+    cout << "Total time (s): " << total_time << endl;
+
     // Write everything to file
     t0 = high_resolution_clock::now();
     out_file << "\n---------- BEGIN OUTPUT ------------\n";
+    out_file << "\nTotal time (s): " << total_time  << "\n\n" << endl;
     for (int l=0; l<tasks_out.size(); ++l)
     {
       out_file << "\nProcess " << tasks_out[l]
                << ": " << parameter_strings[tasks_out[l]] << "\n"
+               << "Peak time (s): " << peak_times_out[l] << "\n"
                << input_strings_out[l] << "\n";
       for (int a=0; a<batch_size*num_amps; ++a)
       {
@@ -245,7 +254,6 @@ int main(int argc, char *argv[]) {
                  << " ";
       }
       out_file << "\n";
-      out_file << flush;
     }
     out_file << "\n------------ END OUTPUT ------------\n" << flush;
     t1 = high_resolution_clock::now();
@@ -268,6 +276,8 @@ int main(int argc, char *argv[]) {
     int length;
     string local_line;
     vector<s_type> amplitudes;
+    double time_largest_contraction;
+    vector<s_type> amplitudes_p_time;
     double amplitude = 0.0;
     int num_args;
     int num_amps;
@@ -323,8 +333,11 @@ int main(int argc, char *argv[]) {
 
         ///////////////// Message back
         amplitudes = contraction.get_amplitudes();
-        MPI_Send(amplitudes.data(), amplitudes.size(), MPI_COMPLEX,
-                 0, 0, MPI_COMM_WORLD);
+        time_largest_contraction = contraction.get_time_largest_contraction();
+        amplitudes_p_time = vector<s_type>(amplitudes);
+        amplitudes_p_time.push_back(s_type(time_largest_contraction));
+        MPI_Send(amplitudes_p_time.data(), amplitudes_p_time.size(),
+                 MPI_COMPLEX, 0, 0, MPI_COMM_WORLD);
       }
     }
     talsh::shutdown();
