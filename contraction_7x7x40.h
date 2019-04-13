@@ -105,19 +105,15 @@ class Contraction
                               H_3_legs_a, H_3_legs_b,
                               H_4_legs_a, H_4_legs_b,
                               H_5_legs_a, H_5_legs_b,
-                              H_6_legs_a, H_6_legs_b;
-
-    shared_ptr<talsh::Tensor> H_3_legs_p_a, H_3_legs_p_b,
-                              H_4_legs_p_a, H_4_legs_p_b,
-                              H_5_legs_p_a, H_5_legs_p_b,
-                              H_6_legs_p_a, H_6_legs_p_b,
-                              H_6_legs_pp_a, H_6_legs_pp_b;
+                              H_6_legs_a, H_6_legs_b, H_6_legs_c;
 
     // Third, region (reused) tensors.
-    shared_ptr<talsh::Tensor> B, pE;
+    shared_ptr<talsh::Tensor> AB;
 
     // Tensors to hold the slices.
     shared_ptr<talsh::Tensor> S26, S36, S62, S63;
+    shared_ptr<talsh::Tensor> P26, P36, P62, P63;
+    // These ones loose the trivial leg.
 
     // Finally, scalar S
     shared_ptr<talsh::Tensor> S;

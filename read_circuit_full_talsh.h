@@ -506,7 +506,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
         D = shared_ptr<talsh::Tensor>(list_of_tensors[k-1]);
       }
       TensContraction contraction(pattern, D.get(), L.get(), R.get());
-      errc = contraction.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
+      errc = contraction.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
       assert(contraction.sync(DEV_HOST,0));
       current_rank = new_rank;
     }
@@ -597,7 +597,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     string pattern = "D("+pattern_D+")+=L("+pattern_L+")*R("+pattern_R+")";
     TensContraction contraction(pattern, &T, &I,
                                          grid_of_ooo_tensors[i][j].get());
-    errc = contraction.execute(DEV_HOST,0);
+    errc = contraction.execute(DEV_NVIDIA_GPU,0);
     assert(errc==TALSH_SUCCESS);
     assert(contraction.sync(DEV_HOST,0));
 
@@ -649,7 +649,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
                              ")*R("+pattern_R+")";
       TensContraction contraction_delta(pattern_delta, C.get(),
                                                        &delta, B.get());
-      errc = contraction_delta.execute(DEV_HOST,0);
+      errc = contraction_delta.execute(DEV_NVIDIA_GPU,0);
       assert(errc==TALSH_SUCCESS);
       assert(contraction_delta.sync(DEV_HOST,0));
 
@@ -917,7 +917,7 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
         D = shared_ptr<talsh::Tensor>(list_of_tensors[k-1]);
       }
       TensContraction contraction(pattern, D.get(), L.get(), R.get());
-      errc = contraction.execute(DEV_HOST,0); assert(errc==TALSH_SUCCESS);
+      errc = contraction.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
       assert(contraction.sync(DEV_HOST,0));
       current_rank = new_rank;
     }
@@ -1008,7 +1008,7 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
     string pattern = "D("+pattern_D+")+=L("+pattern_L+")*R("+pattern_R+")";
     TensContraction contraction(pattern, &T, &I,
                                          grid_of_ooo_tensors[i][j].get());
-    errc = contraction.execute(DEV_HOST,0);
+    errc = contraction.execute(DEV_NVIDIA_GPU,0);
     assert(errc==TALSH_SUCCESS);
     assert(contraction.sync(DEV_HOST,0));
 

@@ -2,9 +2,9 @@ import numpy as np
 
 I = 7
 J = 7
-K = 5
+K = 4
 fidelity = 0.005
-filename = 'circuits/inst_7x7_41.txt'
+filename = 'circuits/inst_7x7_33.txt'
 num_qubits = 49
 num_qubits_A = 6
 num_qubits_B = num_qubits - num_qubits_A
