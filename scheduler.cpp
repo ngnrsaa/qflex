@@ -84,11 +84,13 @@ int main(int argc, char *argv[]) {
 
     int entries_left = num_entries;
     vector<MPI_Request> requests(world_size, MPI_REQUEST_NULL);
-    vector<string> parameter_strings(world_size-1);
-    vector<string> input_strings(world_size-1);
+    vector<string> parameter_strings(world_size);
+    vector<string> input_strings(world_size);
 
     // Written?
     vector<bool> written(world_size, false);
+    // Input lines
+    vector<string> input_lines(num_entries);
 
     // Output file
     ofstream out_file(out_filename);
@@ -104,10 +106,10 @@ int main(int argc, char *argv[]) {
     in_file >> num_args;
     in_file >> num_amps;
     int batch_size = num_args-2;
-    vector<s_type> amplitudes(batch_size*num_amps*(world_size-1));
+    vector<s_type> amplitudes(batch_size*num_amps*(world_size));
     // Grab lines one by one
     string line;
-    getline(in_file, line); // "Read" one line to start next time from the second.
+    getline(in_file, line); // "Read" one line to start next from the second.
     // Send num_args
     for (int p=1; p<world_size; ++p)
     {
@@ -121,9 +123,19 @@ int main(int argc, char *argv[]) {
       {
         MPI_Send(line.c_str(), line.size(), MPI_CHAR, p, 0,
                  MPI_COMM_WORLD);
-        parameter_strings[p-1] = line;
+        parameter_strings[p] = line;
       }
     }
+
+    // Read all other lines
+    int line_idx = 0;
+    while (getline(in_file, line) && line_idx<num_entries) if (line.size() && line[0] != '#')
+    {
+      input_lines[line_idx] = line;
+      ++line_idx;
+    }
+    in_file.close();
+    line_idx = 0;
 
     // Send messages
     while (entries_left>0)
@@ -137,13 +149,13 @@ int main(int argc, char *argv[]) {
           MPI_Request_get_status(requests[p], &flag, MPI_STATUS_IGNORE);
           if (flag)
           {
-            out_file << "\nProcess " << p << ": " << parameter_strings[p-1]
+            out_file << "\nProcess " << p << ": " << parameter_strings[p]
                      << "\n";
-            out_file << input_strings[p-1] << "\n";
+            out_file << input_strings[p] << "\n";
             for (int a=0; a<batch_size*num_amps; ++a)
             {
-              out_file << amplitudes[batch_size*num_amps*(p-1)+a].real()
-                       << " "<< amplitudes[batch_size*num_amps*(p-1)+a].imag()
+              out_file << amplitudes[batch_size*num_amps*(p)+a].real()
+                       << " "<< amplitudes[batch_size*num_amps*(p)+a].imag()
                        << " ";
             }
             out_file << "\n";
@@ -153,12 +165,12 @@ int main(int argc, char *argv[]) {
         }
         if (flag)
         {
-          if (getline(in_file, line)) if (line.size() && line[0] != '#')
+          line = input_lines[line_idx];
           {
             MPI_Send(line.c_str(), line.size(), MPI_CHAR, p, 0,
                      MPI_COMM_WORLD);
             written[p] = false;
-            input_strings[p-1] = line;
+            input_strings[p] = line;
             --entries_left;
             // Time
             t1 = high_resolution_clock::now();
@@ -166,7 +178,7 @@ int main(int argc, char *argv[]) {
             // Time
             //cout << span.count() << "s. Sent batch to process " << p
             //     << ". Entries left = " << entries_left << "\n";
-            MPI_Irecv(amplitudes.data()+batch_size*num_amps*(p-1),
+            MPI_Irecv(amplitudes.data()+batch_size*num_amps*(p),
                       batch_size*num_amps, MPI_COMPLEX, p, 0,
                       MPI_COMM_WORLD, &requests[p]);
           }
@@ -175,20 +187,20 @@ int main(int argc, char *argv[]) {
     }
 
     // Clean up
-    for (int p=0; p<world_size; ++p)
+    for (int p=1; p<world_size; ++p)
     {
       int flag;
       MPI_Request_get_status(requests[p], &flag, MPI_STATUS_IGNORE);
-      if (!flag)
+      if (!flag || !written[p])
       {
         MPI_Wait(&requests[p], MPI_STATUS_IGNORE);
-        out_file << "\nProcess " << p << ": " << parameter_strings[p-1]
+        out_file << "\nProcess " << p << ": " << parameter_strings[p]
                  << "\n";
-        out_file << input_strings[p-1] << "\n";
+        out_file << input_strings[p] << "\n";
         for (int a=0; a<batch_size*num_amps; ++a)
         {
-          out_file << amplitudes[batch_size*num_amps*(p-1)+a].real()
-                   << " "<< amplitudes[batch_size*num_amps*(p-1)+a].imag()
+          out_file << amplitudes[batch_size*num_amps*(p)+a].real()
+                   << " "<< amplitudes[batch_size*num_amps*(p)+a].imag()
                    << " ";
         }
         out_file << "\n";
@@ -202,7 +214,6 @@ int main(int argc, char *argv[]) {
 
     // Close files
     out_file.close();
-    in_file.close();
 
     // Report total time
     t1 = high_resolution_clock::now();
