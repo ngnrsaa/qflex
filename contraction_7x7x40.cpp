@@ -136,7 +136,7 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
   slice_confs = vector<vector<int>>({ {0, 0},
                                       {0, 1}  });
 
-  cout << "Created contraction with input string " << input_string << endl;
+  //cout << "Created contraction with input string " << input_string << endl;
 }
 
 
@@ -175,7 +175,7 @@ void Contraction::load_circuit(string input_string)
                                               qubits_off, open_tensor_grid);
   t1 = high_resolution_clock::now();
   span = duration_cast<duration<double>>(t1 - t0);
-  cout << "Time spent loading circuit is " << span.count() << endl;
+  //cout << "Time spent loading circuit is " << span.count() << endl;
 }
 
 
@@ -219,7 +219,7 @@ void Contraction::contract(string input_string)
                 open_tensor_grid, tensor_grid);
   t1 = high_resolution_clock::now();
   span = duration_cast<duration<double>>(t1 - t0);
-  cout << "Time spent closing circuit is " << span.count() << endl;
+  //cout << "Time spent closing circuit is " << span.count() << endl;
   
 
   t0 = high_resolution_clock::now();
@@ -544,7 +544,7 @@ void Contraction::contract(string input_string)
       }
       t1 = high_resolution_clock::now();
       span = duration_cast<duration<double>>(t1 - t0);
-      cout << "Time contracting all Cs is " << span.count() << endl;
+      //cout << "Time contracting all Cs is " << span.count() << endl;
     }
   }
 

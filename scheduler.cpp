@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
 
   // Timing variables.
   high_resolution_clock::time_point t0, t1;
-  high_resolution_clock::time_point t0_total, t1_total;
+  high_resolution_clock::time_point t0_init_total, t0_total, t1_total;
   duration<double> span_total;
   t0 = high_resolution_clock::now();
 
@@ -131,6 +131,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Read all other lines
+    t0 = high_resolution_clock::now();
     int line_idx = 0;
     while (getline(in_file, line) && line_idx<num_entries) if (line.size() && line[0] != '#')
     {
@@ -139,6 +140,9 @@ int main(int argc, char *argv[]) {
     }
     in_file.close();
     line_idx = 0;
+    t1 = high_resolution_clock::now();
+    duration<double> span = duration_cast<duration<double>>(t1 - t0);
+    cout << "Reading took " << span.count() << endl;
 
     // Set up for messages and storage
     vector<s_type> amplitudes_out(batch_size*num_amps*num_entries);
@@ -150,7 +154,21 @@ int main(int argc, char *argv[]) {
     vector<s_type> amplitudes_buffer((batch_size*num_amps+1)*world_size);
 
     // BEGIN TIMER
-    t0_total = high_resolution_clock::now();
+    ////// MEASURE BEGIN TIMER
+    {
+    time_t t = time(NULL);
+    tm* timePtr = localtime(&t);
+    cout << "Initializing started at: "
+         << timePtr->tm_mon << "/"
+         << timePtr->tm_mday << "/"
+         << (timePtr->tm_year)+1900 << " "
+         << timePtr->tm_hour << ":"
+         << timePtr->tm_min << ":"
+         << timePtr->tm_sec << "\n" << flush;
+    t0_init_total = high_resolution_clock::now();
+    }
+    ////// END MEASURE BEGIN TIMER
+
 
     // Send messages
     while (entries_left>0)
@@ -186,12 +204,13 @@ int main(int argc, char *argv[]) {
           {
             MPI_Send(line.c_str(), line.size(), MPI_CHAR, p, 0,
                      MPI_COMM_WORLD);
+            
             written[p] = false;
             input_strings[p] = line;
             --entries_left;
             // Time
             t1 = high_resolution_clock::now();
-            duration<double> span = duration_cast<duration<double>>(t1 - t0);
+            span = duration_cast<duration<double>>(t1 - t0);
             // Time
             //cout << span.count() << "s. Sent batch to process " << p
             //     << ". Entries left = " << entries_left << "\n";
@@ -232,8 +251,19 @@ int main(int argc, char *argv[]) {
     }
 
     // END TIMER
+    {
+    time_t t = time(NULL);
+    tm* timePtr = localtime(&t);
+    cout << "Computation ended at: "
+         << timePtr->tm_mon << "/"
+         << timePtr->tm_mday << "/"
+         << (timePtr->tm_year)+1900 << " "
+         << timePtr->tm_hour << ":"
+         << timePtr->tm_min << ":"
+         << timePtr->tm_sec << "\n" << flush;
+    }
     t1_total = high_resolution_clock::now();
-    span_total = duration_cast<duration<double>>(t1_total - t0_total);
+    span_total = duration_cast<duration<double>>(t1_total - t0_init_total);
     double total_time = span_total.count();
     cout << "Total time (s): " << total_time << endl;
 
@@ -257,7 +287,7 @@ int main(int argc, char *argv[]) {
     }
     out_file << "\n------------ END OUTPUT ------------\n" << flush;
     t1 = high_resolution_clock::now();
-    duration<double> span = duration_cast<duration<double>>(t1 - t0);
+    span = duration_cast<duration<double>>(t1 - t0);
     cout << "Writing took " << span.count() << endl;
 
     // Close files
@@ -266,7 +296,7 @@ int main(int argc, char *argv[]) {
     // Report total time
     t1 = high_resolution_clock::now();
     span = duration_cast<duration<double>>(t1 - t0);
-    cout << "Total time = " << span.count() << endl;
+    //cout << "Total time = " << span.count() << endl;
   }
 
   ///////////////////////////// Process > 0
@@ -299,9 +329,23 @@ int main(int argc, char *argv[]) {
     char_ptr = nullptr;
 
     talsh::initialize(&mem_size);
-    cout << mem_size << endl << flush;
     {
       Contraction contraction(local_line, num_args, num_amps);
+      ////// MEASURE COMPUTATION BEGIN TIMER
+      if (rank==1)
+      {
+        time_t t = time(NULL);
+        tm* timePtr = localtime(&t);
+        cout << "Rank 1 compuatation started at: "
+             << timePtr->tm_mon << "/"
+             << timePtr->tm_mday << "/"
+             << (timePtr->tm_year)+1900 << " "
+             << timePtr->tm_hour << ":"
+             << timePtr->tm_min << ":"
+             << timePtr->tm_sec << "\n" << flush;
+      }
+      ////// END MEASURE COMPUTATION BEGIN TIMER
+      //cout << mem_size << endl << flush;
 
       bool load_circuit(true);
       t0 = high_resolution_clock::now();
@@ -329,7 +373,7 @@ int main(int argc, char *argv[]) {
         t1 = high_resolution_clock::now();
         duration<double> span = duration_cast<duration<double>>(t1 - t0);
         t0 = high_resolution_clock::now();
-        cout << "A round took " << span.count() << "s" << endl;
+        //cout << "A round took " << span.count() << "s" << endl;
 
         ///////////////// Message back
         amplitudes = contraction.get_amplitudes();
