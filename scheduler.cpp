@@ -156,18 +156,32 @@ int main(int argc, char *argv[]) {
     // BEGIN TIMER
     ////// MEASURE BEGIN TIMER
     {
-    time_t t = time(NULL);
-    tm* timePtr = localtime(&t);
-    cout << "Initializing started at: "
-         << timePtr->tm_mon << "/"
-         << timePtr->tm_mday << "/"
-         << (timePtr->tm_year)+1900 << " "
-         << timePtr->tm_hour << ":"
-         << timePtr->tm_min << ":"
-         << timePtr->tm_sec << "\n" << flush;
-    t0_init_total = high_resolution_clock::now();
+      time_t t = time(NULL);
+      tm* timePtr = localtime(&t);
+      cout << "Initializing started at: "
+           << timePtr->tm_mon << "/"
+           << timePtr->tm_mday << "/"
+           << (timePtr->tm_year)+1900 << " "
+           << timePtr->tm_hour << ":"
+           << timePtr->tm_min << ":"
+           << timePtr->tm_sec << "\n" << flush;
     }
     ////// END MEASURE BEGIN TIMER
+    MPI_Barrier(MPI_COMM_WORLD);
+    ////// MEASURE COMPUTATION BEGIN TIMER
+    {
+      time_t t = time(NULL);
+      tm* timePtr = localtime(&t);
+      cout << "Compuatation started at: "
+           << timePtr->tm_mon << "/"
+           << timePtr->tm_mday << "/"
+           << (timePtr->tm_year)+1900 << " "
+           << timePtr->tm_hour << ":"
+           << timePtr->tm_min << ":"
+           << timePtr->tm_sec << "\n" << flush;
+      t0_init_total = high_resolution_clock::now();
+    }
+    ////// END MEASURE COMPUTATION BEGIN TIMER
 
 
     // Send messages
@@ -251,16 +265,17 @@ int main(int argc, char *argv[]) {
     }
 
     // END TIMER
+    MPI_Barrier(MPI_COMM_WORLD);
     {
-    time_t t = time(NULL);
-    tm* timePtr = localtime(&t);
-    cout << "Computation ended at: "
-         << timePtr->tm_mon << "/"
-         << timePtr->tm_mday << "/"
-         << (timePtr->tm_year)+1900 << " "
-         << timePtr->tm_hour << ":"
-         << timePtr->tm_min << ":"
-         << timePtr->tm_sec << "\n" << flush;
+      time_t t = time(NULL);
+      tm* timePtr = localtime(&t);
+      cout << "Computation ended at: "
+           << timePtr->tm_mon << "/"
+           << timePtr->tm_mday << "/"
+           << (timePtr->tm_year)+1900 << " "
+           << timePtr->tm_hour << ":"
+           << timePtr->tm_min << ":"
+           << timePtr->tm_sec << "\n" << flush;
     }
     t1_total = high_resolution_clock::now();
     span_total = duration_cast<duration<double>>(t1_total - t0_init_total);
@@ -329,22 +344,9 @@ int main(int argc, char *argv[]) {
     char_ptr = nullptr;
 
     talsh::initialize(&mem_size);
+    MPI_Barrier(MPI_COMM_WORLD);
     {
       Contraction contraction(local_line, num_args, num_amps);
-      ////// MEASURE COMPUTATION BEGIN TIMER
-      if (rank==1)
-      {
-        time_t t = time(NULL);
-        tm* timePtr = localtime(&t);
-        cout << "Rank 1 compuatation started at: "
-             << timePtr->tm_mon << "/"
-             << timePtr->tm_mday << "/"
-             << (timePtr->tm_year)+1900 << " "
-             << timePtr->tm_hour << ":"
-             << timePtr->tm_min << ":"
-             << timePtr->tm_sec << "\n" << flush;
-      }
-      ////// END MEASURE COMPUTATION BEGIN TIMER
       //cout << mem_size << endl << flush;
 
       bool load_circuit(true);
@@ -384,6 +386,7 @@ int main(int argc, char *argv[]) {
                  MPI_COMPLEX, 0, 0, MPI_COMM_WORLD);
       }
     }
+    MPI_Barrier(MPI_COMM_WORLD);
     talsh::shutdown();
 
   }
