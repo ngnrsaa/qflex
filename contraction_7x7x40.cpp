@@ -232,8 +232,14 @@ void Contraction::contract(string input_string)
 
 
   // Start outer loop (in practice it will take only one value
-  vector<int> outer_values({0,1,2,3,4,5,6,7});
+  //vector<int> outer_values({0,1,2,3,4,5,6,7});
   //vector<int> outer_values({25});
+  //vector<int> outer_values({17}); // I like this one
+  //vector<int> outer_values({7});
+  //vector<int> outer_values({13});
+  //vector<int> outer_values({14});
+  //vector<int> outer_values({5});
+  vector<int> outer_values({16});
   for (auto i0 : outer_values)
   //for (int i0=0; i0<1; ++i0)
   {
@@ -400,8 +406,8 @@ void Contraction::contract(string input_string)
     done = pE->sync();
 
     // Begin inner loop
-    vector<int> inner_values({0,1,2,3,4,5,6,7});
-    //vector<int> inner_values({0,4,9,11,16,20});
+    //vector<int> inner_values({0,1,2,3,4,5,6,7});
+    vector<int> inner_values({0,4,9,11,16,20});
     for (auto i1 : inner_values)
     //for (int i1=0; i1<6; ++i1)
     {

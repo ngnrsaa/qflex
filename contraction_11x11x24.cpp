@@ -27,7 +27,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "contraction_7x7x40.h"
+#include "contraction_11x11x24.h"
 #include "read_circuit_full_talsh.h"
 
 // Time
@@ -47,6 +47,8 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
   ss >> fidelity;
   ss >> filename;
 
+  cout << filename << endl << flush;
+
   num_args = _num_args;
   num_amps = _num_amps;
 
@@ -56,8 +58,12 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
   int num_qubits = I*J;
   // List of qubits to remove (off) and qubits in A.
   qubits_off = vector<vector<int>>({ }); 
-  qubits_A = vector<vector<int>>({ {5,0},{5,1},{5,2},
-                                   {6,0},{6,1},{6,2} });
+  qubits_A = vector<vector<int>>({ {0,5},
+                                   {0,6},
+                                   {0,7},
+                                   {0,8},
+                                   {0,9},
+                                   {0,10} });
 
    
   int errc;
@@ -69,16 +75,20 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
   vector<int> dims_4(4, super_dim);
   vector<int> dims_5(5, super_dim);
   vector<int> dims_6(6, super_dim);
+  vector<int> dims_7(7, super_dim);
+  vector<int> dims_8(8, super_dim);
+  vector<int> dims_9(9, super_dim);
+  vector<int> dims_10(10, super_dim);
 
   // First, tensors for region C. Done by hand right now. Change in future.
   Cs.push_back(shared_ptr<talsh::Tensor>(
+                      new talsh::Tensor(dims_2, s_type(0.0))));
+  Cs.push_back(shared_ptr<talsh::Tensor>(
                       new talsh::Tensor(dims_3, s_type(0.0))));
   Cs.push_back(shared_ptr<talsh::Tensor>(
-                      new talsh::Tensor(dims_4, s_type(0.0))));
+                      new talsh::Tensor(dims_3, s_type(0.0))));
   Cs.push_back(shared_ptr<talsh::Tensor>(
-                      new talsh::Tensor(dims_4, s_type(0.0))));
-  Cs.push_back(shared_ptr<talsh::Tensor>(
-                      new talsh::Tensor(dims_2, s_type(0.0))));
+                      new talsh::Tensor(dims_3, s_type(0.0))));
   Cs.push_back(shared_ptr<talsh::Tensor>(
                       new talsh::Tensor(dims_3, s_type(0.0))));
   Cs.push_back(shared_ptr<talsh::Tensor>(
@@ -97,8 +107,6 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
             shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_4, s_type(0.0)));
   H_4_legs_b =
             shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_4, s_type(0.0)));
-  H_4_legs_c =
-            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_4, s_type(0.0)));
   H_5_legs_a =
             shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_5, s_type(0.0)));
   H_5_legs_b =
@@ -109,32 +117,51 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
             shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_6, s_type(0.0)));
   H_6_legs_c =
             shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_6, s_type(0.0)));
+  H_7_legs_a =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_7, s_type(0.0)));
+  H_7_legs_b =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_7, s_type(0.0)));
+  H_8_legs_a =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_8, s_type(0.0)));
+  H_8_legs_b =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_8, s_type(0.0)));
+  H_8_legs_c =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_8, s_type(0.0)));
+  H_9_legs_a =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_9, s_type(0.0)));
+  H_9_legs_b =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_9, s_type(0.0)));
+  H_10_legs_a =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_10, s_type(0.0)));
+  H_10_legs_b =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_10, s_type(0.0)));
+  H_10_legs_c =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_10, s_type(0.0)));
 
   
   // Region tensors
-  AB = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_6, s_type(0.0)));
-  pE = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_6, s_type(0.0)));
+  //AB = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_10, s_type(0.0)));
+  pE = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_10, s_type(0.0)));
   // A doesn't need a tensor, because 6_a and 6_b are not used anywhere else.
 
   // Also, need tensors to hold slices.
   // Dimensions of the ones that are open are moved one position back.
   // First position should be the open leg, by convention.
-  vector<int> dims_S26(3, super_dim); dims_S26[2] = 1;
-  S26 = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S26, s_type(0.0)));
-  vector<int> dims_S36(3, super_dim); dims_S36[0] = 1;
-  S36 = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S36, s_type(0.0)));
-  vector<int> dims_S62(4, super_dim); dims_S62[0] = DIM; dims_S62[3] = 1;
-  S62 = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S62, s_type(0.0)));
-  vector<int> dims_S63(3, super_dim); dims_S63[1] = 1;
-  vector<int> dims_P62(3, super_dim); dims_P62[0] = DIM;
-  S63 = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S63, s_type(0.0)));
+  vector<int> dims_S_4_10(3, super_dim); dims_S_4_10[2] = 1;
+  S_4_10 =
+        shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S_4_10, s_type(0.0)));
+  vector<int> dims_S_5_10(3, super_dim); dims_S_5_10[0] = 1;
+  S_5_10 =
+        shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S_5_10, s_type(0.0)));
+  vector<int> dims_S_10_4(3, super_dim); dims_S_10_4[3] = 1;
+  S_10_4 =
+        shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S_10_4, s_type(0.0)));
+  vector<int> dims_S_10_5(3, super_dim); dims_S_10_5[1] = 1;
+  S_10_5 =
+        shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S_10_5, s_type(0.0)));
 
   // Finally, scalar S
   S = shared_ptr<talsh::Tensor>(new talsh::Tensor({}, s_type(0.0)));
-
-  // Cut configurations (hard coded for the moment)
-  slice_confs = vector<vector<int>>({ {0, 0},
-                                      {0, 1}  });
 
   //cout << "Created contraction with input string " << input_string << endl;
 }
@@ -173,6 +200,10 @@ void Contraction::load_circuit(string input_string)
   }
   google_circuit_file_to_open_grid_of_tensors(filename, I, J, initial_conf,
                                               qubits_off, open_tensor_grid);
+
+  // If add renormalization, do it here!
+
+
   t1 = high_resolution_clock::now();
   span = duration_cast<duration<double>>(t1 - t0);
   //cout << "Time spent loading circuit is " << span.count() << endl;
@@ -233,7 +264,8 @@ void Contraction::contract(string input_string)
 
   // Start outer loop (in practice it will take only one value
   //vector<int> outer_values({0,1,2,3,4,5,6,7});
-  vector<int> outer_values({25});
+  vector<int> outer_values({0});
+  /*
   for (auto i0 : outer_values)
   //for (int i0=0; i0<1; ++i0)
   {
@@ -547,6 +579,7 @@ void Contraction::contract(string input_string)
       //cout << "Time contracting all Cs is " << span.count() << endl;
     }
   }
+  */
 
 }
 
