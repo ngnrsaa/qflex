@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
     {
       time_t t = time(NULL);
       tm* timePtr = localtime(&t);
-      cout << "Compuatation started at: "
+      cout << "Computation started at: "
            << timePtr->tm_mon << "/"
            << timePtr->tm_mday << "/"
            << (timePtr->tm_year)+1900 << " "
