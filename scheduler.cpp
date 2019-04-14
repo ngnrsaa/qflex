@@ -31,6 +31,9 @@
 #ifdef _8x8x32
 #include "contraction_8x8x32.h"
 #endif
+#ifdef _11x11x24
+#include "contraction_11x11x24.h"
+#endif
 
 using namespace std;
 using namespace chrono;
@@ -318,7 +321,7 @@ int main(int argc, char *argv[]) {
   else
   {
     MPI_Status status;
-    int length;
+    int length(0);
     string local_line;
     vector<s_type> amplitudes;
     double time_largest_contraction;
@@ -339,7 +342,10 @@ int main(int argc, char *argv[]) {
     char * char_ptr = new char[length];
     MPI_Recv(char_ptr, length, MPI_INT, 0, 0, MPI_COMM_WORLD,
              MPI_STATUS_IGNORE);
-    local_line = string(char_ptr);
+    local_line = "";
+    for (int l=0; l<length; ++l)
+      local_line += string(1,char_ptr[l]);
+      
     delete[] char_ptr;
     char_ptr = nullptr;
 
@@ -362,7 +368,9 @@ int main(int argc, char *argv[]) {
         if (length==0) break;
         MPI_Recv(char_ptr, length, MPI_INT, 0, 0, MPI_COMM_WORLD,
                  MPI_STATUS_IGNORE);
-        local_line = string(char_ptr);
+        local_line = "";
+        for (int l=0; l<length; ++l)
+          local_line += string(1,char_ptr[l]);
         delete[] char_ptr;
         char_ptr = nullptr;
 
