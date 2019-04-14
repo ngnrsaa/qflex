@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
   string in_filename = string(argv[1]);
   string out_filename = string(argv[2]);
   int mem_size_GB = atoi(argv[3]);
-  unsigned long mem_size = mem_size_GB * size_t(1000000000);
+  unsigned long mem_size = mem_size_GB * size_t(1073741824);
   int num_entries = atoi(argv[4]); // How many entries from input file to run
 
 
@@ -344,6 +344,7 @@ int main(int argc, char *argv[]) {
     char_ptr = nullptr;
 
     talsh::initialize(&mem_size);
+    cout << mem_size << endl << flush;
     MPI_Barrier(MPI_COMM_WORLD);
     {
       Contraction contraction(local_line, num_args, num_amps);

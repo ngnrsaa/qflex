@@ -232,8 +232,8 @@ void Contraction::contract(string input_string)
 
 
   // Start outer loop (in practice it will take only one value
-  vector<int> outer_values({0,1,2,3,4,5,6,7});
-  //vector<int> outer_values({25});
+  //vector<int> outer_values({0,1,2,3,4,5,6,7});
+  vector<int> outer_values({25});
   for (auto i0 : outer_values)
   //for (int i0=0; i0<1; ++i0)
   {
@@ -263,15 +263,15 @@ void Contraction::contract(string input_string)
     // XL
     errc = H_6_legs_a->contractAccumulateXL(nullptr,
             "D(f,g,b,c,d,e)+=L(a,b,c,d,e)*R(a,f,g)", *H_5_legs_a,
-            *tensor_grid[2][0], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[2][0], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
     done = H_6_legs_a->sync();
     errc = H_6_legs_b->contractAccumulateXL(nullptr,
             "D(a,g,h,d,e,f)+=L(a,b,c,d,e,f)*R(c,b,g,h)", *H_6_legs_a,
-            *tensor_grid[2][1], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[2][1], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
     done = H_6_legs_b->sync();
     errc = H_6_legs_c->contractAccumulateXL(nullptr,
             "D(a,b,g,h,e,f)+=L(a,b,c,d,e,f)*R(d,c,g,h)", *H_6_legs_b,
-            *tensor_grid[2][2], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[2][2], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
     done = H_6_legs_c->sync();
 
     // B
@@ -321,22 +321,22 @@ void Contraction::contract(string input_string)
     // XL
     errc = H_6_legs_a->contractAccumulateXL(nullptr,
             "D(f,g,b,c,d,e)+=L(a,b,c,d,e)*R(f,g,a)", *H_5_legs_a,
-            *tensor_grid[0][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[0][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
     done = H_6_legs_a->sync();
     errc = H_6_legs_b->contractAccumulateXL(nullptr,
             "D(a,g,h,d,e,f)+=L(a,b,c,d,e,f)*R(b,g,h,c)", *H_6_legs_a,
-            *tensor_grid[1][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[1][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
     done = H_6_legs_b->sync();
     errc = H_6_legs_a->contractAccumulateXL(nullptr,
             "D(a,b,g,h,e,f)+=L(a,b,c,d,e,f)*R(c,g,h,d)", *H_6_legs_b,
-            *tensor_grid[2][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[2][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
     done = H_6_legs_a->sync();
 
     // Contract AB: H_6_legs_c and H_6_legs_a onto AB. Time it!
     t0 = high_resolution_clock::now();
     errc = AB->contractAccumulateXL(nullptr,
             "D(a,b,c,g,h,i)+=L(a,b,c,d,e,f)*R(f,e,d,g,h,i)", *H_6_legs_c,
-            *H_6_legs_a, DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *H_6_legs_a, DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
     done = AB->sync();
     t1 = high_resolution_clock::now();
     span = duration_cast<duration<double>>(t1 - t0);
@@ -384,24 +384,24 @@ void Contraction::contract(string input_string)
     // XL
     errc = H_6_legs_a->contractAccumulateXL(nullptr,
             "D(a,b,c,d,f,g)+=L(a,b,c,d,e)*R(f,g,e)", *H_5_legs_b,
-            *tensor_grid[6][4], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[6][4], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
     done = H_6_legs_a->sync();
     errc = H_6_legs_b->contractAccumulateXL(nullptr,
             "D(a,b,c,g,h,f)+=L(a,b,c,d,e,f)*R(g,h,e,d)", *H_6_legs_a,
-            *tensor_grid[5][4], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[5][4], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
     done = H_6_legs_b->sync();
     errc = H_6_legs_a->contractAccumulateXL(nullptr,
             "D(a,b,g,h,e,f)+=L(a,b,c,d,e,f)*R(g,h,d,c)", *H_6_legs_b,
-            *tensor_grid[4][4], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[4][4], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
     done = H_6_legs_a->sync();
     errc = pE->contractAccumulateXL(nullptr,
             "D(a,g,h,d,e,f)+=L(a,b,c,d,e,f)*R(g,h,c,b)", *H_6_legs_a,
-            *tensor_grid[3][4], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[3][4], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
     done = pE->sync();
 
     // Begin inner loop
-    vector<int> inner_values({0,1,2,3,4,5,6,7});
-    //vector<int> inner_values({0,4,9,11,16,20});
+    //vector<int> inner_values({0,1,2,3,4,5,6,7});
+    vector<int> inner_values({0,4,9,11,16,20});
     for (auto i1 : inner_values)
     //for (int i1=0; i1<6; ++i1)
     {
@@ -430,35 +430,35 @@ void Contraction::contract(string input_string)
       assert(tc.sync(DEV_HOST,0));
       errc = H_6_legs_a->contractAccumulateXL(nullptr,
             "D(a,b,c,d,g,h)+=L(a,b,c,d,e,f)*R(g,h,f,e)", *pE,
-            *H_4_legs_a, DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *H_4_legs_a, DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
       done = H_6_legs_a->sync();
       errc = H_6_legs_b->contractAccumulateXL(nullptr,
             "D(a,b,c,g,h,f)+=L(a,b,c,d,e,f)*R(g,h,e,d)", *H_6_legs_a,
-            *tensor_grid[4][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[4][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
       done = H_6_legs_b->sync();
       errc = H_6_legs_a->contractAccumulateXL(nullptr,
             "D(a,b,g,h,e,f)+=L(a,b,c,d,e,f)*R(g,h,d,c)", *H_6_legs_b,
-            *tensor_grid[3][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[3][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
       done = H_6_legs_a->sync();
 
       // Contract ABD: AB and H_6_legs_a onto H_6_legs_c
       errc = H_6_legs_c->contractAccumulateXL(nullptr,
             "D(a,b,c,g,h,i)+=L(a,b,c,d,e,f)*R(f,e,d,g,h,i)", *AB,
-            *H_6_legs_a, DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *H_6_legs_a, DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
       done = H_6_legs_c->sync();
 
       // Start contracting ABCD
       errc = H_6_legs_a->contractAccumulateXL(nullptr,
             "D(a,b,g,h,e,f)+=L(a,b,c,d,e,f)*R(c,g,h,d)", *H_6_legs_c,
-            *tensor_grid[3][2], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[3][2], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
       done = H_6_legs_a->sync();
       errc = H_6_legs_b->contractAccumulateXL(nullptr,
             "D(a,g,h,d,e,f)+=L(a,b,c,d,e,f)*R(b,g,h,c)", *H_6_legs_a,
-            *tensor_grid[3][1], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[3][1], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
       done = H_6_legs_b->sync();
       errc = H_5_legs_a->contractAccumulateXL(nullptr,
             "D(g,c,d,e,f)+=L(a,b,c,d,e,f)*R(a,g,b)", *H_6_legs_b,
-            *tensor_grid[3][0], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+            *tensor_grid[3][0], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
       done = H_5_legs_a->sync();
       // No XL
       tc = TensContraction("D(a,b,f,g,e)+=L(a,b,c,d,e)*R(c,f,g,d)",
