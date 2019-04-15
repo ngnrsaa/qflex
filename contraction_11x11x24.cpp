@@ -82,7 +82,7 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
 
   // First, tensors for region C. Done by hand right now. Change in future.
   Cs.push_back(shared_ptr<talsh::Tensor>(
-                      new talsh::Tensor(dims_2, s_type(0.0))));
+                      new talsh::Tensor(dims_3, s_type(0.0))));
   Cs.push_back(shared_ptr<talsh::Tensor>(
                       new talsh::Tensor(dims_3, s_type(0.0))));
   Cs.push_back(shared_ptr<talsh::Tensor>(
@@ -604,7 +604,7 @@ void Contraction::contract(string input_string)
     errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_NVIDIA_GPU,0));
     tc = TensContraction("D(a,b,f,g,d,e)+=L(a,b,c,d,e)*R(c,f,g)",
-                  H_6_legs_a.get(), H_5_legs_a.get(), tensor_grid[10][9].get());
+                H_6_legs_a.get(), H_5_legs_a.get(), tensor_grid[10][9].get());
     errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
     tc = TensContraction(
@@ -660,7 +660,7 @@ void Contraction::contract(string input_string)
     errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_NVIDIA_GPU,0));
     tc = TensContraction("D(a,b,h,i,d,e,f)+=L(a,b,c,d,e,f)*R(c,h,i)",
-                  H_7_legs_a.get(), H_6_legs_a.get(), tensor_grid[10][7].get());
+                H_7_legs_a.get(), H_6_legs_a.get(), tensor_grid[10][7].get());
     errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
     assert(tc.sync(DEV_HOST,0));
     tc = TensContraction(
@@ -742,16 +742,16 @@ void Contraction::contract(string input_string)
       S_10_4->reshape(dims_2);
       // Group of 4 by the cut
       tc = TensContraction("D(a,b,c,f,g,e)+=L(a,b,c,d)*R(e,d,f,g)",
-            H_6_legs_a.get(), tensor_grid[9][5].get(), tensor_grid[9][6].get());
+          H_6_legs_a.get(), tensor_grid[9][5].get(), tensor_grid[9][6].get());
       errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
       assert(tc.sync(DEV_NVIDIA_GPU,0));
       tc = TensContraction("D(a,b,g,d,e,f)+=L(a,b,c,d,e,f)*R(c,g)",
-                    H_6_legs_a.get(), H_6_legs_a.get(), S_10_5.get());
+                    H_6_legs_b.get(), H_6_legs_a.get(), S_10_5.get());
       errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
       assert(tc.sync(DEV_HOST,0));
       tc = TensContraction(
             "D(a,b,g,e,f)+=L(a,b,c,d,e,f)*R(d,c,g)",
-            H_5_legs_a.get(), H_6_legs_a.get(), tensor_grid[10][6].get());
+            H_5_legs_a.get(), H_6_legs_b.get(), tensor_grid[10][6].get());
       errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
       assert(tc.sync(DEV_HOST,0));
       // Put it together with pE
@@ -763,11 +763,11 @@ void Contraction::contract(string input_string)
       assert(tc.sync(DEV_HOST,0));
       // Second to last group of 4 for E
       tc = TensContraction("D(a,b,c,f,g,e)+=L(a,b,c,d)*R(e,d,f,g)",
-            H_6_legs_a.get(), tensor_grid[7][5].get(), tensor_grid[7][6].get());
+          H_6_legs_a.get(), tensor_grid[7][5].get(), tensor_grid[7][6].get());
       errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
       assert(tc.sync(DEV_NVIDIA_GPU,0));
       tc = TensContraction("D(a,b,g,h,i,d,e,f)+=L(a,b,c,d,e,f)*R(c,g,h,i)",
-                    H_8_legs_a.get(), H_6_legs_a.get(), tensor_grid[8][5].get());
+                  H_8_legs_a.get(), H_6_legs_a.get(), tensor_grid[8][5].get());
       errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
       assert(tc.sync(DEV_HOST,0));
       tc = TensContraction(
@@ -784,11 +784,11 @@ void Contraction::contract(string input_string)
       assert(tc.sync(DEV_HOST,0));
       // Last group of 4 for E!
       tc = TensContraction("D(a,b,c,f,g,e)+=L(a,b,c,d)*R(e,d,f,g)",
-            H_6_legs_a.get(), tensor_grid[5][5].get(), tensor_grid[5][6].get());
+          H_6_legs_a.get(), tensor_grid[5][5].get(), tensor_grid[5][6].get());
       errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
       assert(tc.sync(DEV_NVIDIA_GPU,0));
       tc = TensContraction("D(a,b,g,h,i,d,e,f)+=L(a,b,c,d,e,f)*R(c,g,h,i)",
-                    H_8_legs_a.get(), H_6_legs_a.get(), tensor_grid[6][5].get());
+                  H_8_legs_a.get(), H_6_legs_a.get(), tensor_grid[6][5].get());
       errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
       assert(tc.sync(DEV_HOST,0));
       tc = TensContraction(
@@ -805,228 +805,207 @@ void Contraction::contract(string input_string)
       assert(tc.sync(DEV_HOST,0));
       // Finished E!
 
-      //////// UP TO HERE!
+      // AB + 10_a -> ABD (10_b)
+      errc = H_10_legs_b->contractAccumulateXL(nullptr,
+      "D(a,b,c,d,e,k,l,m,n,o)+=L(a,b,c,d,e,f,g,h,i,j)*R(j,i,h,g,f,k,l,m,n,o)",
+        *AB,
+        *H_10_legs_a, DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+      done = H_10_legs_b->sync();
+      assert(tc.sync(DEV_HOST,0));
+
       // Start C
+      // Inner most group of 4
+      tc = TensContraction("D(a,b,c,f,g,e)+=L(a,b,c,d)*R(e,d,f,g)",
+          H_6_legs_a.get(), tensor_grid[5][3].get(), tensor_grid[5][4].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_NVIDIA_GPU,0));
+      tc = TensContraction("D(a,b,g,h,i,d,e,f)+=L(a,b,c,d,e,f)*R(c,g,h,i)",
+                  H_8_legs_a.get(), H_6_legs_a.get(), tensor_grid[6][3].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      tc = TensContraction(
+            "D(a,b,c,d,j,i,g,h)+=L(a,b,c,d,e,f,g,h)*R(f,e,i,j)",
+            H_8_legs_b.get(), H_8_legs_a.get(), tensor_grid[6][4].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      // Contract with ABD
+      errc = H_10_legs_a->contractAccumulateXL(nullptr,
+          "D(a,b,c,k,l,m,n,h,i,j)+=L(a,b,c,d,e,f,g,h,i,j)*R(d,k,l,m,n,g,f,e)",
+          *H_10_legs_b,
+          *H_8_legs_b, DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+      done = H_10_legs_a->sync();
+      assert(tc.sync(DEV_HOST,0));
+      // Next group of 4 downwards
+      tc = TensContraction("D(a,b,c,f,g,e)+=L(a,b,c,d)*R(e,d,f,g)",
+          H_6_legs_a.get(), tensor_grid[7][3].get(), tensor_grid[7][4].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_NVIDIA_GPU,0));
+      tc = TensContraction("D(a,b,g,h,i,d,e,f)+=L(a,b,c,d,e,f)*R(c,g,h,i)",
+                  H_8_legs_a.get(), H_6_legs_a.get(), tensor_grid[8][3].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      tc = TensContraction(
+            "D(a,b,c,d,j,i,g,h)+=L(a,b,c,d,e,f,g,h)*R(f,e,i,j)",
+            H_8_legs_b.get(), H_8_legs_a.get(), tensor_grid[8][4].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      // Contract with the rest
+      errc = H_10_legs_b->contractAccumulateXL(nullptr,
+          "D(a,b,c,d,e,k,l,m,n,j)+=L(a,b,c,d,e,f,g,h,i,j)*R(f,k,l,m,n,i,h,g)",
+          *H_10_legs_a,
+          *H_8_legs_b, DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+      done = H_10_legs_b->sync();
+      assert(tc.sync(DEV_HOST,0));
+      // Group of 4 by the cut
+      tc = TensContraction("D(a,b,c,f,g,e)+=L(a,b,c,d)*R(e,d,f,g)",
+          H_6_legs_a.get(), tensor_grid[9][3].get(), tensor_grid[9][4].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_NVIDIA_GPU,0));
+      tc = TensContraction("D(a,b,g,h,d,e,f)+=L(a,b,c,d,e,f)*R(c,g,h)",
+                H_7_legs_a.get(), H_6_legs_a.get(), tensor_grid[10][3].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      tc = TensContraction(
+            "D(a,b,c,f,g)+=L(a,b,c,d,e,f,g)*R(e,d)",
+            H_5_legs_a.get(), H_7_legs_a.get(), S_10_4.get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      // Contract with the rest (start reducing size)
+      errc = H_9_legs_a->contractAccumulateXL(nullptr,
+          "D(a,b,c,d,e,f,g,k,l)+=L(a,b,c,d,e,f,g,h,i,j)*R(h,k,l,j,i)",
+          *H_10_legs_b,
+          *H_5_legs_a, DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}), false);
+      done = H_9_legs_a->sync();
+      assert(tc.sync(DEV_HOST,0));
+      // Next group of 4 (3 to go)
+      tc = TensContraction("D(a,b,c,f,g,e)+=L(a,b,c,d)*R(e,d,f,g)",
+          H_6_legs_a.get(), tensor_grid[5][1].get(), tensor_grid[5][2].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_NVIDIA_GPU,0));
+      tc = TensContraction("D(a,b,g,h,i,d,e,f)+=L(a,b,c,d,e,f)*R(c,g,h,i)",
+                  H_8_legs_a.get(), H_6_legs_a.get(), tensor_grid[6][1].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      tc = TensContraction(
+            "D(a,b,c,d,j,i,g,h)+=L(a,b,c,d,e,f,g,h)*R(f,e,i,j)",
+            H_8_legs_b.get(), H_8_legs_a.get(), tensor_grid[6][2].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      // Contract with the rest
+      tc = TensContraction(
+            "D(a,j,k,l,m,f,g,h,i)+=L(a,b,c,d,e,f,g,h,i)*R(b,j,k,l,m,e,d,c)",
+            H_9_legs_b.get(), H_9_legs_a.get(), H_8_legs_b.get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      // Next group of 4 (2 to go)
+      tc = TensContraction("D(a,b,c,f,g,e)+=L(a,b,c,d)*R(e,d,f,g)",
+          H_6_legs_a.get(), tensor_grid[7][1].get(), tensor_grid[7][2].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_NVIDIA_GPU,0));
+      tc = TensContraction("D(a,b,g,h,i,d,e,f)+=L(a,b,c,d,e,f)*R(c,g,h,i)",
+                  H_8_legs_a.get(), H_6_legs_a.get(), tensor_grid[8][1].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      tc = TensContraction(
+            "D(a,b,c,d,j,i,g,h)+=L(a,b,c,d,e,f,g,h)*R(f,e,i,j)",
+            H_8_legs_b.get(), H_8_legs_a.get(), tensor_grid[8][2].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      // Contract with the rest
+      tc = TensContraction(
+            "D(a,b,c,j,k,l,m,h,i)+=L(a,b,c,d,e,f,g,h,i)*R(d,j,k,l,m,g,f,e)",
+            H_9_legs_a.get(), H_9_legs_b.get(), H_8_legs_b.get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      // Last group of 4
+      tc = TensContraction("D(a,b,c,f,g,e)+=L(a,b,c,d)*R(e,d,f,g)",
+          H_6_legs_a.get(), tensor_grid[9][1].get(), tensor_grid[9][2].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_NVIDIA_GPU,0));
+      tc = TensContraction("D(a,b,h,i,d,e,f)+=L(a,b,c,d,e,f)*R(c,h,i)",
+                H_7_legs_a.get(), H_6_legs_a.get(), tensor_grid[10][1].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      tc = TensContraction(
+            "D(a,b,c,h,f,g)+=L(a,b,c,d,e,f,g)*R(e,d,h)",
+            H_6_legs_a.get(), H_7_legs_a.get(), tensor_grid[10][2].get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      // Contract with the rest
+      tc = TensContraction(
+            "D(a,b,c,d,e,j,k)+=L(a,b,c,d,e,f,g,h,i)*R(f,j,k,i,h,g)",
+            H_7_legs_b.get(), H_9_legs_a.get(), H_6_legs_a.get());
+      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+      assert(tc.sync(DEV_HOST,0));
+      // 7_b is circuit-C. All others are free
+
+
+      // C loop!
+      t0 = high_resolution_clock::now();
+      // Tensors live in the GPU and stay there!
+      // Now contract C
+      for (int c=0; c<num_Cs; ++c)
+      {
+        // Build Cs
+        for (int t=0; t<qubits_A.size(); ++t)
+        {
+          int i = qubits_A[t][0]; int j = qubits_A[t][1];
+          string delta_gate = (final_conf_A[c][t]=='0')?"delta_0":"delta_1";
+          vector<s_type> gate_vector(_GATES_DATA.at(delta_gate));
+          vector<int> dims_delta({DIM});
+          talsh::Tensor delta(dims_delta, gate_vector);
+          if (t!=5)
+          {
+            tc = TensContraction("D(b,c,d)+=L(a)*R(a,b,c,d)",
+                                Cs[t].get(), &delta, tensor_grid[i][j].get());
+          } else {
+            tc = TensContraction("D(b,c)+=L(a)*R(a,b,c)",
+                                Cs[t].get(), &delta, tensor_grid[i][j].get());
+          }
+          errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+          assert(tc.sync(DEV_NVIDIA_GPU,0));
+        }
+        // Contract C
+        tc = TensContraction("D(c,d,b)+=L(a,b)*R(c,a,d)",
+                      H_3_legs_a.get(), Cs[5].get(), Cs[4].get());
+        errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+        assert(tc.sync(DEV_NVIDIA_GPU,0));
+        tc = TensContraction("D(d,e,b,c)+=L(a,b,c)*R(d,a,e)",
+                      H_4_legs_a.get(), H_3_legs_a.get(), Cs[3].get());
+        errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+        assert(tc.sync(DEV_NVIDIA_GPU,0));
+        tc = TensContraction("D(e,f,b,c,d)+=L(a,b,c,d)*R(e,a,f)",
+                      H_5_legs_a.get(), H_4_legs_a.get(), Cs[2].get());
+        errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+        assert(tc.sync(DEV_NVIDIA_GPU,0));
+        tc = TensContraction("D(f,g,b,c,d,e)+=L(a,b,c,d,e)*R(f,a,g)",
+                      H_6_legs_b.get(), H_5_legs_a.get(), Cs[1].get());
+        errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+        assert(tc.sync(DEV_NVIDIA_GPU,0));
+        tc = TensContraction("D(g,h,b,c,d,e,f)+=L(a,b,c,d,e,f)*R(g,a,h)",
+                      H_7_legs_a.get(), H_6_legs_a.get(), Cs[0].get());
+        errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+        assert(tc.sync(DEV_NVIDIA_GPU,0));
+        // Contract ABC (7_b) and C (7_a)
+        tc = TensContraction("D()+=L(a,b,c,d,e,f,g)*R(a,b,c,d,e,f,g)",
+                            S.get(), H_7_legs_b.get(), H_7_legs_a.get());
+        errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+        assert(tc.sync(DEV_HOST,0));
+        // Store result data_S
+        s_type const * ptr_S;
+        S->getDataAccessHostConst(&ptr_S);
+        amplitudes[c] += ptr_S[0];
+        /*
+        */
+      }
+      t1 = high_resolution_clock::now();
+      span = duration_cast<duration<double>>(t1 - t0);
+      //cout << "Time contracting all Cs is " << span.count() << endl;
     }
 
 
 
     /*
-    // XL
-    errc = H_6_legs_a->contractAccumulateXL(nullptr,
-            "D(f,g,b,c,d,e)+=L(a,b,c,d,e)*R(a,f,g)", *H_5_legs_a,
-            *tensor_grid[2][0], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-    done = H_6_legs_a->sync();
-    errc = H_6_legs_b->contractAccumulateXL(nullptr,
-            "D(a,g,h,d,e,f)+=L(a,b,c,d,e,f)*R(c,b,g,h)", *H_6_legs_a,
-            *tensor_grid[2][1], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-    done = H_6_legs_b->sync();
-    errc = H_6_legs_c->contractAccumulateXL(nullptr,
-            "D(a,b,g,h,e,f)+=L(a,b,c,d,e,f)*R(d,c,g,h)", *H_6_legs_b,
-            *tensor_grid[2][2], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-    done = H_6_legs_c->sync();
-
-    // B
-    // Slice tensor_grid[2][6] => S26 => P26.
-    vector<int> dims_S26(3, super_dim); dims_S26[2] = 1;
-    S26->reshape(dims_S26);
-    talsh::TensorTask task_hl;
-    errc = tensor_grid[2][6]->extractSlice(
-                        &task_hl,*S26,vector<int>{0,0,i0},DEV_HOST,0);
-    done = tensor_grid[2][6]->sync();
-    task_hl.clean();
-    S26->reshape(dims_2);
-    // Contract
-    // No XL
-    tc = TensContraction("D(a,c,d)+=L(a,b)*R(b,c,d)", H_3_legs_a.get(),
-                        tensor_grid[0][6].get(), tensor_grid[1][6].get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
-    tc = TensContraction("D(a,b,d)+=L(a,b,c)*R(c,d)", H_3_legs_b.get(),
-                        H_3_legs_a.get(), S26.get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
-    tc = TensContraction("D(d,e,b,c)+=L(a,b,c)*R(d,e,a)", H_4_legs_a.get(),
-                        H_3_legs_b.get(), tensor_grid[0][5].get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
-    tc = TensContraction("D(a,e,f,d)+=L(a,b,c,d)*R(b,e,f,c)", H_4_legs_b.get(),
-                        H_4_legs_a.get(), tensor_grid[1][5].get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
-    tc = TensContraction("D(a,b,e,f)+=L(a,b,c,d)*R(c,e,f,d)", H_4_legs_a.get(),
-                        H_4_legs_b.get(), tensor_grid[2][5].get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
-    tc = TensContraction("D(e,f,b,c,d)+=L(a,b,c,d)*R(e,f,a)", H_5_legs_a.get(),
-                        H_4_legs_a.get(), tensor_grid[0][4].get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
-    tc = TensContraction("D(a,f,g,d,e)+=L(a,b,c,d,e)*R(b,f,g,c)",
-                H_5_legs_b.get(), H_5_legs_a.get(), tensor_grid[1][4].get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
-    tc = TensContraction("D(a,b,f,g,e)+=L(a,b,c,d,e)*R(c,f,g,d)",
-                H_5_legs_a.get(), H_5_legs_b.get(), tensor_grid[2][4].get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
-    // XL
-    errc = H_6_legs_a->contractAccumulateXL(nullptr,
-            "D(f,g,b,c,d,e)+=L(a,b,c,d,e)*R(f,g,a)", *H_5_legs_a,
-            *tensor_grid[0][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-    done = H_6_legs_a->sync();
-    errc = H_6_legs_b->contractAccumulateXL(nullptr,
-            "D(a,g,h,d,e,f)+=L(a,b,c,d,e,f)*R(b,g,h,c)", *H_6_legs_a,
-            *tensor_grid[1][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-    done = H_6_legs_b->sync();
-    errc = H_6_legs_a->contractAccumulateXL(nullptr,
-            "D(a,b,g,h,e,f)+=L(a,b,c,d,e,f)*R(c,g,h,d)", *H_6_legs_b,
-            *tensor_grid[2][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-    done = H_6_legs_a->sync();
-
-    // Contract AB: H_6_legs_c and H_6_legs_a onto AB. Time it!
-    t0 = high_resolution_clock::now();
-    errc = AB->contractAccumulateXL(nullptr,
-            "D(a,b,c,g,h,i)+=L(a,b,c,d,e,f)*R(f,e,d,g,h,i)", *H_6_legs_c,
-            *H_6_legs_a, DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-    done = AB->sync();
-    t1 = high_resolution_clock::now();
-    span = duration_cast<duration<double>>(t1 - t0);
-    time_largest_contraction = double(span.count());
-
-    // E
-    // Slice tensor_grid[3][6] => S36
-    vector<int> dims_S36(3, super_dim); dims_S36[0] = 1;
-    S36->reshape(dims_S36);
-    errc = tensor_grid[3][6]->extractSlice(
-                        &task_hl,*S36,vector<int>{i0,0,0},DEV_HOST,0);
-    done = tensor_grid[3][6]->sync();
-    task_hl.clean();
-    S36->reshape(dims_2);
-    // Contract
-    // No XL
-    tc = TensContraction("D(c,d,b)+=L(a,b)*R(c,d,a)", H_3_legs_a.get(),
-                        tensor_grid[6][6].get(), tensor_grid[5][6].get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
-    tc = TensContraction("D(d,e,b,c)+=L(a,b,c)*R(d,e,a)", H_4_legs_a.get(),
-                        H_3_legs_a.get(), tensor_grid[4][6].get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
-    tc = TensContraction("D(e,b,c,d)+=L(a,b,c,d)*R(e,a)", H_4_legs_b.get(),
-                        H_4_legs_a.get(), S36.get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
-    tc = TensContraction("D(a,b,c,e,f)+=L(a,b,c,d)*R(e,f,d)", H_5_legs_a.get(),
-                        H_4_legs_b.get(), tensor_grid[6][5].get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
-    tc = TensContraction("D(a,b,f,g,e)+=L(a,b,c,d,e)*R(f,g,d,c)",
-                  H_5_legs_b.get(), H_5_legs_a.get(), tensor_grid[5][5].get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
-    tc = TensContraction("D(a,f,g,d,e)+=L(a,b,c,d,e)*R(f,g,c,b)",
-                  H_5_legs_a.get(), H_5_legs_b.get(), tensor_grid[4][5].get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_NVIDIA_GPU,0));
-    tc = TensContraction("D(f,g,c,d,e)+=L(a,b,c,d,e)*R(f,g,b,a)",
-                  H_5_legs_b.get(), H_5_legs_a.get(), tensor_grid[3][5].get());
-    errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-    assert(tc.sync(DEV_HOST,0));
-    // XL
-    errc = H_6_legs_a->contractAccumulateXL(nullptr,
-            "D(a,b,c,d,f,g)+=L(a,b,c,d,e)*R(f,g,e)", *H_5_legs_b,
-            *tensor_grid[6][4], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-    done = H_6_legs_a->sync();
-    errc = H_6_legs_b->contractAccumulateXL(nullptr,
-            "D(a,b,c,g,h,f)+=L(a,b,c,d,e,f)*R(g,h,e,d)", *H_6_legs_a,
-            *tensor_grid[5][4], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-    done = H_6_legs_b->sync();
-    errc = H_6_legs_a->contractAccumulateXL(nullptr,
-            "D(a,b,g,h,e,f)+=L(a,b,c,d,e,f)*R(g,h,d,c)", *H_6_legs_b,
-            *tensor_grid[4][4], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-    done = H_6_legs_a->sync();
-    errc = pE->contractAccumulateXL(nullptr,
-            "D(a,g,h,d,e,f)+=L(a,b,c,d,e,f)*R(g,h,c,b)", *H_6_legs_a,
-            *tensor_grid[3][4], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-    done = pE->sync();
-
-    // Begin inner loop
-    //vector<int> inner_values({0,1,2,3,4,5,6,7});
-    vector<int> inner_values({0,4,9,11,16,20});
-    for (auto i1 : inner_values)
-    //for (int i1=0; i1<6; ++i1)
-    {
-      // Slice tensor_grid[6][2] => S62
-      vector<int> dims_S62(4, super_dim); dims_S62[0] = DIM; dims_S62[3] = 1;
-      S62->reshape(dims_S62);
-      errc = tensor_grid[6][2]->extractSlice(
-                          &task_hl,*S62,vector<int>{0,0,0,i1},DEV_HOST,0);
-      done = tensor_grid[6][2]->sync();
-      task_hl.clean();
-      vector<int> dims_P62(3, super_dim); dims_P62[0] = DIM;
-      S62->reshape(dims_P62);
-      // Slice tensor_grid[6][3] => S63
-      vector<int> dims_S63(3, super_dim); dims_S63[1] = 1;
-      S63->reshape(dims_S63);
-      errc = tensor_grid[6][3]->extractSlice(
-                          &task_hl,*S63,vector<int>{0,i1,0},DEV_HOST,0);
-      done = tensor_grid[6][3]->sync();
-      task_hl.clean();
-      S63->reshape(dims_2);
-      
-      // Finish contracting E
-      tc = TensContraction("D(c,d,b,e)+=L(a,b)*R(c,d,a,e)",
-                    H_4_legs_a.get(), S63.get(), tensor_grid[5][3].get());
-      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-      assert(tc.sync(DEV_HOST,0));
-      errc = H_6_legs_a->contractAccumulateXL(nullptr,
-            "D(a,b,c,d,g,h)+=L(a,b,c,d,e,f)*R(g,h,f,e)", *pE,
-            *H_4_legs_a, DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-      done = H_6_legs_a->sync();
-      errc = H_6_legs_b->contractAccumulateXL(nullptr,
-            "D(a,b,c,g,h,f)+=L(a,b,c,d,e,f)*R(g,h,e,d)", *H_6_legs_a,
-            *tensor_grid[4][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-      done = H_6_legs_b->sync();
-      errc = H_6_legs_a->contractAccumulateXL(nullptr,
-            "D(a,b,g,h,e,f)+=L(a,b,c,d,e,f)*R(g,h,d,c)", *H_6_legs_b,
-            *tensor_grid[3][3], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-      done = H_6_legs_a->sync();
-
-      // Contract ABD: AB and H_6_legs_a onto H_6_legs_c
-      errc = H_6_legs_c->contractAccumulateXL(nullptr,
-            "D(a,b,c,g,h,i)+=L(a,b,c,d,e,f)*R(f,e,d,g,h,i)", *AB,
-            *H_6_legs_a, DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-      done = H_6_legs_c->sync();
-
-      // Start contracting ABCD
-      errc = H_6_legs_a->contractAccumulateXL(nullptr,
-            "D(a,b,g,h,e,f)+=L(a,b,c,d,e,f)*R(c,g,h,d)", *H_6_legs_c,
-            *tensor_grid[3][2], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-      done = H_6_legs_a->sync();
-      errc = H_6_legs_b->contractAccumulateXL(nullptr,
-            "D(a,g,h,d,e,f)+=L(a,b,c,d,e,f)*R(b,g,h,c)", *H_6_legs_a,
-            *tensor_grid[3][1], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-      done = H_6_legs_b->sync();
-      errc = H_5_legs_a->contractAccumulateXL(nullptr,
-            "D(g,c,d,e,f)+=L(a,b,c,d,e,f)*R(a,g,b)", *H_6_legs_b,
-            *tensor_grid[3][0], DEV_NVIDIA_GPU, 0, s_type({1.0,0.0}));
-      done = H_5_legs_a->sync();
-      // No XL
-      tc = TensContraction("D(a,b,f,g,e)+=L(a,b,c,d,e)*R(c,f,g,d)",
-                    H_5_legs_b.get(), H_5_legs_a.get(), tensor_grid[4][2].get());
-      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-      assert(tc.sync(DEV_NVIDIA_GPU,0));
-      tc = TensContraction("D(a,f,g,d,e)+=L(a,b,c,d,e)*R(b,f,g,c)",
-                    H_5_legs_a.get(), H_5_legs_b.get(), tensor_grid[4][1].get());
-      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-      assert(tc.sync(DEV_NVIDIA_GPU,0));
-      tc = TensContraction("D(f,c,d,e)+=L(a,b,c,d,e)*R(a,f,b)",
-                    H_4_legs_c.get(), H_5_legs_a.get(), tensor_grid[4][0].get());
-      errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-      assert(tc.sync(DEV_NVIDIA_GPU,0));
-      // done with "closed" part of the circuit.
-
       t0 = high_resolution_clock::now();
       // Tensors live in the GPU and stay there!
       // Now contract C
