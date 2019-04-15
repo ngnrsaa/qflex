@@ -135,6 +135,9 @@ class Contraction
     double time_largest_contraction;
 
 
+    // Normalization factor
+    s_type norm_factor, global_norm_factor;
+
 };
 
 

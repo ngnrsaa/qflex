@@ -1117,4 +1117,30 @@ void close_circuit(int I, int J, string final_conf_B, vector<vector<int>> A,
 }
 
 
+// Renormalize circtuit
+void renormalize_circuit(int I, int J,
+            vector<vector<int>> off,
+            vector<vector<shared_ptr<talsh::Tensor>>> & grid_of_tensors,
+            s_type norm_factor)
+{
+  
+  int num_qubits = I * J;
+  for (int q=0; q<num_qubits; ++q)
+  {
+    vector<int> i_j = _q_to_i_j(q, J);
+    int i = i_j[0], j = i_j[1];
+    if (find(off.begin(),off.end(), vector<int>({i,j}))!=off.end())
+    { continue; }
+
+    s_type * data_T;
+    grid_of_tensors[i][j]->getDataAccessHost(&data_T);
+    size_t T_volume = grid_of_tensors[i][j]->getVolume();
+    for (size_t p=0; p<T_volume; ++p)
+      data_T[p] *= norm_factor;
+    data_T = nullptr;
+  }
+ 
+}
+
+
 #endif
