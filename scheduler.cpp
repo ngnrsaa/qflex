@@ -71,7 +71,10 @@ int main(int argc, char *argv[]) {
   string in_filename = string(argv[1]);
   string out_filename = string(argv[2]);
   int mem_size_GB = atoi(argv[3]);
-  unsigned long mem_size = mem_size_GB * size_t(1073741824);
+  //unsigned long mem_size = mem_size_GB * size_t(1021786574); // 59/62 7x7x40
+  unsigned long mem_size = mem_size_GB * size_t(988825718); // 59/62 11x11..
+  // Temporary fix to ask for less memory
+  //unsigned long mem_size = mem_size_GB * size_t(1073741824); //Correct GB
   int num_entries = atoi(argv[4]); // How many entries from input file to run
 
 
