@@ -372,20 +372,34 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
 }
 
 /**
+ * Helper function to find a grid coordinate in a list of coordinates.
+ */
+bool find_grid_coord_in_list(const optional<vector<vector<int>>>& coord_list,
+                             const int i, const int j) {
+  return coord_list.has_value() &&
+      find(coord_list.value().begin(), coord_list.value().end(), vector<int>({i, j})) !=
+           coord_list.value().end();
+}
+
+/**
 * Contracts a 3D grid of tensors onto a 2D grid of tensors, contracting
-* in the time (thrid) direction, and renaming the indices accordingly.
+* in the time (third) direction, and renaming the indices accordingly.
 * @param grid_of_tensors_3D reference to a
 * vector<vector<vector<MKLTensor>>> with the 3D grid of tensors. It must be a
 * grid dimensionswise. The typical names for the indices in a grid is assumed.
 * @param grid_of_tensors_2D reference to a vector<vector<MKLTensor>> where the
 * 2D grid of tensors will be stored. The typical names for the indices will
 * be used.
+* @param A optional<vector<vector<int>>> with the coords. of the qubits in A.
+* @param off optional<vector<vector<int>>> with the coords. of the qubits turned off.
 * @param scratch pointer to s_type array with enough space for all scratch
 * work.
 */
 void grid_of_tensors_3D_to_2D(
       vector<vector<vector<MKLTensor>>> & grid_of_tensors_3D,
-      vector<vector<MKLTensor>> & grid_of_tensors_2D, s_type * scratch)
+      vector<vector<MKLTensor>> & grid_of_tensors_2D,
+      optional<vector<vector<int>>> A, optional<vector<vector<int>>> off,
+      s_type * scratch)
 {
   // Get dimensions and super_dim = DIM^k.
   const int I = grid_of_tensors_3D.size();
@@ -396,32 +410,47 @@ void grid_of_tensors_3D_to_2D(
   // Contract vertically and fill grid_of_tensors_2D.
   for (int i=0; i<I; ++i) for (int j=0; j<J; ++j)
   {
-    vector<MKLTensor> group_containers(K-1,
-                                    MKLTensor({""}, {(int)pow(super_dim,4)}));
+    if (find_grid_coord_in_list(off, i, j))
+    { continue; }
+
+    size_t container_dim = (int)pow(super_dim,4);
+    if (find_grid_coord_in_list(A, i, j))
+    {
+      container_dim *= DIM;
+    }
+    vector<MKLTensor> group_containers = vector<MKLTensor>(2, MKLTensor({""}, {container_dim}));
+    MKLTensor *source_container = &group_containers[0];
+    MKLTensor *target_container = &group_containers[1];
+
     if (K==1)
     {
-      group_containers[0] = grid_of_tensors_3D[i][j][0];
+      grid_of_tensors_2D[i][j] = grid_of_tensors_3D[i][j][0];
     }
     else
     {
       multiply(grid_of_tensors_3D[i][j][0], grid_of_tensors_3D[i][j][1],
-               group_containers[0], scratch);
+               *source_container, scratch);
       for (int k=1; k<K-1; ++k)
       {
-        multiply(group_containers[k-1], grid_of_tensors_3D[i][j][k+1],
-                 group_containers[k], scratch);
+        multiply(*source_container, grid_of_tensors_3D[i][j][k+1], *target_container, scratch);
+        MKLTensor *swap_container = source_container;
+        source_container = target_container;
+        target_container = swap_container;
       }
+      grid_of_tensors_2D[i][j] = *source_container;
     }
-    grid_of_tensors_2D[i][j] = group_containers[K-2];
   }
 
   // Reorder and bundle.
   for (int i=0; i<I; ++i) for (int j=0; j<J; ++j)
   {
+    if (find_grid_coord_in_list(off, i, j))
+    { continue; }
+
     vector<string> ordered_indices_3D;
     vector<string> indices_2D;
     string index_name;
-    if (i>0)
+    if (i>0 && !find_grid_coord_in_list(off, i-1, j))
     {
       for (int k=0; k<K; ++k)
       {
@@ -433,7 +462,7 @@ void grid_of_tensors_3D_to_2D(
                    +to_string(i)+","+to_string(j)+")";
       indices_2D.push_back(index_name);
     }
-    if (j>0)
+    if (j>0 && !find_grid_coord_in_list(off, i, j-1))
     {
       for (int k=0; k<K; ++k)
       {
@@ -445,7 +474,7 @@ void grid_of_tensors_3D_to_2D(
                    +to_string(i)+","+to_string(j)+")";
       indices_2D.push_back(index_name);
     }
-    if (i<I-1)
+    if (i<I-1 && !find_grid_coord_in_list(off, i+1, j))
     {
       for (int k=0; k<K; ++k)
       {
@@ -457,7 +486,7 @@ void grid_of_tensors_3D_to_2D(
                    +to_string(i+1)+","+to_string(j)+")";
       indices_2D.push_back(index_name);
     }
-    if (j<J-1)
+    if (j<J-1 && !find_grid_coord_in_list(off, i, j+1))
     {
       for (int k=0; k<K; ++k)
       {
@@ -469,11 +498,19 @@ void grid_of_tensors_3D_to_2D(
                    +to_string(i)+","+to_string(j+1)+")";
       indices_2D.push_back(index_name);
     }
+    if (find_grid_coord_in_list(A, i, j))
+    {
+      index_name = "("+to_string(i)+","+to_string(j)+"),(o)";
+      ordered_indices_3D.push_back(index_name);
+    }
+
     // Reorder.
     grid_of_tensors_2D[i][j].reorder(ordered_indices_3D, scratch);
 
     // Bundle.
-    for (int idx_num=0; idx_num<indices_2D.size(); ++idx_num)
+    int max_idx;
+    max_idx = indices_2D.size();
+    for (int idx_num=0; idx_num<max_idx; ++idx_num)
     {
       vector<string> indices_to_bundle(ordered_indices_3D.begin()+idx_num*K,
                                      ordered_indices_3D.begin()+(idx_num+1)*K);
@@ -713,148 +750,6 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       string last_index = "th";
       string new_last_index = "("+to_string(i)+","+to_string(j)+"),(o)";
       grid_of_tensors[i][j][k].rename_index(last_index, new_last_index);
-    }
-  }
-
-  // Be proper about pointers.
-  scratch = NULL;
-}
-
-
-/**
-* Contracts a 3D grid of tensors onto a 2D grid of tensors, contracting
-* in the time (thrid) direction, and renaming the indices accordingly.
-* @param grid_of_tensors_3D reference to a
-* vector<vector<vector<MKLTensor>>> with the 3D grid of tensors. It must be a
-* grid dimensionswise. The typical names for the indices in a grid is assumed.
-* @param grid_of_tensors_2D reference to a vector<vector<MKLTensor>> where the
-* 2D grid of tensors will be stored. The typical names for the indices will
-* be used.
-* @param A vector<vector<int>> with the coords. of the qubits in A.
-* @param off vector<vector<int>> with the coords. of the qubits turned off.
-* @param scratch pointer to s_type array with enough space for all scratch
-* work.
-*/
-void grid_of_tensors_3D_to_2D(
-      vector<vector<vector<MKLTensor>>> & grid_of_tensors_3D,
-      vector<vector<MKLTensor>> & grid_of_tensors_2D,
-      vector<vector<int>> A, vector<vector<int>> off, s_type * scratch)
-{
-  // Get dimensions and super_dim = DIM^k.
-  const int I = grid_of_tensors_3D.size();
-  const int J = grid_of_tensors_3D[0].size();
-  const int K = grid_of_tensors_3D[0][0].size();
-  const int super_dim = (int)pow(DIM,K);
-
-  // Contract vertically and fill grid_of_tensors_2D.
-  for (int i=0; i<I; ++i) for (int j=0; j<J; ++j)
-  {
-    if (find(off.begin(),off.end(),vector<int>({i,j}))!=off.end())
-    { continue; }
-
-    vector<MKLTensor> group_containers;
-    if (find(A.begin(),A.end(),vector<int>({i,j}))!=A.end())
-    {
-      group_containers = vector<MKLTensor>(K-1,
-                                MKLTensor({""}, {(int)pow(super_dim,4)*DIM}));
-    }
-    else
-    {
-      group_containers = vector<MKLTensor>(K-1,
-                                MKLTensor({""}, {(int)pow(super_dim,4)}));
-    }
-
-    if (K==1)
-    {
-      group_containers[0] = grid_of_tensors_3D[i][j][0];
-    }
-    else
-    {
-      multiply(grid_of_tensors_3D[i][j][0], grid_of_tensors_3D[i][j][1],
-               group_containers[0], scratch);
-      for (int k=1; k<K-1; ++k)
-      {
-        multiply(group_containers[k-1], grid_of_tensors_3D[i][j][k+1],
-                 group_containers[k], scratch);
-      }
-    }
-    grid_of_tensors_2D[i][j] = group_containers[K-2];
-  }
-
-  // Reorder and bundle.
-  for (int i=0; i<I; ++i) for (int j=0; j<J; ++j)
-  {
-    if (find(off.begin(),off.end(),vector<int>({i,j}))!=off.end())
-    { continue; }
-
-    vector<string> ordered_indices_3D;
-    vector<string> indices_2D;
-    string index_name;
-    if (i>0 && find(off.begin(),off.end(),vector<int>({i-1,j}))==off.end())
-    {
-      for (int k=0; k<K; ++k)
-      {
-        index_name = "("+to_string(i-1)+","+to_string(j)+","+to_string(k)+"),("+
-                     to_string(i)+","+to_string(j)+","+to_string(k)+")";
-        ordered_indices_3D.push_back(index_name);
-      }
-      index_name = "("+to_string(i-1)+","+to_string(j)+"),("
-                   +to_string(i)+","+to_string(j)+")";
-      indices_2D.push_back(index_name);
-    }
-    if (j>0 && find(off.begin(),off.end(),vector<int>({i,j-1}))==off.end())
-    {
-      for (int k=0; k<K; ++k)
-      {
-        index_name = "("+to_string(i)+","+to_string(j-1)+","+to_string(k)+"),("+
-                     to_string(i)+","+to_string(j)+","+to_string(k)+")";
-        ordered_indices_3D.push_back(index_name);
-      }
-      index_name = "("+to_string(i)+","+to_string(j-1)+"),("
-                   +to_string(i)+","+to_string(j)+")";
-      indices_2D.push_back(index_name);
-    }
-    if (i<I-1 && find(off.begin(),off.end(),vector<int>({i+1,j}))==off.end())
-    {
-      for (int k=0; k<K; ++k)
-      {
-        index_name = "("+to_string(i)+","+to_string(j)+","+to_string(k)+"),("+
-                     to_string(i+1)+","+to_string(j)+","+to_string(k)+")";
-        ordered_indices_3D.push_back(index_name);
-      }
-      index_name = "("+to_string(i)+","+to_string(j)+"),("
-                   +to_string(i+1)+","+to_string(j)+")";
-      indices_2D.push_back(index_name);
-    }
-    if (j<J-1 && find(off.begin(),off.end(),vector<int>({i,j+1}))==off.end())
-    {
-      for (int k=0; k<K; ++k)
-      {
-        index_name = "("+to_string(i)+","+to_string(j)+","+to_string(k)+"),("+
-                     to_string(i)+","+to_string(j+1)+","+to_string(k)+")";
-        ordered_indices_3D.push_back(index_name);
-      }
-      index_name = "("+to_string(i)+","+to_string(j)+"),("
-                   +to_string(i)+","+to_string(j+1)+")";
-      indices_2D.push_back(index_name);
-    }
-    if (find(A.begin(),A.end(),vector<int>({i,j}))!=A.end())
-    {
-      index_name = "("+to_string(i)+","+to_string(j)+"),(o)";
-      ordered_indices_3D.push_back(index_name);
-    }
-
-    // Reorder.
-    grid_of_tensors_2D[i][j].reorder(ordered_indices_3D, scratch);
-
-    // Bundle.
-    int max_idx;
-    max_idx = indices_2D.size();
-    for (int idx_num=0; idx_num<max_idx; ++idx_num)
-    {
-      vector<string> indices_to_bundle(ordered_indices_3D.begin()+idx_num*K,
-                                     ordered_indices_3D.begin()+(idx_num+1)*K);
-      grid_of_tensors_2D[i][j].bundle(indices_to_bundle, indices_2D[idx_num]);
     }
   }
 
