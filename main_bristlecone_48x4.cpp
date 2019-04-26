@@ -327,15 +327,15 @@ int main(int argc, char **argv) {
     multiply(H_7_legs_b, tensor_grid[6][5], H_7_legs_a, scratch);
     multiply(H_7_legs_a, tensor_grid[7][5], H_7_legs_b, scratch);
     multiply(H_7_legs_b, tensor_grid[8][5], H_7_legs_a, scratch);
-    multiply(H_7_legs_a, tensor_grid[8][6], H_7_legs_a, scratch);
-    multiply(H_7_legs_a, tensor_grid[7][6], H_7_legs_b, scratch);
-    multiply(H_7_legs_b, tensor_grid[6][6], H_7_legs_a, scratch);
-    multiply(H_7_legs_a, tensor_grid[5][6], H_7_legs_b, scratch);
-    multiply(H_7_legs_b, tensor_grid[4][6], H_7_legs_a, scratch);
-    multiply(H_7_legs_a, tensor_grid[7][7], H_7_legs_b, scratch);
-    multiply(H_7_legs_b, tensor_grid[6][7], H_7_legs_a, scratch);
-    multiply(H_7_legs_a, tensor_grid[5][7], H_7_legs_b, scratch);
-    multiply(H_7_legs_b, tensor_grid[4][7], H_7_legs_a, scratch);
+    multiply(H_7_legs_a, tensor_grid[8][6], H_7_legs_b, scratch);
+    multiply(H_7_legs_b, tensor_grid[7][6], H_7_legs_a, scratch);
+    multiply(H_7_legs_a, tensor_grid[6][6], H_7_legs_b, scratch);
+    multiply(H_7_legs_b, tensor_grid[5][6], H_7_legs_a, scratch);
+    multiply(H_7_legs_a, tensor_grid[4][6], H_7_legs_b, scratch);
+    multiply(H_7_legs_b, tensor_grid[7][7], H_7_legs_a, scratch);
+    multiply(H_7_legs_a, tensor_grid[6][7], H_7_legs_b, scratch);
+    multiply(H_7_legs_b, tensor_grid[5][7], H_7_legs_a, scratch);
+    multiply(H_7_legs_a, tensor_grid[4][7], H_7_legs_b, scratch);
     //cout << "Built A.\n\n";
     // Build B.
     multiply(t32, t33, H_2_legs_a, scratch);
@@ -363,7 +363,7 @@ int main(int argc, char **argv) {
     // Final scalar.
     t0 = high_resolution_clock::now();
     // AB
-    multiply(H_7_legs_a, H_6_legs_a, H_5_legs_c, scratch);
+    multiply(H_7_legs_b, H_6_legs_a, H_5_legs_c, scratch);
     //cout << "Built AB.\n\n";
     t1 = high_resolution_clock::now();
     time_span = duration_cast<duration<double>>(t1 - t0);
