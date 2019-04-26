@@ -413,33 +413,32 @@ void grid_of_tensors_3D_to_2D(
     if (find_grid_coord_in_list(off, i, j))
     { continue; }
 
-    vector<MKLTensor> group_containers;
+    size_t container_dim = (int)pow(super_dim,4);
     if (find_grid_coord_in_list(A, i, j))
     {
-      group_containers = vector<MKLTensor>(K-1,
-                                MKLTensor({""}, {(int)pow(super_dim,4)*DIM}));
+      container_dim *= DIM;
     }
-    else
-    {
-      group_containers = vector<MKLTensor>(K-1,
-                                MKLTensor({""}, {(int)pow(super_dim,4)}));
-    }
+    vector<MKLTensor> group_containers = vector<MKLTensor>(2, MKLTensor({""}, {container_dim}));
+    MKLTensor *source_container = &group_containers[0];
+    MKLTensor *target_container = &group_containers[1];
 
     if (K==1)
     {
-      group_containers[0] = grid_of_tensors_3D[i][j][0];
+      grid_of_tensors_2D[i][j] = grid_of_tensors_3D[i][j][0];
     }
     else
     {
       multiply(grid_of_tensors_3D[i][j][0], grid_of_tensors_3D[i][j][1],
-               group_containers[0], scratch);
+               *source_container, scratch);
       for (int k=1; k<K-1; ++k)
       {
-        multiply(group_containers[k-1], grid_of_tensors_3D[i][j][k+1],
-                 group_containers[k], scratch);
+        multiply(*source_container, grid_of_tensors_3D[i][j][k+1], *target_container, scratch);
+        MKLTensor *swap_container = source_container;
+        source_container = target_container;
+        target_container = swap_container;
       }
+      grid_of_tensors_2D[i][j] = *source_container;
     }
-    grid_of_tensors_2D[i][j] = group_containers[K-2];
   }
 
   // Reorder and bundle.
