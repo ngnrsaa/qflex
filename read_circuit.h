@@ -42,6 +42,8 @@ const unordered_map<string,vector<s_type>> _GATES_DATA({
   // For one-qubit gates, the first index is input an second is output.
   {"h", vector<s_type>({_INV_SQRT_2,_INV_SQRT_2,
                         _INV_SQRT_2,-_INV_SQRT_2})},
+  {"hz_1_2", vector<s_type>({{0.5, 0.5}, {_INV_SQRT_2, 0},
+                            {0., -_INV_SQRT_2}, {0.5, 0.5}})},
   {"t", vector<s_type>({1.0,0.,0.,{_INV_SQRT_2,_INV_SQRT_2}})},
   {"x_1_2", vector<s_type>({{0.5,0.5},
                             {0.5,-0.5},
@@ -115,7 +117,7 @@ vector<vector<s_type>> fSim(double theta, double phi, s_type * scratch)
     }
   }
 
-  struct cnmm { 
+  struct cnmm {
     s_type c;
     double n;
     vector<s_type> m1;
@@ -270,6 +272,9 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     // The second element is the gate
     ss >> gate;
     // Get the first position
+    // TODO: Stop relying on the assumption that the gate and its parameters can
+    // be read as one token without spaces. This is (mostly) fine for "rz(0.5)",
+    // but will fail for, e.g., "fsim(0.25, -0.5)".
     ss >> q1;
     // Get the second position in the case
     if (gate=="cz") ss >> q2;
