@@ -12,6 +12,7 @@
 #define READ_CIRCUIT_
 
 #include <iostream>
+#include <regex>
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -30,8 +31,10 @@
 using namespace std;
 using namespace chrono;
 
+// TODO: Use math library calls for these. Also use constexpr.
 const double _SQRT_2 = 1.41421356237309504880168872;
 const double _INV_SQRT_2 = 1./_SQRT_2;
+const double _PI = 3.14159265358979323846264338;
 const int SUPER_CYCLE_DEPTH = 8;
 const int DIM = 2;
 
@@ -66,6 +69,21 @@ const unordered_map<string,vector<s_type>> _GATES_DATA({
   // For the non-decomposed cz, the convention is (in1, in2, out1, out2).
   {"cz", vector<s_type>({1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,-1.})}
   });
+
+
+// TODO: Replace all calls to _GATES_DATA.at(...) with gate_array(...).
+vector<s_type> gate_array(const string& gate_name) {
+  const std::regex rz_regex("rz\\((.*)\\)");
+  std::smatch match;
+  if (std::regex_match(gate_name, match, rz_regex) && match.size() > 1) {
+    const double angle_rads = _PI * stod(match.str(1));
+    const s_type phase = exp(s_type(0., angle_rads/2));
+    return vector<s_type>({conj(phase), 0., 0., phase});
+  }
+
+  // TODO: Better error-checking if the gate name isn't recognised.
+  return _GATES_DATA.at(gate_name);
+}
 
 
 /**
@@ -270,6 +288,9 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     // The second element is the gate
     ss >> gate;
     // Get the first position
+    // TODO: Stop relying on the assumption that the gate and its parameters can
+    // be read as one token without spaces. This is (mostly) fine for "rz(0.5)",
+    // but will fail for, e.g., "fsim(0.25, -0.5)".
     ss >> q1;
     // Get the second position in the case
     if (gate=="cz") ss >> q2;
