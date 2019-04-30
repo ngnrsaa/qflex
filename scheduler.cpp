@@ -34,6 +34,9 @@
 #ifdef _11x11x24
 #include "contraction_11x11x24.h"
 #endif
+#ifdef _sycamore_51x10
+#include "contraction_sycamore_51x10.h"
+#endif
 
 using namespace std;
 using namespace chrono;
