@@ -70,6 +70,10 @@ const unordered_map<string,vector<s_type>> _GATES_DATA({
                             {0.5,0.5},
                             {-0.5,-0.5},
                             {0.5,0.5}})},
+  {"hz_1_2", vector<s_type>({{0.5,0.5},
+                            {_INV_SQRT_2, 0.},
+                            {0., -_INV_SQRT_2},
+                            {0.5,0.5}})},
   // For cz, both q1 and q2 get indices in the order (output, virtual, input).
   //{"cz_q1", vector<s_type>({1.,0.,0.,0.,0.,0.,0.,1.})},
   //{"cz_q2", vector<s_type>({1.,0.,1.,0.,0.,1.,0.,-1.})}});
@@ -83,7 +87,7 @@ const unordered_map<string,vector<s_type>> _GATES_DATA({
                             0., 0.5611368023131075,
                             0., 1.0484937059720079})},
   // For the non-decomposed cz, the convention is (out2, out1, in2, in1).
-  {"cz", vector<s_type>({1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,-1.})}
+  {"cz", vector<s_type>({1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,-1.})},
   });
 
 
