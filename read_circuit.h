@@ -547,12 +547,12 @@ void grid_of_tensors_3D_to_2D(
 
 
 /**
-* Read circuit from file and fill in a 3D grid of tensors with the indices
+* Read circuit from stream and fill in a 3D grid of tensors with the indices
 * labelled as "(i1,j1,k1),(i2,j2,k2)", where i1<=i2, j1<=j2, and k1<=k2.
 * I*J must be equal to the number of qubits; K must be equal to
 * (depth_of_circuit-2)/8; initial_conf and final_conf must have the length
 * equal to the number of qubits.
-* @param filename string with the name of the circuit file.
+* @param circuit_data istream containing circuit as a string.
 * @param I int with the first spatial dimension of the grid of qubits.
 * @param J int with the second spatial dimension of the grid of qubits.
 * @param K int with depth of the grid of tensors (depth_of_circuit-2)/8.
@@ -565,18 +565,12 @@ void grid_of_tensors_3D_to_2D(
 * with tensors at * each position of the grid.
 * @param scratch pointer to s_type array with scratch space for all operations
 * performed in this function.
-* 
-* the circuit.
 */
-void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
-        int K, string initial_conf, string final_conf_B,
-        vector<vector<int>> A, vector<vector<int>> off,
+void circuit_data_to_grid_of_tensors(istream* circuit_data, int I, int J,
+        int K, const string initial_conf, const string final_conf_B,
+        const vector<vector<int>>& A, const vector<vector<int>>& off,
         vector<vector<vector<MKLTensor>>> & grid_of_tensors, s_type * scratch)
 {
-  // Open file.
-  auto io = ifstream(filename);
-  assert(io.good() && "Cannot open file.");
-
   // Gotten from the file.
   int num_qubits, cycle, q1, q2;
   string gate;
@@ -585,7 +579,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
   int super_cycle;
 
   // The first element should be the number of qubits
-  io >> num_qubits;
+  *(circuit_data) >> num_qubits;
   num_qubits = I * J;
 
   // Assert for the number of qubits.
@@ -639,7 +633,8 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
   }
 
   string line;
-  while(getline(io, line)) if(line.size() && line[0] != '#') {// Avoid comments
+  // Read one line at a time from the circuit, skipping comments.
+  while(getline(*circuit_data, line)) if(line.size() && line[0] != '#') {
     stringstream ss(line);
     // The first element is the cycle
     ss >> cycle;
@@ -778,6 +773,41 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
 
   // Be proper about pointers.
   scratch = NULL;
+}
+
+
+/**
+* Read circuit from file and fill in a 3D grid of tensors with the indices
+* labelled as "(i1,j1,k1),(i2,j2,k2)", where i1<=i2, j1<=j2, and k1<=k2.
+* I*J must be equal to the number of qubits; K must be equal to
+* (depth_of_circuit-2)/8; initial_conf and final_conf must have the length
+* equal to the number of qubits.
+* @param filename string with the name of the circuit file.
+* @param I int with the first spatial dimension of the grid of qubits.
+* @param J int with the second spatial dimension of the grid of qubits.
+* @param K int with depth of the grid of tensors (depth_of_circuit-2)/8.
+* @param initial_conf string with 0s and 1s with the input configuration of
+* the circuit.
+* @param final_conf_B string with 0s and 1s with the output configuration on B.
+* @param A vector<vector<int>> with the coords. of the qubits in A.
+* @param off vector<vector<int>> with the coords. of the qubits turned off.
+* @param grid_of_tensors referenced to a vector<vector<vector<MKLTensor>>>
+* with tensors at * each position of the grid.
+* @param scratch pointer to s_type array with scratch space for all operations
+* performed in this function.
+*
+* the circuit.
+*/
+void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
+        int K, const string initial_conf, const string final_conf_B,
+        const vector<vector<int>>& A, const vector<vector<int>>& off,
+        vector<vector<vector<MKLTensor>>> & grid_of_tensors, s_type * scratch)
+{
+  // Open file.
+  auto io = ifstream(filename);
+  assert(io.good() && "Cannot open file.");
+  circuit_data_to_grid_of_tensors(&io, I, J, K, initial_conf, final_conf_B, A,
+                                  off, grid_of_tensors, scratch);
 }
 
 
