@@ -269,6 +269,8 @@ void MKLTensor::rename_index(string old_name, string new_name)
 {
   auto it = find(_indices.begin(), _indices.end(), old_name);
   assert (it!=_indices.end() && "old_name has to be a valid index.");
+  assert(find(_indices.begin(), _indices.end(), new_name) == _indices.end() &&
+         "new_name cannot be an existing index.");
   *it = new_name;
   _index_to_dimension[new_name] = _index_to_dimension[old_name];
   _index_to_dimension.erase(old_name);
@@ -758,6 +760,10 @@ void MKLTensor::_left_reorder(const vector<string> & old_ordering,
 
 void MKLTensor::reorder(vector<string> new_ordering, s_type * scratch_copy)
 {
+  // Asserts.
+  assert (_vector_s_in_vector_s(new_ordering, _indices) &&
+          _vector_s_in_vector_s(_indices, new_ordering) &&
+          "new_ordering must be a reordering of current indices.");
   bool fast = true;
   for (int i=0; i<_dimensions.size(); ++i) 
   {
@@ -870,6 +876,9 @@ void _multiply_vv(const s_type * A_data, const s_type * B_data,
 void multiply(MKLTensor & A, MKLTensor & B,
                          MKLTensor & C, s_type * scratch_copy)
 {
+  assert (A.data() != C.data() && "A and C cannot be the same tensor.");
+  assert (B.data() != C.data() && "B and C cannot be the same tensor.");
+
   high_resolution_clock::time_point t0, t1;
   duration<double> time_span;
   t0 = high_resolution_clock::now();
@@ -892,7 +901,10 @@ void multiply(MKLTensor & A, MKLTensor & B,
   }
   for (int i=0; i<common_indices.size(); ++i)
   {
-    common_dim *= A.get_index_to_dimension().at(common_indices[i]);
+    int a_dim = A.get_index_to_dimension().at(common_indices[i]);
+    assert(a_dim == B.get_index_to_dimension().at(common_indices[i]) &&
+           "Common indices must have matching dimensions.");
+    common_dim *= a_dim;
   }
   t1 = high_resolution_clock::now();
   time_span = duration_cast<duration<double>>(t1 - t0);
