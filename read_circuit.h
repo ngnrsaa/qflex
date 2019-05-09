@@ -73,9 +73,8 @@ const unordered_map<string,vector<s_type>> _GATES_DATA({
   });
 
 
-// TODO: Replace all calls to _GATES_DATA.at(...) with gate_array(...).
 vector<s_type> gate_array(const string& gate_name) {
-  const std::regex rz_regex("rz\\((.*)\\)");
+  static const std::regex rz_regex("rz\\((.*)\\)");
   std::smatch match;
   if (std::regex_match(gate_name, match, rz_regex) && match.size() > 1) {
     const double angle_rads = _PI * stod(match.str(1));
@@ -306,9 +305,9 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     }
     string delta_gate = (initial_conf[idx]=='0')?"delta_0":"delta_1";
     grid_of_groups_of_tensors[i][j][0].push_back(
-                    MKLTensor({"th"}, {2}, _GATES_DATA.at(delta_gate)));
+                    MKLTensor({"th"}, {2}, gate_array(delta_gate)));
     grid_of_groups_of_tensors[i][j][0].push_back(
-                    MKLTensor({"th","t0"}, {2,2}, _GATES_DATA.at("h")));
+                    MKLTensor({"th","t0"}, {2,2}, gate_array("h")));
     idx += 1;
   }
 
@@ -349,7 +348,7 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
               + to_string(counter_group[i_j_1[0]][i_j_1[1]][super_cycle] + 1);
       ++counter_group[i_j_1[0]][i_j_1[1]][super_cycle];
       grid_of_groups_of_tensors[i_j_1[0]][i_j_1[1]][super_cycle].push_back(
-        MKLTensor({input_index,output_index}, {2,2}, _GATES_DATA.at(gate)));
+        MKLTensor({input_index,output_index}, {2,2}, gate_array(gate)));
     }
     if (q2>=0 && cycle>0 && cycle<=SUPER_CYCLE_DEPTH*K)
     {
@@ -374,10 +373,10 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       ++counter_group[i_j_2[0]][i_j_2[1]][super_cycle];
       grid_of_groups_of_tensors[i_j_1[0]][i_j_1[1]][super_cycle].push_back(
                       MKLTensor({input_index_1,virtual_index,output_index_1},
-                                {2,2,2}, _GATES_DATA.at("cz_q1")));
+                                {2,2,2}, gate_array("cz_q1")));
       grid_of_groups_of_tensors[i_j_2[0]][i_j_2[1]][super_cycle].push_back(
                       MKLTensor({input_index_2,virtual_index,output_index_2},
-                                {2,2,2}, _GATES_DATA.at("cz_q2")));
+                                {2,2,2}, gate_array("cz_q2")));
     }
   }
   // Insert Hadamards and deltas to last layer.
@@ -391,12 +390,12 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     { continue; }
     string last_index = "t"+to_string(counter_group[i][j][k]);
     grid_of_groups_of_tensors[i][j][k].push_back(
-                    MKLTensor({"th",last_index}, {2,2}, _GATES_DATA.at("h")));
+                    MKLTensor({"th",last_index}, {2,2}, gate_array("h")));
     if (find_grid_coord_in_list(A, i, j))
     { continue; }
     string delta_gate = (final_conf_B[idx]=='0')?"delta_0":"delta_1";
     grid_of_groups_of_tensors[i][j][k].push_back(
-                    MKLTensor({"th"}, {2}, _GATES_DATA.at(delta_gate)));
+                    MKLTensor({"th"}, {2}, gate_array(delta_gate)));
     idx += 1; // Move in B only.
   }
 
@@ -650,7 +649,7 @@ void read_wave_function_evolution(string filename, int I,
       string input_index = to_string(q1) + ",i";
       string output_index = to_string(q1) + ",o";
       gates.push_back(MKLTensor({input_index,output_index},{DIM,DIM},
-                                _GATES_DATA.at(gate)));
+                                gate_array(gate)));
       inputs.push_back({input_index});
       outputs.push_back({output_index});
     }
@@ -664,7 +663,7 @@ void read_wave_function_evolution(string filename, int I,
       outputs.push_back({output_index1,output_index2});
       gates.push_back(MKLTensor(
                     {input_index1,input_index2,output_index1,output_index2},
-                    {DIM,DIM,DIM,DIM},_GATES_DATA.at(gate)));
+                    {DIM,DIM,DIM,DIM},gate_array(gate)));
     }
   }
 
