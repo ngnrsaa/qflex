@@ -98,7 +98,6 @@ vector<s_type> gate_array(const string& gate_name) {
 * entries of the first qubit, second the vector with entries of the second
 * qubit, and third the vector with the singular values (informational only).
 */
-/*
 vector<vector<s_type>> fSim(double theta, double phi, s_type * scratch)
 {
 
@@ -179,13 +178,32 @@ vector<vector<s_type>> fSim(double theta, double phi, s_type * scratch)
   sort(norm_coeffs.begin(), norm_coeffs.end());
   reverse(norm_coeffs.begin(), norm_coeffs.end());
 
+  // TODO: Convert norm_coeffs to vector<s_type> and return it.
   vector<vector<s_type>> ret_val({q1_reordered_tensor,
-                                  q2_reordered_tensor,
-                                  norm_coeffs});
+                                  q2_reordered_tensor});
 
   return ret_val;
 }
-*/
+
+
+// TODO: Refactor this so that all gate arrays are handled similarly regardless
+// of how many qubits they operate on and whether they're parametrized. Put gate
+// array handling into its own class.
+std::tuple<vector<s_type>, vector<s_type>, vector<size_t>> gate_arrays(
+    const string& gate_name, s_type* scratch) {
+  static const std::regex fsim_regex("fsim\\((.*),(.*)\\)");
+  std::smatch match;
+  if (gate_name == "cz") {
+    return std::tuple<vector<s_type>, vector<s_type>, vector<size_t>>(
+        gate_array("cz_q1"), gate_array("cz_q2"), {2,2,2});
+  } else if (std::regex_match(gate_name, match, fsim_regex) && match.size() > 2) {
+    const double theta_rads = _PI * stod(match.str(1));
+    const double phi_rads = _PI * stod(match.str(2));
+    vector<vector<s_type>> ret_val = fSim(theta_rads, phi_rads, scratch);
+    return std::tuple<vector<s_type>, vector<s_type>, vector<size_t>>(
+        ret_val[0], ret_val[1], {4,2,2});
+  }
+}
 
 
 /**
@@ -232,7 +250,6 @@ bool find_grid_coord_in_list(const optional<vector<vector<int>>>& coord_list,
 * @param scratch pointer to s_type array with scratch space for all operations
 * performed in this function.
 *
-* the circuit.
 */
 void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
         int K, string initial_conf, string final_conf_B,
@@ -324,7 +341,10 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
     // but will fail for, e.g., "fsim(0.25, -0.5)".
     ss >> q1;
     // Get the second position in the case
-    if (gate=="cz") ss >> q2;
+    // TODO: Two-qubit gates should be encapsulated better.
+    if (gate=="cz" || gate.rfind("fsim", 0) == 0) {
+      ss >> q2;
+    }
     else q2 = -1;
 
     // Get i, j and super_cycle
@@ -357,6 +377,10 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       {
         continue;
       }
+      vector<s_type> gate_q1;
+      vector<s_type> gate_q2;
+      vector<size_t> dimensions;
+      tie(gate_q1, gate_q2, dimensions) = gate_arrays(gate, scratch);
       string input_index_1 = "t"
               + to_string(counter_group[i_j_1[0]][i_j_1[1]][super_cycle]);
       string output_index_1 = "t"
@@ -373,10 +397,10 @@ void google_circuit_file_to_grid_of_tensors(string filename, int I, int J,
       ++counter_group[i_j_2[0]][i_j_2[1]][super_cycle];
       grid_of_groups_of_tensors[i_j_1[0]][i_j_1[1]][super_cycle].push_back(
                       MKLTensor({input_index_1,virtual_index,output_index_1},
-                                {2,2,2}, gate_array("cz_q1")));
+                                dimensions, gate_q1));
       grid_of_groups_of_tensors[i_j_2[0]][i_j_2[1]][super_cycle].push_back(
                       MKLTensor({input_index_2,virtual_index,output_index_2},
-                                {2,2,2}, gate_array("cz_q2")));
+                                dimensions, gate_q2));
     }
   }
   // Insert Hadamards and deltas to last layer.
