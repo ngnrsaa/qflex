@@ -19,7 +19,7 @@ GMOCK_DIR = $(ROOT_DIR)/googletest/googlemock
 
 TESTFLAGS = -I$(GTEST_DIR)/include -L$(GTEST_DIR) -I$(GMOCK_DIR)/include -L$(GMOCK_DIR)
 
-all: read_circuit_test
+all: read_circuit_test mkl_tensor_test
 
 mkl_tensor:
 	$(MAKE) -C $(ROOT_DIR) mkl_tensor.o
@@ -32,6 +32,11 @@ gmock-all.o:
 
 read_circuit_test: read_circuit_test.cpp mkl_tensor gtest-all.o gmock-all.o
 	$(CXX) -o read_circuit_test.x read_circuit_test.cpp $(ROOT_DIR)/mkl_tensor.o \
+	$(GTEST_DIR)/make/gtest-all.o $(GMOCK_DIR)/make/gmock-all.o $(FLAGS) \
+	$(TESTFLAGS)
+
+mkl_tensor_test: mkl_tensor_test.cpp mkl_tensor gtest-all.o gmock-all.o
+	$(CXX) -o mkl_tensor_test.x mkl_tensor_test.cpp $(ROOT_DIR)/mkl_tensor.o \
 	$(GTEST_DIR)/make/gtest-all.o $(GMOCK_DIR)/make/gmock-all.o $(FLAGS) \
 	$(TESTFLAGS)
 .PHONY: clean
