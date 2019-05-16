@@ -543,6 +543,7 @@ void Contraction::contract(string input_string)
         s_type const * ptr_S;
         S->getDataAccessHostConst(&ptr_S);
         amplitudes[c] += ptr_S[0];
+        ptr_S = nullptr;
       }
       t1 = high_resolution_clock::now();
       span = duration_cast<duration<double>>(t1 - t0);

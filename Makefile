@@ -11,7 +11,7 @@ CUDA_ROOT = /sw/summit/cuda/9.2.148
 
 # Contraction can be _51q, bris_60, _7x7x40, _8x8x32, 11x11x24, sycamore_51x10,
 # ...
-CONTRACTION = _sycamore_51x10
+CONTRACTION = _test_new_gates
 #Done.
 
 

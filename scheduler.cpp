@@ -37,6 +37,9 @@
 #ifdef _sycamore_51x10
 #include "contraction_sycamore_51x10.h"
 #endif
+#ifdef _test_new_gates
+#include "contraction_test_new_gates.h"
+#endif
 
 using namespace std;
 using namespace chrono;
