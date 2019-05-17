@@ -1007,7 +1007,6 @@ void Contraction::contract(string input_string)
         // Store result data_S
         s_type const * ptr_S;
         S->getDataAccessHostConst(&ptr_S);
-        //amplitudes[c] += ptr_S[0];
         amplitudes[c] += ptr_S[0] / global_norm_factor;
         ptr_S = nullptr;
       }
