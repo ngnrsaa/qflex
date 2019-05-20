@@ -43,6 +43,7 @@ using s_type = complex<float>;
 
 const double _SQRT_2 = 1.41421356237309504880168872;
 const double _INV_SQRT_2 = 1./_SQRT_2;
+const double _PI = 3.14159265358979323846264338;
 const int DIM = 2;
 const vector<string> _ALPHABET({"a","b","c","d","e","f","g","h","i","j",
                                 "k","l","m","n","o","p","q","r","s","t",
@@ -89,6 +90,21 @@ const unordered_map<string,vector<s_type>> _GATES_DATA({
   // For the non-decomposed cz, the convention is (out2, out1, in2, in1).
   {"cz", vector<s_type>({1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,-1.})},
   });
+
+/**
+* Returns the tensor entries for an Rz rotation given the exponent.
+* @param exponent s_type with the exponent in the Rz rotation.
+* @return vector<s_type> with the entries of the gate tensor with the
+* convenction (output, input).
+*/
+vector<s_type> Rz(double exponent)
+{
+  s_type angle_rads = s_type({_PI, 0.0}) * s_type({exponent, 0.0});
+  s_type phase = exp(s_type({0.0, 0.5}) * angle_rads);
+  vector<s_type> retval({conj(phase), {0.0, 0.0}, {0.0, 0.0},  phase});
+  return retval;
+}
+
 
 
 /**
@@ -761,6 +777,16 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
     if (gate=="cz") ss >> q2;
     else q2 = -1;
 
+    // For rz gate
+    double exponent = 0.0;
+    if (gate.substr(0, 2)=="rz")
+    {
+      size_t pos_bra = gate.find("(");
+      size_t pos_ket = gate.find(")");
+      string exponent_string = gate.substr(pos_bra+1, pos_ket-(pos_bra+1));
+      exponent = atof(exponent_string.c_str());
+    }
+
     // Get i, j
     i_j_1 = _q_to_i_j(q1, J);
     if (q2>=0)
@@ -776,7 +802,13 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
       {
         continue;
       }
-      vector<s_type> gate_vector(_GATES_DATA.at(gate));
+      vector<s_type> gate_vector;
+      if (gate.substr(0, 2)=="rz")
+      {
+        gate_vector = Rz(exponent);
+      } else {
+        gate_vector = vector<s_type>(_GATES_DATA.at(gate));
+      }
       vector<int> dims({DIM,DIM});
       grid_of_lists_of_tensors[i_j_1[0]][i_j_1[1]].push_back(
         shared_ptr<talsh::Tensor>(new talsh::Tensor(dims, gate_vector)));
@@ -956,7 +988,7 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
     }
   }
 
-  // Because of multiplhying every new gate as the L tensor, and having the
+  // Because of multiplying every new gate as the L tensor, and having the
   // built tensor as R, the indexes are backwards. First, flip the entries
   // of the map, so that they take into account the fact that indexes entering
   // first were put last in the list (the 'old' part). Second, make sure to

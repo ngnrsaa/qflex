@@ -1,5 +1,5 @@
 4
 1
-1 2 3 0.005 circuits/test_hz.shallowqc
+1 2 1 0.005 circuits/test_rz.shallowqc
 00 0 0 1
 00 1 0 1
