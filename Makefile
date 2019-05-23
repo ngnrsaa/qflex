@@ -7,7 +7,7 @@ FORT_LIB = -lgfortran
 #TALSH_ROOT = /ccs/home/villalonga/TAL_SH
 TALSH_ROOT = /gpfs/alpine/proj-shared/phy136/Gordon-Bell/TAL_SH
 MKL_ROOT = /home/div/intel
-CUDA_ROOT = /sw/summit/cuda/9.2.148
+CUDA_ROOT = /sw/summit/cuda/10.1.105
 
 # Contraction can be _51q, bris_60, _7x7x40, _8x8x32, 11x11x24, sycamore_51x10,
 # ...
@@ -15,8 +15,8 @@ CONTRACTION = _test_new_gates
 #Done.
 
 
-OLCF_ESSL_ROOT = /sw/summit/essl/6.1.0-2/essl/6.1
-OLCF_XLF_ROOT = /sw/summit/xl/16.1.1-beta4/xlf/16.1.1
+OLCF_ESSL_ROOT = /sw/summit/essl/6.2.0-20190419/essl/6.2
+OLCF_XLF_ROOT = /sw/summit/xl/16.1.1-beta6/xlf/16.1.1
 BLAS_LIB_ESSL = -L$(OLCF_ESSL_ROOT)/lib64 -lessl -L$(OLCF_XLF_ROOT)/lib -lxlf90_r -lxlfmath
 BLAS_INC_ESSL = -DBLAS_ESSL
 

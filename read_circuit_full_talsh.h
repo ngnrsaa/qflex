@@ -93,9 +93,9 @@ const unordered_map<string,vector<s_type>> _GATES_DATA({
 
 /**
 * Returns the tensor entries for an Rz rotation given the exponent.
-* @param exponent s_type with the exponent in the Rz rotation.
+* @param exponent s_type with the exponent in the Rz rotation in units of pi.
 * @return vector<s_type> with the entries of the gate tensor with the
-* convenction (output, input).
+* convenction (output, input). We are using column major storage.
 */
 vector<s_type> Rz(double exponent)
 {
@@ -105,6 +105,37 @@ vector<s_type> Rz(double exponent)
   return retval;
 }
 
+
+/**
+* Returns the decomposition of an fSim gate with angle parameters theta and
+* phi.
+* @param double theta is the swap angle in units of pi.
+* @param double phi is the swap angle in units of pi.
+* @return vector<vector<s_type>> with the two tensors using the convention
+* (output, virtual, input) for both qubits. We are using column major storage.
+*/
+vector<vector<s_type>> fSim(double theta, double phi)
+{
+  double theta_angle = _PI * theta;
+  double phi_angle = _PI * phi;
+
+  // Define useful variables
+  s_type a, b, c, d, p, m;
+  a = s_type({0.5, 0.0}) * exp(s_type({0.0, -phi_angle/2.}));
+  b = s_type({0.5*cos(theta_angle), 0.0});
+  c = s_type({0.0, -0.5*sin(theta_angle)});
+  p = sqrt(a+b);
+  m = sqrt(a-b);
+  d = exp(s_type({0.0, phi_angle/4.}));
+
+  vector<s_type> q1_tensor_array({
+                    p*d, {0.0,0.0}, m*d, {0.0,0.0},
+                    {0.0,0.0}, c, {0.0,0.0}, s_type({0.0,-1.0})*c,
+                    {0.0,0.0}, m*conj(d), {0.0,0.0}, -m*conj(d),
+                    c, {0.0,0.0}, s_type({0.0,1.0})*c, {0.0,0.0} });
+  vector<s_type> q2_tensor_array(q1_tensor_array);
+  return vector<vector<s_type>>({q1_tensor_array, q2_tensor_array});
+}
 
 
 /**
@@ -771,10 +802,17 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
     ss >> cycle;
     // The second element is the gate
     ss >> gate;
+
+    // For fsim
+    string gate_suffix;
+    if (gate.substr(0, 4)=="fsim")
+    {
+      ss >> gate_suffix;
+    }
     // Get the first position
     ss >> q1;
     // Get the second position in the case
-    if (gate=="cz") ss >> q2;
+    if (gate=="cz" || gate.substr(0,4)=="fsim") ss >> q2;
     else q2 = -1;
 
     // For rz gate
@@ -785,6 +823,20 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
       size_t pos_ket = gate.find(")");
       string exponent_string = gate.substr(pos_bra+1, pos_ket-(pos_bra+1));
       exponent = atof(exponent_string.c_str());
+    }
+
+    // For fsim gate
+    double theta = 0.0;
+    double phi = 0.0;
+    if (gate.substr(0, 4)=="fsim")
+    {
+      size_t pos_bra = gate.find("(");
+      size_t pos_comma = gate.find(",");
+      size_t pos_ket = gate_suffix.find(")");
+      string theta_string = gate.substr(pos_bra+1, pos_comma-(pos_bra+1));
+      string phi_string = gate.substr(0, pos_ket);
+      theta = atof(theta_string.c_str());
+      phi = atof(phi_string.c_str());
     }
 
     // Get i, j
@@ -827,9 +879,22 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
       {
         continue;
       }
+      vector<s_type> gate_vector_1, gate_vector_2;
+      vector<int> dims;
+
       // Gate 1
-      vector<s_type> gate_vector_1(_GATES_DATA.at("cz_q1"));
-      vector<int> dims({DIM,DIM,DIM});
+      if (gate=="cz")
+      {
+        gate_vector_1 = vector<s_type>(_GATES_DATA.at("cz_q1"));
+        gate_vector_2 = vector<s_type>(_GATES_DATA.at("cz_q2"));
+        dims = vector<int>({DIM,2,DIM});
+      } else if (gate.substr(0, 4)=="fsim")
+      {
+        vector<vector<s_type>> gate_vectors = fSim(theta, phi);
+        gate_vector_1 = gate_vectors[0];
+        gate_vector_2 = gate_vectors[1];
+        dims = vector<int>({DIM,4,DIM});
+      }
       grid_of_lists_of_tensors[i_j_1[0]][i_j_1[1]].push_back(
         shared_ptr<talsh::Tensor>(new talsh::Tensor(dims, gate_vector_1)));
       vector<int> bond_type;
@@ -838,8 +903,8 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
       else if (i_j_1[0]>i_j_2[0]) bond_type = {0, 2};
       else if (i_j_1[1]>i_j_2[1]) bond_type = {1, 3};
       grid_of_lists_of_bonds[i_j_1[0]][i_j_1[1]].push_back(bond_type[0]);
+
       // Gate 2
-      vector<s_type> gate_vector_2(_GATES_DATA.at("cz_q2"));
       grid_of_lists_of_tensors[i_j_2[0]][i_j_2[1]].push_back(
         shared_ptr<talsh::Tensor>(new talsh::Tensor(dims, gate_vector_2)));
       grid_of_lists_of_bonds[i_j_2[0]][i_j_2[1]].push_back(bond_type[1]);
@@ -938,9 +1003,9 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
       vector<int> dims_L = dims_from_tensor(L.get());
       vector<int> dims_R = dims_from_tensor(R.get());
       vector<int> dims_D;
-      for (int t=1; t<dims_L.size(); ++t)
+      for (int t=0; t<dims_L.size()-1; ++t)
         dims_D.push_back(dims_L[t]);
-      for (int t=0; t<dims_R.size()-1; ++t)
+      for (int t=1; t<dims_R.size(); ++t)
         dims_D.push_back(dims_R[t]);
       if (k==grid_of_lists_of_tensors[i][j].size()-1)
       {

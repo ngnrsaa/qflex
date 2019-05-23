@@ -69,8 +69,8 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
   vector<int> dims_3(3, super_dim);
 
   // First, tensors for region C. Done by hand right now. Change in future.
-  Cs.push_back(shared_ptr<talsh::Tensor>(
-                      new talsh::Tensor(dims_1, s_type(0.0))));
+  //Cs.push_back(shared_ptr<talsh::Tensor>(
+  //                    new talsh::Tensor(dims_1, s_type(0.0))));
 
   // Second, helper tensors.
   H_2_legs_a =
@@ -135,6 +135,23 @@ void Contraction::load_circuit(string input_string)
 
   // If add renormalization, do it here!
   renormalize_circuit(I, J, qubits_off, open_tensor_grid, norm_factor);
+
+
+  // Initialize Cs here, because for general gates we don't know the
+  // dimension of each C tensor until here.
+  // First: get dimensions of each C. 
+  for (int t=0; t<qubits_A.size(); ++t)
+  {
+    int i = qubits_A[t][0]; int j = qubits_A[t][1];
+    vector<int> dims_T = dims_from_tensor(open_tensor_grid[i][j].get());
+    vector<int> dims_C(dims_T.size()-1);
+    for (int p=0; p<dims_C.size(); ++p)
+    {
+      dims_C[p] = dims_T[p+1];
+    }
+    Cs.push_back(shared_ptr<talsh::Tensor>(
+                        new talsh::Tensor(dims_C, s_type(0.0))));
+  }
 
 
   t1 = high_resolution_clock::now();
