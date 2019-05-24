@@ -199,26 +199,8 @@ bool find_grid_coord_in_list(
               std::vector<int>({i, j})) != coord_list.value().end();
 }
 
-/**
- * Read circuit from stream and fill in a 3D grid of tensors with the indices
- * labelled as "(i1,j1,k1),(i2,j2,k2)", where i1<=i2, j1<=j2, and k1<=k2.
- * I*J must be equal to the number of qubits; K must be equal to
- * (depth_of_circuit-2)/8; initial_conf and final_conf_B must have the length
- * equal to the number of qubits.
- * @param circuit_data std::istream containing circuit as a string.
- * @param I int with the first spatial dimension of the grid of qubits.
- * @param J int with the second spatial dimension of the grid of qubits.
- * @param K int with depth of the grid of tensors (depth_of_circuit-2)/8.
- * @param initial_conf string with 0s and 1s with the input configuration of
- * the circuit.
- * @param final_conf_B string with 0s and 1s with the output configuration on B.
- * @param A vector<vector<int>> with the coords. of the qubits in A.
- * @param off vector<vector<int>> with the coords. of the qubits turned off.
- * @param grid_of_tensors referenced to a vector<vector<vector<MKLTensor>>> with
- * tensors at each position of the grid.
- * @param scratch pointer to s_type array with scratch space for all operations
- * performed in this function.
- */
+}  // namespace
+
 void circuit_data_to_grid_of_tensors(
     std::istream* circuit_data, int I, int J, int K,
     const std::string initial_conf, const std::string final_conf_B,
@@ -440,8 +422,6 @@ void circuit_data_to_grid_of_tensors(
   // Be proper about pointers.
   scratch = NULL;
 }
-
-}  // namespace
 
 void google_circuit_file_to_grid_of_tensors(
     std::string filename, int I, int J, int K, const std::string initial_conf,

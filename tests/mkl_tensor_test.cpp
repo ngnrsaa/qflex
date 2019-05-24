@@ -10,7 +10,7 @@ using ::testing::Pointwise;
 
 // Creates an empty tensor and runs basic sanity checks on it.
 TEST(MKLTensorTest, EmptyTensor) {
-  std::vector<string> indices = {"a", "b"};
+  std::vector<std::string> indices = {"a", "b"};
   std::vector<size_t> dimensions = {2, 4};
 
   // Automatically allocates new space.
@@ -34,13 +34,13 @@ TEST(MKLTensorTest, EmptyTensor) {
 
   // Test index renaming as well.
   tensor.rename_index("a", "c");
-  std::vector<string> expected_indices = {"c", "b"};
+  std::vector<std::string> expected_indices = {"c", "b"};
   ASSERT_EQ(tensor.get_indices(), expected_indices);
 }
 
 // Loads a tensor from data and runs basic sanity checks on it.
 TEST(MKLTensorTest, LoadData) {
-  std::vector<string> indices = {"a", "b"};
+  std::vector<std::string> indices = {"a", "b"};
   std::vector<size_t> dimensions = {2, 2};
   std::vector<std::complex<float>> data = {
       std::complex<float>(0, 1), std::complex<float>(2, 3),
@@ -73,7 +73,7 @@ TEST(MKLTensorTest, LoadData) {
 // Projects a tensor onto a single value of an index and verifies that the
 // output tensor only contains data from that slice of the original tensor.
 TEST(MKLTensorTest, TensorProjection) {
-  std::vector<string> indices = {"a", "b", "c"};
+  std::vector<std::string> indices = {"a", "b", "c"};
   std::vector<size_t> dimensions = {2, 2, 2};
   std::vector<std::complex<float>> data;
   for (int i = 0; i < 8; i++) {
@@ -83,7 +83,7 @@ TEST(MKLTensorTest, TensorProjection) {
   MKLTensor tensor(indices, dimensions, data);
   MKLTensor projection_tensor({"x", "y"}, {2, 2});
   tensor.project("a", 1, projection_tensor);
-  std::vector<string> expected_indices = {"b", "c"};
+  std::vector<std::string> expected_indices = {"b", "c"};
   std::vector<size_t> expected_dimensions = {2, 2};
   ASSERT_EQ(projection_tensor.get_indices(), expected_indices);
   ASSERT_EQ(projection_tensor.get_dimensions(), expected_dimensions);
@@ -100,7 +100,7 @@ TEST(MKLTensorTest, TensorProjection) {
 // Bundles indices of a tensor and verifies that dimensions change while data
 // remains unaffected.
 TEST(MKLTensorTest, IndexBundling) {
-  std::vector<string> indices = {"a", "b", "c", "d"};
+  std::vector<std::string> indices = {"a", "b", "c", "d"};
   std::vector<size_t> dimensions = {2, 2, 2, 2};
   std::vector<std::complex<float>> data;
   for (int i = 0; i < 16; i++) {
@@ -109,7 +109,7 @@ TEST(MKLTensorTest, IndexBundling) {
 
   MKLTensor tensor(indices, dimensions, data);
   tensor.bundle({"a", "b", "c"}, "abc");
-  std::vector<string> expected_indices = {"abc", "d"};
+  std::vector<std::string> expected_indices = {"abc", "d"};
   std::vector<size_t> expected_dimensions = {8, 2};
   ASSERT_EQ(tensor.get_indices(), expected_indices);
   ASSERT_EQ(tensor.get_dimensions(), expected_dimensions);
@@ -123,7 +123,7 @@ TEST(MKLTensorTest, IndexBundling) {
 
 // Reorders indices of a tensor and verifies that data changes accordingly.
 TEST(MKLTensorTest, IndexReordering) {
-  std::vector<string> indices = {"a", "b", "c"};
+  std::vector<std::string> indices = {"a", "b", "c"};
   std::vector<size_t> dimensions = {2, 2, 2};
   std::vector<std::complex<float>> data;
   for (int i = 0; i < 8; i++) {
@@ -131,7 +131,7 @@ TEST(MKLTensorTest, IndexReordering) {
   }
 
   MKLTensor tensor(indices, dimensions, data);
-  std::vector<string> expected_indices = {"b", "c", "a"};
+  std::vector<std::string> expected_indices = {"b", "c", "a"};
   std::array<std::complex<float>, 8> scratch;
   tensor.reorder(expected_indices, scratch.data());
   ASSERT_EQ(tensor.get_indices(), expected_indices);
@@ -152,7 +152,7 @@ TEST(MKLTensorTest, IndexReordering) {
 
 // Multiplies two tensors and verify shape, indices, and data of the result.
 TEST(MKLTensorTest, Multiply) {
-  std::vector<string> indices_a = {"a", "b", "c"};
+  std::vector<std::string> indices_a = {"a", "b", "c"};
   std::vector<size_t> dimensions_a = {2, 2, 2};
   std::vector<std::complex<float>> data_a;
   for (int i = 0; i < 8; i++) {
@@ -160,7 +160,7 @@ TEST(MKLTensorTest, Multiply) {
   }
   MKLTensor tensor_a(indices_a, dimensions_a, data_a);
 
-  std::vector<string> indices_b = {"b", "c", "d"};
+  std::vector<std::string> indices_b = {"b", "c", "d"};
   std::vector<size_t> dimensions_b = {2, 2, 2};
   std::vector<std::complex<float>> data_b;
   for (int i = 8; i > 0; i--) {
@@ -168,13 +168,13 @@ TEST(MKLTensorTest, Multiply) {
   }
   MKLTensor tensor_b(indices_b, dimensions_b, data_b);
 
-  std::vector<string> indices_c = {"x"};
+  std::vector<std::string> indices_c = {"x"};
   std::vector<size_t> dimensions_c = {16};
   MKLTensor tensor_c(indices_c, dimensions_c);
 
   std::array<std::complex<float>, 16> scratch;
   multiply(tensor_a, tensor_b, tensor_c, scratch.data());
-  std::vector<string> expected_indices = {"a", "d"};
+  std::vector<std::string> expected_indices = {"a", "d"};
   std::vector<size_t> expected_dimensions = {2, 2};
   ASSERT_EQ(tensor_c.get_indices(), expected_indices);
   ASSERT_EQ(tensor_c.get_dimensions(), expected_dimensions);
