@@ -1,7 +1,7 @@
 TARGET1 = qflex
 
 #Set these:
-CXX = g++
+CXX = icpc
 
 # Contraction can be bristlecone_70x4, bristlecone_48x4, ...
 CONTRACTION = bristlecone_48x4
@@ -10,7 +10,7 @@ CONTRACTION = bristlecone_48x4
 # Contraction
 CONTRACTION_FILENAME = main_$(CONTRACTION)
 
-FLAGS = -fopenmp -O3 -std=c++17 -march=native -I/usr/local/google/home/martinop/intel/compilers_and_libraries_2019.3.199/linux/mkl/include -L/usr/local/google/home/martinop/intel/compilers_and_libraries_2019.3.199/linux/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_core -lmkl_gnu_thread -Wno-narrowing
+FLAGS =  -mkl  -qopenmp  -O3  -std=c++17  -march=native
 
 ROOT_DIR = ..
 
