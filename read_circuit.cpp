@@ -12,7 +12,7 @@
 
 namespace {
 
-const unordered_map<string, std::vector<s_type>> _GATES_DATA(
+const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
     {// Deltas.
      {"delta_0", std::vector<s_type>({1.0, 0.0})},
      {"delta_1", std::vector<s_type>({0.0, 1.0})},
@@ -29,8 +29,8 @@ const unordered_map<string, std::vector<s_type>> _GATES_DATA(
       std::vector<s_type>({{0.5, 0.5}, {0.5, 0.5}, {-0.5, -0.5}, {0.5, 0.5}})},
      // For cz, both q1 and q2 get indices in the order (input, virtual,
      // output).
-     // {"cz_q1", std::vector<s_type>({1.,0.,0.,0.,0.,0.,0.,1.})},
-     // {"cz_q2", std::vector<s_type>({1.,0.,1.,0.,0.,1.,0.,-1.})}});
+     // {"cz_q1", vector<s_type>({1.,0.,0.,0.,0.,0.,0.,1.})},
+     // {"cz_q2", vector<s_type>({1.,0.,1.,0.,0.,1.,0.,-1.})}});
      // Use more "balanced" SVD. Otherwise tensors are very sparse.
      {"cz_q1",
       std::vector<s_type>({-0.3446133714352872, 0., 1.1381806476131544, 0., 0.,
@@ -42,7 +42,7 @@ const unordered_map<string, std::vector<s_type>> _GATES_DATA(
      {"cz", std::vector<s_type>({1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0.,
                                  0., 0., 0., -1.})}});
 
-std::vector<s_type> gate_array(const string& gate_name) {
+std::vector<s_type> gate_array(const std::string& gate_name) {
   static const std::regex rz_regex("rz\\((.*)\\)");
   std::smatch match;
   if (std::regex_match(gate_name, match, rz_regex) && match.size() > 1) {
@@ -62,10 +62,9 @@ std::vector<s_type> gate_array(const string& gate_name) {
  * @param phi double with the angle $phi$. Modulo $2\pi$ is taken.
  * @param scratch pointer to s_type array with scratch space for all operations
  * performed in this function.
- * @return std::vector<std::vector<s_type>> with three elements: first the
- * vector with entries of the first qubit, second the vector with entries of the
- * second qubit, and third the vector with the singular values (informational
- * only).
+ * @return vector<vector<s_type>> with three elements: first the vector with
+ * entries of the first qubit, second the vector with entries of the second
+ * qubit, and third the vector with the singular values (informational only).
  */
 std::vector<std::vector<s_type>> fSim(double theta, double phi,
                                       s_type* scratch) {
@@ -149,7 +148,7 @@ std::vector<std::vector<s_type>> fSim(double theta, double phi,
   sort(norm_coeffs.begin(), norm_coeffs.end());
   reverse(norm_coeffs.begin(), norm_coeffs.end());
 
-  // TODO: Convert norm_coeffs to std::vector<s_type> and return it.
+  // TODO: Convert norm_coeffs to vector<s_type> and return it.
   std::vector<std::vector<s_type>> ret_val(
       {q1_reordered_tensor, q2_reordered_tensor});
 
@@ -160,7 +159,7 @@ std::vector<std::vector<s_type>> fSim(double theta, double phi,
 // of how many qubits they operate on and whether they're parametrized. Put gate
 // array handling into its own class.
 std::tuple<std::vector<s_type>, std::vector<s_type>, std::vector<size_t>>
-gate_arrays(const string& gate_name, s_type* scratch) {
+gate_arrays(const std::string& gate_name, s_type* scratch) {
   static const std::regex fsim_regex("fsim\\((.*),(.*)\\)");
   std::smatch match;
   if (gate_name == "cz") {
@@ -193,7 +192,7 @@ std::vector<int> _q_to_i_j(int q, int J) {
  * Helper function to find a grid coordinate in a list of coordinates.
  */
 bool find_grid_coord_in_list(
-    const optional<std::vector<std::vector<int>>>& coord_list, const int i,
+    const std::optional<std::vector<std::vector<int>>>& coord_list, const int i,
     const int j) {
   return coord_list.has_value() &&
          find(coord_list.value().begin(), coord_list.value().end(),
@@ -206,31 +205,30 @@ bool find_grid_coord_in_list(
  * I*J must be equal to the number of qubits; K must be equal to
  * (depth_of_circuit-2)/8; initial_conf and final_conf_B must have the length
  * equal to the number of qubits.
- * @param circuit_data istream containing circuit as a string.
+ * @param circuit_data std::istream containing circuit as a string.
  * @param I int with the first spatial dimension of the grid of qubits.
  * @param J int with the second spatial dimension of the grid of qubits.
  * @param K int with depth of the grid of tensors (depth_of_circuit-2)/8.
  * @param initial_conf string with 0s and 1s with the input configuration of
  * the circuit.
  * @param final_conf_B string with 0s and 1s with the output configuration on B.
- * @param A std::vector<std::vector<int>> with the coords. of the qubits in A.
- * @param off std::vector<std::vector<int>> with the coords. of the qubits
- * turned off.
- * @param grid_of_tensors referenced to a
- * std::vector<std::vector<std::vector<MKLTensor>>> with tensors at * each
- * position of the grid.
+ * @param A vector<vector<int>> with the coords. of the qubits in A.
+ * @param off vector<vector<int>> with the coords. of the qubits turned off.
+ * @param grid_of_tensors referenced to a vector<vector<vector<MKLTensor>>> with
+ * tensors at each position of the grid.
  * @param scratch pointer to s_type array with scratch space for all operations
  * performed in this function.
  */
 void circuit_data_to_grid_of_tensors(
-    istream* circuit_data, int I, int J, int K, const string initial_conf,
-    const string final_conf_B, const optional<std::vector<std::vector<int>>>& A,
-    const optional<std::vector<std::vector<int>>>& off,
+    std::istream* circuit_data, int I, int J, int K,
+    const std::string initial_conf, const std::string final_conf_B,
+    const std::optional<std::vector<std::vector<int>>>& A,
+    const std::optional<std::vector<std::vector<int>>>& off,
     std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors,
     s_type* scratch) {
   // Gotten from the file.
   int num_qubits, cycle, q1, q2;
-  string gate;
+  std::string gate;
   // Useful for plugging into the tensor network:
   std::vector<int> i_j_1, i_j_2;
   int super_cycle;
@@ -279,7 +277,7 @@ void circuit_data_to_grid_of_tensors(
     if (find_grid_coord_in_list(off, i, j)) {
       continue;
     }
-    string delta_gate = (initial_conf[idx] == '0') ? "delta_0" : "delta_1";
+    std::string delta_gate = (initial_conf[idx] == '0') ? "delta_0" : "delta_1";
     grid_of_groups_of_tensors[i][j][0].push_back(
         MKLTensor({"th"}, {2}, gate_array(delta_gate)));
     grid_of_groups_of_tensors[i][j][0].push_back(
@@ -287,11 +285,11 @@ void circuit_data_to_grid_of_tensors(
     idx += 1;
   }
 
-  string line;
+  std::string line;
   // Read one line at a time from the circuit, skipping comments.
   while (getline(*circuit_data, line))
     if (line.size() && line[0] != '#') {
-      stringstream ss(line);
+      std::stringstream ss(line);
       // The first element is the cycle
       ss >> cycle;
       // The second element is the gate
@@ -321,10 +319,12 @@ void circuit_data_to_grid_of_tensors(
         if (find_grid_coord_in_list(off, i_j_1[0], i_j_1[1])) {
           continue;
         }
-        string input_index =
-            "t" + to_string(counter_group[i_j_1[0]][i_j_1[1]][super_cycle]);
-        string output_index =
-            "t" + to_string(counter_group[i_j_1[0]][i_j_1[1]][super_cycle] + 1);
+        std::string input_index =
+            "t" +
+            std::to_string(counter_group[i_j_1[0]][i_j_1[1]][super_cycle]);
+        std::string output_index =
+            "t" +
+            std::to_string(counter_group[i_j_1[0]][i_j_1[1]][super_cycle] + 1);
         ++counter_group[i_j_1[0]][i_j_1[1]][super_cycle];
         grid_of_groups_of_tensors[i_j_1[0]][i_j_1[1]][super_cycle].push_back(
             MKLTensor({input_index, output_index}, {2, 2}, gate_array(gate)));
@@ -338,18 +338,23 @@ void circuit_data_to_grid_of_tensors(
         std::vector<s_type> gate_q2;
         std::vector<size_t> dimensions;
         tie(gate_q1, gate_q2, dimensions) = gate_arrays(gate, scratch);
-        string input_index_1 =
-            "t" + to_string(counter_group[i_j_1[0]][i_j_1[1]][super_cycle]);
-        string output_index_1 =
-            "t" + to_string(counter_group[i_j_1[0]][i_j_1[1]][super_cycle] + 1);
-        string virtual_index =
-            "(" + to_string(i_j_1[0]) + "," + to_string(i_j_1[1]) + "," +
-            to_string(super_cycle) + "),(" + to_string(i_j_2[0]) + "," +
-            to_string(i_j_2[1]) + "," + to_string(super_cycle) + ")";
-        string input_index_2 =
-            "t" + to_string(counter_group[i_j_2[0]][i_j_2[1]][super_cycle]);
-        string output_index_2 =
-            "t" + to_string(counter_group[i_j_2[0]][i_j_2[1]][super_cycle] + 1);
+        std::string input_index_1 =
+            "t" +
+            std::to_string(counter_group[i_j_1[0]][i_j_1[1]][super_cycle]);
+        std::string output_index_1 =
+            "t" +
+            std::to_string(counter_group[i_j_1[0]][i_j_1[1]][super_cycle] + 1);
+        std::string virtual_index =
+            "(" + std::to_string(i_j_1[0]) + "," + std::to_string(i_j_1[1]) +
+            "," + std::to_string(super_cycle) + "),(" +
+            std::to_string(i_j_2[0]) + "," + std::to_string(i_j_2[1]) + "," +
+            std::to_string(super_cycle) + ")";
+        std::string input_index_2 =
+            "t" +
+            std::to_string(counter_group[i_j_2[0]][i_j_2[1]][super_cycle]);
+        std::string output_index_2 =
+            "t" +
+            std::to_string(counter_group[i_j_2[0]][i_j_2[1]][super_cycle] + 1);
         ++counter_group[i_j_1[0]][i_j_1[1]][super_cycle];
         ++counter_group[i_j_2[0]][i_j_2[1]][super_cycle];
         grid_of_groups_of_tensors[i_j_1[0]][i_j_1[1]][super_cycle].push_back(
@@ -369,13 +374,13 @@ void circuit_data_to_grid_of_tensors(
     if (find_grid_coord_in_list(off, i, j)) {
       continue;
     }
-    string last_index = "t" + to_string(counter_group[i][j][k]);
+    std::string last_index = "t" + std::to_string(counter_group[i][j][k]);
     grid_of_groups_of_tensors[i][j][k].push_back(
         MKLTensor({"th", last_index}, {2, 2}, gate_array("h")));
     if (find_grid_coord_in_list(A, i, j)) {
       continue;
     }
-    string delta_gate = (final_conf_B[idx] == '0') ? "delta_0" : "delta_1";
+    std::string delta_gate = (final_conf_B[idx] == '0') ? "delta_0" : "delta_1";
     grid_of_groups_of_tensors[i][j][k].push_back(
         MKLTensor({"th"}, {2}, gate_array(delta_gate)));
     idx += 1;  // Move in B only.
@@ -410,24 +415,24 @@ void circuit_data_to_grid_of_tensors(
           continue;
         }
         if (k > 0) {
-          string new_first_index = "(" + to_string(i) + "," + to_string(j) +
-                                   "," + to_string(k - 1) + "),(" +
-                                   to_string(i) + "," + to_string(j) + "," +
-                                   to_string(k) + ")";
+          std::string new_first_index =
+              "(" + std::to_string(i) + "," + std::to_string(j) + "," +
+              std::to_string(k - 1) + "),(" + std::to_string(i) + "," +
+              std::to_string(j) + "," + std::to_string(k) + ")";
           grid_of_tensors[i][j][k].rename_index("t0", new_first_index);
         }
         if (k < K - 1) {
-          string last_index = "t" + to_string(counter_group[i][j][k]);
-          string new_last_index = "(" + to_string(i) + "," + to_string(j) +
-                                  "," + to_string(k) + "),(" + to_string(i) +
-                                  "," + to_string(j) + "," + to_string(k + 1) +
-                                  ")";
+          std::string last_index = "t" + std::to_string(counter_group[i][j][k]);
+          std::string new_last_index =
+              "(" + std::to_string(i) + "," + std::to_string(j) + "," +
+              std::to_string(k) + "),(" + std::to_string(i) + "," +
+              std::to_string(j) + "," + std::to_string(k + 1) + ")";
           grid_of_tensors[i][j][k].rename_index(last_index, new_last_index);
         }
         if (k == K - 1 && find_grid_coord_in_list(A, i, j)) {
-          string last_index = "th";
-          string new_last_index =
-              "(" + to_string(i) + "," + to_string(j) + "),(o)";
+          std::string last_index = "th";
+          std::string new_last_index =
+              "(" + std::to_string(i) + "," + std::to_string(j) + "),(o)";
           grid_of_tensors[i][j][k].rename_index(last_index, new_last_index);
         }
       }
@@ -439,13 +444,14 @@ void circuit_data_to_grid_of_tensors(
 }  // namespace
 
 void google_circuit_file_to_grid_of_tensors(
-    string filename, int I, int J, int K, const string initial_conf,
-    const string final_conf_B, const optional<std::vector<std::vector<int>>>& A,
-    const optional<std::vector<std::vector<int>>>& off,
+    std::string filename, int I, int J, int K, const std::string initial_conf,
+    const std::string final_conf_B,
+    const std::optional<std::vector<std::vector<int>>>& A,
+    const std::optional<std::vector<std::vector<int>>>& off,
     std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors,
     s_type* scratch) {
   // Open file.
-  auto io = ifstream(filename);
+  auto io = std::ifstream(filename);
   assert(io.good() && "Cannot open file.");
   circuit_data_to_grid_of_tensors(&io, I, J, K, initial_conf, final_conf_B, A,
                                   off, grid_of_tensors, scratch);
@@ -454,8 +460,8 @@ void google_circuit_file_to_grid_of_tensors(
 void grid_of_tensors_3D_to_2D(
     std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors_3D,
     std::vector<std::vector<MKLTensor>>& grid_of_tensors_2D,
-    optional<std::vector<std::vector<int>>> A,
-    optional<std::vector<std::vector<int>>> off, s_type* scratch) {
+    std::optional<std::vector<std::vector<int>>> A,
+    std::optional<std::vector<std::vector<int>>> off, s_type* scratch) {
   // Get dimensions and super_dim = DIM^k.
   const int I = grid_of_tensors_3D.size();
   const int J = grid_of_tensors_3D[0].size();
@@ -501,55 +507,56 @@ void grid_of_tensors_3D_to_2D(
         continue;
       }
 
-      std::vector<string> ordered_indices_3D;
-      std::vector<string> indices_2D;
-      string index_name;
+      std::vector<std::string> ordered_indices_3D;
+      std::vector<std::string> indices_2D;
+      std::string index_name;
       if (i > 0 && !find_grid_coord_in_list(off, i - 1, j)) {
         for (int k = 0; k < K; ++k) {
-          index_name = "(" + to_string(i - 1) + "," + to_string(j) + "," +
-                       to_string(k) + "),(" + to_string(i) + "," +
-                       to_string(j) + "," + to_string(k) + ")";
+          index_name = "(" + std::to_string(i - 1) + "," + std::to_string(j) +
+                       "," + std::to_string(k) + "),(" + std::to_string(i) +
+                       "," + std::to_string(j) + "," + std::to_string(k) + ")";
           ordered_indices_3D.push_back(index_name);
         }
-        index_name = "(" + to_string(i - 1) + "," + to_string(j) + "),(" +
-                     to_string(i) + "," + to_string(j) + ")";
+        index_name = "(" + std::to_string(i - 1) + "," + std::to_string(j) +
+                     "),(" + std::to_string(i) + "," + std::to_string(j) + ")";
         indices_2D.push_back(index_name);
       }
       if (j > 0 && !find_grid_coord_in_list(off, i, j - 1)) {
         for (int k = 0; k < K; ++k) {
-          index_name = "(" + to_string(i) + "," + to_string(j - 1) + "," +
-                       to_string(k) + "),(" + to_string(i) + "," +
-                       to_string(j) + "," + to_string(k) + ")";
+          index_name = "(" + std::to_string(i) + "," + std::to_string(j - 1) +
+                       "," + std::to_string(k) + "),(" + std::to_string(i) +
+                       "," + std::to_string(j) + "," + std::to_string(k) + ")";
           ordered_indices_3D.push_back(index_name);
         }
-        index_name = "(" + to_string(i) + "," + to_string(j - 1) + "),(" +
-                     to_string(i) + "," + to_string(j) + ")";
+        index_name = "(" + std::to_string(i) + "," + std::to_string(j - 1) +
+                     "),(" + std::to_string(i) + "," + std::to_string(j) + ")";
         indices_2D.push_back(index_name);
       }
       if (i < I - 1 && !find_grid_coord_in_list(off, i + 1, j)) {
         for (int k = 0; k < K; ++k) {
-          index_name = "(" + to_string(i) + "," + to_string(j) + "," +
-                       to_string(k) + "),(" + to_string(i + 1) + "," +
-                       to_string(j) + "," + to_string(k) + ")";
+          index_name = "(" + std::to_string(i) + "," + std::to_string(j) + "," +
+                       std::to_string(k) + "),(" + std::to_string(i + 1) + "," +
+                       std::to_string(j) + "," + std::to_string(k) + ")";
           ordered_indices_3D.push_back(index_name);
         }
-        index_name = "(" + to_string(i) + "," + to_string(j) + "),(" +
-                     to_string(i + 1) + "," + to_string(j) + ")";
+        index_name = "(" + std::to_string(i) + "," + std::to_string(j) + "),(" +
+                     std::to_string(i + 1) + "," + std::to_string(j) + ")";
         indices_2D.push_back(index_name);
       }
       if (j < J - 1 && !find_grid_coord_in_list(off, i, j + 1)) {
         for (int k = 0; k < K; ++k) {
-          index_name = "(" + to_string(i) + "," + to_string(j) + "," +
-                       to_string(k) + "),(" + to_string(i) + "," +
-                       to_string(j + 1) + "," + to_string(k) + ")";
+          index_name = "(" + std::to_string(i) + "," + std::to_string(j) + "," +
+                       std::to_string(k) + "),(" + std::to_string(i) + "," +
+                       std::to_string(j + 1) + "," + std::to_string(k) + ")";
           ordered_indices_3D.push_back(index_name);
         }
-        index_name = "(" + to_string(i) + "," + to_string(j) + "),(" +
-                     to_string(i) + "," + to_string(j + 1) + ")";
+        index_name = "(" + std::to_string(i) + "," + std::to_string(j) + "),(" +
+                     std::to_string(i) + "," + std::to_string(j + 1) + ")";
         indices_2D.push_back(index_name);
       }
       if (find_grid_coord_in_list(A, i, j)) {
-        index_name = "(" + to_string(i) + "," + to_string(j) + "),(o)";
+        index_name =
+            "(" + std::to_string(i) + "," + std::to_string(j) + "),(o)";
         ordered_indices_3D.push_back(index_name);
       }
 
@@ -560,7 +567,7 @@ void grid_of_tensors_3D_to_2D(
       int max_idx;
       max_idx = indices_2D.size();
       for (int idx_num = 0; idx_num < max_idx; ++idx_num) {
-        std::vector<string> indices_to_bundle(
+        std::vector<std::string> indices_to_bundle(
             ordered_indices_3D.begin() + idx_num * K,
             ordered_indices_3D.begin() + (idx_num + 1) * K);
         grid_of_tensors_2D[i][j].bundle(indices_to_bundle, indices_2D[idx_num]);
@@ -571,18 +578,17 @@ void grid_of_tensors_3D_to_2D(
   scratch = NULL;
 }
 
-void read_wave_function_evolution(string filename, int I,
-                                  std::vector<MKLTensor>& gates,
-                                  std::vector<std::vector<string>>& inputs,
-                                  std::vector<std::vector<string>>& outputs,
-                                  s_type* scratch) {
+void read_wave_function_evolution(
+    std::string filename, int I, std::vector<MKLTensor>& gates,
+    std::vector<std::vector<std::string>>& inputs,
+    std::vector<std::vector<std::string>>& outputs, s_type* scratch) {
   // Open file.
-  auto io = ifstream(filename);
+  auto io = std::ifstream(filename);
   assert(io.good() && "Cannot open file.");
 
   // Gotten from the file.
   int num_qubits, cycle, q1, q2;
-  string gate;
+  std::string gate;
   // Useful for plugging into the tensor network:
   std::vector<int> i_j_1, i_j_2;
   int super_cycle;
@@ -593,10 +599,10 @@ void read_wave_function_evolution(string filename, int I,
   // Assert for the number of qubits.
   assert(num_qubits == I && "I must be equal to the number of qubits.");
 
-  string line;
+  std::string line;
   while (getline(io, line))
     if (line.size() && line[0] != '#') {  // Avoid comments
-      stringstream ss(line);
+      std::stringstream ss(line);
       // The first element is the cycle
       ss >> cycle;
       // The second element is the gate
@@ -611,18 +617,18 @@ void read_wave_function_evolution(string filename, int I,
 
       // Fill in one-qubit gates.
       if (q2 < 0) {
-        string input_index = to_string(q1) + ",i";
-        string output_index = to_string(q1) + ",o";
+        std::string input_index = std::to_string(q1) + ",i";
+        std::string output_index = std::to_string(q1) + ",o";
         gates.push_back(MKLTensor({input_index, output_index}, {DIM, DIM},
                                   gate_array(gate)));
         inputs.push_back({input_index});
         outputs.push_back({output_index});
       }
       if (q2 >= 0) {
-        string input_index1 = to_string(q1) + ",i";
-        string output_index1 = to_string(q1) + ",o";
-        string input_index2 = to_string(q2) + ",i";
-        string output_index2 = to_string(q2) + ",o";
+        std::string input_index1 = std::to_string(q1) + ",i";
+        std::string output_index1 = std::to_string(q1) + ",o";
+        std::string input_index2 = std::to_string(q2) + ",i";
+        std::string output_index2 = std::to_string(q2) + ",o";
         inputs.push_back({input_index1, input_index2});
         outputs.push_back({output_index1, output_index2});
         gates.push_back(MKLTensor(

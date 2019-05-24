@@ -53,10 +53,12 @@ const int DIM = 2;
  * performed in this function.
  */
 void google_circuit_file_to_grid_of_tensors(
-    string filename, int I, int J, int K, const string initial_conf,
-    const string final_conf_B, const optional<vector<vector<int>>>& A,
-    const optional<vector<vector<int>>>& off,
-    vector<vector<vector<MKLTensor>>>& grid_of_tensors, s_type* scratch);
+    std::string filename, int I, int J, int K, const std::string initial_conf,
+    const std::string final_conf_B,
+    const std::optional<std::vector<std::vector<int>>>& A,
+    const std::optional<std::vector<std::vector<int>>>& off,
+    std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors,
+    s_type* scratch);
 
 /**
  * Contracts a 3D grid of tensors onto a 2D grid of tensors, contracting
@@ -74,10 +76,10 @@ void google_circuit_file_to_grid_of_tensors(
  * work.
  */
 void grid_of_tensors_3D_to_2D(
-    vector<vector<vector<MKLTensor>>>& grid_of_tensors_3D,
-    vector<vector<MKLTensor>>& grid_of_tensors_2D,
-    optional<vector<vector<int>>> A, optional<vector<vector<int>>> off,
-    s_type* scratch);
+    std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors_3D,
+    std::vector<std::vector<MKLTensor>>& grid_of_tensors_2D,
+    std::optional<std::vector<std::vector<int>>> A,
+    std::optional<std::vector<std::vector<int>>> off, s_type* scratch);
 
 /**
  * Read circuit from file and fill vector of tensors (of gates), vector with
@@ -94,10 +96,9 @@ void grid_of_tensors_3D_to_2D(
  * performed in this function.
  *
  */
-void read_wave_function_evolution(string filename, int I,
-                                  vector<MKLTensor>& gates,
-                                  vector<vector<string>>& inputs,
-                                  vector<vector<string>>& outputs,
-                                  s_type* scratch);
+void read_wave_function_evolution(
+    std::string filename, int I, std::vector<MKLTensor>& gates,
+    std::vector<std::vector<std::string>>& inputs,
+    std::vector<std::vector<std::string>>& outputs, s_type* scratch);
 
 #endif
