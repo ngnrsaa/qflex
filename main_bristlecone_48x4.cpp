@@ -42,14 +42,14 @@ int main(int argc, char **argv) {
   const int super_dim = (int)pow(DIM,K);
   const string filename = string(argv[5]);
   string initial_conf(48, '0'), final_conf_B(40, '0');
-  std::vector<string> final_conf_A(1, string(8, '0'));
+  vector<string> final_conf_A(1, string(8, '0'));
   if (argc>6)
     initial_conf = string(argv[6]);
   if (argc>7)
     final_conf_B = string(argv[7]);
   if (argc>8)
   {
-    final_conf_A = std::vector<string>(argc-8);
+    final_conf_A = vector<string>(argc-8);
     for (int s=0; s<final_conf_A.size(); ++s)
       final_conf_A[s] = string(argv[s+8]);
   }
@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
   //     << "s\n\n";
 
   // List of qubits to remove (off) and qubits in A.
-  std::vector<std::vector<int>> qubits_off({
+  vector<vector<int>> qubits_off({
     {0,0},{0,1},{0,2},{0,3},{0,4}            ,{0,7},{0,8},{0,9},{0,10},{0,11},
     {1,0},{1,1},{1,2},{1,3}                        ,{1,8},{1,9},{1,10},{1,11},
     {2,0},{2,1},{2,2}                                    ,{2,9},{2,10},{2,11},
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
     {9,0},{9,1},{9,2},{9,3},{9,4},{9,5},{9,6},{9,7},{9,8},{9,9},{9,10},{9,11},
     {10,0},{10,1},{10,2},{10,3},{10,4},{10,5},{10,6},{10,7},{10,8},{10,9},{10,10},{10,11}
         });
-  std::vector<std::vector<int>> qubits_A({{2,8},{3,8},{3,9},{4,8},{4,9},
+  vector<vector<int>> qubits_A({{2,8},{3,8},{3,9},{4,8},{4,9},
                                 {5,8},{5,9},{6,8}});
 
 
@@ -90,16 +90,16 @@ int main(int argc, char **argv) {
 
 
   // Declaring and then filling 2D grid of tensors.
-  std::vector<std::vector<MKLTensor>> tensor_grid(I);
+  vector<vector<MKLTensor>> tensor_grid(I);
   for (int i=0; i<I; ++i)
   {
-    tensor_grid[i] = std::vector<MKLTensor>(J);
+    tensor_grid[i] = vector<MKLTensor>(J);
   }
   // Scope so that the 3D grid of tensors is destructed.
   {
     // Creating 3D grid of tensors from file.
     t0 = high_resolution_clock::now();
-    std::vector<std::vector<std::vector<MKLTensor>>> tensor_grid_3D;
+    vector<vector<vector<MKLTensor>>> tensor_grid_3D;
     google_circuit_file_to_grid_of_tensors(filename, I, J, K, initial_conf,
                final_conf_B, qubits_A, qubits_off, tensor_grid_3D, scratch);
     t1 = high_resolution_clock::now();
@@ -134,14 +134,14 @@ int main(int argc, char **argv) {
   /*
   for (int i=0; i<I; ++i) for (int j=0; j<J; ++j)
   {
-    if (find(qubits_off.begin(),qubits_off.end(),std::vector<int>({i,j})) !=qubits_off.end()) { continue; }
+    if (find(qubits_off.begin(),qubits_off.end(),vector<int>({i,j})) !=qubits_off.end()) { continue; }
     cout << "Tensor [" << i << "][" << j << "] = ";
     cout << tensor_grid[i][j].tensor_norm() << endl;
   }
   s_type scalar;
   for (int i=0; i<I; ++i) for (int j=0; j<J; ++j)
   {
-    if (find(qubits_off.begin(),qubits_off.end(),std::vector<int>({i,j}))
+    if (find(qubits_off.begin(),qubits_off.end(),vector<int>({i,j}))
         !=qubits_off.end())
     { continue; }
     //scalar = 10./sqrt(tensor_grid[i][j].tensor_norm());
@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
   cout << "Normalized tensor norms:\n";
   for (int i=0; i<I; ++i) for (int j=0; j<J; ++j)
   {
-    if (find(qubits_off.begin(),qubits_off.end(),std::vector<int>({i,j}))
+    if (find(qubits_off.begin(),qubits_off.end(),vector<int>({i,j}))
         !=qubits_off.end())
     { continue; }
     cout << "Tensor [" << i << "][" << j << "] = ";
@@ -205,7 +205,7 @@ int main(int argc, char **argv) {
   double fidelity_taken = (double)num_cuts_taken / (double)num_cuts;
   //cout << "Take randomly " << num_cuts_taken << " out of " << num_cuts
   //     << " cuts for a fidelity of " << fidelity_taken << "." << endl;
-  std::vector<std::vector<int>> cut_combinations(num_cuts);
+  vector<vector<int>> cut_combinations(num_cuts);
   int j=0;
   for (int i0=0; i0<tensor_grid[0][5]
        .get_index_to_dimension().at("(0,5),(0,6)"); ++i0)
@@ -216,14 +216,14 @@ int main(int argc, char **argv) {
       for (int i2=0; i2<tensor_grid[2][5]
            .get_index_to_dimension().at("(2,5),(2,6)"); ++i2)
       {
-        cut_combinations[j] = std::vector<int>({i0,i1,i2});
+        cut_combinations[j] = vector<int>({i0,i1,i2});
         ++j;
       }
     }
   }
   random_shuffle(cut_combinations.begin(), cut_combinations.end());
   // These are the cuts chosen at random for the fidelity given.
-  std::vector<std::vector<int>> cut_combinations_taken(cut_combinations.begin(),
+  vector<vector<int>> cut_combinations_taken(cut_combinations.begin(),
                                    cut_combinations.begin()+num_cuts_taken);
   //cout << "The chosen cut combinations are (i0, i1):\n";
   for (auto v : cut_combinations_taken)
@@ -233,7 +233,7 @@ int main(int argc, char **argv) {
     //cout << endl;
   }
   */
-  std::vector<std::vector<int>> cut_combinations_taken({{0,0},{0,1}});
+  vector<vector<int>> cut_combinations_taken({{0,0},{0,1}});
 
   // Allocating tensors to be reused.
   // First, helper tensors (H_...) with particular sizes.
@@ -271,7 +271,7 @@ int main(int argc, char **argv) {
   // First and only loop deals with (i0, i1).
   int i0, i1;
   // Push back cut contributions.
-  std::vector<std::vector<complex<double>>> amplitudes(num_Cs);
+  vector<vector<complex<double>>> amplitudes(num_Cs);
   for (int cut=0; cut<cut_combinations_taken.size(); ++cut)
   {
     i0 = cut_combinations_taken[cut][0];
@@ -402,7 +402,7 @@ int main(int argc, char **argv) {
   }
 
   // Add up amplitudes.
-  std::vector<complex<double>> final_result(num_Cs, 0.0);
+  vector<complex<double>> final_result(num_Cs, 0.0);
   for (int c=0; c<amplitudes.size(); ++c)
   {
     for (int i=0; i<amplitudes[c].size(); ++i)
