@@ -18,7 +18,7 @@ constexpr char kNullCircuit[] = R"(2
 // Verifies that circuits can be read from file and the resulting gates match
 // the expected circuit.
 TEST(ReadCircuitTest, NullCircuit) {
-  vector<vector<vector<MKLTensor>>> grid_of_tensors;
+  std::vector<std::vector<std::vector<MKLTensor>>> grid_of_tensors;
   s_type scratch[256];
 
   auto circuit_data = std::stringstream(kNullCircuit);
