@@ -109,9 +109,19 @@ int main(int argc, char **argv) {
     //     << "s\n\n";
 
     // Contract 3D grid onto 2D grid of tensors, as usual.
+    const std::vector<std::vector<std::vector<int>>> ordering = {
+        {{4, 2}, {5, 2}, {4, 3}, {5, 3}, {6, 3}, {4, 4}, {5, 4}, {6, 4},
+         {7, 4}, {4, 5}, {5, 5}, {6, 5}, {7, 5}, {8, 5}, {8, 6}, {7, 6},
+         {6, 6}, {5, 6}, {4, 6}, {7, 7}, {6, 7}, {5, 7}, {4, 7}},
+        {{3, 2}, {3, 3}, {2, 3}, {3, 4}, {2, 4}, {1, 4}, {3, 5}, {2, 5}, {1, 5},
+         {0, 5}, {0, 6}, {1, 6}, {2, 6}, {3, 6}, {1, 7}, {2, 7}, {3, 7}},
+        {{3, 9}, {4, 9}, {5, 9}, {3, 8}, {2, 8}, {4, 8}, {5, 8}, {6, 8}},
+    };
+    const std::vector<std::vector<std::vector<int>>> cuts = {
+        {{3, 2}, {4, 2}}, {{3, 3}, {4, 3}}};
     t0 = high_resolution_clock::now();
-    grid_of_tensors_3D_to_2D(tensor_grid_3D, tensor_grid,
-                             qubits_A, qubits_off, scratch);
+    grid_of_tensors_3D_to_2D(tensor_grid_3D, tensor_grid, qubits_A, qubits_off,
+                             ordering, cuts, scratch);
     t1 = high_resolution_clock::now();
     time_span = duration_cast<duration<double>>(t1 - t0);
     //cout << "Time spent creating 2D grid of tensors from 3D one: "
@@ -123,7 +133,7 @@ int main(int argc, char **argv) {
   //cout << "Tensor norms:\n";
   /*
   for (int i=0; i<I; ++i) for (int j=0; j<J; ++j)
-  { 
+  {
     if (find(qubits_off.begin(),qubits_off.end(),vector<int>({i,j})) !=qubits_off.end()) { continue; }
     cout << "Tensor [" << i << "][" << j << "] = ";
     cout << tensor_grid[i][j].tensor_norm() << endl;
@@ -257,50 +267,11 @@ int main(int argc, char **argv) {
 
 
   double time_in_loops = 0.0; // Keeps on adding time spent on different steps.
-  // Reorder tensors in C.
-  t0 = high_resolution_clock::now();
-  tensor_grid[2][8].reorder({"(2,8),(o)","(2,7),(2,8)","(2,8),(3,8)"},
-                             scratch);
-  tensor_grid[3][8].reorder({"(3,8),(o)","(2,8),(3,8)","(3,7),(3,8)",
-                             "(3,8),(3,9)","(3,8),(4,8)"}, scratch);
-  tensor_grid[3][9].reorder({"(3,9),(o)","(3,8),(3,9)","(3,9),(4,9)"},
-                             scratch);
-  tensor_grid[4][8].reorder({"(4,8),(o)","(3,8),(4,8)","(4,7),(4,8)",
-                             "(4,8),(4,9)","(4,8),(5,8)"}, scratch);
-  tensor_grid[4][9].reorder({"(4,9),(o)","(3,9),(4,9)","(4,8),(4,9)",
-                             "(4,9),(5,9)"}, scratch);
-  tensor_grid[5][8].reorder({"(5,8),(o)","(4,8),(5,8)","(5,7),(5,8)",
-                             "(5,8),(5,9)","(5,8),(6,8)"}, scratch);
-  tensor_grid[5][9].reorder({"(5,9),(o)","(4,9),(5,9)","(5,8),(5,9)"},
-                             scratch);
-  tensor_grid[6][8].reorder({"(6,8),(o)","(5,8),(6,8)","(6,7),(6,8)"},
-                            scratch);
-  t1 = high_resolution_clock::now();
-  time_span = duration_cast<duration<double>>(t1 - t0);
-  //cout << "Time spent reordering tensors in C: "
-  //     << time_span.count() << "s\n\n";
-  time_in_loops += time_span.count();
-
 
   // First and only loop deals with (i0, i1).
   int i0, i1;
   // Push back cut contributions.
   vector<vector<complex<double>>> amplitudes(num_Cs);
-  // Reorder first three layers of projections.
-  t0 = high_resolution_clock::now();
-  tensor_grid[3][2].reorder({"(3,2),(4,2)","(3,2),(3,3)"}, scratch);
-  tensor_grid[4][2].reorder({"(3,2),(4,2)","(4,2),(5,2)",
-                             "(4,2),(4,3)"}, scratch);
-  tensor_grid[3][3].reorder({"(3,3),(4,3)","(3,2),(3,3)",
-                             "(2,3),(3,3)","(3,3),(3,4)"}, scratch);
-  tensor_grid[4][3].reorder({"(3,3),(4,3)","(4,2),(4,3)",
-                             "(4,3),(5,3)","(4,3),(4,4)"}, scratch);
-  t1 = high_resolution_clock::now();
-  time_span = duration_cast<duration<double>>(t1 - t0);
-  //cout << "Time spent reordering two layers to project before iterations: "
-  //     << time_span.count() << "s\n\n";
-  time_in_loops += time_span.count();
-  
   for (int cut=0; cut<cut_combinations_taken.size(); ++cut)
   {
     i0 = cut_combinations_taken[cut][0];
@@ -389,7 +360,7 @@ int main(int argc, char **argv) {
       tensor_grid[5][8].project("(5,8),(o)", (string_A[5]=='0')?0:1, c58);
       tensor_grid[5][9].project("(5,9),(o)", (string_A[6]=='0')?0:1, c59);
       tensor_grid[6][8].project("(6,8),(o)", (string_A[7]=='0')?0:1, c68);
-      
+
       multiply(c39, c49, H_3_legs_a, scratch);
       multiply(H_3_legs_a, c59, H_3_legs_b, scratch);
       multiply(H_3_legs_b, c38, H_5_legs_a, scratch);

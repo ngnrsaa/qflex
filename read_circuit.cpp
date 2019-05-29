@@ -199,7 +199,120 @@ bool find_grid_coord_in_list(
               std::vector<int>({i, j})) != coord_list.value().end();
 }
 
+/**
+ * Helper method for grid_of_tensors_3D_to_2D which determines the order for
+ * tensor indices around a target qubit based on contraction order and cuts.
+ * @param ordering vector<vector<vector<int>>> listing the order in which
+ * contractions are to be performed.
+ * @param cuts vector<vector<vector<int>>> listing the cuts applied to the grid.
+ * @param local vector<int> of the target qubit coordinates.
+ * @return function for use as a comparator in std::sort.
+ */
+std::function<bool(std::vector<int>, std::vector<int>)> order_func(
+    const std::vector<std::vector<std::vector<int>>>& ordering,
+    const std::vector<std::vector<std::vector<int>>>& cuts,
+    std::vector<int> local) {
+  return [ordering, cuts, local](const std::vector<int> lhs,
+                                 const std::vector<int> rhs) {
+    // Cuts are projected early and should be ordered first.
+    std::vector<std::vector<int>> lhs_pair, rhs_pair;
+    if (local[0] < lhs[0] || local[1] < lhs[1]) {
+      lhs_pair = {local, lhs};
+    } else {
+      lhs_pair = {lhs, local};
+    }
+    if (std::find(cuts.begin(), cuts.end(), lhs_pair) != cuts.end()) {
+      return true;
+    }
+    if (local[0] < rhs[0] || local[1] < rhs[1]) {
+      rhs_pair = {local, rhs};
+    } else {
+      rhs_pair = {rhs, local};
+    }
+    if (std::find(cuts.begin(), cuts.end(), rhs_pair) != cuts.end()) {
+      return false;
+    }
+    std::vector<int> lpos, rpos;
+    for (int i = 0; i < ordering.size(); i++) {
+      const auto& outer = ordering[i];
+      auto find_lpos = std::find(outer.begin(), outer.end(), lhs);
+      if (find_lpos != outer.end()) {
+        lpos = {i, std::distance(outer.begin(), find_lpos)};
+        break;
+      }
+    }
+    if (lpos.empty()) {
+      char error[200];
+      snprintf(error, sizeof(error), "Pair not found: (%d,%d),(%d,%d)",
+               local[0], local[1], lhs[0], lhs[1]);
+      std::cout << error << std::endl;
+    }
+    for (int i = 0; i < ordering.size(); i++) {
+      const auto& outer = ordering[i];
+      auto find_rpos = std::find(outer.begin(), outer.end(), rhs);
+      if (find_rpos != outer.end()) {
+        rpos = {i, std::distance(outer.begin(), find_rpos)};
+        break;
+      }
+    }
+    if (rpos.empty()) {
+      char error[200];
+      snprintf(error, sizeof(error), "Pair not found: (%d,%d),(%d,%d)",
+               local[0], local[1], rhs[0], rhs[1]);
+      std::cout << error << std::endl;
+    }
+    if (lpos[0] == rpos[0]) {
+      // lhs and rhs are in the same patch.
+      return lpos[1] < rpos[1];
+    }
+
+    int local_patch;
+    for (int i = 0; i < ordering.size(); i++) {
+      const auto& outer = ordering[i];
+      if (std::find(outer.begin(), outer.end(), local) != outer.end()) {
+        local_patch = i;
+        break;
+      }
+    }
+    if (lpos[0] == local_patch) {
+      // rhs won't be connected until patches merge.
+      return true;
+    }
+    if (rpos[0] == local_patch) {
+      // lhs won't be connected until patches merge.
+      return false;
+    }
+    // Both lhs and rhs are in different patches from local_patch.
+    return lhs[0] < rhs[0];
+  };
+}
+
 }  // namespace
+
+namespace internal {
+
+std::string index_name(std::vector<int> p1, std::vector<int> p2) {
+  char buffer[64];
+  if (p1.size() == 2 && p2.size() == 2) {
+    // Two-qubit contraction.
+    snprintf(buffer, sizeof(buffer), "(%d,%d),(%d,%d)", p1[0], p1[1], p2[0],
+             p2[1]);
+    return buffer;
+  }
+  if (p1.size() == 3 && p2.size() == 3) {
+    // Single-qubit contraction, or virtual index.
+    snprintf(buffer, sizeof(buffer), "(%d,%d,%d),(%d,%d,%d)", p1[0], p1[1],
+             p1[2], p2[0], p2[1], p2[2]);
+    return buffer;
+  }
+  // Final qubit output value assignment.
+  if (p1.size() == 2 && p2.empty()) {
+    snprintf(buffer, sizeof(buffer), "(%d,%d),(o)", p1[0], p1[1]);
+    return buffer;
+  }
+  assert(false && "Failed to construct tensor name.");
+  return "";
+}
 
 void circuit_data_to_grid_of_tensors(
     std::istream* circuit_data, int I, int J, int K,
@@ -327,10 +440,8 @@ void circuit_data_to_grid_of_tensors(
             "t" +
             std::to_string(counter_group[i_j_1[0]][i_j_1[1]][super_cycle] + 1);
         std::string virtual_index =
-            "(" + std::to_string(i_j_1[0]) + "," + std::to_string(i_j_1[1]) +
-            "," + std::to_string(super_cycle) + "),(" +
-            std::to_string(i_j_2[0]) + "," + std::to_string(i_j_2[1]) + "," +
-            std::to_string(super_cycle) + ")";
+            internal::index_name({i_j_1[0], i_j_1[1], super_cycle},
+                                 {i_j_2[0], i_j_2[1], super_cycle});
         std::string input_index_2 =
             "t" +
             std::to_string(counter_group[i_j_2[0]][i_j_2[1]][super_cycle]);
@@ -398,23 +509,18 @@ void circuit_data_to_grid_of_tensors(
         }
         if (k > 0) {
           std::string new_first_index =
-              "(" + std::to_string(i) + "," + std::to_string(j) + "," +
-              std::to_string(k - 1) + "),(" + std::to_string(i) + "," +
-              std::to_string(j) + "," + std::to_string(k) + ")";
+              internal::index_name({i, j, k - 1}, {i, j, k});
           grid_of_tensors[i][j][k].rename_index("t0", new_first_index);
         }
         if (k < K - 1) {
           std::string last_index = "t" + std::to_string(counter_group[i][j][k]);
           std::string new_last_index =
-              "(" + std::to_string(i) + "," + std::to_string(j) + "," +
-              std::to_string(k) + "),(" + std::to_string(i) + "," +
-              std::to_string(j) + "," + std::to_string(k + 1) + ")";
+              internal::index_name({i, j, k}, {i, j, k + 1});
           grid_of_tensors[i][j][k].rename_index(last_index, new_last_index);
         }
         if (k == K - 1 && find_grid_coord_in_list(A, i, j)) {
           std::string last_index = "th";
-          std::string new_last_index =
-              "(" + std::to_string(i) + "," + std::to_string(j) + "),(o)";
+          std::string new_last_index = internal::index_name({i, j}, {});
           grid_of_tensors[i][j][k].rename_index(last_index, new_last_index);
         }
       }
@@ -422,6 +528,8 @@ void circuit_data_to_grid_of_tensors(
   // Be proper about pointers.
   scratch = NULL;
 }
+
+}  // namespace internal
 
 void google_circuit_file_to_grid_of_tensors(
     std::string filename, int I, int J, int K, const std::string initial_conf,
@@ -433,15 +541,19 @@ void google_circuit_file_to_grid_of_tensors(
   // Open file.
   auto io = std::ifstream(filename);
   assert(io.good() && "Cannot open file.");
-  circuit_data_to_grid_of_tensors(&io, I, J, K, initial_conf, final_conf_B, A,
-                                  off, grid_of_tensors, scratch);
+  internal::circuit_data_to_grid_of_tensors(&io, I, J, K, initial_conf,
+                                            final_conf_B, A, off,
+                                            grid_of_tensors, scratch);
 }
 
 void grid_of_tensors_3D_to_2D(
     std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors_3D,
     std::vector<std::vector<MKLTensor>>& grid_of_tensors_2D,
     std::optional<std::vector<std::vector<int>>> A,
-    std::optional<std::vector<std::vector<int>>> off, s_type* scratch) {
+    std::optional<std::vector<std::vector<int>>> off,
+    const std::vector<std::vector<std::vector<int>>>& ordering,
+    const std::vector<std::vector<std::vector<int>>>& cuts,
+    s_type* scratch) {
   // Get dimensions and super_dim = DIM^k.
   const int I = grid_of_tensors_3D.size();
   const int J = grid_of_tensors_3D[0].size();
@@ -449,7 +561,7 @@ void grid_of_tensors_3D_to_2D(
   const int super_dim = (int)pow(DIM, K);
 
   // Contract vertically and fill grid_of_tensors_2D.
-  for (int i = 0; i < I; ++i)
+  for (int i = 0; i < I; ++i) {
     for (int j = 0; j < J; ++j) {
       if (find_grid_coord_in_list(off, i, j)) {
         continue;
@@ -479,9 +591,10 @@ void grid_of_tensors_3D_to_2D(
         grid_of_tensors_2D[i][j] = *source_container;
       }
     }
+  }
 
   // Reorder and bundle.
-  for (int i = 0; i < I; ++i)
+  for (int i = 0; i < I; ++i) {
     for (int j = 0; j < J; ++j) {
       if (find_grid_coord_in_list(off, i, j)) {
         continue;
@@ -489,55 +602,49 @@ void grid_of_tensors_3D_to_2D(
 
       std::vector<std::string> ordered_indices_3D;
       std::vector<std::string> indices_2D;
-      std::string index_name;
+
+      // Positions of connected active qubits.
+      std::vector<std::vector<int>> pairs;
+
       if (i > 0 && !find_grid_coord_in_list(off, i - 1, j)) {
-        for (int k = 0; k < K; ++k) {
-          index_name = "(" + std::to_string(i - 1) + "," + std::to_string(j) +
-                       "," + std::to_string(k) + "),(" + std::to_string(i) +
-                       "," + std::to_string(j) + "," + std::to_string(k) + ")";
-          ordered_indices_3D.push_back(index_name);
-        }
-        index_name = "(" + std::to_string(i - 1) + "," + std::to_string(j) +
-                     "),(" + std::to_string(i) + "," + std::to_string(j) + ")";
-        indices_2D.push_back(index_name);
+        pairs.push_back({i - 1, j});
       }
       if (j > 0 && !find_grid_coord_in_list(off, i, j - 1)) {
-        for (int k = 0; k < K; ++k) {
-          index_name = "(" + std::to_string(i) + "," + std::to_string(j - 1) +
-                       "," + std::to_string(k) + "),(" + std::to_string(i) +
-                       "," + std::to_string(j) + "," + std::to_string(k) + ")";
-          ordered_indices_3D.push_back(index_name);
-        }
-        index_name = "(" + std::to_string(i) + "," + std::to_string(j - 1) +
-                     "),(" + std::to_string(i) + "," + std::to_string(j) + ")";
-        indices_2D.push_back(index_name);
+        pairs.push_back({i, j - 1});
       }
       if (i < I - 1 && !find_grid_coord_in_list(off, i + 1, j)) {
-        for (int k = 0; k < K; ++k) {
-          index_name = "(" + std::to_string(i) + "," + std::to_string(j) + "," +
-                       std::to_string(k) + "),(" + std::to_string(i + 1) + "," +
-                       std::to_string(j) + "," + std::to_string(k) + ")";
-          ordered_indices_3D.push_back(index_name);
-        }
-        index_name = "(" + std::to_string(i) + "," + std::to_string(j) + "),(" +
-                     std::to_string(i + 1) + "," + std::to_string(j) + ")";
-        indices_2D.push_back(index_name);
+        pairs.push_back({i + 1, j});
       }
       if (j < J - 1 && !find_grid_coord_in_list(off, i, j + 1)) {
-        for (int k = 0; k < K; ++k) {
-          index_name = "(" + std::to_string(i) + "," + std::to_string(j) + "," +
-                       std::to_string(k) + "),(" + std::to_string(i) + "," +
-                       std::to_string(j + 1) + "," + std::to_string(k) + ")";
-          ordered_indices_3D.push_back(index_name);
-        }
-        index_name = "(" + std::to_string(i) + "," + std::to_string(j) + "),(" +
-                     std::to_string(i) + "," + std::to_string(j + 1) + ")";
-        indices_2D.push_back(index_name);
+        pairs.push_back({i, j + 1});
       }
+
+
+      // If this qubit is in the final region, bundling must be adjusted.
+      int fr_buffer = 0;
       if (find_grid_coord_in_list(A, i, j)) {
-        index_name =
-            "(" + std::to_string(i) + "," + std::to_string(j) + "),(o)";
-        ordered_indices_3D.push_back(index_name);
+        ordered_indices_3D.push_back(internal::index_name({i, j}, {}));
+        fr_buffer = 1;
+      }
+
+      std::vector<int> local = {i, j};
+      auto order_fn = order_func(ordering, cuts, local);
+      std::sort(pairs.begin(), pairs.end(), order_fn);
+
+      for (const auto& pair : pairs) {
+        std::vector<int> q1, q2;
+        if (pair[0] < i || pair[1] < j) {
+          q1 = pair;
+          q2 = local;
+        } else {
+          q1 = local;
+          q2 = pair;
+        }
+        for (int k = 0; k < K; ++k) {
+          ordered_indices_3D.push_back(
+              internal::index_name({q1[0], q1[1], k}, {q2[0], q2[1], k}));
+        }
+        indices_2D.push_back(internal::index_name(q1, q2));
       }
 
       // Reorder.
@@ -548,11 +655,12 @@ void grid_of_tensors_3D_to_2D(
       max_idx = indices_2D.size();
       for (int idx_num = 0; idx_num < max_idx; ++idx_num) {
         std::vector<std::string> indices_to_bundle(
-            ordered_indices_3D.begin() + idx_num * K,
-            ordered_indices_3D.begin() + (idx_num + 1) * K);
+            ordered_indices_3D.begin() + idx_num * K + fr_buffer,
+            ordered_indices_3D.begin() + (idx_num + 1) * K + fr_buffer);
         grid_of_tensors_2D[i][j].bundle(indices_to_bundle, indices_2D[idx_num]);
       }
     }
+  }
 
   // Be proper about pointers.
   scratch = NULL;

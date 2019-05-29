@@ -32,6 +32,21 @@ const double _PI = 3.14159265358979323846264338;
 const int SUPER_CYCLE_DEPTH = 8;
 const int DIM = 2;
 
+// Methods in this namespace should only be used in read_circuit.cpp and
+// read_circuit_test.cpp.
+namespace internal {
+
+/**
+ * Method for assigning names to indices in the grid. Accepted formats include:
+ *   - {i_1, j_1}, {i_2, j_2}: two-qubit contraction.
+ *   - {i_1, j_1, k_1}, {i_2, j_2, k_2}: single-qubit gate or virtual index.
+ *   - {i, j}, {}: output-value assignment.
+ * @param p1 position of the first connected tensor.
+ * @param p2 position of the second connected tensor.
+ * @return string name of the index.
+ */
+std::string index_name(std::vector<int> p1, std::vector<int> p2);
+
 /**
  * Helper method for google_circuit_file_to_grid_of_tensors. External users
  * should call that method instead.
@@ -56,6 +71,8 @@ void circuit_data_to_grid_of_tensors(
     const std::optional<std::vector<std::vector<int>>>& off,
     std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors,
     s_type* scratch);
+
+}  // namespace internal
 
 /**
  * Read circuit from file and fill in a 3D grid of tensors with the indices
@@ -97,6 +114,9 @@ void google_circuit_file_to_grid_of_tensors(
  * @param A optional<vector<vector<int>>> with the coords. of the qubits in A.
  * @param off optional<vector<vector<int>>> with the coords. of the qubits
  * turned off.
+ * @param ordering vector<vector<vector<int>>> listing the order in which
+ * contractions are to be performed.
+ * @param cuts vector<vector<vector<int>>> listing the cuts applied to the grid.
  * @param scratch pointer to s_type array with enough space for all scratch
  * work.
  */
@@ -104,7 +124,10 @@ void grid_of_tensors_3D_to_2D(
     std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors_3D,
     std::vector<std::vector<MKLTensor>>& grid_of_tensors_2D,
     std::optional<std::vector<std::vector<int>>> A,
-    std::optional<std::vector<std::vector<int>>> off, s_type* scratch);
+    std::optional<std::vector<std::vector<int>>> off,
+    const std::vector<std::vector<std::vector<int>>>& ordering,
+    const std::vector<std::vector<std::vector<int>>>& cuts,
+    s_type* scratch);
 
 /**
  * Read circuit from file and fill vector of tensors (of gates), vector with
