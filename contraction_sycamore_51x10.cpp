@@ -120,7 +120,6 @@ void Contraction::load_circuit(string input_string)
   {
     open_tensor_grid[i] = vector<shared_ptr<talsh::Tensor>>(J);
   }
-  cout << initial_conf.size() << endl << flush;
   google_circuit_file_to_open_grid_of_tensors(filename, I, J, initial_conf,
                                               qubits_off, open_tensor_grid);
   // Dimensions
@@ -221,10 +220,82 @@ void Contraction::contract(string input_string)
   // I'll follow L = inherited tensor, R = new tensor.
   bool done;
   
-  // For the reshaping of the slicing tensors.
-  vector<int> dims_2(2, super_dim);
 
-
+  // Start contraction
+  // Pre-cut
+  // Column 1
+  unique_ptr<talsh::Tensor> aa(new talsh::Tensor({dims_grid[5][1][0],
+                                                  dims_grid[5][1][1],
+                                                  dims_grid[4][1][1]},
+                                                  s_type(0.0)));
+  TensContraction tc("D(c,d,b)+=L(a,b)*R(c,d,a)", aa.get(),
+                      tensor_grid[4][1].get(), tensor_grid[5][1].get());
+  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+  assert(tc.sync(DEV_HOST,0));
+  unique_ptr<talsh::Tensor> ab(new talsh::Tensor({dims_grid[6][1][1],
+                                                  dims_grid[5][1][1],
+                                                  dims_grid[4][1][1]},
+                                                  s_type(0.0)));
+  tc = TensContraction("D(d,b,c)+=L(a,b,c)*R(a,d)", ab.get(),
+                        aa.get(), tensor_grid[6][1].get());
+  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+  assert(tc.sync(DEV_HOST,0));
+  aa.reset();
+  // Column 2
+  // First group of 2
+  unique_ptr<talsh::Tensor> ac(new talsh::Tensor({dims_grid[4][2][1],
+                                                  dims_grid[4][2][2],
+                                                  dims_grid[4][2][3],
+                                                  dims_grid[3][2][1]},
+                                                  s_type(0.0)));
+  tc = TensContraction("D(b,c,d,e)+=L(a,b,c,d)*R(a,e)", ac.get(),
+                        tensor_grid[4][2].get(), tensor_grid[3][2].get());
+  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+  assert(tc.sync(DEV_HOST,0));
+  unique_ptr<talsh::Tensor> ad(new talsh::Tensor({dims_grid[6][1][1],
+                                                  dims_grid[5][1][2],
+                                                  dims_grid[4][2][2],
+                                                  dims_grid[4][2][3],
+                                                  dims_grid[3][2][1]},
+                                                  s_type(0.0)));
+  tc = TensContraction("D(a,b,d,e,f)+=L(a,b,c)*R(c,d,e,f)", ad.get(),
+                        ab.get(), ac.get());
+  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+  assert(tc.sync(DEV_HOST,0));
+  ab.reset();
+  ac.reset();
+  unique_ptr<talsh::Tensor> ae(new talsh::Tensor({dims_grid[6][1][1],
+                                                  dims_grid[5][1][2],
+                                                  dims_grid[4][2][2],
+                                                  dims_grid[4][2][3],
+                                                  dims_grid[3][2][1]},
+                                                  s_type(0.0)));
+  tc = TensContraction("D(a,f,g,d,e)+=L(a,b,c,d,e)*R(c,b,f,g)", ae.get(),
+                        ad.get(), tensor_grid[5][2].get());
+  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+  assert(tc.sync(DEV_HOST,0));
+  ad.reset();
+  unique_ptr<talsh::Tensor> af(new talsh::Tensor({dims_grid[6][2][0],
+                                                  dims_grid[6][2][1],
+                                                  dims_grid[7][2][1],
+                                                  dims_grid[6][2][3]},
+                                                  s_type(0.0)));
+  tc = TensContraction("D(c,d,b,e)+=L(a,b)*R(c,d,a,e)", af.get(),
+                        tensor_grid[7][2].get(), tensor_grid[6][2].get());
+  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+  assert(tc.sync(DEV_HOST,0));
+  unique_ptr<talsh::Tensor> ag(new talsh::Tensor({dims_grid[7][2][1],
+                                                  dims_grid[6][2][3],
+                                                  dims_grid[5][2][3],
+                                                  dims_grid[4][2][3],
+                                                  dims_grid[3][2][1]},
+                                                  s_type(0.0)));
+  tc = TensContraction("D(f,g,c,d,e)+=L(a,b,c,d,e)*R(b,a,f,g)", ag.get(),
+                        ae.get(), af.get());
+  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+  assert(tc.sync(DEV_HOST,0));
+  ae.reset();
+  af.reset();
   /*
   // Start outer loop (in practice it will take only one value
   vector<int> outer_values({3});
