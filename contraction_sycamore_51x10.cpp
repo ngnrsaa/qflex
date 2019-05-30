@@ -224,22 +224,24 @@ void Contraction::contract(string input_string)
   // Start contraction
   // Pre-cut
   // Column 1
-  unique_ptr<talsh::Tensor> aa(new talsh::Tensor({dims_grid[5][1][0],
-                                                  dims_grid[5][1][1],
+  unique_ptr<talsh::Tensor> aa(new talsh::Tensor({dims_grid[5][1][1],
+                                                  dims_grid[5][1][2],
                                                   dims_grid[4][1][1]},
                                                   s_type(0.0)));
-  TensContraction tc("D(c,d,b)+=L(a,b)*R(c,d,a)", aa.get(),
-                      tensor_grid[4][1].get(), tensor_grid[5][1].get());
-  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-  assert(tc.sync(DEV_HOST,0));
+  errc = aa->contractAccumulate(nullptr,
+        "D(c,d,b)+=L(a,b)*R(a,c,d)",
+        *tensor_grid[4][1].get(),
+        *tensor_grid[5][1].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = aa->sync();
   unique_ptr<talsh::Tensor> ab(new talsh::Tensor({dims_grid[6][1][1],
-                                                  dims_grid[5][1][1],
+                                                  dims_grid[5][1][2],
                                                   dims_grid[4][1][1]},
                                                   s_type(0.0)));
-  tc = TensContraction("D(d,b,c)+=L(a,b,c)*R(a,d)", ab.get(),
-                        aa.get(), tensor_grid[6][1].get());
-  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-  assert(tc.sync(DEV_HOST,0));
+  errc = ab->contractAccumulate(nullptr,
+        "D(d,b,c)+=L(a,b,c)*R(a,d)",
+        *aa.get(),
+        *tensor_grid[6][1].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = ab->sync();
   aa.reset();
   // Column 2
   // First group of 2
@@ -248,54 +250,287 @@ void Contraction::contract(string input_string)
                                                   dims_grid[4][2][3],
                                                   dims_grid[3][2][1]},
                                                   s_type(0.0)));
-  tc = TensContraction("D(b,c,d,e)+=L(a,b,c,d)*R(a,e)", ac.get(),
-                        tensor_grid[4][2].get(), tensor_grid[3][2].get());
-  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-  assert(tc.sync(DEV_HOST,0));
+  errc = ac->contractAccumulate(nullptr,
+        "D(b,c,d,e)+=L(a,b,c,d)*R(a,e)",
+        *tensor_grid[4][2].get(),
+        *tensor_grid[3][2].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = ac->sync();
   unique_ptr<talsh::Tensor> ad(new talsh::Tensor({dims_grid[6][1][1],
                                                   dims_grid[5][1][2],
                                                   dims_grid[4][2][2],
                                                   dims_grid[4][2][3],
                                                   dims_grid[3][2][1]},
                                                   s_type(0.0)));
-  tc = TensContraction("D(a,b,d,e,f)+=L(a,b,c)*R(c,d,e,f)", ad.get(),
-                        ab.get(), ac.get());
-  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-  assert(tc.sync(DEV_HOST,0));
+  errc = ad->contractAccumulate(nullptr,
+        "D(a,b,d,e,f)+=L(a,b,c)*R(c,d,e,f)",
+        *ab.get(),
+        *ac.get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = ad->sync();
   ab.reset();
   ac.reset();
   unique_ptr<talsh::Tensor> ae(new talsh::Tensor({dims_grid[6][1][1],
-                                                  dims_grid[5][1][2],
-                                                  dims_grid[4][2][2],
+                                                  dims_grid[5][2][2],
+                                                  dims_grid[5][2][3],
                                                   dims_grid[4][2][3],
                                                   dims_grid[3][2][1]},
                                                   s_type(0.0)));
-  tc = TensContraction("D(a,f,g,d,e)+=L(a,b,c,d,e)*R(c,b,f,g)", ae.get(),
-                        ad.get(), tensor_grid[5][2].get());
-  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-  assert(tc.sync(DEV_HOST,0));
+  errc = ae->contractAccumulate(nullptr,
+        "D(a,f,g,d,e)+=L(a,b,c,d,e)*R(c,b,f,g)",
+        *ad.get(),
+        *tensor_grid[5][2].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = ae->sync();
   ad.reset();
   unique_ptr<talsh::Tensor> af(new talsh::Tensor({dims_grid[6][2][0],
                                                   dims_grid[6][2][1],
                                                   dims_grid[7][2][1],
                                                   dims_grid[6][2][3]},
                                                   s_type(0.0)));
-  tc = TensContraction("D(c,d,b,e)+=L(a,b)*R(c,d,a,e)", af.get(),
-                        tensor_grid[7][2].get(), tensor_grid[6][2].get());
-  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-  assert(tc.sync(DEV_HOST,0));
+  errc = af->contractAccumulate(nullptr,
+        "D(c,d,b,e)+=L(a,b)*R(c,d,a,e)",
+        *tensor_grid[7][2].get(),
+        *tensor_grid[6][2].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = af->sync();
   unique_ptr<talsh::Tensor> ag(new talsh::Tensor({dims_grid[7][2][1],
                                                   dims_grid[6][2][3],
                                                   dims_grid[5][2][3],
                                                   dims_grid[4][2][3],
                                                   dims_grid[3][2][1]},
                                                   s_type(0.0)));
-  tc = TensContraction("D(f,g,c,d,e)+=L(a,b,c,d,e)*R(b,a,f,g)", ag.get(),
-                        ae.get(), af.get());
-  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
-  assert(tc.sync(DEV_HOST,0));
+  errc = ag->contractAccumulate(nullptr,
+        "D(f,g,c,d,e)+=L(a,b,c,d,e)*R(b,a,f,g)",
+        *ae.get(),
+        *af.get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = ae->sync();
   ae.reset();
   af.reset();
+  // ag is the pre-first-cut tensor.
+
+  // Tensor B
+  unique_ptr<talsh::Tensor> ba(new talsh::Tensor({dims_grid[8][3][0],
+                                                  dims_grid[8][4][0],
+                                                  dims_grid[8][4][2]},
+                                                  s_type(0.0)));
+  errc = ba->contractAccumulate(nullptr,
+        "D(a,c,d)+=L(a,b)*R(c,b,d)",
+        *tensor_grid[8][3].get(),
+        *tensor_grid[8][4].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = ba->sync();
+  unique_ptr<talsh::Tensor> bb(new talsh::Tensor({dims_grid[8][3][0],
+                                                  dims_grid[8][4][0],
+                                                  dims_grid[8][5][0]},
+                                                  s_type(0.0)));
+  errc = bb->contractAccumulate(nullptr,
+        "D(a,b,d)+=L(a,b,c)*R(d,c)",
+        *ba.get(),
+        *tensor_grid[8][5].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = bb->sync();
+  ba.reset();
+  unique_ptr<talsh::Tensor> bc(new talsh::Tensor({dims_grid[7][5][2],
+                                                  dims_grid[7][5][1],
+                                                  dims_grid[7][5][0],
+                                                  dims_grid[7][6][0]},
+                                                  s_type(0.0)));
+  errc = bc->contractAccumulate(nullptr,
+        "D(c,b,a,e)+=L(a,b,c,d)*R(e,d)",
+        *tensor_grid[7][5].get(),
+        *tensor_grid[7][6].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = bc->sync();
+  unique_ptr<talsh::Tensor> bd(new talsh::Tensor({dims_grid[8][3][0],
+                                                  dims_grid[8][4][0],
+                                                  dims_grid[7][5][1],
+                                                  dims_grid[7][5][0],
+                                                  dims_grid[7][6][0]},
+                                                  s_type(0.0)));
+  errc = bd->contractAccumulate(nullptr,
+        "D(a,b,d,e,f)+=L(a,b,c)*R(c,d,e,f)",
+        *bb.get(),
+        *bc.get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = bd->sync();
+  bb.reset();
+  bc.reset();
+  unique_ptr<talsh::Tensor> be(new talsh::Tensor({dims_grid[8][3][0],
+                                                  dims_grid[7][4][1],
+                                                  dims_grid[7][4][0],
+                                                  dims_grid[7][5][0],
+                                                  dims_grid[7][6][0]},
+                                                  s_type(0.0)));
+  errc = be->contractAccumulate(nullptr,
+        "D(a,g,f,d,e)+=L(a,b,c,d,e)*R(f,g,b,c)",
+        *bd.get(),
+        *tensor_grid[7][4].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = be->sync();
+  bd.reset();
+  unique_ptr<talsh::Tensor> bf(new talsh::Tensor({dims_grid[6][6][2],
+                                                  dims_grid[6][6][1],
+                                                  dims_grid[6][6][0],
+                                                  dims_grid[6][7][0]},
+                                                  s_type(0.0)));
+  errc = bf->contractAccumulate(nullptr,
+        "D(c,b,a,e)+=L(a,b,c,d)*R(e,d)",
+        *tensor_grid[6][6].get(),
+        *tensor_grid[6][7].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = bf->sync();
+  unique_ptr<talsh::Tensor> bg(new talsh::Tensor({dims_grid[8][3][0],
+                                                  dims_grid[7][4][1],
+                                                  dims_grid[7][4][0],
+                                                  dims_grid[7][5][0],
+                                                  dims_grid[6][6][1],
+                                                  dims_grid[6][6][0],
+                                                  dims_grid[6][7][0]},
+                                                  s_type(0.0)));
+  errc = bg->contractAccumulate(nullptr,
+        "D(a,b,c,d,f,g,h)+=L(a,b,c,d,e)*R(e,f,g,h)",
+        *be.get(),
+        *bf.get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = bg->sync();
+  be.reset();
+  bf.reset();
+  unique_ptr<talsh::Tensor> bh(new talsh::Tensor({dims_grid[8][3][0],
+                                                  dims_grid[7][4][1],
+                                                  dims_grid[7][4][0],
+                                                  dims_grid[6][5][1],
+                                                  dims_grid[6][5][0],
+                                                  dims_grid[6][6][0],
+                                                  dims_grid[6][7][0]},
+                                                  s_type(0.0)));
+  errc = bh->contractAccumulate(nullptr,
+        "D(a,b,c,i,h,f,g)+=L(a,b,c,d,e,f,g)*R(h,i,d,e)",
+        *bg.get(),
+        *tensor_grid[6][5].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = bh->sync();
+  /*
+  errc = tc.execute(DEV_NVIDIA_GPU,0); assert(errc==TALSH_SUCCESS);
+  assert(tc.sync(DEV_HOST,0));
+  */
+  bg.reset();
+  unique_ptr<talsh::Tensor> B(new talsh::Tensor({dims_grid[8][3][0],
+                                                  dims_grid[7][4][1],
+                                                  dims_grid[6][4][1],
+                                                  dims_grid[6][4][0],
+                                                  dims_grid[6][5][0],
+                                                  dims_grid[6][6][0],
+                                                  dims_grid[6][7][0]},
+                                                  s_type(0.0)));
+  errc = B->contractAccumulate(nullptr,
+        "D(a,b,i,h,e,f,g)+=L(a,b,c,d,e,f,g)*R(h,i,c,d)",
+        *bh.get(),
+        *tensor_grid[6][4].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = B->sync();
+  bh.reset();
+  // bi is B
+
+  // Tensor D comes here
+  unique_ptr<talsh::Tensor> da(new talsh::Tensor({dims_grid[4][9][1],
+                                                  dims_grid[3][9][0]},
+                                                  s_type(0.0)));
+  errc = da->contractAccumulate(nullptr,
+        "D(b,c)+=L(a,b)*R(c,a)",
+        *tensor_grid[4][9].get(),
+        *tensor_grid[3][9].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = da->sync();
+  unique_ptr<talsh::Tensor> db(new talsh::Tensor({dims_grid[5][8][1],
+                                                  dims_grid[4][8][1],
+                                                  dims_grid[4][8][0],
+                                                  dims_grid[4][8][3]},
+                                                  s_type(0.0)));
+  errc = db->contractAccumulate(nullptr,
+        "D(b,d,c,e)+=L(a,b)*R(c,d,a,e)",
+        *tensor_grid[5][8].get(),
+        *tensor_grid[4][8].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = db->sync();
+  unique_ptr<talsh::Tensor> dc(new talsh::Tensor({dims_grid[5][8][1],
+                                                  dims_grid[4][8][1],
+                                                  dims_grid[4][8][0],
+                                                  dims_grid[3][9][0]},
+                                                  s_type(0.0)));
+  errc = dc->contractAccumulate(nullptr,
+        "D(a,b,c,e)+=L(a,b,c,d)*R(d,e)",
+        *db.get(),
+        *da.get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = dc->sync();
+  db.reset();
+  da.reset();
+  unique_ptr<talsh::Tensor> dd(new talsh::Tensor({dims_grid[2][8][0],
+                                                  dims_grid[3][8][1],
+                                                  dims_grid[3][8][2],
+                                                  dims_grid[3][8][3]},
+                                                  s_type(0.0)));
+  errc = dd->contractAccumulate(nullptr,
+        "D(e,b,c,d)+=L(a,b,c,d)*R(e,a)",
+        *tensor_grid[3][8].get(),
+        *tensor_grid[2][8].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = dd->sync();
+  unique_ptr<talsh::Tensor> D(new talsh::Tensor({dims_grid[5][8][1],
+                                                  dims_grid[4][8][1],
+                                                  dims_grid[3][8][1],
+                                                  dims_grid[2][8][0]},
+                                                  s_type(0.0)));
+  errc = D->contractAccumulate(nullptr,
+        "D(a,b,f,e)+=L(a,b,c,d)*R(e,f,c,d)",
+        *dc.get(),
+        *dd.get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+  done = D->sync();
+  dc.reset();
+  dd.reset();
+  // de is D
+  
+
+  // Start first cut loop
+  talsh::TensorTask task_hl;
+  vector<int> first_cut_offsets({0});
+  int first_cut_dim(dims_grid[3][3][2]);
+  int first_slice_size(1);
+  for (auto i0 : first_cut_offsets)
+  {
+    // First slice on [3][3] and [4][3].
+    unique_ptr<talsh::Tensor> first_3_3(new talsh::Tensor({dims_grid[3][3][0],
+                                                         dims_grid[3][3][1],
+                                                         first_slice_size},
+                                                         s_type(0.0)));
+    unique_ptr<talsh::Tensor> first_4_3(new talsh::Tensor({dims_grid[4][3][0],
+                                                         first_slice_size,
+                                                         dims_grid[4][3][2],
+                                                         dims_grid[4][3][3]},
+                                                         s_type(0.0)));
+    errc = tensor_grid[3][3]->extractSlice(
+                  &task_hl,*first_3_3,vector<int>{0,0,i0},DEV_HOST,0);
+    done = tensor_grid[3][3]->sync();
+    task_hl.clean();
+    errc = tensor_grid[4][3]->extractSlice(
+                  &task_hl,*first_4_3,vector<int>{0,i0,0,0},DEV_HOST,0);
+    done = tensor_grid[4][3]->sync();
+    task_hl.clean();
+
+    // Continue contraction
+    // Column 3
+    unique_ptr<talsh::Tensor> ah(new talsh::Tensor({dims_grid[7][2][1],
+                                                    dims_grid[6][2][3],
+                                                    dims_grid[5][2][3],
+                                                    dims_grid[4][2][3],
+                                                    dims_grid[3][3][1],
+                                                    first_slice_size},
+                                                    s_type(0.0)));
+    errc = ah->contractAccumulate(nullptr,
+          "D(a,b,c,d,f,g)+=L(a,b,c,d,e)*R(e,f,g)",
+          *ag.get(),
+          *first_3_3.get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+    done = ah->sync();
+    ag.reset();
+    unique_ptr<talsh::Tensor> ai(new talsh::Tensor({dims_grid[7][2][1],
+                                                    dims_grid[6][2][3],
+                                                    dims_grid[5][2][3],
+                                                    dims_grid[4][3][2],
+                                                    dims_grid[4][3][3],
+                                                    first_slice_size},
+                                                    s_type(0.0)));
+    errc = ai->contractAccumulate(nullptr,
+          "D(a,b,c,g,h,f)+=L(a,b,c,d,e,f)*R(e,d,g,h)",
+          *ah.get(),
+          *tensor_grid[4][3].get(), DEV_NVIDIA_GPU, 0, s_type(1.0), false);
+    done = ai->sync();
+    ah.reset();
+    
+  }
   /*
   // Start outer loop (in practice it will take only one value
   vector<int> outer_values({3});
