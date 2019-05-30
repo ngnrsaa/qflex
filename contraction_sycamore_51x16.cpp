@@ -27,7 +27,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "contraction_sycamore_51x10.h"
+#include "contraction_sycamore_51x16.h"
 #include "read_circuit_full_talsh.h"
 
 // Time
@@ -50,25 +50,18 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
   num_args = _num_args;
   num_amps = _num_amps;
 
-  super_dim = (size_t)pow(DIM,K);
+  super_dim = (size_t)pow(4,K); // Change this to be automatic!
   num_Cs = num_args-2;
   amplitudes.resize(num_amps*num_Cs);
   int num_qubits = I*J;
   // List of qubits to remove (off) and qubits in A.
-  qubits_off = vector<vector<int>>({ 
-       {0,0},{0,1},{0,2},{0,3},{0,4},            {0,7},{0,8},{0,9},
-       {1,0},{1,1},{1,2},{1,3},                        {1,8},{1,9},
-       {2,0},{2,1},{2,2},{2,3},                              {2,9},
-       {3,0},{3,1},                                                
-       {4,0},                                                      
-       {5,0},                                                {5,9},
-       {6,0},                                          {6,8},{6,9},
-       {7,0},{7,1},                              {7,7},{7,8},{7,9},
-       {8,0},{8,1},{8,2},                  {8,6},{8,7},{8,8},{8,9},
-       {9,0},{9,1},{9,2},{9,3},{9,4},{9,5},{9,6},{9,7},{9,8},{9,9}
-                                    }); 
-  qubits_A = vector<vector<int>>({       {0,5},{0,6},
-                                   {1,4},{1,5},{1,6},{1,7} });
+  qubits_off = vector<vector<int>>({ }); 
+  qubits_A = vector<vector<int>>({ {5,0},
+                                   {6,0},
+                                   {7,0},
+                                   {8,0},
+                                   {9,0},
+                                   {10,0} });
 
    
   int errc;
@@ -113,37 +106,14 @@ void Contraction::load_circuit(string input_string)
   }
 
   // Declaring and then filling 2D grid of tensors.
-  // Then storing dimensions.
   t0 = high_resolution_clock::now();
   open_tensor_grid = vector<vector<shared_ptr<talsh::Tensor>>>(I);
   for (int i=0; i<I; ++i)
   {
     open_tensor_grid[i] = vector<shared_ptr<talsh::Tensor>>(J);
   }
-  cout << initial_conf.size() << endl << flush;
   google_circuit_file_to_open_grid_of_tensors(filename, I, J, initial_conf,
                                               qubits_off, open_tensor_grid);
-  // Dimensions
-  dims_grid = vector<vector<vector<int>>>(I);
-  for (int i=0; i<I; ++i)
-  {
-    dims_grid[i] = vector<vector<int>>(J);
-                                                 
-    for (int j=0; j<J; ++j)
-    {
-      if (find(qubits_off.begin(),qubits_off.end(),
-          vector<int>({i,j}))!=qubits_off.end())
-      {
-        continue;
-      }
-      vector<int> dims_T = dims_from_tensor(open_tensor_grid[i][j].get());
-      dims_grid[i][j] = vector<int>(dims_T.size()-1);
-      for (int p=0; p<dims_grid[i][j].size(); ++p)
-      {
-        dims_grid[i][j][p] = dims_T[p+1];
-      }
-    }
-  }
 
 
   // If add renormalization, do it here!
@@ -165,6 +135,63 @@ void Contraction::load_circuit(string input_string)
     Cs.push_back(shared_ptr<talsh::Tensor>(                                     
                         new talsh::Tensor(dims_C, s_type(0.0))));               
   }
+
+
+
+
+  // Allocate tensors in load_circuit, since now I have info about their
+  // sizes.
+
+  // Allocate talsh::Tensors involved in the contraction
+  vector<int> dims_1(1, super_dim);
+  vector<int> dims_2(2, super_dim);
+  vector<int> dims_3(3, super_dim);
+  vector<int> dims_4(4, super_dim);
+  vector<int> dims_5(5, super_dim);
+
+
+  // Helper tensors.
+  H_2_legs_a =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_2, s_type(0.0)));
+  H_2_legs_b =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_2, s_type(0.0)));
+  H_3_legs_a =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_3, s_type(0.0)));
+  H_3_legs_b =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_3, s_type(0.0)));
+  H_4_legs_a =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_4, s_type(0.0)));
+  H_4_legs_b =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_4, s_type(0.0)));
+  H_5_legs_a =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_5, s_type(0.0)));
+  H_5_legs_b =
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_5, s_type(0.0)));
+  
+
+  // Region tensors
+  AB = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_4, s_type(0.0)));
+  pE = shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_4, s_type(0.0)));
+  // A doesn't need a tensor, because 6_a and 6_b are not used anywhere else.
+
+  // Also, need tensors to hold slices.
+  // Dimensions of the ones that are open are moved one position back.
+  // First position should be the open leg, by convention.
+  vector<int> dims_S_4_10(3, super_dim); dims_S_4_10[2] = 1;
+  S_4_10 =
+        shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S_4_10, s_type(0.0)));
+  vector<int> dims_S_5_10(3, super_dim); dims_S_5_10[0] = 1;
+  S_5_10 =
+        shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S_5_10, s_type(0.0)));
+  vector<int> dims_S_10_4(3, super_dim); dims_S_10_4[3] = 1;
+  S_10_4 =
+        shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S_10_4, s_type(0.0)));
+  vector<int> dims_S_10_5(3, super_dim); dims_S_10_5[1] = 1;
+  S_10_5 =
+        shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_S_10_5, s_type(0.0)));
+
+  // Allocate tensors in load_circuit - UP TO HERE
+
 
 
   t1 = high_resolution_clock::now();
@@ -216,6 +243,7 @@ void Contraction::contract(string input_string)
   //cout << "Time spent closing circuit is " << span.count() << endl;
   
 
+  /*
   t0 = high_resolution_clock::now();
   // Start actual contraction.
   // I'll follow L = inherited tensor, R = new tensor.
@@ -225,7 +253,6 @@ void Contraction::contract(string input_string)
   vector<int> dims_2(2, super_dim);
 
 
-  /*
   // Start outer loop (in practice it will take only one value
   vector<int> outer_values({3});
   //vector<int> outer_values({0,1,2,3});
@@ -960,7 +987,6 @@ void Contraction::contract(string input_string)
         // Store result data_S
         s_type const * ptr_S;
         S->getDataAccessHostConst(&ptr_S);
-        //amplitudes[c] += ptr_S[0];
         amplitudes[c] += ptr_S[0] / global_norm_factor;
         ptr_S = nullptr;
       }

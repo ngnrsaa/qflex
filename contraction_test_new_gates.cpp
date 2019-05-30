@@ -68,9 +68,6 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
   vector<int> dims_2(2, super_dim);
   vector<int> dims_3(3, super_dim);
 
-  // First, tensors for region C. Done by hand right now. Change in future.
-  //Cs.push_back(shared_ptr<talsh::Tensor>(
-  //                    new talsh::Tensor(dims_1, s_type(0.0))));
 
   // Second, helper tensors.
   H_2_legs_a =

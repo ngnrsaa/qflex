@@ -1,11 +1,11 @@
 import numpy as np
 
-I = 11
-J = 11
+I = 10
+J = 10
 K = 2
 fidelity = 0.005
-filename = 'circuits/inst_11x11_16_0.txt'
-num_qubits = 121
+filename = 'circuits/circuit_q51c0d4.qflex'
+num_qubits = 51
 num_qubits_A = 6
 num_qubits_B = num_qubits - num_qubits_A
 num_strings = 5000

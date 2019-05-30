@@ -102,12 +102,23 @@ class Contraction
     // again for each amplitude computation.
     vector<vector<shared_ptr<talsh::Tensor>>> open_tensor_grid;
 
-    // Grid of dimensions of the tensors in the grid.
-    vector<vector<vector<int>>> dims_grid;
-
     // First, tensors for region C. Done by hand right now. Change in future.
     vector<shared_ptr<talsh::Tensor>> Cs; 
 
+    // Second, helper tensors.
+    shared_ptr<talsh::Tensor> H_2_legs_a, H_2_legs_b,
+                              H_3_legs_a, H_3_legs_b,
+                              H_4_legs_a, H_4_legs_b,
+                              H_5_legs_a, H_5_legs_b, H_5_legs_c;
+
+    // Third, region (reused) tensors.
+    shared_ptr<talsh::Tensor> AB; // It looks like we can get rid of this
+                                    //one for low fidelity runs :)
+    shared_ptr<talsh::Tensor> pE;
+
+    // Tensors to hold the slices.
+    shared_ptr<talsh::Tensor> S_4_10, S_5_10, S_10_4, S_10_5;
+    // These ones loose the trivial leg.
 
     // Finally, scalar S
     shared_ptr<talsh::Tensor> S;

@@ -9,9 +9,10 @@ TALSH_ROOT = /gpfs/alpine/proj-shared/phy136/Gordon-Bell/TAL_SH
 MKL_ROOT = /home/div/intel
 CUDA_ROOT = /sw/summit/cuda/10.1.105
 
-# Contraction can be _51q, bris_60, _7x7x40, _8x8x32, 11x11x24, sycamore_51x10,
+# Contraction can be _51q, bris_60, _7x7x40, _8x8x32, 11x11x24,
+# sycamore_51x10, sycamore_51x16, ...
 # ...
-CONTRACTION = _test_new_gates
+CONTRACTION = _sycamore_51x10
 #Done.
 
 
