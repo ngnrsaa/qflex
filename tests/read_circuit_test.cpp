@@ -94,12 +94,17 @@ TEST(ReadCircuitTest, CondenseToGrid) {
     tensor_grid_2D.push_back(std::vector<MKLTensor>(2));
   }
   // Working from either end, create two patches and meet in the middle.
-  std::vector<std::vector<std::vector<int>>> ordering = {
-      {{0, 1}, {0, 0}, {1, 0}}, {{2, 1}, {1, 1}}};
-  std::vector<std::vector<std::vector<int>>> cuts = {{{0, 1}, {1, 1}}};
+  ContractionOrdering ordering;
+  ordering.emplace_back(new ExpandPatch('a', {0, 1}));
+  ordering.emplace_back(new ExpandPatch('a', {0, 0}));
+  ordering.emplace_back(new ExpandPatch('a', {1, 0}));
+  ordering.emplace_back(new CutIndex({0, 1}, {1, 1}));
+  ordering.emplace_back(new ExpandPatch('b', {2, 1}));
+  ordering.emplace_back(new ExpandPatch('b', {1, 1}));
+  ordering.emplace_back(new MergePatches('a', 'b'));
 
   grid_of_tensors_3D_to_2D(tensor_grid_3D, tensor_grid_2D, qubits_A, qubits_off,
-                           ordering, cuts, scratch);
+                           ordering, scratch);
 
   // Verify that index ordering follows this pattern:
   //   1) Final-region indices ("<index>,(o)")

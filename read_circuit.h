@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "contraction_utils.h"
 #include "mkl_tensor.h"
 
 // TODO: Use math library calls for these. Also use constexpr.
@@ -114,9 +115,8 @@ void google_circuit_file_to_grid_of_tensors(
  * @param A optional<vector<vector<int>>> with the coords. of the qubits in A.
  * @param off optional<vector<vector<int>>> with the coords. of the qubits
  * turned off.
- * @param ordering vector<vector<vector<int>>> listing the order in which
- * contractions are to be performed.
- * @param cuts vector<vector<vector<int>>> listing the cuts applied to the grid.
+ * @param ordering ContractionOrdering providing the steps required to contract
+ * the tensor grid.
  * @param scratch pointer to s_type array with enough space for all scratch
  * work.
  */
@@ -125,9 +125,7 @@ void grid_of_tensors_3D_to_2D(
     std::vector<std::vector<MKLTensor>>& grid_of_tensors_2D,
     std::optional<std::vector<std::vector<int>>> A,
     std::optional<std::vector<std::vector<int>>> off,
-    const std::vector<std::vector<std::vector<int>>>& ordering,
-    const std::vector<std::vector<std::vector<int>>>& cuts,
-    s_type* scratch);
+    const ContractionOrdering& ordering, s_type* scratch);
 
 /**
  * Read circuit from file and fill vector of tensors (of gates), vector with
