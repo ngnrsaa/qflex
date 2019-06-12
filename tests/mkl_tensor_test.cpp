@@ -81,19 +81,28 @@ TEST(MKLTensorTest, TensorProjection) {
   }
 
   MKLTensor tensor(indices, dimensions, data);
-  MKLTensor projection_tensor({"x", "y"}, {2, 2});
-  tensor.project("a", 1, projection_tensor);
   std::vector<std::string> expected_indices = {"b", "c"};
   std::vector<size_t> expected_dimensions = {2, 2};
-  ASSERT_EQ(projection_tensor.get_indices(), expected_indices);
-  ASSERT_EQ(projection_tensor.get_dimensions(), expected_dimensions);
 
-  const int psize = projection_tensor.size();
+  MKLTensor projection_tensor_1({"x", "y"}, {2, 2});
+  tensor.project("a", 1, projection_tensor_1);
+  ASSERT_EQ(projection_tensor_1.get_indices(), expected_indices);
+  ASSERT_EQ(projection_tensor_1.get_dimensions(), expected_dimensions);
 
-  const std::vector<std::complex<float>> proj_data(
-      projection_tensor.data(), projection_tensor.data() + psize);
+  MKLTensor projection_tensor_2({""}, {64});
+  tensor.project("a", 1, projection_tensor_2);
+  ASSERT_EQ(projection_tensor_2.get_indices(), expected_indices);
+  ASSERT_EQ(projection_tensor_2.get_dimensions(), expected_dimensions);
+
+  const int psize = projection_tensor_1.size();
+
+  const std::vector<std::complex<float>> proj_data_1(
+      projection_tensor_1.data(), projection_tensor_1.data() + psize);
+  const std::vector<std::complex<float>> proj_data_2(
+      projection_tensor_2.data(), projection_tensor_1.data() + psize);
   for (int i = 0; i < psize; ++i) {
-    ASSERT_FLOAT_EQ(proj_data[i].real(), data[i + psize].real());
+    ASSERT_FLOAT_EQ(proj_data_1[i].real(), data[i + psize].real());
+    ASSERT_FLOAT_EQ(proj_data_2[i].real(), data[i + psize].real());
   }
 }
 
