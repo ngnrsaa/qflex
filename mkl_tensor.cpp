@@ -193,12 +193,7 @@ void MKLTensor::project(std::string index, size_t index_value,
   assert(index == _indices[0] && "index has to be indices[0].");
   assert((index_value >= 0 && index_value < _dimensions[0]) &&
          "index_value must be contained in [0, dimensions[0]).");
-  s_type* projection_data = projection_tensor.data();
-  int projection_size = projection_tensor.size();
-  int projection_begin = projection_size * index_value;
-#pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
-  for (size_t p = 0; p < projection_size; ++p)
-    *(projection_data + p) = *(_data + projection_begin + p);
+  // Resize projection_tensor first.
   std::vector<std::string> projection_indices(_indices.begin() + 1,
                                               _indices.end());
   std::vector<size_t> projection_dimensions(_dimensions.begin() + 1,
@@ -206,6 +201,14 @@ void MKLTensor::project(std::string index, size_t index_value,
   projection_tensor.set_indices(projection_indices);
   projection_tensor.set_dimensions(projection_dimensions);
   projection_tensor.generate_index_to_dimension();
+
+  // Fill projection_tensor with result of projection.
+  s_type* projection_data = projection_tensor.data();
+  int projection_size = projection_tensor.size();
+  int projection_begin = projection_size * index_value;
+#pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
+  for (size_t p = 0; p < projection_size; ++p)
+    *(projection_data + p) = *(_data + projection_begin + p);
 }
 
 void MKLTensor::rename_index(std::string old_name, std::string new_name) {
