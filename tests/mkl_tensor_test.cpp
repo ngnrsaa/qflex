@@ -214,6 +214,10 @@ TEST(MKLTensorDeathTest, InvalidInput) {
   // Projecting to bad index_value.
   ASSERT_DEATH(tensor_abc.project("a", 2, tensor_ac), "");
 
+  // Projecting to too-small tensor.
+  MKLTensor tensor_ac_small({"a", "c"}, {2, 1});
+  ASSERT_DEATH(tensor_abc.project("a", 0, tensor_ac_small), "");
+
   // Renaming a non-existent index.
   ASSERT_DEATH(tensor_abc.rename_index("x", "y"), "");
 
