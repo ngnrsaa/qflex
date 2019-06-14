@@ -230,8 +230,8 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       if (rhs_pair == cut->tensors) return false;
     }
 
-    char lpatch = '\0';
-    char rpatch = '\0';
+    std::string lpatch = "null";
+    std::string rpatch = "null";
     int lpos = -1;
     int rpos = -1;
     int op_num = 0;
@@ -276,7 +276,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       return lpos < rpos;
     }
 
-    char local_patch;
+    std::string local_patch;
     for (const auto& op : ordering) {
       if (op->op_type != ContractionOperation::EXPAND) continue;
       const auto* expand = dynamic_cast<const ExpandPatch*>(op.get());
