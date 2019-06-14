@@ -196,6 +196,33 @@ TEST(MKLTensorTest, Multiply) {
   }
 }
 
+// Verifies that a tensor retains its initialized capacity.
+TEST(MKLTensorDeathTest, Capacity) {
+  std::vector<std::string> indices = {"a", "b"};
+  std::vector<size_t> dimensions = {2, 4};
+
+  // Create an uninitialized tensor.
+  MKLTensor tensor;
+
+  // Allocate 64 units of space, which should always be available.
+  tensor = MKLTensor({""}, {64});
+
+  // Reduce size to 16 units; capacity is still 64 units.
+  tensor.set_indices_and_dimensions({"a", "b"}, {4, 4});
+
+  // Increase size to 32 units; capacity is still 64 units.
+  tensor.set_indices_and_dimensions({"x"}, {32});
+
+  // Reduce size to 2 units; capacity is still 64 units.
+  tensor.set_indices_and_dimensions({"z"}, {2});
+
+  // Increase size to 8 units; capacity is still 64 units.
+  tensor.set_indices_and_dimensions({"k", "m", "n"}, {2, 2, 2});
+
+  // Attempt to increase size to 256 units.
+  ASSERT_DEATH(tensor = MKLTensor({"f", "g"}, {16, 16}), "");
+}
+
 // Checks that various invalid method arguments generate failures.
 TEST(MKLTensorDeathTest, InvalidInput) {
   // Mismatched indices and dimensions.
@@ -260,5 +287,6 @@ TEST(MKLTensorDeathTest, InvalidInput) {
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   return RUN_ALL_TESTS();
 }

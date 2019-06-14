@@ -148,6 +148,13 @@ class MKLTensor {
   size_t size() const;
 
   /**
+   * Get the allocated space of the MKLTensor. This tensor can be resized to
+   * any shape with total dimension less than this value.
+   * @return int with the capacity of the MKLTensor.
+   */
+  size_t capacity() const;
+
+  /**
    * Get data.
    * @return s_type * to the data of the MKLTensor.
    */
@@ -239,6 +246,9 @@ class MKLTensor {
   std::vector<size_t> _dimensions;
   std::unordered_map<std::string, size_t> _index_to_dimension;
   s_type* _data;
+
+  // Allocated data space. This value does not change after initialization.
+  size_t _capacity;
 
   // Private helper functions.
   /**
