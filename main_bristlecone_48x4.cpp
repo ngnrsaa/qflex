@@ -81,17 +81,18 @@ int main(int argc, char **argv) {
 
   // Construct the ordering for this tensor contraction.
   ContractionOrdering ordering;
+  const std::vector<std::vector<std::vector<int>>> cuts_a = {{{3, 2}, {4, 2}}};
+  for (const auto& cut : cuts_a) {
+    ordering.emplace_back(new CutIndex(cut, {0}));
+  }
+  // This cut has different values and must be created separately.
+  ordering.emplace_back(new CutIndex({{3, 3}, {4, 3}}, {1, 0}));
   const std::vector<std::vector<int>> order_a = {
       {4, 2}, {5, 2}, {4, 3}, {5, 3}, {6, 3}, {4, 4}, {5, 4}, {6, 4},
       {7, 4}, {4, 5}, {5, 5}, {6, 5}, {7, 5}, {8, 5}, {8, 6}, {7, 6},
       {6, 6}, {5, 6}, {4, 6}, {7, 7}, {6, 7}, {5, 7}, {4, 7}};
   for (const auto& coord : order_a) {
     ordering.emplace_back(new ExpandPatch('a', coord));
-  }
-  const std::vector<std::vector<std::vector<int>>> cuts_a = {{{3, 2}, {4, 2}},
-                                                             {{3, 3}, {4, 3}}};
-  for (const auto& cut : cuts_a) {
-    ordering.emplace_back(new CutIndex(cut));
   }
   const std::vector<std::vector<int>> order_b = {
       {3, 2}, {3, 3}, {2, 3}, {3, 4}, {2, 4}, {1, 4}, {3, 5}, {2, 5}, {1, 5},
@@ -100,6 +101,10 @@ int main(int argc, char **argv) {
     ordering.emplace_back(new ExpandPatch('b', coord));
   }
   ordering.emplace_back(new MergePatches('a', 'b'));
+  // Add a terminal cut for every qubit in the final region.
+  for (const auto& cut : qubits_A) {
+    ordering.emplace_back(new CutIndex({cut}, {0}));
+  }
   const std::vector<std::vector<int>> order_c = {
       {3, 9}, {4, 9}, {5, 9}, {3, 8}, {2, 8}, {4, 8}, {5, 8}, {6, 8}};
   for (const auto& coord : order_c) {
