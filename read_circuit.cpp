@@ -210,7 +210,7 @@ bool find_grid_coord_in_list(
 std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     const ContractionOrdering& ordering, std::vector<int> local) {
   return [&ordering, local](const std::vector<int> lhs,
-                           const std::vector<int> rhs) {
+                            const std::vector<int> rhs) {
     // Cuts are projected early and should be ordered first.
     std::vector<std::vector<int>> lhs_pair, rhs_pair;
     if (local[0] < lhs[0] || local[1] < lhs[1]) {
@@ -229,19 +229,21 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       if (lhs_pair == cut->tensors) return true;
       if (rhs_pair == cut->tensors) return false;
     }
+
     char lpatch = '\0';
     char rpatch = '\0';
     int lpos = -1;
     int rpos = -1;
-    for (int i = 0; i < ordering.size(); ++i) {
-      const auto& op = ordering[i];
+    int op_num = 0;
+    for (const auto& op : ordering) {
       if (op->op_type != ContractionOperation::EXPAND) continue;
       const auto* expand = dynamic_cast<const ExpandPatch*>(op.get());
       if (lhs == expand->tensor) {
         lpatch = expand->id;
-        lpos = i;
+        lpos = op_num;
         break;
       }
+      op_num++;
     }
     if (lpos == -1) {
       char error[200];
@@ -250,15 +252,17 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       std::cout << error << std::endl;
       assert(false && "Halting reordering.");
     }
-    for (int i = 0; i < ordering.size(); ++i) {
-      const auto& op = ordering[i];
+
+    op_num = 0;
+    for (const auto& op : ordering) {
       if (op->op_type != ContractionOperation::EXPAND) continue;
       const auto* expand = dynamic_cast<const ExpandPatch*>(op.get());
       if (rhs == expand->tensor) {
         rpatch = expand->id;
-        rpos = i;
+        rpos = op_num;
         break;
       }
+      op_num++;
     }
     if (rpos == -1) {
       char error[200];
@@ -273,8 +277,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
 
     char local_patch;
-    for (int i = 0; i < ordering.size(); ++i) {
-      const auto& op = ordering[i];
+    for (const auto& op : ordering) {
       if (op->op_type != ContractionOperation::EXPAND) continue;
       const auto* expand = dynamic_cast<const ExpandPatch*>(op.get());
       if (local == expand->tensor) {
@@ -292,8 +295,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
     // Both lhs and rhs are in different patches from local_patch; find out
     // which merges with the local patch first.
-    for (int i = 0; i < ordering.size(); ++i) {
-      const auto& op = ordering[i];
+    for (const auto& op : ordering) {
       if (op->op_type != ContractionOperation::MERGE) continue;
       const auto* merge = dynamic_cast<const MergePatches*>(op.get());
       if (local_patch == merge->source_id) {
@@ -320,29 +322,6 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
 }  // namespace
 
 namespace internal {
-
-std::string index_name(std::vector<int> p1, std::vector<int> p2) {
-  char buffer[64];
-  if (p1.size() == 2 && p2.size() == 2) {
-    // Two-qubit contraction.
-    snprintf(buffer, sizeof(buffer), "(%d,%d),(%d,%d)", p1[0], p1[1], p2[0],
-             p2[1]);
-    return buffer;
-  }
-  if (p1.size() == 3 && p2.size() == 3) {
-    // Single-qubit contraction, or virtual index.
-    snprintf(buffer, sizeof(buffer), "(%d,%d,%d),(%d,%d,%d)", p1[0], p1[1],
-             p1[2], p2[0], p2[1], p2[2]);
-    return buffer;
-  }
-  // Final qubit output value assignment.
-  if (p1.size() == 2 && p2.empty()) {
-    snprintf(buffer, sizeof(buffer), "(%d,%d),(o)", p1[0], p1[1]);
-    return buffer;
-  }
-  assert(false && "Failed to construct tensor name.");
-  return "";
-}
 
 void circuit_data_to_grid_of_tensors(
     std::istream* circuit_data, int I, int J, int K,
@@ -470,8 +449,8 @@ void circuit_data_to_grid_of_tensors(
             "t" +
             std::to_string(counter_group[i_j_1[0]][i_j_1[1]][super_cycle] + 1);
         std::string virtual_index =
-            internal::index_name({i_j_1[0], i_j_1[1], super_cycle},
-                                 {i_j_2[0], i_j_2[1], super_cycle});
+            index_name({i_j_1[0], i_j_1[1], super_cycle},
+                       {i_j_2[0], i_j_2[1], super_cycle});
         std::string input_index_2 =
             "t" +
             std::to_string(counter_group[i_j_2[0]][i_j_2[1]][super_cycle]);
@@ -538,19 +517,17 @@ void circuit_data_to_grid_of_tensors(
           continue;
         }
         if (k > 0) {
-          std::string new_first_index =
-              internal::index_name({i, j, k - 1}, {i, j, k});
+          std::string new_first_index = index_name({i, j, k - 1}, {i, j, k});
           grid_of_tensors[i][j][k].rename_index("t0", new_first_index);
         }
         if (k < K - 1) {
           std::string last_index = "t" + std::to_string(counter_group[i][j][k]);
-          std::string new_last_index =
-              internal::index_name({i, j, k}, {i, j, k + 1});
+          std::string new_last_index = index_name({i, j, k}, {i, j, k + 1});
           grid_of_tensors[i][j][k].rename_index(last_index, new_last_index);
         }
         if (k == K - 1 && find_grid_coord_in_list(A, i, j)) {
           std::string last_index = "th";
-          std::string new_last_index = internal::index_name({i, j}, {});
+          std::string new_last_index = index_name({i, j}, {});
           grid_of_tensors[i][j][k].rename_index(last_index, new_last_index);
         }
       }
@@ -651,7 +628,7 @@ void grid_of_tensors_3D_to_2D(
       // If this qubit is in the final region, bundling must be adjusted.
       int fr_buffer = 0;
       if (find_grid_coord_in_list(A, i, j)) {
-        ordered_indices_3D.push_back(internal::index_name({i, j}, {}));
+        ordered_indices_3D.push_back(index_name({i, j}, {}));
         fr_buffer = 1;
       }
 
@@ -670,9 +647,9 @@ void grid_of_tensors_3D_to_2D(
         }
         for (int k = 0; k < K; ++k) {
           ordered_indices_3D.push_back(
-              internal::index_name({q1[0], q1[1], k}, {q2[0], q2[1], k}));
+              index_name({q1[0], q1[1], k}, {q2[0], q2[1], k}));
         }
-        indices_2D.push_back(internal::index_name(q1, q2));
+        indices_2D.push_back(index_name(q1, q2));
       }
 
       // Reorder.

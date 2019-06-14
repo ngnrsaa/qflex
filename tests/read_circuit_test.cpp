@@ -98,7 +98,7 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   ordering.emplace_back(new ExpandPatch('a', {0, 1}));
   ordering.emplace_back(new ExpandPatch('a', {0, 0}));
   ordering.emplace_back(new ExpandPatch('a', {1, 0}));
-  ordering.emplace_back(new CutIndex({0, 1}, {1, 1}));
+  ordering.emplace_back(new CutIndex({{0, 1}, {1, 1}}));
   ordering.emplace_back(new ExpandPatch('b', {2, 1}));
   ordering.emplace_back(new ExpandPatch('b', {1, 1}));
   ordering.emplace_back(new MergePatches('a', 'b'));

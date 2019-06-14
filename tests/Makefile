@@ -19,10 +19,13 @@ GMOCK_DIR = $(ROOT_DIR)/googletest/googlemock
 
 TESTFLAGS = -I$(GTEST_DIR)/include -L$(GTEST_DIR) -I$(GMOCK_DIR)/include -L$(GMOCK_DIR)
 
-all: read_circuit_test mkl_tensor_test
+all: read_circuit_test contraction_utils_test mkl_tensor_test
 
 mkl_tensor:
 	$(MAKE) -C $(ROOT_DIR) mkl_tensor.o
+
+contraction_utils:
+	$(MAKE) -C $(ROOT_DIR) contraction_utils.o
 
 read_circuit:
 	$(MAKE) -C $(ROOT_DIR) read_circuit.o
@@ -33,10 +36,17 @@ gtest-all.o:
 gmock-all.o:
 	$(MAKE) -C $(GMOCK_DIR)/make gmock-all.o
 
-read_circuit_test: read_circuit_test.cpp mkl_tensor read_circuit gtest-all.o gmock-all.o
+read_circuit_test: read_circuit_test.cpp mkl_tensor contraction_utils read_circuit gtest-all.o gmock-all.o
 	$(CXX) -o read_circuit_test.x read_circuit_test.cpp $(ROOT_DIR)/mkl_tensor.o \
-	$(ROOT_DIR)/read_circuit.o $(GTEST_DIR)/make/gtest-all.o \
-	$(GMOCK_DIR)/make/gmock-all.o $(FLAGS) $(TESTFLAGS)
+	$(ROOT_DIR)/read_circuit.o $(ROOT_DIR)/contraction_utils.o \
+	$(GTEST_DIR)/make/gtest-all.o $(GMOCK_DIR)/make/gmock-all.o \
+	$(FLAGS) $(TESTFLAGS)
+
+contraction_utils_test: contraction_utils_test.cpp mkl_tensor contraction_utils gtest-all.o gmock-all.o
+	$(CXX) -o contraction_utils_test.x contraction_utils_test.cpp \
+	$(ROOT_DIR)/mkl_tensor.o $(ROOT_DIR)/contraction_utils.o \
+	$(GTEST_DIR)/make/gtest-all.o $(GMOCK_DIR)/make/gmock-all.o \
+	$(FLAGS) $(TESTFLAGS)
 
 mkl_tensor_test: mkl_tensor_test.cpp mkl_tensor gtest-all.o gmock-all.o
 	$(CXX) -o mkl_tensor_test.x mkl_tensor_test.cpp $(ROOT_DIR)/mkl_tensor.o \
