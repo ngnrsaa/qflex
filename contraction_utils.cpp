@@ -5,7 +5,7 @@
 #include <sstream>
 #include <unordered_set>
 
-constexpr char kResultSpace = '\0';
+constexpr char kResultSpace[] = "null";
 
 namespace {
 
@@ -79,7 +79,7 @@ bool IsOrderingValid(const ContractionOrdering& ordering) {
     // This patch has been merged into another patch.
     bool is_merged = false;
   };
-  std::unordered_map<char, PatchState> patches;
+  std::unordered_map<std::string, PatchState> patches;
   std::unordered_set<std::string> cut_indices;
   std::unordered_set<std::string> used_tensors;
   int error_space = 4000;                  // ~4kiB for error logs
@@ -99,14 +99,14 @@ bool IsOrderingValid(const ContractionOrdering& ordering) {
         if (patches[expand->id].is_used) {
           next_error += snprintf(
               error_msg + next_error, error_space - next_error,
-              "Tensor at (%d,%d) is added to non-empty patch %c after a cut.\n",
-              expand->tensor[0], expand->tensor[1], expand->id);
+              "Tensor at (%d,%d) is added to non-empty patch %s after a cut.\n",
+              expand->tensor[0], expand->tensor[1], expand->id.c_str());
         }
         if (patches[expand->id].is_merged) {
           next_error += snprintf(
               error_msg + next_error, error_space - next_error,
-              "Tensor at (%d,%d) is added to previously-merged patch %c.\n",
-              expand->tensor[0], expand->tensor[1], expand->id);
+              "Tensor at (%d,%d) is added to previously-merged patch %s.\n",
+              expand->tensor[0], expand->tensor[1], expand->id.c_str());
         }
         char tensor_name[20];
         snprintf(tensor_name, sizeof(tensor_name), "(%d,%d)", expand->tensor[0],
@@ -141,13 +141,13 @@ bool IsOrderingValid(const ContractionOrdering& ordering) {
         if (patches[merge->source_id].is_merged) {
           next_error += snprintf(
               error_msg + next_error, error_space - next_error,
-              "Patch %c is merged multiple times.\n", merge->source_id);
+              "Patch %s is merged multiple times.\n", merge->source_id.c_str());
         }
         if (patches[merge->target_id].is_used) {
           next_error += snprintf(
               error_msg + next_error, error_space - next_error,
-              "Patch %c is merged into non-empty patch %c after a cut.\n",
-              merge->source_id, merge->target_id);
+              "Patch %s is merged into non-empty patch %s after a cut.\n",
+              merge->source_id.c_str(), merge->target_id.c_str());
         }
         patches[merge->source_id].is_merged = true;
         patches[merge->target_id].is_active = true;

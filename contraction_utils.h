@@ -19,11 +19,11 @@ struct ContractionOperation {
 };
 
 struct ExpandPatch : public ContractionOperation {
-  ExpandPatch(char id, std::vector<int> tensor)
+  ExpandPatch(std::string id, std::vector<int> tensor)
       : ContractionOperation(EXPAND), id(id), tensor(tensor) {}
   ~ExpandPatch() override {}
   // ID of the patch expanded by this operation.
-  char id;
+  std::string id;
   // Tensor to contract into the patch.
   std::vector<int> tensor;
 };
@@ -41,14 +41,14 @@ struct CutIndex : public ContractionOperation {
 };
 
 struct MergePatches : public ContractionOperation {
-  MergePatches(char source_id, char target_id)
+  MergePatches(std::string source_id, std::string target_id)
       : ContractionOperation(MERGE),
         source_id(source_id),
         target_id(target_id) {}
   ~MergePatches() override {}
   // IDs of the patches being merged. The resulting patch will use target_id.
-  char source_id;
-  char target_id;
+  std::string source_id;
+  std::string target_id;
 };
 
 using ContractionOrdering = std::list<std::unique_ptr<ContractionOperation>>;
