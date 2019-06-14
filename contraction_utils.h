@@ -81,7 +81,23 @@ std::string index_name(const std::vector<std::vector<int>>& tensors);
  *   - Each patch can only be the source in one MergePatches.
  * @param ordering ContractionOrdering listing operations to perform.
  * @return true is the ordering is valid, false otherwise.
- * */
+ */
 bool IsOrderingValid(const ContractionOrdering& ordering);
+
+/**
+ * Performs contraction operations specified by 'ordering' on tensor_grid.
+ *
+ * This method will allocate (data_size)*(# of patches + 2) units of memory
+ * for performing the grid contraction. A small amout of additional space is
+ * allocated during cuts to preserve tensor_grid values.
+ * @param ordering ContractionOrdering listing operations to perform.
+ * @param data_size int size of largest tensor created during contraction.
+ * @param tensor_grid 2D vector<MKLTensor> holding the tensor grid. Consumes
+ * output from grid_of_tensors_3D_to_2D.
+ * @param amplitudes vector of amplitudes for each final output requested.
+ */
+void ContractGrid(const ContractionOrdering& ordering, const int data_size,
+                  std::vector<std::vector<MKLTensor>>* tensor_grid,
+                  std::vector<std::complex<double>>* amplitudes);
 
 #endif  // CONTRACTION_UTILS_
