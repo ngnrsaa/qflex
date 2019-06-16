@@ -53,6 +53,35 @@ struct MergePatches : public ContractionOperation {
 
 using ContractionOrdering = std::list<std::unique_ptr<ContractionOperation>>;
 
+// Helper class for the external ContractGrid method. This should not be
+// initialized by external users.
+class ContractionData {
+ public:
+  /**
+   * Recursive helper for the external ContractGrid method below. This method
+   * calls itself recursively on each "cut" operation.
+   * @param ordering ContractionOrdering listing operations to perform.
+   * @param output_index int marking which amplitude will be updated next.
+   * @param active_patches list of patches already created in scratch space.
+   */
+  void ContractGrid(ContractionOrdering ordering, int output_index,
+                    std::unordered_map<std::string, bool> active_patches);
+
+  // TODO(me): static ContractionData InitializeData();
+
+  // TODO(me): make these private.
+  // Rank of the largest tensor created during contraction.
+  int max_rank_;
+  // List of tensors used for scratch space or storage between recursive calls.
+  std::vector<MKLTensor> scratch_;
+  // Map of patch IDs/index names to scratch locations.
+  std::unordered_map<std::string, int> scratch_map_;
+  // Contains the tensor grid produced by grid_of_tensors_3D_to_2D.
+  std::vector<std::vector<MKLTensor>>* tensor_grid_;
+  // Amplitudes for each final output requested.
+  std::vector<std::complex<double>>* amplitudes_;
+};
+
 /**
  * Method for assigning names to indices in the grid. Accepted formats include:
  *   - {i_1, j_1}, {i_2, j_2}: two-qubit contraction.

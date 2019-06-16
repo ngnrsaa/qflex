@@ -34,28 +34,11 @@ ContractionOrdering copy_order(const ContractionOrdering& ordering) {
   return new_order;
 }
 
-/**
- * Recursive helper for the external ContractGrid method below. This method
- * calls itself recursively on each "cut" operation.
- * @param ordering ContractionOrdering listing operations to perform.
- * @param data_size int size of largest tensor created during contraction.
- * @param tensor_grid 2D vector<MKLTensor> holding the tensor grid. Consumes
- * output from grid_of_tensors_3D_to_2D.
- * @param amplitudes vector of amplitudes for each final output requested.
- *
- * The following arguments are used during recursion, and should not be
- * assigned when calling this method externally.
- * @param cut_index int stores the current cut under consideration.
- * @param active_patches list of patches already created in scratch space.
- * @param scratch vector of tensors for scratch space.
- * @param patch_pos map of patch IDs to scratch locations.
- */
-void ContractGrid(ContractionOrdering ordering, const int data_size,
-                  std::vector<std::vector<MKLTensor>>* tensor_grid,
-                  std::vector<std::complex<double>>* amplitudes, int cut_index,
-                  std::unordered_map<std::string, bool> active_patches,
-                  std::vector<MKLTensor>* scratch,
-                  std::unordered_map<std::string, int>* patch_pos) {
+}  // namespace
+
+void ContractionData::ContractGrid(
+    ContractionOrdering ordering, int output_index,
+    std::unordered_map<std::string, bool> active_patches) {
   while (!ordering.empty()) {
     std::unique_ptr<ContractionOperation> op = std::move(ordering.front());
     ordering.pop_front();
@@ -63,24 +46,20 @@ void ContractGrid(ContractionOrdering ordering, const int data_size,
       case ContractionOperation::EXPAND: {
         const auto* expand = dynamic_cast<const ExpandPatch*>(op.get());
         // Multiply by the new tensor and store result in scratch.
-        MKLTensor& next = (*tensor_grid)[expand->tensor[0]][expand->tensor[1]];
+        MKLTensor& next = (*tensor_grid_)[expand->tensor[0]][expand->tensor[1]];
         if (!active_patches[expand->id]) {
           // First tensor in patch.
-          (*scratch)[(*patch_pos)[expand->id]].set_indices_and_dimensions(
-              {""}, {data_size});
-          (*scratch)[(*patch_pos)[expand->id]] = next;
+          scratch_[scratch_map_[expand->id]] = next;
           active_patches[expand->id] = true;
           continue;
         }
-        MKLTensor& prev = (*scratch)[(*patch_pos)[expand->id]];
-        MKLTensor& result = (*scratch)[(*patch_pos)[kResultSpace]];
-        result.set_indices_and_dimensions({""}, {data_size});
-        multiply(prev, next, result, (*scratch)[0].data());
+        MKLTensor& prev = scratch_[scratch_map_[expand->id]];
+        MKLTensor& result = scratch_[scratch_map_[kResultSpace]];
+        multiply(prev, next, result, scratch_[0].data());
         if (ordering.empty()) continue;
-        int temp = (*patch_pos)[expand->id];
-        (*patch_pos)[expand->id] = (*patch_pos)[kResultSpace];
-        (*patch_pos)[kResultSpace] = temp;
-        (*scratch)[temp].set_indices_and_dimensions({""}, {data_size});
+        int temp = scratch_map_[expand->id];
+        scratch_map_[expand->id] = scratch_map_[kResultSpace];
+        scratch_map_[kResultSpace] = temp;
         continue;
       }
       case ContractionOperation::CUT: {
@@ -89,7 +68,7 @@ void ContractGrid(ContractionOrdering ordering, const int data_size,
         const auto* cut = dynamic_cast<const CutIndex*>(op.get());
         const std::string index = index_name(cut->tensors);
         MKLTensor* tensor_a =
-            &(*tensor_grid)[cut->tensors[0][0]][cut->tensors[0][1]];
+            &(*tensor_grid_)[cut->tensors[0][0]][cut->tensors[0][1]];
         const MKLTensor copy_a(*tensor_a);
         // List of values to evaluate on the cut.
         std::vector<int> values = cut->values;
@@ -102,29 +81,22 @@ void ContractGrid(ContractionOrdering ordering, const int data_size,
         if (cut->tensors.size() > 1) {
           // This is a normal cut; each value adds to the same amplitude.
           MKLTensor* tensor_b =
-              &(*tensor_grid)[cut->tensors[1][0]][cut->tensors[1][1]];
+              &(*tensor_grid_)[cut->tensors[1][0]][cut->tensors[1][1]];
           const MKLTensor copy_b(*tensor_b);
           for (int val : values) {
-            tensor_a->set_indices_and_dimensions({""}, {copy_a.size()});
-            tensor_b->set_indices_and_dimensions({""}, {copy_b.size()});
             copy_a.project(index_name(cut->tensors), val, *tensor_a);
             copy_b.project(index_name(cut->tensors), val, *tensor_b);
-            ContractGrid(copy_order(ordering), data_size, tensor_grid,
-                         amplitudes, cut_index, active_patches, scratch,
-                         patch_pos);
+            ContractGrid(copy_order(ordering), output_index, active_patches);
           }
           *tensor_a = copy_a;
           *tensor_b = copy_b;
         } else {
           // This is a terminal cut; each value adds to a different amplitude.
-          cut_index *= values.size();
+          output_index *= values.size();
           for (int val : values) {
-            tensor_a->set_indices_and_dimensions({""}, {copy_a.size()});
             copy_a.project(index_name(cut->tensors), val, *tensor_a);
-            ContractGrid(copy_order(ordering), data_size, tensor_grid,
-                         amplitudes, cut_index, active_patches, scratch,
-                         patch_pos);
-            cut_index++;
+            ContractGrid(copy_order(ordering), output_index, active_patches);
+            output_index++;
           }
           *tensor_a = copy_a;
         }
@@ -133,37 +105,33 @@ void ContractGrid(ContractionOrdering ordering, const int data_size,
       case ContractionOperation::MERGE: {
         const auto* merge = dynamic_cast<const MergePatches*>(op.get());
         // Multiply two existing tensors and store result in scratch.
-        MKLTensor& patch_1 = (*scratch)[(*patch_pos)[merge->source_id]];
-        MKLTensor& patch_2 = (*scratch)[(*patch_pos)[merge->target_id]];
+        MKLTensor& patch_1 = scratch_[scratch_map_[merge->source_id]];
+        MKLTensor& patch_2 = scratch_[scratch_map_[merge->target_id]];
         if (!active_patches[merge->target_id]) {
           // Copy the old patch into the new space.
           patch_2 = patch_1;
           active_patches[merge->target_id] = true;
           continue;
         }
-        MKLTensor& result = (*scratch)[(*patch_pos)[kResultSpace]];
-        result.set_indices_and_dimensions({""}, {data_size});
-        multiply(patch_1, patch_2, result, (*scratch)[0].data());
+        MKLTensor& result = scratch_[scratch_map_[kResultSpace]];
+        multiply(patch_1, patch_2, result, scratch_[0].data());
         if (ordering.empty()) continue;
-        int temp = (*patch_pos)[merge->target_id];
-        (*patch_pos)[merge->target_id] = (*patch_pos)[kResultSpace];
-        (*patch_pos)[kResultSpace] = temp;
-        (*scratch)[temp].set_indices_and_dimensions({""}, {data_size});
+        int temp = scratch_map_[merge->target_id];
+        scratch_map_[merge->target_id] = scratch_map_[kResultSpace];
+        scratch_map_[kResultSpace] = temp;
         continue;
       }
     }
   }
-  MKLTensor& result = (*scratch)[(*patch_pos)[kResultSpace]];
+  MKLTensor& result = scratch_[scratch_map_[kResultSpace]];
   if (result.size() != 1) {
     std::cout << "Contraction did not complete; final tensor is ";
     result.print();
     assert(false);
   }
-  (*amplitudes)[cut_index] += (*result.data());
+  (*amplitudes_)[output_index] += (*result.data());
   return;
 }
-
-}  // namespace
 
 std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
   char buffer[64];
@@ -296,18 +264,22 @@ void ContractGrid(const ContractionOrdering& ordering, const int data_size,
                   std::vector<std::complex<double>>* amplitudes) {
   assert(amplitudes != nullptr && "Amplitude return vector must be non-null.");
   assert(IsOrderingValid(ordering));
-  std::vector<MKLTensor> scratch;
-  std::unordered_map<std::string, int> patch_pos;
+
+  // Acquire the necessary scratch space and populate ContractionData.
   std::unordered_map<std::string, bool> active_patches;
+  ContractionData data;
+  data.max_rank_ = data_size;
+  data.tensor_grid_ = tensor_grid;
+  data.amplitudes_ = amplitudes;
   // Scratch space for reordering during multiplication.
-  scratch.push_back(MKLTensor({""}, {data_size}));
+  data.scratch_.push_back(MKLTensor({""}, {data.max_rank_}));
 
   // Scratch space for temporarily storing multiplication results.
-  scratch.push_back(MKLTensor({""}, {data_size}));
-  patch_pos[kResultSpace] = 1;
+  data.scratch_.push_back(MKLTensor({""}, {data.max_rank_}));
+  data.scratch_map_[kResultSpace] = 1;
 
   // Scratch space for storing patch tensors.
-  int i = scratch.size();
+  int i = data.scratch_.size();
   for (const auto& op : ordering) {
     std::string mutate_id;
     if (op->op_type == ContractionOperation::EXPAND) {
@@ -319,13 +291,13 @@ void ContractGrid(const ContractionOrdering& ordering, const int data_size,
     } else {
       continue;
     }
-    if (patch_pos.find(mutate_id) == patch_pos.end()) {
-      patch_pos[mutate_id] = i++;
+    if (data.scratch_map_.find(mutate_id) == data.scratch_map_.end()) {
+      data.scratch_map_[mutate_id] = i++;
       active_patches[mutate_id] = false;
       // TODO(martinop): reduce scratch space usage when possible.
-      scratch.push_back(MKLTensor({""}, {data_size}));
+      data.scratch_.push_back(MKLTensor({""}, {data.max_rank_}));
     }
   }
-  ContractGrid(copy_order(ordering), data_size, tensor_grid, amplitudes,
-               /*cut_index = */ 0, active_patches, &scratch, &patch_pos);
+  data.ContractGrid(copy_order(ordering), /*output_index = */ 0,
+                    active_patches);
 }
