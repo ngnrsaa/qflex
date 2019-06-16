@@ -114,9 +114,7 @@ int main(int argc, char **argv) {
 
   // Scratch space to be reused for operations.
   t0 = high_resolution_clock::now();
-  int data_size = (int)pow(super_dim,7);
-  // TODO(martinop): recycle scratch space for use in ContractGrid.
-  s_type * scratch = new s_type[data_size];
+  s_type * scratch = new s_type[(int)pow(super_dim,7)];
   t1 = high_resolution_clock::now();
   time_span = duration_cast<duration<double>>(t1 - t0);
   //cout << "Time spent reading allocating scratch space: "
@@ -152,11 +150,15 @@ int main(int argc, char **argv) {
     //cout << "Time spent creating 2D grid of tensors from 3D one: "
     //     << time_span.count()
     //     << "s\n\n";
+
+    // Freeing scratch data: delete and NULL.
+    delete[] scratch;
+    scratch = NULL;
   }
 
   // Perform tensor grid contraction.
   vector<complex<double>> amplitudes(num_Cs);
-  ContractGrid(ordering, data_size, &tensor_grid, &amplitudes);
+  ContractGrid(ordering, &tensor_grid, &amplitudes);
 
   // Printing output
   for (int c=0; c<num_Cs; ++c)
@@ -167,11 +169,6 @@ int main(int argc, char **argv) {
     cout << real(amplitudes[c]) << " " << imag(amplitudes[c]);
     cout << endl;
   }
-
-
-  // Freeing scratch data: delete and NULL.
-  delete[] scratch;
-  scratch = NULL;
 
   // Final time
   t_output_1 = high_resolution_clock::now();

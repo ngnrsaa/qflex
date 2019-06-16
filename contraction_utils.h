@@ -8,6 +8,21 @@
 
 #include "mkl_tensor.h"
 
+/**
+ * Method for assigning names to indices in the grid. Accepted formats include:
+ *   - {i_1, j_1}, {i_2, j_2}: two-qubit contraction.
+ *   - {i_1, j_1, k_1}, {i_2, j_2, k_2}: single-qubit gate or virtual index.
+ *   - {i, j}, {}: output-value assignment.
+ * @param p1 position of the first connected tensor.
+ * @param p2 position of the second connected tensor.
+ * @return string name of the index.
+ */
+std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2);
+
+// As above, but accepts a list of qubit locations. If the list has only one
+// element, an empty vector will be provided as the second element.
+std::string index_name(const std::vector<std::vector<int>>& tensors);
+
 struct ContractionOperation {
  public:
   enum OpType { EXPAND, CUT, MERGE };
@@ -58,6 +73,19 @@ using ContractionOrdering = std::list<std::unique_ptr<ContractionOperation>>;
 class ContractionData {
  public:
   /**
+   * Generates a ContractionData object from a contraction ordering, and logs
+   * total memory allocated for the contraction.
+   * @param ordering ContractionOrdering listing operations to perform.
+   * @param tensor_grid 2D vector<MKLTensor> holding the tensor grid. Consumes
+   * output from grid_of_tensors_3D_to_2D.
+   * @param amplitudes vector of amplitudes for each final output requested.
+   */
+  static ContractionData Initialize(
+      const ContractionOrdering& ordering,
+      std::vector<std::vector<MKLTensor>>* tensor_grid,
+      std::vector<std::complex<double>>* amplitudes);
+
+  /**
    * Recursive helper for the external ContractGrid method below. This method
    * calls itself recursively on each "cut" operation.
    * @param ordering ContractionOrdering listing operations to perform.
@@ -67,35 +95,34 @@ class ContractionData {
   void ContractGrid(ContractionOrdering ordering, int output_index,
                     std::unordered_map<std::string, bool> active_patches);
 
-  // TODO(me): static ContractionData InitializeData();
+  MKLTensor& get_scratch(std::string id) {
+    return scratch_[scratch_map_[id]];
+  }
 
-  // TODO(me): make these private.
-  // Rank of the largest tensor created during contraction.
-  int max_rank_;
+  std::vector<std::string> patch_list() {
+    std::vector<std::string> patches;
+    for (const auto& patch_pos_pair : scratch_map_) {
+      patches.push_back(patch_pos_pair.first);
+    }
+    return patches;
+  }
+
+ private:
   // List of tensors used for scratch space or storage between recursive calls.
   std::vector<MKLTensor> scratch_;
+
   // Map of patch IDs/index names to scratch locations.
   std::unordered_map<std::string, int> scratch_map_;
+
+  // Max rank of each patch generated during contraction.
+  std::unordered_map<std::string, int> patch_rank_;
+
   // Contains the tensor grid produced by grid_of_tensors_3D_to_2D.
   std::vector<std::vector<MKLTensor>>* tensor_grid_;
+
   // Amplitudes for each final output requested.
   std::vector<std::complex<double>>* amplitudes_;
 };
-
-/**
- * Method for assigning names to indices in the grid. Accepted formats include:
- *   - {i_1, j_1}, {i_2, j_2}: two-qubit contraction.
- *   - {i_1, j_1, k_1}, {i_2, j_2, k_2}: single-qubit gate or virtual index.
- *   - {i, j}, {}: output-value assignment.
- * @param p1 position of the first connected tensor.
- * @param p2 position of the second connected tensor.
- * @return string name of the index.
- */
-std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2);
-
-// As above, but accepts a list of qubit locations. If the list has only one
-// element, an empty vector will be provided as the second element.
-std::string index_name(const std::vector<std::vector<int>>& tensors);
 
 
 /**
@@ -120,12 +147,11 @@ bool IsOrderingValid(const ContractionOrdering& ordering);
  * for performing the grid contraction. A small amout of additional space is
  * allocated during cuts to preserve tensor_grid values.
  * @param ordering ContractionOrdering listing operations to perform.
- * @param data_size int size of largest tensor created during contraction.
  * @param tensor_grid 2D vector<MKLTensor> holding the tensor grid. Consumes
  * output from grid_of_tensors_3D_to_2D.
  * @param amplitudes vector of amplitudes for each final output requested.
  */
-void ContractGrid(const ContractionOrdering& ordering, const int data_size,
+void ContractGrid(const ContractionOrdering& ordering,
                   std::vector<std::vector<MKLTensor>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes);
 
