@@ -5,59 +5,7 @@
 #include <sstream>
 #include <unordered_set>
 
-// Keys for scratch-space tensors. Do not reuse outside this file.
-constexpr char kGeneralSpace[] = "_general_internal_";
-constexpr char kResultSpace[] = "_result_internal_";
-
-namespace {
-
-// Copies a ContractionOrdering for reuse.
-ContractionOrdering copy_order(const ContractionOrdering& ordering) {
-  ContractionOrdering new_order;
-  for (const auto& op : ordering) {
-    switch (op->op_type) {
-      case ContractionOperation::EXPAND: {
-        const auto* expand = dynamic_cast<const ExpandPatch*>(op.get());
-        new_order.emplace_back(new ExpandPatch(*expand));
-        break;
-      }
-      case ContractionOperation::CUT: {
-        const auto* cut = dynamic_cast<const CutIndex*>(op.get());
-        new_order.emplace_back(new CutIndex(*cut));
-        break;
-      }
-      case ContractionOperation::MERGE: {
-        const auto* merge = dynamic_cast<const MergePatches*>(op.get());
-        new_order.emplace_back(new MergePatches(*merge));
-        break;
-      }
-    }
-  }
-  return new_order;
-}
-
-/**
- * Assigns a name to a given cut-copy tensor for mapping into scratch space.
- * @param index the index being cut.
- * @param side the side of the cut referenced.
- * @return the key used for this cut-copy.
- */
-std::string cut_copy_name(std::vector<std::vector<int>> index, int side) {
-  std::string base = index_name(index);
-  char buffer[64];
-  int len =
-      snprintf(buffer, sizeof(buffer), "cut-%s:side-%d", base.c_str(), side);
-  return std::string(buffer, len);
-}
-
-// Gets the index of result scratch space of the given rank.
-std::string result_space(int rank) {
-  char buffer[64];
-  int len = snprintf(buffer, sizeof(buffer), "%s%d", kResultSpace, rank);
-  return std::string(buffer, len);
-}
-
-}  // namespace
+// ContractionData methods
 
 ContractionData ContractionData::Initialize(
     const ContractionOrdering& ordering,
@@ -164,6 +112,8 @@ ContractionData ContractionData::Initialize(
     allocated_space += size;
   }
 
+  // TODO(martinop): minor optimizations possible: When consecutive cuts apply
+  // to the same grid tensor, only one copy needs to be stored.
   int cut_copy_pos = data.scratch_map_.size();
   for (const auto& copy_rank_pair : cut_copy_rank) {
     const int size = (int)pow(bond_dim, copy_rank_pair.second);
@@ -295,6 +245,8 @@ void ContractionData::ContractGrid(
   return;
 }
 
+// External methods
+
 std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
   char buffer[64];
   if (p1.size() == 2 && p2.size() == 2) {
@@ -327,6 +279,30 @@ std::string index_name(const std::vector<std::vector<int>>& tensors) {
   }
   assert(false && "Failed to construct tensor name.");
   return "";
+}
+
+ContractionOrdering copy_order(const ContractionOrdering& ordering) {
+  ContractionOrdering new_order;
+  for (const auto& op : ordering) {
+    switch (op->op_type) {
+      case ContractionOperation::EXPAND: {
+        const auto* expand = dynamic_cast<const ExpandPatch*>(op.get());
+        new_order.emplace_back(new ExpandPatch(*expand));
+        break;
+      }
+      case ContractionOperation::CUT: {
+        const auto* cut = dynamic_cast<const CutIndex*>(op.get());
+        new_order.emplace_back(new CutIndex(*cut));
+        break;
+      }
+      case ContractionOperation::MERGE: {
+        const auto* merge = dynamic_cast<const MergePatches*>(op.get());
+        new_order.emplace_back(new MergePatches(*merge));
+        break;
+      }
+    }
+  }
+  return new_order;
 }
 
 bool IsOrderingValid(const ContractionOrdering& ordering) {
@@ -431,7 +407,7 @@ void ContractGrid(const ContractionOrdering& ordering,
   ContractionData data =
       ContractionData::Initialize(ordering, tensor_grid, amplitudes);
   std::unordered_map<std::string, bool> active_patches;
-  for (const auto& patch : data.patch_list()) {
+  for (const auto& patch : data.scratch_list()) {
     active_patches[patch] = false;
   }
   data.ContractGrid(copy_order(ordering), /*output_index = */ 0,

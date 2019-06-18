@@ -68,6 +68,9 @@ struct MergePatches : public ContractionOperation {
 
 using ContractionOrdering = std::list<std::unique_ptr<ContractionOperation>>;
 
+// Copies a ContractionOrdering for reuse.
+ContractionOrdering copy_order(const ContractionOrdering& ordering);
+
 // Helper class for the external ContractGrid method. This should not be
 // initialized by external users.
 class ContractionData {
@@ -85,6 +88,10 @@ class ContractionData {
       std::vector<std::vector<MKLTensor>>* tensor_grid,
       std::vector<std::complex<double>>* amplitudes);
 
+  // Keys for scratch-space tensors. Do not reuse outside this file.
+  static constexpr char kGeneralSpace[] = "_general_internal_";
+  static constexpr char kResultSpace[] = "_result_internal_";
+
   /**
    * Recursive helper for the external ContractGrid method below. This method
    * calls itself recursively on each "cut" operation.
@@ -95,16 +102,37 @@ class ContractionData {
   void ContractGrid(ContractionOrdering ordering, int output_index,
                     std::unordered_map<std::string, bool> active_patches);
 
-  MKLTensor& get_scratch(std::string id) {
-    return scratch_[scratch_map_[id]];
+  MKLTensor& get_scratch(std::string id) { return scratch_[scratch_map_[id]]; }
+
+  /**
+   * Assigns a name to a given cut-copy tensor for mapping into scratch space.
+   * @param index the index being cut.
+   * @param side the side of the cut referenced.
+   * @return the key used for this cut-copy.
+   */
+  static std::string cut_copy_name(std::vector<std::vector<int>> index,
+                                   int side) {
+    std::string base = index_name(index);
+    char buffer[64];
+    int len =
+        snprintf(buffer, sizeof(buffer), "cut-%s:side-%d", base.c_str(), side);
+    return std::string(buffer, len);
   }
 
-  std::vector<std::string> patch_list() {
-    std::vector<std::string> patches;
-    for (const auto& patch_pos_pair : scratch_map_) {
-      patches.push_back(patch_pos_pair.first);
+  // Gets the index of result scratch space of the given rank.
+  static std::string result_space(int rank) {
+    char buffer[64];
+    int len = snprintf(buffer, sizeof(buffer), "%s%d", kResultSpace, rank);
+    return std::string(buffer, len);
+  }
+
+  // Gets the names of all scratch tensors.
+  std::vector<std::string> scratch_list() {
+    std::vector<std::string> names;
+    for (const auto& name_pos_pair : scratch_map_) {
+      names.push_back(name_pos_pair.first);
     }
-    return patches;
+    return names;
   }
 
  private:
@@ -123,7 +151,6 @@ class ContractionData {
   // Amplitudes for each final output requested.
   std::vector<std::complex<double>>* amplitudes_;
 };
-
 
 /**
  * Performs basic sanity checks on the given contraction ordering:

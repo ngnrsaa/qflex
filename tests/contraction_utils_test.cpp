@@ -124,6 +124,73 @@ TEST(ContractionTest, CutSafety) {
   EXPECT_TRUE(IsOrderingValid(ordering));
 }
 
+// Trivial grid with one "off" qubit and one cut:
+//   0 - 1
+//   |   x --> cut between (0,1) and (1,1)
+//   2 - 3
+//       |
+//   4   5 --> qubit at (2,0) is off; (2,1) is in final region.
+// This circuit should return the input string with amplitude ~= 1 when summing
+// over the cut values, but only when the output of (2,1) is a zero.
+TEST(ContractionTest, SimpleInitializeData) {
+  std::vector<std::vector<MKLTensor>> tensor_grid;
+  for (int i = 0; i < 3; ++i) {
+    tensor_grid.push_back(std::vector<MKLTensor>(2));
+  }
+  // clang-format off
+  std::vector<std::complex<float>> I_4 =
+      {1, 0, 0, 0,
+       0, 1, 0, 0,
+       0, 0, 1, 0,
+       0, 0, 0, 1};
+  std::vector<std::complex<float>> I_8 =
+      {1, 0, 0, 0, 0, 0, 0, 0,
+       0, 1, 0, 0, 0, 0, 0, 0,
+       0, 0, 1, 0, 0, 0, 0, 0,
+       0, 0, 0, 1, 0, 0, 0, 0,
+       0, 0, 0, 0, 1, 0, 0, 0,
+       0, 0, 0, 0, 0, 1, 0, 0,
+       0, 0, 0, 0, 0, 0, 1, 0,
+       0, 0, 0, 0, 0, 0, 0, 1};
+  std::vector<std::complex<float>> I_2x4 =
+      {1, 0, 0, 0,
+       0, 1, 0, 0};
+  // clang-format on
+
+  tensor_grid[0][0] = MKLTensor({"(0,0),(0,1)", "(0,0),(1,0)"}, {4, 4}, I_4);
+  tensor_grid[0][1] = MKLTensor({"(0,1),(1,1)", "(0,0),(0,1)"}, {4, 4}, I_4);
+  tensor_grid[1][0] = MKLTensor({"(0,0),(1,0)", "(1,0),(1,1)"}, {4, 4}, I_4);
+  tensor_grid[1][1] =
+      MKLTensor({"(0,1),(1,1)", "(1,1),(2,1)", "(1,0),(1,1)"}, {4, 4, 4}, I_8);
+  tensor_grid[2][1] = MKLTensor({"(2,1),(o)", "(1,1),(2,1)"}, {2, 4}, I_2x4);
+
+  ContractionOrdering ordering;
+  ordering.emplace_back(new CutIndex({{0, 1}, {1, 1}}));
+  ordering.emplace_back(new ExpandPatch("a", {0, 1}));
+  ordering.emplace_back(new ExpandPatch("a", {0, 0}));
+  ordering.emplace_back(new ExpandPatch("a", {1, 0}));
+  ordering.emplace_back(new CutIndex({{2, 1}}));
+  ordering.emplace_back(new ExpandPatch("b", {2, 1}));
+  ordering.emplace_back(new ExpandPatch("b", {1, 1}));
+  ordering.emplace_back(new MergePatches("a", "b"));
+
+  std::vector<std::complex<double>> amplitudes(2);
+  auto data = ContractionData::Initialize(ordering, &tensor_grid, &amplitudes);
+
+  std::unordered_map<std::string, bool> active_patches;
+  for (const auto& patch : data.scratch_list()) {
+    active_patches[patch] = false;
+  }
+  data.ContractGrid(copy_order(ordering), /*output_index=*/0, active_patches);
+  ASSERT_EQ(amplitudes.size(), 2);
+  // amplitudes[0] represents <00000|U|00000>, and should return 1.
+  EXPECT_FLOAT_EQ(amplitudes[0].real(), 1.0);
+  EXPECT_FLOAT_EQ(amplitudes[0].imag(), 0.0);
+  // amplitudes[1] represents <00000|U|00001>, and should return 0.
+  EXPECT_FLOAT_EQ(amplitudes[1].real(), 0.0);
+  EXPECT_FLOAT_EQ(amplitudes[1].imag(), 0.0);
+}
+
 // This test demonstrates the creation and validation of a complex contraction
 // ordering - specifically, the "alternative" contraction for the 7x7 grid
 // defined in this paper: https://arxiv.org/pdf/1811.09599.pdf
