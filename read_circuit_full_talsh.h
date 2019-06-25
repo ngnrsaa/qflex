@@ -119,124 +119,47 @@ vector<vector<s_type>> fSim(double theta, double phi)
   double theta_angle = _PI * theta;
   double phi_angle = _PI * phi;
 
-  // Define useful variables
-  s_type a, b, c, d, p, m;
-  a = s_type({0.5, 0.0}) * exp(s_type({0.0, -phi_angle/2.}));
-  b = s_type({0.5*cos(theta_angle), 0.0});
-  c = s_type({0.0, -0.5*sin(theta_angle)});
-  p = sqrt(a+b);
-  m = sqrt(a-b);
-  d = exp(s_type({0.0, phi_angle/4.}));
+  s_type c1, c2, c3, c4, d;
+  c1 = s_type(0.5) * (exp(s_type({0.0,-1*phi_angle/2.}))
+       + s_type({cos(theta_angle),0.0}));
+  c2 = s_type(0.5) * (exp(s_type({0.0,-1*phi_angle/2.}))
+       - s_type({cos(theta_angle),0.0}));
+  c3 = s_type({0.0,-1/2.}) * s_type({sin(theta_angle),0.0});
+  c4 = c3;
+  s_type s1, s2, s3, s4;
+  s1 = sqrt(c1);
+  s2 = sqrt(c2);
+  s3 = sqrt(c3);
+  s4 = sqrt(c4);
+  d = exp(s_type({0.0,phi_angle/4.}));
+  vector<s_type> q1_tensor_array(
+          { d*s1,{0.0,0.0}, d*s2, {0.0,0.0},
+          {0.0,0.0},s3,{0.0,0.0},s_type({0.0,1.0})*s4,
+          {0.0,0.0},conj(d)*s1,{0.0,0.0},-conj(d)*s2,
+          s3,{0.0,0.0},s_type({0.0,-1.0})*s4,{0.0,0.0}});
 
-  vector<s_type> q1_tensor_array({
-                    p*d, {0.0,0.0}, m*d, {0.0,0.0},
-                    {0.0,0.0}, c, {0.0,0.0}, s_type({0.0,-1.0})*c,
-                    {0.0,0.0}, m*conj(d), {0.0,0.0}, -m*conj(d),
-                    c, {0.0,0.0}, s_type({0.0,1.0})*c, {0.0,0.0} });
   vector<s_type> q2_tensor_array(q1_tensor_array);
   return vector<vector<s_type>>({q1_tensor_array, q2_tensor_array});
 }
 
 
 /**
-* Returns vector of vectors of s_type with the Schmidt decomposition of the
-* fSim gate.
-* @param theta double with the angle $theta$. Modulo $2\pi$ is taken.
-* @param phi double with the angle $phi$. Modulo $2\pi$ is taken.
-* @param scratch pointer to s_type array with scratch space for all operations
-* performed in this function.
-* @return vector<vector<s_type>> with three elements: first the vector with
-* entries of the first qubit, second the vector with entries of the second
-* qubit, and third the vector with the singular values (informational only).
+* Returns the decomposition of a cPhase gate with a phase.
+* @param double phi.
+* @return vector<vector<s_type>> with the two tensors using the convention
+* (output, virtual, input) for both qubits. We are using column major storage.
 */
-/*
-vector<vector<s_type>> fSim(double theta, double phi, s_type * scratch)
+vector<vector<s_type>> cphase(double phi)
 {
+  double phi_angle = _PI * phi;
 
-  vector<s_type> coeffs({
-                   {0.0,-0.5*sin(theta)},
-                   {0.0,-0.5*sin(theta)},
-                   {0.5*(cos(-theta/2.)-cos(theta)),0.5*sin(-theta/2.)},
-                   {0.5*(cos(-theta/2.)+cos(theta)),0.5*sin(-theta/2.)}});
-
-  vector<double> norm_coeffs(coeffs.size());
-  for (int i=0; i<coeffs.size(); ++i)
-  {
-    norm_coeffs[i] = abs(coeffs[i]);
-  }
-
-  vector<vector<s_type>> q1_matrices({
-    {{0.,0.},{1.,0.},{1.,0.},{0.,0.}},
-    {{0.,0.},{0.,1.},{0.,-1.},{0.,0.}},
-    {{cos(phi/4.),sin(phi/4.)},{0.,0.},{0.,0.},{-cos(-phi/4.),-sin(-phi/4.)}},
-    {{cos(phi/4.),sin(phi/4.)},{0.,0.},{0.,0.},{cos(-phi/4.),sin(-phi/4.)}}});
-  vector<vector<s_type>> q2_matrices({
-    {{0.,0.},{1.,0.},{1.,0.},{0.,0.}},
-    {{0.,0.},{0.,1.},{0.,-1.},{0.,0.}},
-    {{cos(phi/4.),sin(phi/4.)},{0.,0.},{0.,0.},{-cos(-phi/4.),-sin(-phi/4.)}},
-    {{cos(phi/4.),sin(phi/4.)},{0.,0.},{0.,0.},{cos(-phi/4.),sin(-phi/4.)}}});
-
-  for (int i=0; i<coeffs.size(); ++i)
-  {
-    for (int j=0; j<q1_matrices[i].size(); ++j)
-    {
-      q1_matrices[i][j] *= coeffs[i];
-      q2_matrices[i][j] *= coeffs[i];
-    }
-  }
-
-  struct cnmm { 
-    s_type c;
-    double n;
-    vector<s_type> m1;
-    vector<s_type> m2;
-    cnmm(s_type c_, double n_, vector<s_type> m1_, vector<s_type> m2_) :
-         c(c_), n(n_), m1(m1_), m2(m2_) {}
-    bool operator<( const cnmm & other ) const
-    { return n < other.n; }
-  };
-
-  vector<cnmm> my_cnmm;
-  for (int i=0; i<coeffs.size(); ++i)
-  {
-    my_cnmm.emplace_back(
-          coeffs[i], norm_coeffs[i], q1_matrices[i], q2_matrices[i]);
-  }
-
-  sort(my_cnmm.begin(), my_cnmm.end());
-  reverse(my_cnmm.begin(), my_cnmm.end());
-
-  vector<s_type> q1_tensor, q2_tensor;
-  for (auto v : my_cnmm)
-  {
-    for (auto w : v.m1)
-      q1_tensor.emplace_back(w);
-    for (auto w : v.m2)
-      q2_tensor.emplace_back(w);
-  }
-
-  MKLTensor q1_mkltensor({"v","q1i","q2i"}, {4,2,2}, q1_tensor);
-  MKLTensor q2_mkltensor({"v","q1i","q2i"}, {4,2,2}, q2_tensor);
-  q1_mkltensor.reorder({"q1i","v","q2i"}, scratch);
-  q2_mkltensor.reorder({"q1i","v","q2i"}, scratch);
-  vector<s_type> q1_reordered_tensor(q1_mkltensor.size());
-  vector<s_type> q2_reordered_tensor(q2_mkltensor.size());
-  for (int i=0; i<q1_mkltensor.size(); ++i)
-  {
-    q1_reordered_tensor[i] = *(q1_mkltensor.data()+i);
-    q2_reordered_tensor[i] = *(q2_mkltensor.data()+i);
-  }
-
-  sort(norm_coeffs.begin(), norm_coeffs.end());
-  reverse(norm_coeffs.begin(), norm_coeffs.end());
-
-  vector<vector<s_type>> ret_val({q1_reordered_tensor,
-                                  q2_reordered_tensor,
-                                  norm_coeffs});
-
-  return ret_val;
+  s_type c = exp(s_type({0.0,-phi_angle}));
+  vector<s_type> q1_tensor_array({{1.0,0.0}, {0.0,0.0}, {0.0,0.0}, {0.0,0.0},
+                                {0.0,0.0}, {0.0,0.0}, {0.0,0.0}, {1.0,0.0}});
+  vector<s_type> q2_tensor_array({{1.0,0.0}, {0.0,0.0}, {1.0,0.0}, {0.0,0.0},
+                                {0.0,0.0}, {1.0,0.0}, {0.0,0.0}, c});
+  return vector<vector<s_type>>({q1_tensor_array, q2_tensor_array});
 }
-*/
 
 
 /**
@@ -812,7 +735,10 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
     // Get the first position
     ss >> q1;
     // Get the second position in the case
-    if (gate=="cz" || gate.substr(0,4)=="fsim") ss >> q2;
+    if (gate=="cz" || gate.substr(0,4)=="fsim" || gate.substr(0,3)=="cpf")
+    {
+      ss >> q2;
+    }
     else q2 = -1;
 
     // For rz gate
@@ -834,8 +760,16 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
       size_t pos_comma = gate.find(",");
       size_t pos_ket = gate_suffix.find(")");
       string theta_string = gate.substr(pos_bra+1, pos_comma-(pos_bra+1));
-      string phi_string = gate.substr(0, pos_ket);
+      string phi_string = gate_suffix.substr(0, pos_ket);
       theta = atof(theta_string.c_str());
+      phi = atof(phi_string.c_str());
+    }
+    // For cphase gate
+    if (gate.substr(0, 3)=="cpf")
+    {
+      size_t pos_bra = gate.find("(");
+      size_t pos_ket = gate_suffix.find(")");
+      string phi_string = gate.substr(pos_bra+1, pos_ket-(pos_bra+1));
       phi = atof(phi_string.c_str());
     }
 
@@ -894,6 +828,12 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
         gate_vector_1 = gate_vectors[0];
         gate_vector_2 = gate_vectors[1];
         dims = vector<int>({DIM,4,DIM});
+      } else if (gate.substr(0, 3)=="cpf")
+      {
+        vector<vector<s_type>> gate_vectors = cphase(phi);
+        gate_vector_1 = gate_vectors[0];
+        gate_vector_2 = gate_vectors[1];
+        dims = vector<int>({DIM,2,DIM});
       }
       grid_of_lists_of_tensors[i_j_1[0]][i_j_1[1]].push_back(
         shared_ptr<talsh::Tensor>(new talsh::Tensor(dims, gate_vector_1)));

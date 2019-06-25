@@ -37,11 +37,20 @@
 #ifdef _sycamore_51x10
 #include "contraction_sycamore_51x10.h"
 #endif
+#ifdef _sycamore_51x14_cphase
+#include "contraction_sycamore_53x14_cphase.h"
+#endif
 #ifdef _sycamore_51x16
 #include "contraction_sycamore_51x16.h"
 #endif
+#ifdef _sycamore_53x14_cphase
+#include "contraction_sycamore_53x14_cphase.h"
+#endif
 #ifdef _test_new_gates
 #include "contraction_test_new_gates.h"
+#endif
+#ifdef _debug
+#include "contraction_debug.h"
 #endif
 
 using namespace std;

@@ -4,11 +4,11 @@ I = 10
 J = 10
 K = 2
 fidelity = 0.005
-filename = 'circuits/circuit_q51c0d4.qflex'
-num_qubits = 51
+filename = 'circuits/circuit_q53c0d4.qflex'
+num_qubits = 53
 num_qubits_A = 6
 num_qubits_B = num_qubits - num_qubits_A
-num_strings = 5000
+num_strings = 1000
 #num_strings_A = 2**num_qubits_A
 random_seed = 1
 
