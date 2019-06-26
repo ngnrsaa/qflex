@@ -37,8 +37,8 @@
 #ifdef _sycamore_51x10
 #include "contraction_sycamore_51x10.h"
 #endif
-#ifdef _sycamore_51x14_cphase
-#include "contraction_sycamore_53x14_cphase.h"
+#ifdef _sycamore_53x10_cphase
+#include "contraction_sycamore_53x10_cphase.h"
 #endif
 #ifdef _sycamore_51x16
 #include "contraction_sycamore_51x16.h"
