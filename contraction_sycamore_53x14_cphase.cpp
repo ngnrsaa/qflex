@@ -92,7 +92,7 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
 // repeated across batches).
 void Contraction::load_circuit(string input_string)
 {
-  cout << "Loading circuit..." << endl << flush;
+  //cout << "Loading circuit..." << endl << flush;
   // Timing variables.
   high_resolution_clock::time_point t0, t1;
   duration<double> span; 
@@ -209,7 +209,7 @@ void Contraction::contract(string input_string)
   {
     tensor_grid[i] = vector<shared_ptr<talsh::Tensor>>(J);
   }
-  cout << "Closing circuit ... " << endl << flush;
+  //cout << "Closing circuit ... " << endl << flush;
   close_circuit(I, J, final_conf_B, qubits_A, qubits_off,
                 open_tensor_grid, tensor_grid);
   t1 = high_resolution_clock::now();
@@ -545,7 +545,7 @@ void Contraction::contract(string input_string)
   int first_cut_dim(dims_grid[3][3][2]);
   int second_cut_dim(dims_grid[4][3][3]);
   vector<int> first_cut_offsets({0});
-  vector<int> second_cut_offsets({0});
+  vector<int> second_cut_offsets({0, 2, 4, 6});
   /*
   vector<int> first_cut_offsets;
   vector<int> second_cut_offsets;
@@ -562,7 +562,7 @@ void Contraction::contract(string input_string)
   int second_slice_size(2);
   for (auto i0 : first_cut_offsets) for (auto i1 : second_cut_offsets)
   {
-    cout << "i0 = " << i0 << endl << flush;
+    //cout << "i0 = " << i0 << endl << flush;
     // First slice on [3][3] and [3][4].
     unique_ptr<talsh::Tensor> first_3_3(new talsh::Tensor({dims_grid[3][3][0],
                                                          dims_grid[3][3][1],
@@ -750,8 +750,8 @@ void Contraction::contract(string input_string)
     done = ea->sync();
     t1 = high_resolution_clock::now();
     span = duration_cast<duration<double>>(t1 - t0);
-    time_largest_contraction = double(span.count());
-    cout << double(span.count()) << "s" << endl;
+    //time_largest_contraction = double(span.count());
+    //cout << double(span.count()) << "s" << endl;
     AB.reset();
     unique_ptr<talsh::Tensor> eb(new talsh::Tensor({first_slice_size,
                                                     second_slice_size,
@@ -800,7 +800,7 @@ void Contraction::contract(string input_string)
 
     span = duration_cast<duration<double>>(t1 - t0);
     time_largest_contraction = double(span.count());
-    cout << double(span.count()) << "s" << endl;
+    //cout << double(span.count()) << "s" << endl;
     ea.reset();
     unique_ptr<talsh::Tensor> ec(new talsh::Tensor({first_slice_size,
                                                     second_slice_size,
@@ -949,7 +949,10 @@ void Contraction::contract(string input_string)
     // Start third cut loop
     int third_cut_dim(dims_grid[3][4][2]);
     //vector<int> third_cut_offsets({0});
-    vector<int> third_cut_offsets({0});
+    vector<int> third_cut_offsets({0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20,
+                                   22, 24, 26, 28, 30, 32, 34, 36, 38, 40,
+                                   42, 44, 46, 48, 50, 52, 54, 56, 58, 60,
+                                   62});
     /*
     vector<int> third_cut_offsets;
     for (int p=0; p<third_cut_dim; ++p)
@@ -1362,7 +1365,7 @@ void Contraction::contract(string input_string)
       
       t1 = high_resolution_clock::now();
       span = duration_cast<duration<double>>(t1 - t0);
-      cout << "Time in i2 loop: " << span.count() << endl;
+      //cout << "Time in i2 loop: " << span.count() << endl;
       F.reset();
     }
     
