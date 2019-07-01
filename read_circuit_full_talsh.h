@@ -33,6 +33,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <omp.h>
+
 #include "talshxx.hpp"
 #include "talsh_wrapper.h"
 
@@ -950,11 +952,15 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
       if (k==grid_of_lists_of_tensors[i][j].size()-1)
       {
         grid_of_ooo_tensors[i][j] =
-            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_D, s_type(0.0)));
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_D,
+                                              talsh::TensorData<s_type>::kind,
+                                              talsh_tens_no_init));
         D = grid_of_ooo_tensors[i][j];
       } else {
         list_of_tensors.push_back(
-            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_D, s_type(0.0))));
+            shared_ptr<talsh::Tensor>(new talsh::Tensor(dims_D,
+                                              talsh::TensorData<s_type>::kind,
+                                              talsh_tens_no_init)));
         D = shared_ptr<talsh::Tensor>(list_of_tensors[k-1]);
       }
       TensContraction contraction(pattern, D.get(), L.get(), R.get());
@@ -1033,7 +1039,8 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
     {
       dims_T[p+1] = ooo_dims[grid_of_new_to_old_bond_positions[i][j][p]+1];
     }
-    talsh::Tensor T(dims_T, s_type(0.0));
+    talsh::Tensor T(dims_T, talsh::TensorData<s_type>::kind,
+                                            talsh_tens_no_init);
     vector<s_type> vector_I(_GATES_DATA.at("I"));
     vector<int> dims_I({DIM,DIM});
     talsh::Tensor I(dims_I, vector_I);
@@ -1072,13 +1079,20 @@ void google_circuit_file_to_open_grid_of_tensors(string filename, int I, int J,
     vector<int> super_dims({DIM});
     for (int p=0; p<dim_per_super_bond.size(); ++p)
       super_dims.push_back(dim_per_super_bond[p]);
-    shared_ptr<talsh::Tensor> B(new talsh::Tensor(super_dims, s_type(0.0)));
+    shared_ptr<talsh::Tensor> B(new talsh::Tensor(super_dims, 
+                                            talsh::TensorData<s_type>::kind,
+                                            talsh_tens_no_init));
     s_type const * data_T;
     s_type * data_B;
     T.getDataAccessHostConst(&data_T);
     B->getDataAccessHost(&data_B);
+
+    high_resolution_clock::time_point t0, t1;                                     
+    duration<double> span;
+    #pragma omp parallel for
     for (size_t p=0; p<T.getVolume(); ++p)
       data_B[p] = data_T[p];
+
     data_T = nullptr; data_B = nullptr;
 
     // grid_of_tensors points to the right tensor
@@ -1176,6 +1190,7 @@ void renormalize_circuit(int I, int J,
     s_type * data_T;
     grid_of_tensors[i][j]->getDataAccessHost(&data_T);
     size_t T_volume = grid_of_tensors[i][j]->getVolume();
+    #pragma omp parallel for
     for (size_t p=0; p<T_volume; ++p)
       data_T[p] *= norm_factor;
     data_T = nullptr;
