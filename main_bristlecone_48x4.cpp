@@ -12,6 +12,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "contraction_utils.h"
 #include "mkl_tensor.h"
 #include "read_circuit.h"
 
@@ -78,6 +79,38 @@ int main(int argc, char **argv) {
   vector<vector<int>> qubits_A({{2,8},{3,8},{3,9},{4,8},{4,9},
                                 {5,8},{5,9},{6,8}});
 
+  // Construct the ordering for this tensor contraction.
+  ContractionOrdering ordering;
+  const std::vector<std::vector<std::vector<int>>> cuts_a = {{{3, 2}, {4, 2}}};
+  for (const auto& cut : cuts_a) {
+    ordering.emplace_back(new CutIndex(cut, {0}));
+  }
+  // This cut has different values and must be created separately.
+  ordering.emplace_back(new CutIndex({{3, 3}, {4, 3}}, {1, 0}));
+  const std::vector<std::vector<int>> order_a = {
+      {4, 2}, {5, 2}, {4, 3}, {5, 3}, {6, 3}, {4, 4}, {5, 4}, {6, 4},
+      {7, 4}, {4, 5}, {5, 5}, {6, 5}, {7, 5}, {8, 5}, {8, 6}, {7, 6},
+      {6, 6}, {5, 6}, {4, 6}, {7, 7}, {6, 7}, {5, 7}, {4, 7}};
+  for (const auto& coord : order_a) {
+    ordering.emplace_back(new ExpandPatch("A", coord));
+  }
+  const std::vector<std::vector<int>> order_b = {
+      {3, 2}, {3, 3}, {2, 3}, {3, 4}, {2, 4}, {1, 4}, {3, 5}, {2, 5}, {1, 5},
+      {0, 5}, {0, 6}, {1, 6}, {2, 6}, {3, 6}, {1, 7}, {2, 7}, {3, 7}};
+  for (const auto& coord : order_b) {
+    ordering.emplace_back(new ExpandPatch("B", coord));
+  }
+  ordering.emplace_back(new MergePatches("A", "B"));
+  // Add a terminal cut for every qubit in the final region.
+  for (const auto& cut : qubits_A) {
+    ordering.emplace_back(new CutIndex({cut}, {0}));
+  }
+  const std::vector<std::vector<int>> order_c = {
+      {3, 9}, {4, 9}, {5, 9}, {3, 8}, {2, 8}, {4, 8}, {5, 8}, {6, 8}};
+  for (const auto& coord : order_c) {
+    ordering.emplace_back(new ExpandPatch("C", coord));
+  }
+  ordering.emplace_back(new MergePatches("B", "C"));
 
   // Scratch space to be reused for operations.
   t0 = high_resolution_clock::now();
@@ -109,19 +142,9 @@ int main(int argc, char **argv) {
     //     << "s\n\n";
 
     // Contract 3D grid onto 2D grid of tensors, as usual.
-    const std::vector<std::vector<std::vector<int>>> ordering = {
-        {{4, 2}, {5, 2}, {4, 3}, {5, 3}, {6, 3}, {4, 4}, {5, 4}, {6, 4},
-         {7, 4}, {4, 5}, {5, 5}, {6, 5}, {7, 5}, {8, 5}, {8, 6}, {7, 6},
-         {6, 6}, {5, 6}, {4, 6}, {7, 7}, {6, 7}, {5, 7}, {4, 7}},
-        {{3, 2}, {3, 3}, {2, 3}, {3, 4}, {2, 4}, {1, 4}, {3, 5}, {2, 5}, {1, 5},
-         {0, 5}, {0, 6}, {1, 6}, {2, 6}, {3, 6}, {1, 7}, {2, 7}, {3, 7}},
-        {{3, 9}, {4, 9}, {5, 9}, {3, 8}, {2, 8}, {4, 8}, {5, 8}, {6, 8}},
-    };
-    const std::vector<std::vector<std::vector<int>>> cuts = {
-        {{3, 2}, {4, 2}}, {{3, 3}, {4, 3}}};
     t0 = high_resolution_clock::now();
     grid_of_tensors_3D_to_2D(tensor_grid_3D, tensor_grid, qubits_A, qubits_off,
-                             ordering, cuts, scratch);
+                             ordering, scratch);
     t1 = high_resolution_clock::now();
     time_span = duration_cast<duration<double>>(t1 - t0);
     //cout << "Time spent creating 2D grid of tensors from 3D one: "
