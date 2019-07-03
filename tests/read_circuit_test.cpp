@@ -51,7 +51,7 @@ TEST(ReadCircuitTest, NullCircuit) {
 //       |
 //   4   5 --> qubit at (2,0) is off; (2,1) is in final region.
 // This circuit should return the input string with amplitude ~= 1 when summing
-// over the cut values.
+// over the cut values, but only when the output of (2,1) is a zero.
 constexpr char kSimpleCircuit[] = R"(5
 0 h 0
 0 h 1
@@ -95,10 +95,11 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   }
   // Working from either end, create two patches and meet in the middle.
   ContractionOrdering ordering;
+  ordering.emplace_back(new CutIndex({{0, 1}, {1, 1}}));
   ordering.emplace_back(new ExpandPatch("a", {0, 1}));
   ordering.emplace_back(new ExpandPatch("a", {0, 0}));
   ordering.emplace_back(new ExpandPatch("a", {1, 0}));
-  ordering.emplace_back(new CutIndex({{0, 1}, {1, 1}}));
+  ordering.emplace_back(new CutIndex({{2, 1}}));
   ordering.emplace_back(new ExpandPatch("b", {2, 1}));
   ordering.emplace_back(new ExpandPatch("b", {1, 1}));
   ordering.emplace_back(new MergePatches("a", "b"));

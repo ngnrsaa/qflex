@@ -91,7 +91,11 @@ void MKLTensor::_clear() {
 
 void MKLTensor::_copy(const MKLTensor& other) {
   if (_indices.empty()) {
-    _data = new s_type[other.size()];
+    _capacity = other.size();
+    _data = new s_type[_capacity];
+  } else {
+    // The following line takes care of the total size of the dimensions.
+    set_dimensions(other.get_dimensions());
   }
   _init(other.get_indices(), other.get_dimensions());
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
@@ -103,9 +107,8 @@ MKLTensor::MKLTensor() { _data = NULL; }
 MKLTensor::MKLTensor(std::vector<std::string> indices,
                      std::vector<size_t> dimensions) {
   _init(indices, dimensions);
-  size_t total_dim = 1;
-  for (int i = 0; i < indices.size(); ++i) total_dim *= dimensions[i];
-  _data = new s_type[total_dim];
+  _capacity = size();
+  _data = new s_type[_capacity];
 }
 
 MKLTensor::MKLTensor(std::vector<std::string> indices,
@@ -116,6 +119,7 @@ MKLTensor::MKLTensor(std::vector<std::string> indices,
   size_t this_size = size();
   assert(this_size == data.size() &&
          "The vector data has to match the size of the MKLTensor.");
+  _capacity = this_size;
   // Fill in the _data.
   for (size_t i = 0; i < this_size; ++i) *(_data + i) = data[i];
 }
@@ -123,6 +127,7 @@ MKLTensor::MKLTensor(std::vector<std::string> indices,
 MKLTensor::MKLTensor(std::vector<std::string> indices,
                      std::vector<size_t> dimensions, s_type* data) {
   _init(indices, dimensions);
+  _capacity = size();
   _data = data;
 }
 
@@ -154,8 +159,8 @@ void MKLTensor::set_dimensions(const std::vector<size_t>& dimensions) {
   if (_data) {
     size_t total_dim = 1;
     for (int i = 0; i < dimensions.size(); ++i) total_dim *= dimensions[i];
-    assert(size() >= total_dim &&
-           "The dimensions must match the size of the MKLTensor.");
+    assert(capacity() >= total_dim &&
+           "Insufficient allocated space for requested tensor dimensions.");
   }
   _dimensions = dimensions;
 }
@@ -182,6 +187,10 @@ size_t MKLTensor::size() const {
   size_t total_dim = 1;
   for (int i = 0; i < _dimensions.size(); ++i) total_dim *= _dimensions[i];
   return total_dim;
+}
+
+size_t MKLTensor::capacity() const {
+  return _capacity;
 }
 
 s_type* MKLTensor::data() { return _data; }
@@ -789,7 +798,7 @@ void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy) {
   // std::cout << "Time preparing variables: " << time_span.count() << "s\n";
 
   // Assert.
-  assert((left_dim * right_dim <= C.size()) &&
+  assert((left_dim * right_dim <= C.capacity()) &&
          "C doesn't have enough space for the product of A*B.");
 
   // Reorder.
