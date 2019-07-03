@@ -12,21 +12,21 @@
 
 namespace {
 
+// clang-format off
 const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
     {// Deltas.
      {"delta_0", std::vector<s_type>({1.0, 0.0})},
      {"delta_1", std::vector<s_type>({0.0, 1.0})},
      // For one-qubit gates, the first index is input an second is output.
-     {"h", std::vector<s_type>({_INV_SQRT_2, _INV_SQRT_2, _INV_SQRT_2,
-                                -_INV_SQRT_2})},
-     {"hz_1_2",
-      std::vector<s_type>(
-          {{0.5, 0.5}, {_INV_SQRT_2, 0}, {0., -_INV_SQRT_2}, {0.5, 0.5}})},
+     {"h", std::vector<s_type>({_INV_SQRT_2, _INV_SQRT_2,
+                                _INV_SQRT_2, -_INV_SQRT_2})},
+     {"hz_1_2", std::vector<s_type>({{0.5, 0.5}, {_INV_SQRT_2, 0},
+                                     {0., -_INV_SQRT_2}, {0.5, 0.5}})},
      {"t", std::vector<s_type>({1.0, 0., 0., {_INV_SQRT_2, _INV_SQRT_2}})},
-     {"x_1_2",
-      std::vector<s_type>({{0.5, 0.5}, {0.5, -0.5}, {0.5, -0.5}, {0.5, 0.5}})},
-     {"y_1_2",
-      std::vector<s_type>({{0.5, 0.5}, {0.5, 0.5}, {-0.5, -0.5}, {0.5, 0.5}})},
+     {"x_1_2", std::vector<s_type>({{0.5, 0.5}, {0.5, -0.5},
+                                    {0.5, -0.5}, {0.5, 0.5}})},
+     {"y_1_2", std::vector<s_type>({{0.5, 0.5}, {0.5, 0.5},
+                                    {-0.5, -0.5}, {0.5, 0.5}})},
      // For cz, both q1 and q2 get indices in the order (input, virtual,
      // output).
      // {"cz_q1", vector<s_type>({1.,0.,0.,0.,0.,0.,0.,1.})},
@@ -39,8 +39,11 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
       std::vector<s_type>({-1.0484937059720079, 0., 0.5611368023131075, 0., 0.,
                            0.5611368023131075, 0., 1.0484937059720079})},
      // For the non-decomposed cz, the convention is (in1, in2, out1, out2).
-     {"cz", std::vector<s_type>({1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0.,
+     {"cz", std::vector<s_type>({1., 0., 0., 0.,
+                                 0., 1., 0., 0.,
+                                 0., 0., 1., 0.,
                                  0., 0., 0., -1.})}});
+// clang-format on
 
 std::vector<s_type> gate_array(const std::string& gate_name) {
   static const std::regex rz_regex("rz\\((.*)\\)");
@@ -623,7 +626,6 @@ void grid_of_tensors_3D_to_2D(
       if (j < J - 1 && !find_grid_coord_in_list(off, i, j + 1)) {
         pairs.push_back({i, j + 1});
       }
-
 
       // If this qubit is in the final region, bundling must be adjusted.
       int fr_buffer = 0;

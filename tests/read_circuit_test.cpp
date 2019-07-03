@@ -80,7 +80,7 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   std::vector<std::vector<std::vector<MKLTensor>>> tensor_grid_3D;
   std::vector<std::vector<int>> qubits_A = {{2, 1}};
   std::vector<std::vector<int>> qubits_off = {{2, 0}};
-  s_type * scratch = new s_type[256];
+  s_type* scratch = new s_type[256];
   auto circuit_data = std::stringstream(kSimpleCircuit);
   internal::circuit_data_to_grid_of_tensors(&circuit_data, 3, 2, 2, "00000",
                                             "0000", qubits_A, qubits_off,
