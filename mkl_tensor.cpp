@@ -64,16 +64,6 @@ const std::unordered_map<int, int> _LOG_2(
  */
 std::unordered_map<std::string, std::vector<int>> _REORDER_MAPS;
 
-/**
- * Max size for dim_right in cache-friendly reordering.
- */
-#define MAX_RIGHT_DIM 1024
-
-/**
- * Min size for dim_right in cache-friendly reordering.
- */
-#define MIN_RIGHT_DIM 32
-
 ///////////////////////////// CLASS FUNCTIONS /////////////////////////////////
 
 void MKLTensor::_init(const std::vector<std::string>& indices,
