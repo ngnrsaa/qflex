@@ -6,13 +6,15 @@ BLAS = ESSL
 FORT_LIB = -lgfortran
 #TALSH_ROOT = /ccs/home/villalonga/TAL_SH
 TALSH_ROOT = /gpfs/alpine/proj-shared/phy136/Gordon-Bell/TAL_SH
+#TALSH_ROOT = /gpfs/alpine/proj-shared/phy136/Gordon-Bell/test_talsh/TAL_SH
 MKL_ROOT = /home/div/intel
 CUDA_ROOT = /sw/summit/cuda/10.1.105
 
 # Contraction can be _51q, _bris_60, _7x7x40, _8x8x32, _11x11x24,
-# _sycamore_51x10, _sycamore_53x14_cphase, _sycamore_53x10_cphase ...
+# _sycamore_51x10, _sycamore_53x14_cphase, _sycamore_53x12_cphase,
+# _sycamore_53x10_cphase ...
 # ...
-CONTRACTION = _sycamore_53x14_cphase
+CONTRACTION = _sycamore_53x12_cphase
 #Done.
 
 

@@ -27,7 +27,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "contraction_sycamore_53x14_cphase.h"
+#include "contraction_sycamore_53x12_cphase.h"
 #include "read_circuit_full_talsh.h"
 
 // Time
@@ -75,7 +75,7 @@ Contraction::Contraction(string input_string, int _num_args, int _num_amps)
 
 
   // Scalar S
-  //S = shared_ptr<talsh::Tensor>(new talsh::Tensor({}, s_type(0.0)));
+  S = shared_ptr<talsh::Tensor>(new talsh::Tensor({}, s_type(0.0)));
 
 
   // HARD CODED norm_factor
@@ -545,8 +545,7 @@ void Contraction::contract(string input_string)
   int first_cut_dim(dims_grid[3][3][2]);
   int second_cut_dim(dims_grid[4][3][3]);
   vector<int> first_cut_offsets({0});
-  //vector<int> second_cut_offsets({0});
-  vector<int> second_cut_offsets({0, 2, 4, 6});
+  vector<int> second_cut_offsets({0});
   /*
   vector<int> first_cut_offsets;
   vector<int> second_cut_offsets;
@@ -560,10 +559,10 @@ void Contraction::contract(string input_string)
   }
   */
   int first_slice_size(1);
-  int second_slice_size(2);
+  int second_slice_size(32);
   for (auto i0 : first_cut_offsets) for (auto i1 : second_cut_offsets)
   {
-    //cout << "i0 = " << i0 << endl << flush;
+    cout << "i0 = " << i0 << endl << flush;
     // First slice on [3][3] and [3][4].
     unique_ptr<talsh::Tensor> first_3_3(new talsh::Tensor({dims_grid[3][3][0],
                                                          dims_grid[3][3][1],
@@ -752,7 +751,7 @@ void Contraction::contract(string input_string)
     t1 = high_resolution_clock::now();
     span = duration_cast<duration<double>>(t1 - t0);
     //time_largest_contraction = double(span.count());
-    //cout << double(span.count()) << "s" << endl;
+    cout << double(span.count()) << "s" << endl;
     AB.reset();
     unique_ptr<talsh::Tensor> eb(new talsh::Tensor({first_slice_size,
                                                     second_slice_size,
@@ -950,10 +949,7 @@ void Contraction::contract(string input_string)
     // Start third cut loop
     int third_cut_dim(dims_grid[3][4][2]);
     //vector<int> third_cut_offsets({0});
-    vector<int> third_cut_offsets({0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20,
-                                   22, 24, 26, 28, 30, 32, 34, 36, 38, 40,
-                                   42, 44, 46, 48, 50, 52, 54, 56, 58, 60,
-                                   62});
+    vector<int> third_cut_offsets({0});
     /*
     vector<int> third_cut_offsets;
     for (int p=0; p<third_cut_dim; ++p)
@@ -961,9 +957,10 @@ void Contraction::contract(string input_string)
       third_cut_offsets.push_back(p);
     }
     */
-    int third_slice_size(2);
+    int third_slice_size(32);
     for (auto i2 : third_cut_offsets)
     {
+      cout << "i2 = " << i2 << endl << flush;
       // Time i2 loop.
       t0 = high_resolution_clock::now();
       unique_ptr<talsh::Tensor> third_3_4(new talsh::Tensor({dims_grid[3][4][0],
@@ -1075,6 +1072,7 @@ void Contraction::contract(string input_string)
       fd->reshape(dims_fd);
       fc.reset();
       // Now contract fd with D!
+      cout << "Before D" << endl << flush;
       unique_ptr<talsh::Tensor> fe(new talsh::Tensor({first_slice_size,
                                                       third_slice_size,
                                                       dims_grid[4][5][0],
@@ -1110,6 +1108,7 @@ void Contraction::contract(string input_string)
       fe->reshape(dims_fe);
       fd.reset();
       // Continue with row 3.
+      cout << "After D" << endl << flush;
       unique_ptr<talsh::Tensor> ff(new talsh::Tensor({first_slice_size,
                                                       third_slice_size,
                                                       dims_grid[4][5][0],
@@ -1366,7 +1365,7 @@ void Contraction::contract(string input_string)
       
       t1 = high_resolution_clock::now();
       span = duration_cast<duration<double>>(t1 - t0);
-      //cout << "Time in i2 loop: " << span.count() << endl;
+      cout << "Time in i2 loop: " << span.count() << endl;
       F.reset();
     }
     

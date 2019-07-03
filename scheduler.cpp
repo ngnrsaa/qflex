@@ -46,6 +46,9 @@
 #ifdef _sycamore_53x14_cphase
 #include "contraction_sycamore_53x14_cphase.h"
 #endif
+#ifdef _sycamore_53x12_cphase
+#include "contraction_sycamore_53x12_cphase.h"
+#endif
 #ifdef _test_new_gates
 #include "contraction_test_new_gates.h"
 #endif
@@ -191,6 +194,22 @@ int main(int argc, char *argv[]) {
            << timePtr->tm_sec << "\n" << flush;
     }
     ////// END MEASURE BEGIN TIMER
+
+    // Receive errc from talsh::initialize().
+    vector<int> unavailable_ps;
+    for (int p=1; p<world_size; ++p)
+    {
+      int errc_task;
+      MPI_Recv(&errc_task, 1, MPI_INT, p, 0,
+               MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      cout << "p = " << p << " errc_task = " << errc_task << endl << flush;
+      if (errc_task != TALSH_SUCCESS)
+      {
+        unavailable_ps.push_back(p);
+      }
+    }
+    // Receive errc up to here.
+
     MPI_Barrier(MPI_COMM_WORLD);
     ////// MEASURE COMPUTATION BEGIN TIMER
     {
@@ -370,8 +389,19 @@ int main(int argc, char *argv[]) {
     delete[] char_ptr;
     char_ptr = nullptr;
 
+    int errc;
+    errc = talsh::initialize(&mem_size);
+    /*
     talsh::initialize(&mem_size);
-    cout << mem_size << endl << flush;
+    */
+    //cout << mem_size << endl << flush;
+    if (mem_size < mem_size_GB * size_t(988825718) * 0.98)
+    {
+      cout << "Wrong mem_size!" << endl << flush;
+      errc = 6;
+    }
+
+    MPI_Send(&errc, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
     MPI_Barrier(MPI_COMM_WORLD);
     {
       Contraction contraction(local_line, num_args, num_amps);
@@ -381,6 +411,7 @@ int main(int argc, char *argv[]) {
       t0 = high_resolution_clock::now();
       while (true)
       {
+
         // Start timer
         ///////////////// Get string
         MPI_Probe(0, 0, MPI_COMM_WORLD, &status);
@@ -398,10 +429,25 @@ int main(int argc, char *argv[]) {
         // Computation
         if (load_circuit) // load only once
         {
-          contraction.load_circuit(local_line);
+          // Cheap attempt to ignore bad nodes quickly.
+          // Work on a better solution.
+          if (errc == TALSH_SUCCESS)
+          {
+            contraction.load_circuit(local_line);
+          }
           load_circuit = false;
         }
-        contraction.contract(local_line);
+
+        // Dummy pause. Cheap attempt to ignore bad nodes quickly.
+        // Work on a better solution.
+        if (errc == TALSH_SUCCESS)
+        {
+          contraction.contract(local_line);
+        }
+        else
+        {
+          this_thread::sleep_for(chrono::seconds(10));
+        }
         t1 = high_resolution_clock::now();
         duration<double> span = duration_cast<duration<double>>(t1 - t0);
         t0 = high_resolution_clock::now();
@@ -417,7 +463,12 @@ int main(int argc, char *argv[]) {
       }
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    talsh::shutdown();
+    // Cheap attempt to ignore bad nodes quickly.
+    // Work on a better solution.
+    if (errc == TALSH_SUCCESS)
+    {
+      talsh::shutdown();
+    }
 
   }
 
