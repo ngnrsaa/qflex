@@ -286,8 +286,8 @@ TEST(MKLTensorDeathTest, InvalidInput) {
   ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_x, scratch.data()), "");
 }
 
-}  // namespace qflex
 }  // namespace
+}  // namespace qflex
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

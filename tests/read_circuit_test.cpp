@@ -140,8 +140,8 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   }
 }
 
-}  // namespace qflex
 }  // namespace
+}  // namespace qflex
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

@@ -284,8 +284,8 @@ TEST(ContractionDeathTest, IndexNamingFailures) {
   EXPECT_DEATH(index_name(index), "");
 }
 
-}  // namespace qflex
 }  // namespace
+}  // namespace qflex
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
