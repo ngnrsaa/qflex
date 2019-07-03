@@ -10,6 +10,7 @@
 
 #include "read_circuit.h"
 
+namespace qflex {
 namespace {
 
 // clang-format off
@@ -736,3 +737,6 @@ void read_wave_function_evolution(
   // Be proper about pointers.
   scratch = NULL;
 }
+
+}  // namespace qflex
+

@@ -8,6 +8,8 @@
 
 #include "mkl_tensor.h"
 
+namespace qflex {
+
 /**
  * Method for assigning names to indices in the grid. Accepted formats include:
  *   - {i_1, j_1}, {i_2, j_2}: two-qubit contraction.
@@ -181,5 +183,7 @@ bool IsOrderingValid(const ContractionOrdering& ordering);
 void ContractGrid(const ContractionOrdering& ordering,
                   std::vector<std::vector<MKLTensor>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes);
+
+}  // namespace qflex
 
 #endif  // CONTRACTION_UTILS_

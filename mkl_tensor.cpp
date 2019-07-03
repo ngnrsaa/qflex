@@ -34,6 +34,8 @@
 #define MIN_RIGHT_DIM 32
 #endif
 
+namespace qflex {
+
 // clang-format off
 /**
  * Global vector<string> with the alphabet.
@@ -955,3 +957,6 @@ std::vector<std::string> _vector_concatenation(
   for (size_t i = 0; i < w.size(); ++i) temp[i + v.size()] = w[i];
   return temp;
 }
+
+}  // namespace qflex
+

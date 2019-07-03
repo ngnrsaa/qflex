@@ -26,6 +26,8 @@
 #include "contraction_utils.h"
 #include "mkl_tensor.h"
 
+namespace qflex {
+
 // TODO: Use math library calls for these. Also use constexpr.
 const double _SQRT_2 = 1.41421356237309504880168872;
 const double _INV_SQRT_2 = 1. / _SQRT_2;
@@ -136,4 +138,6 @@ void read_wave_function_evolution(
     std::vector<std::vector<std::string>>& inputs,
     std::vector<std::vector<std::string>>& outputs, s_type* scratch);
 
-#endif
+}  // namespace qflex
+
+#endif  // READ_CIRCUIT_

@@ -3,6 +3,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+namespace qflex {
 namespace {
 
 using ::testing::Eq;
@@ -139,6 +140,7 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   }
 }
 
+}  // namespace qflex
 }  // namespace
 
 int main(int argc, char **argv) {

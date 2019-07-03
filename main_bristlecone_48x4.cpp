@@ -16,6 +16,15 @@
 #include "mkl_tensor.h"
 #include "read_circuit.h"
 
+using ::qflex::ContractGrid;
+using ::qflex::ContractionOrdering;
+using ::qflex::CutIndex;
+using ::qflex::DIM;
+using ::qflex::ExpandPatch;
+using ::qflex::MergePatches;
+using ::qflex::MKLTensor;
+using ::qflex::s_type;
+
 // Input: I J K fidelity filename initial_conf (optional) final_conf (optional)
 int main(int argc, char** argv) {
   // Set precision for the printed floats.

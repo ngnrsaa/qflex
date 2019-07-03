@@ -20,6 +20,8 @@
 #include <unordered_map>
 #include <vector>
 
+namespace qflex {
+
 /**
  * Scalar type.
  */
@@ -482,4 +484,6 @@ std::vector<std::string> _vector_subtraction(const std::vector<std::string>& v,
 std::vector<std::string> _vector_concatenation(
     const std::vector<std::string>& v, const std::vector<std::string>& w);
 
-#endif
+}  // namespace qflex
+
+#endif  // MKL_TENSOR_H

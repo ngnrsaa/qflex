@@ -3,6 +3,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+namespace qflex {
 namespace {
 
 using ::testing::Eq;
@@ -285,6 +286,7 @@ TEST(MKLTensorDeathTest, InvalidInput) {
   ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_x, scratch.data()), "");
 }
 
+}  // namespace qflex
 }  // namespace
 
 int main(int argc, char **argv) {

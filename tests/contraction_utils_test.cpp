@@ -3,6 +3,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+namespace qflex {
 namespace {
 
 TEST(ContractionTest, IndexNaming) {
@@ -283,6 +284,7 @@ TEST(ContractionDeathTest, IndexNamingFailures) {
   EXPECT_DEATH(index_name(index), "");
 }
 
+}  // namespace qflex
 }  // namespace
 
 int main(int argc, char** argv) {
