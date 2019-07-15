@@ -20,6 +20,8 @@
 #include <unordered_map>
 #include <vector>
 
+namespace qflex {
+
 /**
  * Scalar type.
  */
@@ -424,9 +426,8 @@ void _generate_binary_reordering_map(
  * dimensions.
  * @return std::string with the standard name of the ordering.
  */
-std::string _reordering_to_string(
-    const std::vector<int>& map_old_to_new_idxpos,
-    const std::vector<size_t>& old_dimensions);
+std::string _reordering_to_string(const std::vector<int>& map_old_to_new_idxpos,
+                                  const std::vector<size_t>& old_dimensions);
 
 /**
  * Checks whether a particular std::string is in a std::vector<std::string>.
@@ -434,8 +435,7 @@ std::string _reordering_to_string(
  * @param v const reference to std::vector<std::string> where the element might
  * be in.
  */
-bool _string_in_vector(const std::string& s,
-                            const std::vector<std::string>& v);
+bool _string_in_vector(const std::string& s, const std::vector<std::string>& v);
 
 /**
  * Checks whether a particular std::string is in a std::vector<std::string>.
@@ -484,4 +484,6 @@ std::vector<std::string> _vector_subtraction(const std::vector<std::string>& v,
 std::vector<std::string> _vector_concatenation(
     const std::vector<std::string>& v, const std::vector<std::string>& w);
 
-#endif
+}  // namespace qflex
+
+#endif  // MKL_TENSOR_H

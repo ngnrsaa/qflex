@@ -3,6 +3,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+namespace qflex {
 namespace {
 
 using ::testing::Eq;
@@ -43,8 +44,10 @@ TEST(MKLTensorTest, LoadData) {
   std::vector<std::string> indices = {"a", "b"};
   std::vector<size_t> dimensions = {2, 2};
   std::vector<std::complex<float>> data = {
-      std::complex<float>(0, 1), std::complex<float>(2, 3),
-      std::complex<float>(4, 5), std::complex<float>(6, 7),
+      std::complex<float>(0, 1),
+      std::complex<float>(2, 3),
+      std::complex<float>(4, 5),
+      std::complex<float>(6, 7),
   };
   MKLTensor tensor(indices, dimensions, data);
   ASSERT_EQ(tensor.get_indices(), indices);
@@ -149,10 +152,10 @@ TEST(MKLTensorTest, IndexReordering) {
   std::vector<std::complex<float>> read_data(tensor.data(),
                                              tensor.data() + tensor.size());
   std::vector<std::complex<float>> expected_data = {
-    std::complex<float>(0, 0), std::complex<float>(4, 0),
-    std::complex<float>(1, 0), std::complex<float>(5, 0),
-    std::complex<float>(2, 0), std::complex<float>(6, 0),
-    std::complex<float>(3, 0), std::complex<float>(7, 0),
+      std::complex<float>(0, 0), std::complex<float>(4, 0),
+      std::complex<float>(1, 0), std::complex<float>(5, 0),
+      std::complex<float>(2, 0), std::complex<float>(6, 0),
+      std::complex<float>(3, 0), std::complex<float>(7, 0),
   };
   for (int i = 0; i < read_data.size(); ++i) {
     ASSERT_FLOAT_EQ(read_data[i].real(), expected_data[i].real());
@@ -284,6 +287,7 @@ TEST(MKLTensorDeathTest, InvalidInput) {
 }
 
 }  // namespace
+}  // namespace qflex
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

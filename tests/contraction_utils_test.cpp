@@ -3,6 +3,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+namespace qflex {
 namespace {
 
 TEST(ContractionTest, IndexNaming) {
@@ -284,6 +285,7 @@ TEST(ContractionDeathTest, IndexNamingFailures) {
 }
 
 }  // namespace
+}  // namespace qflex
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

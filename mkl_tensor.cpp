@@ -34,6 +34,9 @@
 #define MIN_RIGHT_DIM 32
 #endif
 
+namespace qflex {
+
+// clang-format off
 /**
  * Global vector<string> with the alphabet.
  */
@@ -56,21 +59,12 @@ const std::unordered_map<int, int> _LOG_2(
      {2097152, 21},   {4194304, 22},    {8388608, 23},   {16777216, 24},
      {33554432, 25},  {67108864, 26},   {134217728, 27}, {268435456, 28},
      {536870912, 29}, {1073741824, 30}, {1073741824, 30}});
+// clang-format on
 
 /**
  * Global unordered_map<string,vector<int>> of reordering maps.
  */
 std::unordered_map<std::string, std::vector<int>> _REORDER_MAPS;
-
-/**
- * Max size for dim_right in cache-friendly reordering.
- */
-#define MAX_RIGHT_DIM 1024
-
-/**
- * Min size for dim_right in cache-friendly reordering.
- */
-#define MIN_RIGHT_DIM 32
 
 ///////////////////////////// CLASS FUNCTIONS /////////////////////////////////
 
@@ -189,9 +183,7 @@ size_t MKLTensor::size() const {
   return total_dim;
 }
 
-size_t MKLTensor::capacity() const {
-  return _capacity;
-}
+size_t MKLTensor::capacity() const { return _capacity; }
 
 s_type* MKLTensor::data() { return _data; }
 
@@ -543,10 +535,9 @@ void MKLTensor::_fast_reorder(std::vector<std::string> new_ordering,
 
 // Assuming all indices are binary for old_ordering and new_ordering.
 // old_ordering and new_ordering refer to the right.
-void MKLTensor::_right_reorder(
-    const std::vector<std::string>& old_ordering,
-    const std::vector<std::string>& new_ordering,
-    int num_indices_right) {
+void MKLTensor::_right_reorder(const std::vector<std::string>& old_ordering,
+                               const std::vector<std::string>& new_ordering,
+                               int num_indices_right) {
   // Don't do anything if there is nothing to reorder.
   if (new_ordering == old_ordering) return;
 
@@ -966,3 +957,6 @@ std::vector<std::string> _vector_concatenation(
   for (size_t i = 0; i < w.size(); ++i) temp[i + v.size()] = w[i];
   return temp;
 }
+
+}  // namespace qflex
+

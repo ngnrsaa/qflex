@@ -1,69 +1,71 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <unordered_map>
+#include <omp.h>
+
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <complex>
 #include <ctime>
-#include <chrono>
-
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "contraction_utils.h"
 #include "mkl_tensor.h"
 #include "read_circuit.h"
 
-#include <omp.h>
-
-using namespace std;
-using namespace chrono;
+using ::qflex::ContractGrid;
+using ::qflex::ContractionOrdering;
+using ::qflex::CutIndex;
+using ::qflex::DIM;
+using ::qflex::ExpandPatch;
+using ::qflex::MergePatches;
+using ::qflex::MKLTensor;
+using ::qflex::s_type;
 
 // Input: I J K fidelity filename initial_conf (optional) final_conf (optional)
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv) {
   // Set precision for the printed floats.
-  cout.precision(12);
+  std::cout.precision(12);
 
   // Timing variables.
-  high_resolution_clock::time_point t_output_0, t_output_1;
-  t_output_0 = high_resolution_clock::now();
-  high_resolution_clock::time_point t0, t1;
-  duration<double> time_span;
+  std::chrono::high_resolution_clock::time_point t_output_0, t_output_1;
+  t_output_0 = std::chrono::high_resolution_clock::now();
+  std::chrono::high_resolution_clock::time_point t0, t1;
+  std::chrono::duration<double> time_span;
 
   // Reading input.
-  t0 = high_resolution_clock::now();
-  if (argc<6) throw logic_error("ERROR: Not enough arguments.");
+  t0 = std::chrono::high_resolution_clock::now();
+  if (argc < 6) throw std::logic_error("ERROR: Not enough arguments.");
   const int I = atoi(argv[1]);
   const int J = atoi(argv[2]);
   const int K = atoi(argv[3]);
   double fidelity = atof(argv[4]);
-  const int super_dim = (int)pow(DIM,K);
-  const string filename = string(argv[5]);
-  string initial_conf(70, '0'), final_conf_B(62, '0');
-  vector<string> final_conf_A(1, string(8, '0'));
-  if (argc>6)
-    initial_conf = string(argv[6]);
-  if (argc>7)
-    final_conf_B = string(argv[7]);
-  if (argc>8)
-  {
-    final_conf_A = vector<string>(argc-8);
-    for (int s=0; s<final_conf_A.size(); ++s)
-      final_conf_A[s] = string(argv[s+8]);
+  const int super_dim = (int)pow(DIM, K);
+  const std::string filename = std::string(argv[5]);
+  std::string initial_conf(70, '0'), final_conf_B(62, '0');
+  std::vector<std::string> final_conf_A(1, std::string(8, '0'));
+  if (argc > 6) initial_conf = std::string(argv[6]);
+  if (argc > 7) final_conf_B = std::string(argv[7]);
+  if (argc > 8) {
+    final_conf_A = std::vector<std::string>(argc - 8);
+    for (int s = 0; s < final_conf_A.size(); ++s)
+      final_conf_A[s] = std::string(argv[s + 8]);
   }
   const int num_Cs = final_conf_A.size();
-  int num_qubits = I*J;
-  t1 = high_resolution_clock::now();
-  time_span = duration_cast<duration<double>>(t1 - t0);
-  //cout << "Time spent reading input: "
+  int num_qubits = I * J;
+  t1 = std::chrono::high_resolution_clock::now();
+  time_span =
+      std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+  // cout << "Time spent reading input: "
   //     << time_span.count()
   //     << "s\n\n";
 
+  // clang-format off
   // List of qubits to remove (off) and qubits in A.
-  vector<vector<int>> qubits_off({
+  std::vector<std::vector<int>> qubits_off({
     {0,0},{0,1},{0,2},{0,3},{0,4}            ,{0,7},{0,8},{0,9},{0,10},{0,11},
     {1,0},{1,1},{1,2},{1,3}                        ,{1,8},{1,9},{1,10},{1,11},
     {2,0},{2,1},{2,2}                                    ,{2,9},{2,10},{2,11},
@@ -76,8 +78,9 @@ int main(int argc, char **argv) {
     {9,0},{9,1},{9,2},{9,3},                        {9,8},{9,9},{9,10},{9,11},
     {10,0},{10,1},{10,2},{10,3},{10,4},              {10,7},{10,8},{10,9},{10,10},{10,11}
         });
-  vector<vector<int>> qubits_A({{3,9},{4,9},{4,10},{5,9},{5,10},
-                                {6,9},{6,10},{7,9}});
+  // clang-format on
+  std::vector<std::vector<int>> qubits_A(
+      {{3, 9}, {4, 9}, {4, 10}, {5, 9}, {5, 10}, {6, 9}, {6, 10}, {7, 9}});
 
   // Construct the ordering for this tensor contraction.
   ContractionOrdering ordering;
@@ -116,41 +119,43 @@ int main(int argc, char **argv) {
   ordering.emplace_back(new MergePatches("B", "C"));
 
   // Scratch space to be reused for operations.
-  t0 = high_resolution_clock::now();
-  s_type * scratch = new s_type[(int)pow(super_dim,7)];
-  t1 = high_resolution_clock::now();
-  time_span = duration_cast<duration<double>>(t1 - t0);
-  //cout << "Time spent reading allocating scratch space: "
+  t0 = std::chrono::high_resolution_clock::now();
+  s_type* scratch = new s_type[(int)pow(super_dim, 7)];
+  t1 = std::chrono::high_resolution_clock::now();
+  time_span =
+      std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+  // cout << "Time spent reading allocating scratch space: "
   //     << time_span.count()
   //     << "s\n\n";
 
-
   // Declaring and then filling 2D grid of tensors.
-  vector<vector<MKLTensor>> tensor_grid(I);
-  for (int i=0; i<I; ++i)
-  {
-    tensor_grid[i] = vector<MKLTensor>(J);
+  std::vector<std::vector<MKLTensor>> tensor_grid(I);
+  for (int i = 0; i < I; ++i) {
+    tensor_grid[i] = std::vector<MKLTensor>(J);
   }
   // Scope so that the 3D grid of tensors is destructed.
   {
     // Creating 3D grid of tensors from file.
-    t0 = high_resolution_clock::now();
-    vector<vector<vector<MKLTensor>>> tensor_grid_3D;
+    t0 = std::chrono::high_resolution_clock::now();
+    std::vector<std::vector<std::vector<MKLTensor>>> tensor_grid_3D;
     google_circuit_file_to_grid_of_tensors(filename, I, J, K, initial_conf,
-               final_conf_B, qubits_A, qubits_off, tensor_grid_3D, scratch);
-    t1 = high_resolution_clock::now();
-    time_span = duration_cast<duration<double>>(t1 - t0);
-    //cout << "Time spent creating 3D grid of tensors from file: "
+                                           final_conf_B, qubits_A, qubits_off,
+                                           tensor_grid_3D, scratch);
+    t1 = std::chrono::high_resolution_clock::now();
+    time_span =
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    // cout << "Time spent creating 3D grid of tensors from file: "
     //     << time_span.count()
     //     << "s\n\n";
 
     // Contract 3D grid onto 2D grid of tensors, as usual.
-    t0 = high_resolution_clock::now();
+    t0 = std::chrono::high_resolution_clock::now();
     grid_of_tensors_3D_to_2D(tensor_grid_3D, tensor_grid, qubits_A, qubits_off,
                              ordering, scratch);
-    t1 = high_resolution_clock::now();
-    time_span = duration_cast<duration<double>>(t1 - t0);
-    //cout << "Time spent creating 2D grid of tensors from 3D one: "
+    t1 = std::chrono::high_resolution_clock::now();
+    time_span =
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    // cout << "Time spent creating 2D grid of tensors from 3D one: "
     //     << time_span.count()
     //     << "s\n\n";
 
@@ -160,23 +165,23 @@ int main(int argc, char **argv) {
   }
 
   // Perform tensor grid contraction.
-  vector<complex<double>> amplitudes(num_Cs);
+  std::vector<std::complex<double>> amplitudes(num_Cs);
   ContractGrid(ordering, &tensor_grid, &amplitudes);
 
   // Printing output
-  for (int c=0; c<num_Cs; ++c)
-  {
-    cout << initial_conf << " ";
-    cout << final_conf_B << " ";
-    cout << final_conf_A[c] << " ";
-    cout << real(amplitudes[c]) << " " << imag(amplitudes[c]);
-    cout << endl;
+  for (int c = 0; c < num_Cs; ++c) {
+    std::cout << initial_conf << " ";
+    std::cout << final_conf_B << " ";
+    std::cout << final_conf_A[c] << " ";
+    std::cout << std::real(amplitudes[c]) << " " << std::imag(amplitudes[c]);
+    std::cout << std::endl;
   }
 
   // Final time
-  t_output_1 = high_resolution_clock::now();
-  time_span = duration_cast<duration<double>>(t_output_1 - t_output_0);
-  cout << time_span.count() << " s\n\n";
+  t_output_1 = std::chrono::high_resolution_clock::now();
+  time_span = std::chrono::duration_cast<std::chrono::duration<double>>(
+      t_output_1 - t_output_0);
+  std::cout << time_span.count() << " s\n\n";
 
   return 0;
-} 
+}

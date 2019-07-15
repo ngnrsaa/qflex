@@ -5,6 +5,8 @@
 #include <sstream>
 #include <unordered_set>
 
+namespace qflex {
+
 // ContractionData methods
 
 ContractionData ContractionData::Initialize(
@@ -413,3 +415,5 @@ void ContractGrid(const ContractionOrdering& ordering,
   data.ContractGrid(copy_order(ordering), /*output_index = */ 0,
                     active_patches);
 }
+
+}  // namespace qflex
