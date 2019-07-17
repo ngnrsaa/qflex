@@ -3,24 +3,17 @@ TARGET1 = qflex
 #Set these:
 CXX = icpc
 
-# Contraction can be bristlecone_70x4, bristlecone_48x4, ...
-CONTRACTION = bristlecone_48x4
-#Done.
-
-# Contraction
-CONTRACTION_FILENAME = main_$(CONTRACTION)
-
 FLAGS =  -mkl  -qopenmp  -O3  -std=c++17  -march=native
 
 TEST_DIR = tests
 
-OBJS1 = $(CONTRACTION_FILENAME).o mkl_tensor.o contraction_utils.o read_circuit.o
+OBJS1 = main.o mkl_tensor.o contraction_utils.o read_circuit.o
 
 $(TARGET1): $(OBJS1)
 	$(CXX) -o $(TARGET1).x $(FLAGS) $(OBJS1)
 
-$(CONTRACTION_FILENAME).o: $(CONTRACTION_FILENAME).cpp
-	$(CXX) -c $(CONTRACTION_FILENAME).cpp $(FLAGS)
+main.o: main.cpp
+	$(CXX) -c main.cpp $(FLAGS)
 
 read_circuit.o: read_circuit.cpp
 	$(CXX) -c read_circuit.cpp $(FLAGS)

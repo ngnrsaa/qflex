@@ -1,7 +1,10 @@
 #include "contraction_utils.h"
 
+#include <algorithm>
 #include <cassert>
+#include <fstream>
 #include <iostream>
+#include <regex>
 #include <sstream>
 #include <unordered_set>
 
@@ -249,6 +252,125 @@ void ContractionData::ContractGrid(
 
 // External methods
 
+bool ordering_data_to_contraction_ordering(
+    std::istream* ordering_data, const int I, const int J,
+    const std::optional<std::vector<std::vector<int>>>& off,
+    ContractionOrdering* ordering) {
+  static const std::regex cut_value_regex("\\([0-9,]*\\)");
+  std::string line;
+  std::string error_msg;
+  std::string operation;
+  // Read one line at a time from the ordering, skipping comments.
+  while (getline(*ordering_data, line)) {
+    if (line.empty() || line[0] == '#') continue;
+    std::stringstream ss(line);
+    // The first element is the operation (expand, cut, or merge).
+    ss >> operation;
+    if (operation == "expand") {
+      std::string patch;
+      int index;
+      ss >> patch;
+      ss >> index;
+      if (index < 0) {
+        error_msg = "Index cannot be negative.";
+        break;
+      }
+      if (index >= I * J) {
+        error_msg = "Index must be within grid boundaries.";
+        break;
+      }
+      std::vector<int> position = get_qubit_coords(index, J);
+      if (find_grid_coord_in_list(off, position[0], position[1])) {
+        error_msg = "Index must specify an active qubit.";
+        break;
+      }
+      ordering->emplace_back(new ExpandPatch(patch, position));
+    } else if (operation == "cut") {
+      std::vector<int> values;
+      std::string values_str;
+      std::smatch match;
+      ss >> values_str;
+      if (!std::regex_match(values_str, match, cut_value_regex)) {
+        error_msg = "Cut values must be comma-separated ints, e.g. (0,1,3).";
+        break;
+      }
+      values_str = values_str.substr(1, values_str.size() - 2);
+      if (!values_str.empty()) {
+        std::string val;
+        auto start = 0;
+        auto end = values_str.find(',');
+        while (end != std::string::npos) {
+          values.push_back(atoi(values_str.substr(start, end).c_str()));
+          start = end + 1;
+          end = values_str.find(',', start);
+        }
+        values.push_back(atoi(values_str.substr(start, end).c_str()));
+      }
+      int index_1, index_2;
+      ss >> index_1;
+      if (index_1 < 0) {
+        error_msg = "Index 1 cannot be negative.";
+        break;
+      }
+      if (index_1 >= I * J) {
+        error_msg = "Index 1 must be within grid boundaries.";
+        break;
+      }
+      std::vector<int> position_1 = get_qubit_coords(index_1, J);
+      if (find_grid_coord_in_list(off, position_1[0], position_1[1])) {
+        error_msg = "Index 1 must specify an active qubit.";
+        break;
+      }
+      if (ss.eof()) {
+        ordering->emplace_back(new CutIndex({position_1}, values));
+      } else {
+        ss >> index_2;
+        if (index_2 < 0) {
+          error_msg = "Index 2 cannot be negative";
+          break;
+        }
+        if (index_2 >= I * J) {
+          error_msg = "Index 2 must be within grid boundaries.";
+          break;
+        }
+        std::vector<int> position_2 = get_qubit_coords(index_2, J);
+        if (find_grid_coord_in_list(off, position_2[0], position_2[1])) {
+          error_msg = "Index 2 must specify an active qubit.";
+          break;
+        }
+        ordering->emplace_back(new CutIndex({position_1, position_2}, values));
+      }
+    } else if (operation == "merge") {
+      std::string patch_1, patch_2;
+      ss >> patch_1;
+      ss >> patch_2;
+      ordering->emplace_back(new MergePatches(patch_1, patch_2));
+    } else {
+      error_msg = "Received an invalid operation in config.";
+      break;
+    }
+  }
+  if (!error_msg.empty()) {
+    std::cout << "Parsing failed on line: \"" << line
+              << "\" with error: " << error_msg << std::endl;
+    return false;
+  }
+  return true;
+}
+
+void google_ordering_file_to_contraction_ordering(
+    std::string filename, const int I, const int J,
+    const std::optional<std::vector<std::vector<int>>>& off,
+    ContractionOrdering* ordering) {
+  // Open file.
+  auto io = std::ifstream(filename);
+  assert(io.good() && "Cannot open file.");
+
+  // Parse contraction ordering from the file.
+  assert(ordering_data_to_contraction_ordering(&io, I, J, off, ordering) &&
+         "Failed to parse ordering file. See logs for details.");
+}
+
 std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
   char buffer[64];
   if (p1.size() == 2 && p2.size() == 2) {
@@ -281,6 +403,19 @@ std::string index_name(const std::vector<std::vector<int>>& tensors) {
   }
   assert(false && "Failed to construct tensor name.");
   return "";
+}
+
+std::vector<int> get_qubit_coords(int q, int J) {
+  int i = q / J;
+  return std::vector<int>({i, q - i * J});
+}
+
+bool find_grid_coord_in_list(
+    const std::optional<std::vector<std::vector<int>>>& coord_list, const int i,
+    const int j) {
+  return coord_list.has_value() &&
+         find(coord_list.value().begin(), coord_list.value().end(),
+              std::vector<int>({i, j})) != coord_list.value().end();
 }
 
 ContractionOrdering copy_order(const ContractionOrdering& ordering) {

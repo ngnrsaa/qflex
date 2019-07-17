@@ -3,13 +3,6 @@ TARGET1 = qflex
 #Set these:
 CXX = icpc
 
-# Contraction can be bristlecone_70x4, bristlecone_48x4, ...
-CONTRACTION = bristlecone_48x4
-#Done.
-
-# Contraction
-CONTRACTION_FILENAME = main_$(CONTRACTION)
-
 FLAGS =  -mkl  -qopenmp  -O3  -std=c++17  -march=native
 
 ROOT_DIR = ..

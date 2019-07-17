@@ -35,10 +35,6 @@ const double _PI = 3.14159265358979323846264338;
 const int SUPER_CYCLE_DEPTH = 8;
 const int DIM = 2;
 
-// Methods in this namespace should only be used in read_circuit.cpp and
-// read_circuit_test.cpp.
-namespace internal {
-
 /**
  * Helper method for google_circuit_file_to_grid_of_tensors. External users
  * should call that method instead.
@@ -63,8 +59,6 @@ void circuit_data_to_grid_of_tensors(
     const std::optional<std::vector<std::vector<int>>>& off,
     std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors,
     s_type* scratch);
-
-}  // namespace internal
 
 /**
  * Read circuit from file and fill in a 3D grid of tensors with the indices

@@ -183,28 +183,6 @@ gate_arrays(const std::string& gate_name, s_type* scratch) {
 }
 
 /**
- * Returns spatial coordinates i and j on the grid given qubit number q.
- * @param q int with the qubit number.
- * @param J int with the second spatial dimension of the grid of qubits.
- * @return int with the spatial coordinates i and j of qubit q on the grid.
- */
-std::vector<int> _q_to_i_j(int q, int J) {
-  int i = q / J;
-  return std::vector<int>({i, q - i * J});
-}
-
-/**
- * Helper function to find a grid coordinate in a list of coordinates.
- */
-bool find_grid_coord_in_list(
-    const std::optional<std::vector<std::vector<int>>>& coord_list, const int i,
-    const int j) {
-  return coord_list.has_value() &&
-         find(coord_list.value().begin(), coord_list.value().end(),
-              std::vector<int>({i, j})) != coord_list.value().end();
-}
-
-/**
  * Helper method for grid_of_tensors_3D_to_2D which determines the order for
  * tensor indices around a target qubit based on contraction order and cuts.
  * @param ordering ContractionOrdering providing the steps required to contract
@@ -326,8 +304,6 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
 
 }  // namespace
 
-namespace internal {
-
 void circuit_data_to_grid_of_tensors(
     std::istream* circuit_data, int I, int J, int K,
     const std::string initial_conf, const std::string final_conf_B,
@@ -381,7 +357,7 @@ void circuit_data_to_grid_of_tensors(
   // Insert deltas and Hadamards to first layer.
   int idx = 0;
   for (int q = 0; q < num_qubits; ++q) {
-    std::vector<int> i_j = _q_to_i_j(q, J);
+    std::vector<int> i_j = get_qubit_coords(q, J);
     int i = i_j[0], j = i_j[1];
     if (find_grid_coord_in_list(off, i, j)) {
       continue;
@@ -417,9 +393,9 @@ void circuit_data_to_grid_of_tensors(
       }
 
       // Get i, j and super_cycle
-      i_j_1 = _q_to_i_j(q1, J);
+      i_j_1 = get_qubit_coords(q1, J);
       if (q2 >= 0) {
-        i_j_2 = _q_to_i_j(q2, J);
+        i_j_2 = get_qubit_coords(q2, J);
       }
       super_cycle = (cycle - 1) / SUPER_CYCLE_DEPTH;
 
@@ -475,7 +451,7 @@ void circuit_data_to_grid_of_tensors(
   // Insert Hadamards and deltas to last layer.
   idx = 0;
   for (int q = 0; q < num_qubits; ++q) {
-    std::vector<int> i_j = _q_to_i_j(q, J);
+    std::vector<int> i_j = get_qubit_coords(q, J);
     int i = i_j[0], j = i_j[1];
     int k = K - 1;
     if (find_grid_coord_in_list(off, i, j)) {
@@ -541,8 +517,6 @@ void circuit_data_to_grid_of_tensors(
   scratch = NULL;
 }
 
-}  // namespace internal
-
 void google_circuit_file_to_grid_of_tensors(
     std::string filename, int I, int J, int K, const std::string initial_conf,
     const std::string final_conf_B,
@@ -553,9 +527,8 @@ void google_circuit_file_to_grid_of_tensors(
   // Open file.
   auto io = std::ifstream(filename);
   assert(io.good() && "Cannot open file.");
-  internal::circuit_data_to_grid_of_tensors(&io, I, J, K, initial_conf,
-                                            final_conf_B, A, off,
-                                            grid_of_tensors, scratch);
+  circuit_data_to_grid_of_tensors(&io, I, J, K, initial_conf, final_conf_B, A,
+                                  off, grid_of_tensors, scratch);
 }
 
 void grid_of_tensors_3D_to_2D(
@@ -739,4 +712,3 @@ void read_wave_function_evolution(
 }
 
 }  // namespace qflex
-
