@@ -198,8 +198,8 @@ void ContractionData::ContractGrid(
               get_scratch(cut_copy_name(cut->tensors, /*side = */ 1));
           copy_b = tensor_b;
           for (int val : values) {
-            copy_a.project(index_name(cut->tensors), val, tensor_a);
-            copy_b.project(index_name(cut->tensors), val, tensor_b);
+            copy_a.project(index, val, tensor_a);
+            copy_b.project(index, val, tensor_b);
             ContractGrid(copy_order(ordering), output_index, active_patches);
           }
           tensor_a = copy_a;
@@ -208,7 +208,7 @@ void ContractionData::ContractGrid(
           // This is a terminal cut; each value adds to a different amplitude.
           output_index *= values.size();
           for (int val : values) {
-            copy_a.project(index_name(cut->tensors), val, tensor_a);
+            copy_a.project(index, val, tensor_a);
             ContractGrid(copy_order(ordering), output_index, active_patches);
             output_index++;
           }

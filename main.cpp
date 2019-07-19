@@ -27,6 +27,9 @@ using ::qflex::MKLTensor;
 using ::qflex::s_type;
 
 // TODO(martinop): move these methods to a library and add tests.
+
+// Reads in grid layout from a file, which should be formatted as an I x J grid
+// of zeroes (for "off" qubits) and ones (for "on" qubits).
 std::vector<std::vector<int>> read_grid_layout_from_file(
     int I, int J, std::string grid_filename) {
   auto io = std::ifstream(grid_filename);
@@ -42,19 +45,28 @@ std::vector<std::vector<int>> read_grid_layout_from_file(
   return qubits_off;
 }
 
-std::vector<std::vector<int>> get_final_qubits_from_ordering(
-    const ContractionOrdering& ordering) {
-  std::vector<std::vector<int>> final_qubits;
+// Determines the final qubit positions and output states for a given ordering
+void get_output_states(const ContractionOrdering& ordering,
+                       std::vector<std::vector<int>>* final_qubits,
+                       std::vector<std::string>* output_states) {
+  output_states->push_back("");
+  std::vector<std::string> temp_output_states;
   for (const auto& op : ordering) {
     if (op->op_type != ContractionOperation::CUT) continue;
     const auto* cut = dynamic_cast<const CutIndex*>(op.get());
     // Any qubit with a terminal cut is in the final region.
     // TODO(martinop): update to use the new operation.
     if (cut->tensors.size() == 1) {
-      final_qubits.push_back(cut->tensors[0]);
+      final_qubits->push_back(cut->tensors[0]);
+      for (const auto& state : *output_states) {
+        for (const int value : cut->values) {
+          temp_output_states.push_back(state + std::to_string(value));
+        }
+      }
+      *output_states = temp_output_states;
+      temp_output_states.clear();
     }
   }
-  return final_qubits;
 }
 
 // Input: ./qflex.x I J K fidelity circuit_filename ordering_filename \
@@ -90,15 +102,9 @@ int main(int argc, char** argv) {
   int final_region_size = 8;
   std::string initial_conf(init_length, '0');
   std::string final_conf_B(init_length - final_region_size, '0');
-  std::vector<std::string> final_conf_A(1, std::string(final_region_size, '0'));
   if (argc > current_arg) initial_conf = std::string(argv[current_arg++]);
   if (argc > current_arg) final_conf_B = std::string(argv[current_arg++]);
-  if (argc > current_arg) {
-    final_conf_A = std::vector<std::string>(argc - current_arg);
-    for (int s = 0; s < final_conf_A.size(); ++s)
-      final_conf_A[s] = std::string(argv[s + current_arg]);
-  }
-  const int num_Cs = final_conf_A.size();
+  // Output values of the "final region" are determined from ordering.
   int num_qubits = I * J;
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
@@ -111,8 +117,11 @@ int main(int argc, char** argv) {
   ContractionOrdering ordering;
   google_ordering_file_to_contraction_ordering(ordering_filename, I, J,
                                                qubits_off, &ordering);
-  // Get a list of qubits in the final region.
-  auto final_qubits = get_final_qubits_from_ordering(ordering);
+
+  // Get a list of qubits and output states for the final region.
+  std::vector<std::vector<int>> final_qubits;
+  std::vector<std::string> output_states;
+  get_output_states(ordering, &final_qubits, &output_states);
 
   // Scratch space to be reused for operations.
   t0 = std::chrono::high_resolution_clock::now();
@@ -161,14 +170,14 @@ int main(int argc, char** argv) {
   }
 
   // Perform tensor grid contraction.
-  std::vector<std::complex<double>> amplitudes(num_Cs);
+  std::vector<std::complex<double>> amplitudes(output_states.size());
   ContractGrid(ordering, &tensor_grid, &amplitudes);
 
   // Printing output
-  for (int c = 0; c < num_Cs; ++c) {
+  for (int c = 0; c < amplitudes.size(); ++c) {
     std::cout << initial_conf << " ";
     std::cout << final_conf_B << " ";
-    std::cout << final_conf_A[c] << " ";
+    std::cout << output_states[c] << " ";
     std::cout << std::real(amplitudes[c]) << " " << std::imag(amplitudes[c]);
     std::cout << std::endl;
   }
