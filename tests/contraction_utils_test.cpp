@@ -284,6 +284,102 @@ TEST(ContractionDeathTest, IndexNamingFailures) {
   EXPECT_DEATH(index_name(index), "");
 }
 
+constexpr char kSimpleOrdering[] = R"(# test comment
+cut (1,2) 1 3
+expand a 1
+expand a 0
+expand a 2
+cut () 5
+expand b 5
+expand b 3
+merge a b
+)";
+TEST(OrderingParserTest, ParseSimpleOrdering) {
+  auto ordering_data = std::stringstream(kSimpleOrdering);
+  ContractionOrdering ordering;
+  std::vector<std::vector<int>> qubits_off = {{2, 0}};
+  int I = 3;
+  int J = 2;
+  ASSERT_TRUE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                    qubits_off, &ordering));
+
+  ContractionOrdering expected_ordering;
+  expected_ordering.emplace_back(new CutIndex({{0, 1}, {1, 1}}, {1, 2}));
+  expected_ordering.emplace_back(new ExpandPatch("a", {0, 1}));
+  expected_ordering.emplace_back(new ExpandPatch("a", {0, 0}));
+  expected_ordering.emplace_back(new ExpandPatch("a", {1, 0}));
+  expected_ordering.emplace_back(new CutIndex({{2, 1}}));
+  expected_ordering.emplace_back(new ExpandPatch("b", {2, 1}));
+  expected_ordering.emplace_back(new ExpandPatch("b", {1, 1}));
+  expected_ordering.emplace_back(new MergePatches("a", "b"));
+
+  int op_count = expected_ordering.size();
+  ASSERT_EQ(ordering.size(), op_count);
+  for (int i = 0; i < op_count; ++i) {
+    const auto* op = ordering.front().get();
+    const auto* expected_op = expected_ordering.front().get();
+    ASSERT_EQ(op->op_type, expected_op->op_type);
+    if (op->op_type == ContractionOperation::EXPAND) {
+      const auto* expand = dynamic_cast<const ExpandPatch*>(op);
+      const auto* expected_expand =
+          dynamic_cast<const ExpandPatch*>(expected_op);
+      EXPECT_EQ(expand->id, expected_expand->id);
+      EXPECT_EQ(expand->tensor, expected_expand->tensor);
+
+    } else if (op->op_type == ContractionOperation::CUT) {
+      const auto* cut = dynamic_cast<const CutIndex*>(op);
+      const auto* expected_cut = dynamic_cast<const CutIndex*>(expected_op);
+      EXPECT_EQ(cut->tensors, expected_cut->tensors);
+      EXPECT_EQ(cut->values, expected_cut->values);
+
+    } else if (op->op_type == ContractionOperation::MERGE) {
+      const auto* merge = dynamic_cast<const MergePatches*>(op);
+      const auto* expected_merge =
+          dynamic_cast<const MergePatches*>(expected_op);
+      EXPECT_EQ(merge->source_id, expected_merge->source_id);
+      EXPECT_EQ(merge->target_id, expected_merge->target_id);
+    }
+    ordering.pop_front();
+    expected_ordering.pop_front();
+  }
+}
+
+TEST(OrderingParserTest, ParserFailures) {
+  ContractionOrdering ordering;
+  std::vector<std::vector<int>> qubits_off = {{2, 0}};
+  std::stringstream ordering_data;
+  int I = 3;
+  int J = 2;
+
+  // Invalid operations cause failures.
+  ordering_data = std::stringstream("bad_op 1 2");
+  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering));
+
+  // Qubit indices must be within the grid (3x2).
+  ordering_data = std::stringstream("expand a 8");
+  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering));
+  ordering_data = std::stringstream("expand a -2");
+  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering));
+  ordering_data = std::stringstream("cut () 1 7");
+  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering));
+  ordering_data = std::stringstream("cut () -1 4");
+  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering));
+
+  // Cuts must receive a valid value list.
+  ordering_data = std::stringstream("cut 2 3");
+  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering));
+  // Spaces are not allowed in the value list.
+  ordering_data = std::stringstream("cut (1, 2) 2 3");
+  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering));
+}
+
 }  // namespace
 }  // namespace qflex
 

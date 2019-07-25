@@ -1,8 +1,10 @@
-#include <list>
 #ifndef CONTRACTION_UTILS_
 #define CONTRACTION_UTILS_
 
 #include <complex>
+#include <fstream>
+#include <iostream>
+#include <list>
 #include <memory>
 #include <vector>
 
@@ -24,6 +26,25 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2);
 // As above, but accepts a list of qubit locations. If the list has only one
 // element, an empty vector will be provided as the second element.
 std::string index_name(const std::vector<std::vector<int>>& tensors);
+
+/**
+ * Returns spatial coordinates on the grid for the given qubit q.
+ * @param q int with the qubit number.
+ * @param J int with the second spatial dimension of the grid of qubits.
+ * @return vector<int> with the spatial coordinates of qubit q on the grid.
+ */
+std::vector<int> get_qubit_coords(int q, int J);
+
+/**
+ * Helper function to find a grid coordinate in a list of coordinates.
+ * @param coord_list optional vector of qubit positions.
+ * @param i int with the first spatial dimension of the target position.
+ * @param j int with the second spatial dimension of the target position.
+ * @return true if (i, j) is in coord_list.
+ */
+bool find_grid_coord_in_list(
+    const std::optional<std::vector<std::vector<int>>>& coord_list, const int i,
+    const int j);
 
 struct ContractionOperation {
  public:
@@ -72,6 +93,34 @@ using ContractionOrdering = std::list<std::unique_ptr<ContractionOperation>>;
 
 // Copies a ContractionOrdering for reuse.
 ContractionOrdering copy_order(const ContractionOrdering& ordering);
+
+/**
+ * Helper method for google_ordering_file_to_contraction_ordering. External
+ * users should call that method instead.
+ * @param circuit_data std::istream containing ordering as a string.
+ * @param I int with the first spatial dimension of the grid of qubits.
+ * @param J int with the second spatial dimension of the grid of qubits.
+ * @param off vector<vector<int>> with the coords. of the qubits turned off.
+ * @param ordering pointer to ContractionOrdering output object.
+ * @return false if parsing failed at any point, true otherwise.
+ **/
+bool ordering_data_to_contraction_ordering(
+    std::istream* ordering_data, const int I, const int J,
+    const std::optional<std::vector<std::vector<int>>>& off,
+    ContractionOrdering* ordering);
+
+/**
+ * Parses a grid contraction ordering from the given file.
+ * @param filename string with the name of the ordering file.
+ * @param I int with the first spatial dimension of the grid of qubits.
+ * @param J int with the second spatial dimension of the grid of qubits.
+ * @param off vector<vector<int>> with the coords. of the qubits turned off.
+ * @param ordering pointer to ContractionOrdering output object.
+ **/
+void google_ordering_file_to_contraction_ordering(
+    std::string filename, const int I, const int J,
+    const std::optional<std::vector<std::vector<int>>>& off,
+    ContractionOrdering* ordering);
 
 // Helper class for the external ContractGrid method. This should not be
 // initialized by external users.

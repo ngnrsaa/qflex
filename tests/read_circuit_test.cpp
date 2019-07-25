@@ -23,8 +23,8 @@ TEST(ReadCircuitTest, NullCircuit) {
   s_type scratch[256];
 
   auto circuit_data = std::stringstream(kNullCircuit);
-  internal::circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "01",
-                                            {}, {}, grid_of_tensors, scratch);
+  circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "01", {}, {},
+                                  grid_of_tensors, scratch);
   // Qubit-0 path has amplitude 1 (0 --> 0)
   // Qubit-1 path has amplitude 0 (0 --> 1)
   std::vector<s_type> expected_data = {std::complex<float>(1, 0),
@@ -83,9 +83,9 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   std::vector<std::vector<int>> qubits_off = {{2, 0}};
   s_type* scratch = new s_type[256];
   auto circuit_data = std::stringstream(kSimpleCircuit);
-  internal::circuit_data_to_grid_of_tensors(&circuit_data, 3, 2, 2, "00000",
-                                            "0000", qubits_A, qubits_off,
-                                            tensor_grid_3D, scratch);
+  circuit_data_to_grid_of_tensors(&circuit_data, 3, 2, 2, "00000", "0000",
+                                  qubits_A, qubits_off, tensor_grid_3D,
+                                  scratch);
   ASSERT_EQ(tensor_grid_3D.size(), 3);
   ASSERT_EQ(tensor_grid_3D[0].size(), 2);
   ASSERT_EQ(tensor_grid_3D[0][0].size(), 2);
@@ -143,7 +143,7 @@ TEST(ReadCircuitTest, CondenseToGrid) {
 }  // namespace
 }  // namespace qflex
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
