@@ -7,13 +7,16 @@ FLAGS =  -mkl  -qopenmp  -O3  -std=c++17  -march=native
 
 TEST_DIR = tests
 
-OBJS1 = main.o mkl_tensor.o contraction_utils.o read_circuit.o
+OBJS1 = main.o evaluate_circuit.o mkl_tensor.o contraction_utils.o read_circuit.o
 
 $(TARGET1): $(OBJS1)
 	$(CXX) -o $(TARGET1).x $(FLAGS) $(OBJS1)
 
 main.o: main.cpp
 	$(CXX) -c main.cpp $(FLAGS)
+
+evaluate_circuit.o: evaluate_circuit.cpp
+	$(CXX) -c evaluate_circuit.cpp $(FLAGS)
 
 read_circuit.o: read_circuit.cpp
 	$(CXX) -c read_circuit.cpp $(FLAGS)
