@@ -107,7 +107,17 @@ TEST(ReadGridTest, ValidGrid6x2) {
   EXPECT_EQ(off_qubits, expected_off);
 }
 
-// TODO(martinop): add assertions and death tests (too big, too small)
+// Grid data is too large: 3 * 4 > 5 * 2
+TEST(ReadGridDeathTest, InvalidGrid5x2) {
+  std::stringstream stream(kTestGrid);
+  EXPECT_DEATH(read_grid_layout_from_stream(&stream, 5, 2), "");
+}
+
+// Grid data is too small: 3 * 4 < 5 * 3
+TEST(ReadGridDeathTest, InvalidGrid5x3) {
+  std::stringstream stream(kTestGrid);
+  EXPECT_DEATH(read_grid_layout_from_stream(&stream, 5, 3), "");
+}
 
 // Below are config strings for a simple grid with one "off" qubit and one cut:
 //   0 - 1
