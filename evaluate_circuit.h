@@ -24,21 +24,33 @@ namespace qflex {
 struct QflexInput {
   int I, J, K;
   double fidelity;
-  std::string circuit_filename;
-  std::string ordering_filename;
-  std::string grid_filename;
+  std::istream* circuit_data;
+  std::istream* ordering_data;
+  std::istream* grid_data;
   std::string initial_state;
   std::string final_state_A;
   bool enable_timing_logs = false;
 };
 
-// TODO(martinop): replace all "read from file" methods with stream-passing.
-// Reads in grid layout from a file, which should be formatted as an I x J grid
-// of zeroes (for "off" qubits) and ones (for "on" qubits).
-std::vector<std::vector<int>> read_grid_layout_from_file(
-    int I, int J, std::string grid_filename);
+/**
+ * Reads in grid layout from a file, which should be formatted as an I x J grid
+ * of zeroes (for "off" qubits) and ones (for "on" qubits).\
+ * @param grid_data std::istream* containing grid layout stored as a string.
+ * @param I int with the first spatial dimension of the grid of qubits.
+ * @param J int with the second spatial dimension of the grid of qubits.
+ * @return a list of coordinates for "off" qubits in the I x J grid provided.
+ */
+std::vector<std::vector<int>> read_grid_layout_from_stream(
+    std::istream* grid_data, int I, int J);
 
-// Determines the final qubit positions and output states for a given ordering
+/**
+ * Determines the final qubit positions and output states for a given ordering.
+ * @param ordering ContractionOrdering to parse output states from
+ * @param final_qubits vector of coordinates for qubits with terminal cuts, to
+ * be populated by this method.
+ * @param output_states vector of output states for the given contraction
+ * ordering, to be populated by this method.
+ */
 void get_output_states(const ContractionOrdering& ordering,
                        std::vector<std::vector<int>>* final_qubits,
                        std::vector<std::string>* output_states);
@@ -53,6 +65,8 @@ void get_output_states(const ContractionOrdering& ordering,
  *
  * @param input args required to specify a circuit for evaluation.
  * @return vector of <state bitstring, amplitude> pairs for each output state.
+ * States for qubits with terminal cuts are listed at the end onf the state
+ * bitstring, in the order of their terminal cuts.
  */
 std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     QflexInput* input);

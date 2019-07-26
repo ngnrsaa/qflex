@@ -85,7 +85,99 @@ TEST_F(GetOutputStatesTest, OnlyUseTerminalCuts) {
   TestOutputExpectations();
 }
 
-// TODO(martinop): add tests for reading grid and full circuit evaluation.
+constexpr char kTestGrid[] = R"(0 1 1 0
+                                1 1 1 1
+                                0 1 0 0)";
+
+TEST(ReadGridTest, ValidGrid3x4) {
+  std::stringstream stream(kTestGrid);
+  std::vector<std::vector<int>> off_qubits =
+      read_grid_layout_from_stream(&stream, 3, 4);
+  std::vector<std::vector<int>> expected_off = {
+      {0, 0}, {0, 3}, {2, 0}, {2, 2}, {2, 3}};
+  EXPECT_EQ(off_qubits, expected_off);
+}
+
+TEST(ReadGridTest, ValidGrid6x2) {
+  std::stringstream stream(kTestGrid);
+  std::vector<std::vector<int>> off_qubits =
+      read_grid_layout_from_stream(&stream, 6, 2);
+  std::vector<std::vector<int>> expected_off = {
+      {0, 0}, {1, 1}, {4, 0}, {5, 0}, {5, 1}};
+  EXPECT_EQ(off_qubits, expected_off);
+}
+
+// TODO(martinop): add assertions and death tests (too big, too small)
+
+// Below are config strings for a simple grid with one "off" qubit and one cut:
+//   0 - 1
+//   |   x --> cut between (0,1) and (1,1)
+//   2 - 3
+//       |
+//   4   5 --> qubit at (2,0) is off; (2,1) is in final region.
+// This circuit should return the input string with amplitude ~= 1 when summing
+// over the cut values, but only when the output of (2,1) is a zero.
+constexpr char kSimpleCircuit[] = R"(5
+0 h 0
+0 h 1
+0 h 2
+0 h 3
+0 h 5
+1 cz 0 1
+2 cz 0 2
+3 cz 1 3
+4 cz 2 3
+5 cz 3 5
+11 cz 0 1
+12 cz 0 2
+13 cz 1 3
+14 cz 2 3
+15 cz 3 5
+17 h 0
+17 h 1
+17 h 2
+17 h 3
+17 h 5)";
+
+constexpr char kSimpleOrdering[] = R"(#
+cut () 1 3
+expand a 1
+expand a 0
+expand a 2
+cut () 5
+expand b 5
+expand b 3
+merge a b
+)";
+
+constexpr char kSimpleGrid[] = R"(1 1
+                                  1 1
+                                  0 1)";
+
+// Perform a full evaluation of a very simple circuit.
+TEST(EvaluateCircuitTest, SimpleCircuit) {
+  std::stringstream circuit_data(kSimpleCircuit);
+  std::stringstream ordering_data(kSimpleOrdering);
+  std::stringstream grid_data(kSimpleGrid);
+
+  QflexInput input;
+  input.I = 3;
+  input.J = 2;
+  input.K = 2;
+  input.circuit_data = &circuit_data;
+  input.ordering_data = &ordering_data;
+  input.grid_data = &grid_data;
+  input.initial_state = "00000";
+  input.final_state_A = "0000";
+
+  std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
+      EvaluateCircuit(&input);
+  ASSERT_EQ(amplitudes.size(), 2);
+  EXPECT_EQ(amplitudes[0].first, "0000 0");
+  EXPECT_NEAR(amplitudes[0].second.real(), 1.0, 1e-5);
+  EXPECT_EQ(amplitudes[1].first, "0000 1");
+  EXPECT_NEAR(amplitudes[1].second.real(), 0.0, 1e-5);
+}
 
 }  // namespace
 }  // namespace qflex

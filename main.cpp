@@ -17,9 +17,17 @@ int main(int argc, char** argv) {
   input.J = atoi(argv[current_arg++]);
   input.K = atoi(argv[current_arg++]);
   input.fidelity = atof(argv[current_arg++]);
-  input.circuit_filename = std::string(argv[current_arg++]);
-  input.ordering_filename = std::string(argv[current_arg++]);
-  input.grid_filename = std::string(argv[current_arg++]);
+  // Creating streams for input files.
+  auto circuit_data = std::ifstream(std::string(argv[current_arg++]));
+  assert(circuit_data.good() && "Cannot open circuit data file.");
+  input.circuit_data = &circuit_data;
+  auto ordering_data = std::ifstream(std::string(argv[current_arg++]));
+  assert(ordering_data.good() && "Cannot open ordering data file.");
+  input.ordering_data = &ordering_data;
+  auto grid_data = std::ifstream(std::string(argv[current_arg++]));
+  assert(grid_data.good() && "Cannot open grid data file.");
+  input.grid_data = &grid_data;
+  // Setting initial and final circuit states.
   if (argc > current_arg) {
     input.initial_state = std::string(argv[current_arg++]);
   }
@@ -31,13 +39,13 @@ int main(int argc, char** argv) {
   std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
       qflex::EvaluateCircuit(&input);
 
-  // Printing output
+  // Printing output.
   for (int c = 0; c < amplitudes.size(); ++c) {
     const auto& state = amplitudes[c].first;
     const auto& amplitude = amplitudes[c].second;
-    std::cout << input.initial_state << " --> " << input.final_state_A << " "
-              << state << ": " << std::real(amplitude) << " "
-              << std::imag(amplitude) << std::endl;
+    std::cout << input.initial_state << " --> " << state << ": "
+              << std::real(amplitude) << " " << std::imag(amplitude)
+              << std::endl;
   }
   return 0;
 }

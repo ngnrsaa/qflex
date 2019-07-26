@@ -358,19 +358,6 @@ bool ordering_data_to_contraction_ordering(
   return true;
 }
 
-void google_ordering_file_to_contraction_ordering(
-    std::string filename, const int I, const int J,
-    const std::optional<std::vector<std::vector<int>>>& off,
-    ContractionOrdering* ordering) {
-  // Open file.
-  auto io = std::ifstream(filename);
-  assert(io.good() && "Cannot open file.");
-
-  // Parse contraction ordering from the file.
-  assert(ordering_data_to_contraction_ordering(&io, I, J, off, ordering) &&
-         "Failed to parse ordering file. See logs for details.");
-}
-
 std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
   char buffer[64];
   if (p1.size() == 2 && p2.size() == 2) {

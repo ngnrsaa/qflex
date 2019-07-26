@@ -517,20 +517,6 @@ void circuit_data_to_grid_of_tensors(
   scratch = NULL;
 }
 
-void google_circuit_file_to_grid_of_tensors(
-    std::string filename, int I, int J, int K, const std::string initial_conf,
-    const std::string final_conf_B,
-    const std::optional<std::vector<std::vector<int>>>& A,
-    const std::optional<std::vector<std::vector<int>>>& off,
-    std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors,
-    s_type* scratch) {
-  // Open file.
-  auto io = std::ifstream(filename);
-  assert(io.good() && "Cannot open file.");
-  circuit_data_to_grid_of_tensors(&io, I, J, K, initial_conf, final_conf_B, A,
-                                  off, grid_of_tensors, scratch);
-}
-
 void grid_of_tensors_3D_to_2D(
     std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors_3D,
     std::vector<std::vector<MKLTensor>>& grid_of_tensors_2D,

@@ -95,8 +95,7 @@ using ContractionOrdering = std::list<std::unique_ptr<ContractionOperation>>;
 ContractionOrdering copy_order(const ContractionOrdering& ordering);
 
 /**
- * Helper method for google_ordering_file_to_contraction_ordering. External
- * users should call that method instead.
+ * Parses a grid contraction ordering from the given stream.
  * @param circuit_data std::istream containing ordering as a string.
  * @param I int with the first spatial dimension of the grid of qubits.
  * @param J int with the second spatial dimension of the grid of qubits.
@@ -106,19 +105,6 @@ ContractionOrdering copy_order(const ContractionOrdering& ordering);
  **/
 bool ordering_data_to_contraction_ordering(
     std::istream* ordering_data, const int I, const int J,
-    const std::optional<std::vector<std::vector<int>>>& off,
-    ContractionOrdering* ordering);
-
-/**
- * Parses a grid contraction ordering from the given file.
- * @param filename string with the name of the ordering file.
- * @param I int with the first spatial dimension of the grid of qubits.
- * @param J int with the second spatial dimension of the grid of qubits.
- * @param off vector<vector<int>> with the coords. of the qubits turned off.
- * @param ordering pointer to ContractionOrdering output object.
- **/
-void google_ordering_file_to_contraction_ordering(
-    std::string filename, const int I, const int J,
     const std::optional<std::vector<std::vector<int>>>& off,
     ContractionOrdering* ordering);
 

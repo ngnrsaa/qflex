@@ -2,15 +2,13 @@
 
 namespace qflex {
 
-std::vector<std::vector<int>> read_grid_layout_from_file(
-    int I, int J, std::string grid_filename) {
-  auto io = std::ifstream(grid_filename);
-  assert(io.good() && "Cannot open grid file.");
+std::vector<std::vector<int>> read_grid_layout_from_stream(
+    std::istream* grid_data, int I, int J) {
   std::vector<std::vector<int>> qubits_off;
   bool on;
   for (int i = 0; i < I; ++i) {
     for (int j = 0; j < J; ++j) {
-      io >> on;
+      (*grid_data) >> on;
       if (on == 0) qubits_off.push_back({i, j});
     }
   }
@@ -56,13 +54,13 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // Reading input.
   const int super_dim = (int)pow(DIM, input->K);
   auto qubits_off =
-      read_grid_layout_from_file(input->I, input->J, input->grid_filename);
+      read_grid_layout_from_stream(input->grid_data, input->I, input->J);
 
   // Create the ordering for this tensor contraction from file.
   t0 = std::chrono::high_resolution_clock::now();
   ContractionOrdering ordering;
-  google_ordering_file_to_contraction_ordering(
-      input->ordering_filename, input->I, input->J, qubits_off, &ordering);
+  ordering_data_to_contraction_ordering(input->ordering_data, input->I,
+                                        input->J, qubits_off, &ordering);
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
@@ -105,10 +103,10 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     // Creating 3D grid of tensors from file.
     t0 = std::chrono::high_resolution_clock::now();
     std::vector<std::vector<std::vector<MKLTensor>>> tensor_grid_3D;
-    google_circuit_file_to_grid_of_tensors(
-        input->circuit_filename, input->I, input->J, input->K,
-        input->initial_state, input->final_state_A, final_qubits, qubits_off,
-        tensor_grid_3D, scratch);
+    circuit_data_to_grid_of_tensors(input->circuit_data, input->I, input->J,
+                                    input->K, input->initial_state,
+                                    input->final_state_A, final_qubits,
+                                    qubits_off, tensor_grid_3D, scratch);
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
@@ -139,7 +137,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   std::vector<std::pair<std::string, std::complex<double>>> result;
   ContractGrid(ordering, &tensor_grid, &amplitudes);
   for (int c = 0; c < amplitudes.size(); ++c) {
-    result.push_back(std::make_pair(output_states[c], amplitudes[c]));
+    result.push_back(std::make_pair(
+        input->final_state_A + " " + output_states[c], amplitudes[c]));
   }
 
   // Final time
