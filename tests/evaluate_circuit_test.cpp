@@ -85,9 +85,11 @@ TEST_F(GetOutputStatesTest, OnlyUseTerminalCuts) {
   TestOutputExpectations();
 }
 
+// Grid layout with trailing whitespace.
 constexpr char kTestGrid[] = R"(0 1 1 0
                                 1 1 1 1
-                                0 1 0 0)";
+                                0 1 0 0
+                                )";
 
 TEST(ReadGridTest, ValidGrid3x4) {
   std::stringstream stream(kTestGrid);
