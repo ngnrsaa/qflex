@@ -185,13 +185,13 @@ gate_arrays(const std::string& gate_name, s_type* scratch) {
 /**
  * Helper method for grid_of_tensors_3D_to_2D which determines the order for
  * tensor indices around a target qubit based on contraction order and cuts.
- * @param ordering ContractionOrdering providing the steps required to contract
- * the tensor grid.
+ * @param ordering std::list<ContractionOperation> providing the steps required
+ * to contract the tensor grid.
  * @param local vector<int> of the target qubit coordinates.
  * @return function for use as a comparator in std::sort.
  */
 std::function<bool(std::vector<int>, std::vector<int>)> order_func(
-    const ContractionOrdering& ordering, std::vector<int> local) {
+    const std::list<ContractionOperation>& ordering, std::vector<int> local) {
   return [&ordering, local](const std::vector<int> lhs,
                             const std::vector<int> rhs) {
     // Cuts are projected early and should be ordered first.
@@ -207,10 +207,9 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       rhs_pair = {rhs, local};
     }
     for (const auto& op : ordering) {
-      if (op->op_type != ContractionOperation::CUT) continue;
-      const auto* cut = dynamic_cast<const CutIndex*>(op.get());
-      if (lhs_pair == cut->tensors) return true;
-      if (rhs_pair == cut->tensors) return false;
+      if (op.op_type != ContractionOperation::CUT) continue;
+      if (lhs_pair == op.cut.tensors) return true;
+      if (rhs_pair == op.cut.tensors) return false;
     }
 
     std::string lpatch = "null";
@@ -219,10 +218,9 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     int rpos = -1;
     int op_num = 0;
     for (const auto& op : ordering) {
-      if (op->op_type != ContractionOperation::EXPAND) continue;
-      const auto* expand = dynamic_cast<const ExpandPatch*>(op.get());
-      if (lhs == expand->tensor) {
-        lpatch = expand->id;
+      if (op.op_type != ContractionOperation::EXPAND) continue;
+      if (lhs == op.expand.tensor) {
+        lpatch = op.expand.id;
         lpos = op_num;
         break;
       }
@@ -238,10 +236,9 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
 
     op_num = 0;
     for (const auto& op : ordering) {
-      if (op->op_type != ContractionOperation::EXPAND) continue;
-      const auto* expand = dynamic_cast<const ExpandPatch*>(op.get());
-      if (rhs == expand->tensor) {
-        rpatch = expand->id;
+      if (op.op_type != ContractionOperation::EXPAND) continue;
+      if (rhs == op.expand.tensor) {
+        rpatch = op.expand.id;
         rpos = op_num;
         break;
       }
@@ -261,10 +258,9 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
 
     std::string local_patch;
     for (const auto& op : ordering) {
-      if (op->op_type != ContractionOperation::EXPAND) continue;
-      const auto* expand = dynamic_cast<const ExpandPatch*>(op.get());
-      if (local == expand->tensor) {
-        local_patch = expand->id;
+      if (op.op_type != ContractionOperation::EXPAND) continue;
+      if (local == op.expand.tensor) {
+        local_patch = op.expand.id;
         break;
       }
     }
@@ -279,15 +275,14 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     // Both lhs and rhs are in different patches from local_patch; find out
     // which merges with the local patch first.
     for (const auto& op : ordering) {
-      if (op->op_type != ContractionOperation::MERGE) continue;
-      const auto* merge = dynamic_cast<const MergePatches*>(op.get());
-      if (local_patch == merge->source_id) {
-        if (lpatch == merge->target_id) return true;
-        if (rpatch == merge->target_id) return false;
-        local_patch = merge->target_id;
-      } else if (local_patch == merge->target_id) {
-        if (lpatch == merge->source_id) return true;
-        if (rpatch == merge->source_id) return false;
+      if (op.op_type != ContractionOperation::MERGE) continue;
+      if (local_patch == op.merge.source_id) {
+        if (lpatch == op.merge.target_id) return true;
+        if (rpatch == op.merge.target_id) return false;
+        local_patch = op.merge.target_id;
+      } else if (local_patch == op.merge.target_id) {
+        if (lpatch == op.merge.source_id) return true;
+        if (rpatch == op.merge.source_id) return false;
         // local_patch is already the target ID.
       }
     }
@@ -522,7 +517,7 @@ void grid_of_tensors_3D_to_2D(
     std::vector<std::vector<MKLTensor>>& grid_of_tensors_2D,
     std::optional<std::vector<std::vector<int>>> A,
     std::optional<std::vector<std::vector<int>>> off,
-    const ContractionOrdering& ordering, s_type* scratch) {
+    const std::list<ContractionOperation>& ordering, s_type* scratch) {
   // Get dimensions and super_dim = DIM^k.
   const int I = grid_of_tensors_3D.size();
   const int J = grid_of_tensors_3D[0].size();

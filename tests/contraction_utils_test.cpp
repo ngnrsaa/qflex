@@ -21,107 +21,104 @@ TEST(ContractionTest, IndexNaming) {
 }
 
 TEST(ContractionTest, OperationHandling) {
-  ContractionOrdering ordering;
+  std::list<ContractionOperation> ordering;
   std::vector<std::vector<int>> index = {{1, 2}, {3, 4}};
   std::vector<int> cut_values = {5, 6};
-  ordering.emplace_back(new CutIndex(index, cut_values));
-  ASSERT_EQ(ordering.back()->op_type, ContractionOperation::CUT);
-  const auto* cut = dynamic_cast<const CutIndex*>(ordering.back().get());
-  EXPECT_EQ(cut->tensors, index);
-  EXPECT_EQ(cut->values, cut_values);
+  ordering.emplace_back(CutIndex(index, cut_values));
+  ASSERT_EQ(ordering.back().op_type, ContractionOperation::CUT);
+  EXPECT_EQ(ordering.back().cut.tensors, index);
+  EXPECT_EQ(ordering.back().cut.values, cut_values);
 
   std::vector<int> expand_tensor = {7, 8};
-  ordering.emplace_back(new ExpandPatch("a", expand_tensor));
-  ASSERT_EQ(ordering.back()->op_type, ContractionOperation::EXPAND);
-  const auto* expand = dynamic_cast<const ExpandPatch*>(ordering.back().get());
-  EXPECT_EQ(expand->id, "a");
-  EXPECT_EQ(expand->tensor, expand_tensor);
+  ordering.emplace_back(ExpandPatch("a", expand_tensor));
+  ASSERT_EQ(ordering.back().op_type, ContractionOperation::EXPAND);
+  EXPECT_EQ(ordering.back().expand.id, "a");
+  EXPECT_EQ(ordering.back().expand.tensor, expand_tensor);
 
-  ordering.emplace_back(new MergePatches("a", "b"));
-  ASSERT_EQ(ordering.back()->op_type, ContractionOperation::MERGE);
-  const auto* merge = dynamic_cast<const MergePatches*>(ordering.back().get());
-  EXPECT_EQ(merge->source_id, "a");
-  EXPECT_EQ(merge->target_id, "b");
+  ordering.emplace_back(MergePatches("a", "b"));
+  ASSERT_EQ(ordering.back().op_type, ContractionOperation::MERGE);
+  EXPECT_EQ(ordering.back().merge.source_id, "a");
+  EXPECT_EQ(ordering.back().merge.target_id, "b");
 }
 
 TEST(ContractionTest, RepeatedOperations) {
   // Cannot contract the same tensor twice.
-  ContractionOrdering ordering;
-  ordering.emplace_back(new ExpandPatch("a", {1, 2}));
-  ordering.emplace_back(new ExpandPatch("a", {1, 2}));
+  std::list<ContractionOperation> ordering;
+  ordering.emplace_back(ExpandPatch("a", {1, 2}));
+  ordering.emplace_back(ExpandPatch("a", {1, 2}));
   EXPECT_FALSE(IsOrderingValid(ordering));
 
   // Cannot cut the same index twice.
   ordering.clear();
   std::vector<std::vector<int>> index = {{1, 2}, {1, 3}};
-  ordering.emplace_back(new CutIndex(index, {0, 1}));
-  ordering.emplace_back(new CutIndex(index, {2, 3}));
+  ordering.emplace_back(CutIndex(index, {0, 1}));
+  ordering.emplace_back(CutIndex(index, {2, 3}));
   EXPECT_FALSE(IsOrderingValid(ordering));
 
   // Cannot merge the same patch twice.
   ordering.clear();
-  ordering.emplace_back(new MergePatches("a", "b"));
-  ordering.emplace_back(new MergePatches("a", "c"));
+  ordering.emplace_back(MergePatches("a", "b"));
+  ordering.emplace_back(MergePatches("a", "c"));
   EXPECT_FALSE(IsOrderingValid(ordering));
 
   // Can merge into the same patch twice.
   ordering.clear();
-  ordering.emplace_back(new MergePatches("a", "c"));
-  ordering.emplace_back(new MergePatches("b", "c"));
+  ordering.emplace_back(MergePatches("a", "c"));
+  ordering.emplace_back(MergePatches("b", "c"));
   EXPECT_TRUE(IsOrderingValid(ordering));
 }
 
 TEST(ContractionTest, MergeSafety) {
   // Cannot expand a patch after merging it.
-  ContractionOrdering ordering;
-  ordering.emplace_back(new MergePatches("a", "b"));
-  ordering.emplace_back(new ExpandPatch("a", {1, 2}));
+  std::list<ContractionOperation> ordering;
+  ordering.emplace_back(MergePatches("a", "b"));
+  ordering.emplace_back(ExpandPatch("a", {1, 2}));
   EXPECT_FALSE(IsOrderingValid(ordering));
 
   // Can expand a patch that has been merged into.
   ordering.clear();
-  ordering.emplace_back(new MergePatches("a", "b"));
-  ordering.emplace_back(new ExpandPatch("b", {1, 2}));
+  ordering.emplace_back(MergePatches("a", "b"));
+  ordering.emplace_back(ExpandPatch("b", {1, 2}));
   EXPECT_TRUE(IsOrderingValid(ordering));
 }
 
 TEST(ContractionTest, CutSafety) {
   // Cannot expand the same patch before and after a cut.
-  ContractionOrdering ordering;
+  std::list<ContractionOperation> ordering;
   std::vector<std::vector<int>> index = {{1, 2}, {1, 3}};
   std::vector<int> cut_values = {0, 1};
-  ordering.emplace_back(new ExpandPatch("a", {1, 2}));
-  ordering.emplace_back(new CutIndex(index, cut_values));
-  ordering.emplace_back(new ExpandPatch("a", {2, 2}));
+  ordering.emplace_back(ExpandPatch("a", {1, 2}));
+  ordering.emplace_back(CutIndex(index, cut_values));
+  ordering.emplace_back(ExpandPatch("a", {2, 2}));
   EXPECT_FALSE(IsOrderingValid(ordering));
 
   // Cannot merge into a patch after a cut if it was previously expanded.
   ordering.clear();
-  ordering.emplace_back(new ExpandPatch("b", {1, 2}));
-  ordering.emplace_back(new CutIndex(index, cut_values));
-  ordering.emplace_back(new MergePatches("a", "b"));
+  ordering.emplace_back(ExpandPatch("b", {1, 2}));
+  ordering.emplace_back(CutIndex(index, cut_values));
+  ordering.emplace_back(MergePatches("a", "b"));
   EXPECT_FALSE(IsOrderingValid(ordering));
 
   // Cannot expand a patch after a cut if it was previously merged into.
   ordering.clear();
-  ordering.emplace_back(new MergePatches("a", "b"));
-  ordering.emplace_back(new CutIndex(index, cut_values));
-  ordering.emplace_back(new ExpandPatch("b", {1, 2}));
+  ordering.emplace_back(MergePatches("a", "b"));
+  ordering.emplace_back(CutIndex(index, cut_values));
+  ordering.emplace_back(ExpandPatch("b", {1, 2}));
   EXPECT_FALSE(IsOrderingValid(ordering));
 
   // Cannot merge into a patch before and after a cut.
   ordering.clear();
-  ordering.emplace_back(new MergePatches("a", "c"));
-  ordering.emplace_back(new CutIndex(index, cut_values));
-  ordering.emplace_back(new MergePatches("b", "c"));
+  ordering.emplace_back(MergePatches("a", "c"));
+  ordering.emplace_back(CutIndex(index, cut_values));
+  ordering.emplace_back(MergePatches("b", "c"));
   EXPECT_FALSE(IsOrderingValid(ordering));
 
   // Can merge a patch into an empty patch for later use.
   ordering.clear();
-  ordering.emplace_back(new ExpandPatch("a", {1, 2}));
-  ordering.emplace_back(new CutIndex(index, cut_values));
-  ordering.emplace_back(new MergePatches("a", "b"));
-  ordering.emplace_back(new ExpandPatch("b", {1, 3}));
+  ordering.emplace_back(ExpandPatch("a", {1, 2}));
+  ordering.emplace_back(CutIndex(index, cut_values));
+  ordering.emplace_back(MergePatches("a", "b"));
+  ordering.emplace_back(ExpandPatch("b", {1, 3}));
   EXPECT_TRUE(IsOrderingValid(ordering));
 }
 
@@ -165,15 +162,15 @@ TEST(ContractionTest, SimpleInitializeData) {
       MKLTensor({"(0,1),(1,1)", "(1,1),(2,1)", "(1,0),(1,1)"}, {4, 4, 4}, I_8);
   tensor_grid[2][1] = MKLTensor({"(2,1),(o)", "(1,1),(2,1)"}, {2, 4}, I_2x4);
 
-  ContractionOrdering ordering;
-  ordering.emplace_back(new CutIndex({{0, 1}, {1, 1}}));
-  ordering.emplace_back(new ExpandPatch("a", {0, 1}));
-  ordering.emplace_back(new ExpandPatch("a", {0, 0}));
-  ordering.emplace_back(new ExpandPatch("a", {1, 0}));
-  ordering.emplace_back(new CutIndex({{2, 1}}));
-  ordering.emplace_back(new ExpandPatch("b", {2, 1}));
-  ordering.emplace_back(new ExpandPatch("b", {1, 1}));
-  ordering.emplace_back(new MergePatches("a", "b"));
+  std::list<ContractionOperation> ordering;
+  ordering.emplace_back(CutIndex({{0, 1}, {1, 1}}));
+  ordering.emplace_back(ExpandPatch("a", {0, 1}));
+  ordering.emplace_back(ExpandPatch("a", {0, 0}));
+  ordering.emplace_back(ExpandPatch("a", {1, 0}));
+  ordering.emplace_back(CutIndex({{2, 1}}));
+  ordering.emplace_back(ExpandPatch("b", {2, 1}));
+  ordering.emplace_back(ExpandPatch("b", {1, 1}));
+  ordering.emplace_back(MergePatches("a", "b"));
 
   std::vector<std::complex<double>> amplitudes(2);
   auto data = ContractionData::Initialize(ordering, &tensor_grid, &amplitudes);
@@ -182,7 +179,7 @@ TEST(ContractionTest, SimpleInitializeData) {
   for (const auto& patch : data.scratch_list()) {
     active_patches[patch] = false;
   }
-  data.ContractGrid(copy_order(ordering), /*output_index=*/0, active_patches);
+  data.ContractGrid(ordering, /*output_index=*/0, active_patches);
   ASSERT_EQ(amplitudes.size(), 2);
   // amplitudes[0] represents <00000|U|00000>, and should return 1.
   EXPECT_FLOAT_EQ(amplitudes[0].real(), 1.0);
@@ -196,68 +193,68 @@ TEST(ContractionTest, SimpleInitializeData) {
 // ordering - specifically, the "alternative" contraction for the 7x7 grid
 // defined in this paper: https://arxiv.org/pdf/1811.09599.pdf
 TEST(ContractionTest, ExampleOrdering) {
-  ContractionOrdering ordering;
+  std::list<ContractionOperation> ordering;
   const std::vector<std::vector<int>> order_A = {
       {0, 0}, {0, 1}, {1, 0}, {1, 1}, {0, 2}, {2, 0}, {1, 2}, {2, 1}, {2, 2}};
   for (const auto& coord : order_A) {
-    ordering.emplace_back(new ExpandPatch("A", coord));
+    ordering.emplace_back(ExpandPatch("A", coord));
   }
   const std::vector<std::vector<int>> order_pB = {
       {6, 0}, {5, 0}, {4, 0}, {3, 0}, {6, 1}, {5, 1}, {4, 1}, {3, 1}};
   for (const auto& coord : order_pB) {
-    ordering.emplace_back(new ExpandPatch("pB", coord));
+    ordering.emplace_back(ExpandPatch("pB", coord));
   }
   const std::vector<std::vector<int>> order_ppD = {
       {6, 6}, {6, 5}, {5, 6}, {5, 5}, {6, 4}, {4, 6}, {5, 4}, {4, 5}, {4, 4}};
   for (const auto& coord : order_ppD) {
-    ordering.emplace_back(new ExpandPatch("ppD", coord));
+    ordering.emplace_back(ExpandPatch("ppD", coord));
   }
   const std::vector<std::vector<std::vector<int>>> cuts_1 = {{{6, 2}, {6, 3}}};
   for (const auto& cut : cuts_1) {
-    ordering.emplace_back(new CutIndex(cut));
+    ordering.emplace_back(CutIndex(cut));
   }
   // Copies tensor "pB" to "B" for reuse.
-  ordering.emplace_back(new MergePatches("pB", "B"));
+  ordering.emplace_back(MergePatches("pB", "B"));
   const std::vector<std::vector<int>> order_B = {
       {6, 2}, {5, 2}, {4, 2}, {3, 2}};
   for (const auto& coord : order_B) {
-    ordering.emplace_back(new ExpandPatch("B", coord));
+    ordering.emplace_back(ExpandPatch("B", coord));
   }
-  ordering.emplace_back(new MergePatches("A", "B"));
+  ordering.emplace_back(MergePatches("A", "B"));
   // Copies tensor "ppD" to "pD" for reuse.
-  ordering.emplace_back(new MergePatches("ppD", "pD"));
+  ordering.emplace_back(MergePatches("ppD", "pD"));
   const std::vector<std::vector<int>> order_pD = {{6, 3}, {5, 3}, {4, 3}};
   for (const auto& coord : order_pD) {
-    ordering.emplace_back(new ExpandPatch("pD", coord));
+    ordering.emplace_back(ExpandPatch("pD", coord));
   }
   const std::vector<std::vector<int>> order_pC = {{0, 6}, {1, 6}, {2, 6},
                                                   {0, 5}, {1, 5}, {2, 5}};
   for (const auto& coord : order_pC) {
-    ordering.emplace_back(new ExpandPatch("pC", coord));
+    ordering.emplace_back(ExpandPatch("pC", coord));
   }
   const std::vector<std::vector<std::vector<int>>> cuts_2 = {{{2, 6}, {3, 6}}};
   for (const auto& cut : cuts_2) {
-    ordering.emplace_back(new CutIndex(cut));
+    ordering.emplace_back(CutIndex(cut));
   }
   // Copies tensor "pD" to "D" for reuse.
-  ordering.emplace_back(new MergePatches("pD", "D"));
+  ordering.emplace_back(MergePatches("pD", "D"));
   const std::vector<std::vector<int>> order_D = {
       {3, 6}, {3, 5}, {3, 4}, {3, 3}};
   for (const auto& coord : order_D) {
-    ordering.emplace_back(new ExpandPatch("D", coord));
+    ordering.emplace_back(ExpandPatch("D", coord));
   }
-  ordering.emplace_back(new MergePatches("B", "D"));
+  ordering.emplace_back(MergePatches("B", "D"));
   const std::vector<std::vector<int>> order_C = {{0, 4}, {1, 4}, {2, 4},
                                                  {0, 3}, {1, 3}, {2, 3}};
   // These are "terminal cuts" for fast sampling over output values of C.
   for (const auto& tensor : order_C) {
-    ordering.emplace_back(new CutIndex({tensor}));
+    ordering.emplace_back(CutIndex({tensor}));
   }
-  ordering.emplace_back(new MergePatches("pC", "C"));
+  ordering.emplace_back(MergePatches("pC", "C"));
   for (const auto& coord : order_C) {
-    ordering.emplace_back(new ExpandPatch("C", coord));
+    ordering.emplace_back(ExpandPatch("C", coord));
   }
-  ordering.emplace_back(new MergePatches("D", "C"));
+  ordering.emplace_back(MergePatches("D", "C"));
 
   ASSERT_TRUE(IsOrderingValid(ordering));
 }
@@ -296,48 +293,39 @@ merge a b
 )";
 TEST(OrderingParserTest, ParseSimpleOrdering) {
   auto ordering_data = std::stringstream(kSimpleOrdering);
-  ContractionOrdering ordering;
+  std::list<ContractionOperation> ordering;
   std::vector<std::vector<int>> qubits_off = {{2, 0}};
   int I = 3;
   int J = 2;
   ASSERT_TRUE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
                                                     qubits_off, &ordering));
 
-  ContractionOrdering expected_ordering;
-  expected_ordering.emplace_back(new CutIndex({{0, 1}, {1, 1}}, {1, 2}));
-  expected_ordering.emplace_back(new ExpandPatch("a", {0, 1}));
-  expected_ordering.emplace_back(new ExpandPatch("a", {0, 0}));
-  expected_ordering.emplace_back(new ExpandPatch("a", {1, 0}));
-  expected_ordering.emplace_back(new CutIndex({{2, 1}}));
-  expected_ordering.emplace_back(new ExpandPatch("b", {2, 1}));
-  expected_ordering.emplace_back(new ExpandPatch("b", {1, 1}));
-  expected_ordering.emplace_back(new MergePatches("a", "b"));
+  std::list<ContractionOperation> expected_ordering;
+  expected_ordering.emplace_back(CutIndex({{0, 1}, {1, 1}}, {1, 2}));
+  expected_ordering.emplace_back(ExpandPatch("a", {0, 1}));
+  expected_ordering.emplace_back(ExpandPatch("a", {0, 0}));
+  expected_ordering.emplace_back(ExpandPatch("a", {1, 0}));
+  expected_ordering.emplace_back(CutIndex({{2, 1}}));
+  expected_ordering.emplace_back(ExpandPatch("b", {2, 1}));
+  expected_ordering.emplace_back(ExpandPatch("b", {1, 1}));
+  expected_ordering.emplace_back(MergePatches("a", "b"));
 
   int op_count = expected_ordering.size();
   ASSERT_EQ(ordering.size(), op_count);
   for (int i = 0; i < op_count; ++i) {
-    const auto* op = ordering.front().get();
-    const auto* expected_op = expected_ordering.front().get();
-    ASSERT_EQ(op->op_type, expected_op->op_type);
-    if (op->op_type == ContractionOperation::EXPAND) {
-      const auto* expand = dynamic_cast<const ExpandPatch*>(op);
-      const auto* expected_expand =
-          dynamic_cast<const ExpandPatch*>(expected_op);
-      EXPECT_EQ(expand->id, expected_expand->id);
-      EXPECT_EQ(expand->tensor, expected_expand->tensor);
+    const auto op = ordering.front();
+    const auto expected_op = expected_ordering.front();
+    ASSERT_EQ(op.op_type, expected_op.op_type);
+    if (op.op_type == ContractionOperation::EXPAND) {
+      EXPECT_EQ(op.expand.tensor, expected_op.expand.tensor);
 
-    } else if (op->op_type == ContractionOperation::CUT) {
-      const auto* cut = dynamic_cast<const CutIndex*>(op);
-      const auto* expected_cut = dynamic_cast<const CutIndex*>(expected_op);
-      EXPECT_EQ(cut->tensors, expected_cut->tensors);
-      EXPECT_EQ(cut->values, expected_cut->values);
+    } else if (op.op_type == ContractionOperation::CUT) {
+      EXPECT_EQ(op.cut.tensors, expected_op.cut.tensors);
+      EXPECT_EQ(op.cut.values, expected_op.cut.values);
 
-    } else if (op->op_type == ContractionOperation::MERGE) {
-      const auto* merge = dynamic_cast<const MergePatches*>(op);
-      const auto* expected_merge =
-          dynamic_cast<const MergePatches*>(expected_op);
-      EXPECT_EQ(merge->source_id, expected_merge->source_id);
-      EXPECT_EQ(merge->target_id, expected_merge->target_id);
+    } else if (op.op_type == ContractionOperation::MERGE) {
+      EXPECT_EQ(op.merge.source_id, expected_op.merge.source_id);
+      EXPECT_EQ(op.merge.target_id, expected_op.merge.target_id);
     }
     ordering.pop_front();
     expected_ordering.pop_front();
@@ -345,7 +333,7 @@ TEST(OrderingParserTest, ParseSimpleOrdering) {
 }
 
 TEST(OrderingParserTest, ParserFailures) {
-  ContractionOrdering ordering;
+  std::list<ContractionOperation> ordering;
   std::vector<std::vector<int>> qubits_off = {{2, 0}};
   std::stringstream ordering_data;
   int I = 3;
