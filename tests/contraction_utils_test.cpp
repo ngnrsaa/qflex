@@ -317,8 +317,8 @@ TEST(OrderingParserTest, ParseSimpleOrdering) {
     const auto expected_op = expected_ordering.front();
     ASSERT_EQ(op.op_type, expected_op.op_type);
     if (op.op_type == ContractionOperation::EXPAND) {
+      EXPECT_EQ(op.expand.id, expected_op.expand.id);
       EXPECT_EQ(op.expand.tensor, expected_op.expand.tensor);
-
     } else if (op.op_type == ContractionOperation::CUT) {
       EXPECT_EQ(op.cut.tensors, expected_op.cut.tensors);
       EXPECT_EQ(op.cut.values, expected_op.cut.values);
