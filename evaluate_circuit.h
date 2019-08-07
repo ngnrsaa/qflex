@@ -45,13 +45,13 @@ std::vector<std::vector<int>> read_grid_layout_from_stream(
 
 /**
  * Determines the final qubit positions and output states for a given ordering.
- * @param ordering ContractionOrdering to parse output states from
+ * @param ordering std::list<ContractionOperation> to parse output states from
  * @param final_qubits vector of coordinates for qubits with terminal cuts, to
  * be populated by this method.
  * @param output_states vector of output states for the given contraction
  * ordering, to be populated by this method.
  */
-void get_output_states(const ContractionOrdering& ordering,
+void get_output_states(const std::list<ContractionOperation>& ordering,
                        std::vector<std::vector<int>>* final_qubits,
                        std::vector<std::string>* output_states);
 

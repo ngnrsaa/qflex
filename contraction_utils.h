@@ -46,30 +46,20 @@ bool find_grid_coord_in_list(
     const std::optional<std::vector<std::vector<int>>>& coord_list, const int i,
     const int j);
 
-struct ContractionOperation {
- public:
-  enum OpType { EXPAND, CUT, MERGE };
-  OpType op_type;
-  virtual ~ContractionOperation() {}
-
- protected:
-  ContractionOperation(OpType op_type) : op_type(op_type) {}
-};
-
-struct ExpandPatch : public ContractionOperation {
+struct ExpandPatch {
+  ExpandPatch() {}
   ExpandPatch(std::string id, std::vector<int> tensor)
-      : ContractionOperation(EXPAND), id(id), tensor(tensor) {}
-  ~ExpandPatch() override {}
+      : id(id), tensor(tensor) {}
   // ID of the patch expanded by this operation.
   std::string id;
   // Tensor to contract into the patch.
   std::vector<int> tensor;
 };
 
-struct CutIndex : public ContractionOperation {
+struct CutIndex {
+  CutIndex() {}
   CutIndex(std::vector<std::vector<int>> tensors, std::vector<int> values = {})
-      : ContractionOperation(CUT), tensors(tensors), values(values) {}
-  ~CutIndex() override {}
+      : tensors(tensors), values(values) {}
   // Tensors connected by the cut index. If only one tensor is provided, this
   // represents a 'terminal' cut - i.e., a choice of output value for a qubit.
   std::vector<std::vector<int>> tensors;
@@ -78,21 +68,29 @@ struct CutIndex : public ContractionOperation {
   std::vector<int> values;
 };
 
-struct MergePatches : public ContractionOperation {
+struct MergePatches {
+  MergePatches() {}
   MergePatches(std::string source_id, std::string target_id)
-      : ContractionOperation(MERGE),
-        source_id(source_id),
-        target_id(target_id) {}
-  ~MergePatches() override {}
+      : source_id(source_id), target_id(target_id) {}
   // IDs of the patches being merged. The resulting patch will use target_id.
   std::string source_id;
   std::string target_id;
 };
 
-using ContractionOrdering = std::list<std::unique_ptr<ContractionOperation>>;
+struct ContractionOperation {
+ public:
+  ContractionOperation(ExpandPatch expand) : op_type(EXPAND), expand(expand) {}
+  ContractionOperation(CutIndex cut) : op_type(CUT), cut(cut) {}
+  ContractionOperation(MergePatches merge) : op_type(MERGE), merge(merge) {}
 
-// Copies a ContractionOrdering for reuse.
-ContractionOrdering copy_order(const ContractionOrdering& ordering);
+  enum OpType { EXPAND, CUT, MERGE };
+  OpType op_type;
+
+  // Only one of these should be populated, matching op_type.
+  const ExpandPatch expand;
+  const CutIndex cut;
+  const MergePatches merge;
+};
 
 /**
  * Parses a grid contraction ordering from the given stream.
@@ -100,13 +98,13 @@ ContractionOrdering copy_order(const ContractionOrdering& ordering);
  * @param I int with the first spatial dimension of the grid of qubits.
  * @param J int with the second spatial dimension of the grid of qubits.
  * @param off vector<vector<int>> with the coords. of the qubits turned off.
- * @param ordering pointer to ContractionOrdering output object.
+ * @param ordering pointer to std::list<ContractionOperation> output object.
  * @return false if parsing failed at any point, true otherwise.
  **/
 bool ordering_data_to_contraction_ordering(
     std::istream* ordering_data, const int I, const int J,
     const std::optional<std::vector<std::vector<int>>>& off,
-    ContractionOrdering* ordering);
+    std::list<ContractionOperation>* ordering);
 
 // Helper class for the external ContractGrid method. This should not be
 // initialized by external users.
@@ -115,13 +113,14 @@ class ContractionData {
   /**
    * Generates a ContractionData object from a contraction ordering, and logs
    * total memory allocated for the contraction.
-   * @param ordering ContractionOrdering listing operations to perform.
+   * @param ordering std::list<ContractionOperation> listing operations to
+   * perform.
    * @param tensor_grid 2D vector<MKLTensor> holding the tensor grid. Consumes
    * output from grid_of_tensors_3D_to_2D.
    * @param amplitudes vector of amplitudes for each final output requested.
    */
   static ContractionData Initialize(
-      const ContractionOrdering& ordering,
+      const std::list<ContractionOperation>& ordering,
       std::vector<std::vector<MKLTensor>>* tensor_grid,
       std::vector<std::complex<double>>* amplitudes);
 
@@ -132,11 +131,12 @@ class ContractionData {
   /**
    * Recursive helper for the external ContractGrid method below. This method
    * calls itself recursively on each "cut" operation.
-   * @param ordering ContractionOrdering listing operations to perform.
+   * @param ordering std::list<ContractionOperation> listing operations to
+   * perform.
    * @param output_index int marking which amplitude will be updated next.
    * @param active_patches list of patches already created in scratch space.
    */
-  void ContractGrid(ContractionOrdering ordering, int output_index,
+  void ContractGrid(std::list<ContractionOperation> ordering, int output_index,
                     std::unordered_map<std::string, bool> active_patches);
 
   MKLTensor& get_scratch(std::string id) { return scratch_[scratch_map_[id]]; }
@@ -199,10 +199,11 @@ class ContractionData {
  *   - Each tensor can only be in one ExpandPatch.
  *   - Each index can only be in one CutIndex.
  *   - Each patch can only be the source in one MergePatches.
- * @param ordering ContractionOrdering listing operations to perform.
+ * @param ordering std::list<ContractionOperation> listing operations to
+ * perform.
  * @return true is the ordering is valid, false otherwise.
  */
-bool IsOrderingValid(const ContractionOrdering& ordering);
+bool IsOrderingValid(const std::list<ContractionOperation>& ordering);
 
 /**
  * Performs contraction operations specified by 'ordering' on tensor_grid.
@@ -210,12 +211,13 @@ bool IsOrderingValid(const ContractionOrdering& ordering);
  * This method will allocate (data_size)*(# of patches + 2) units of memory
  * for performing the grid contraction. A small amout of additional space is
  * allocated during cuts to preserve tensor_grid values.
- * @param ordering ContractionOrdering listing operations to perform.
+ * @param ordering std::list<ContractionOperation> listing operations to
+ * perform.
  * @param tensor_grid 2D vector<MKLTensor> holding the tensor grid. Consumes
  * output from grid_of_tensors_3D_to_2D.
  * @param amplitudes vector of amplitudes for each final output requested.
  */
-void ContractGrid(const ContractionOrdering& ordering,
+void ContractGrid(const std::list<ContractionOperation>& ordering,
                   std::vector<std::vector<MKLTensor>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes);
 

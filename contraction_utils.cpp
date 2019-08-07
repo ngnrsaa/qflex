@@ -13,7 +13,7 @@ namespace qflex {
 // ContractionData methods
 
 ContractionData ContractionData::Initialize(
-    const ContractionOrdering& ordering,
+    const std::list<ContractionOperation>& ordering,
     std::vector<std::vector<MKLTensor>>* tensor_grid,
     std::vector<std::complex<double>>* amplitudes) {
   ContractionData data;
@@ -43,27 +43,26 @@ ContractionData ContractionData::Initialize(
   std::unordered_map<std::string, int> cut_copy_rank;
 
   for (const auto& op : ordering) {
-    switch (op->op_type) {
+    switch (op.op_type) {
       case ContractionOperation::EXPAND: {
-        const auto* expand = dynamic_cast<const ExpandPatch*>(op.get());
-        const auto& indices_a = patch_indices[expand->id];
+        const auto& indices_a = patch_indices[op.expand.id];
         const auto& indices_b =
-            grid_indices[expand->tensor[0]][expand->tensor[1]];
-        patch_indices[expand->id] =
+            grid_indices[op.expand.tensor[0]][op.expand.tensor[1]];
+        patch_indices[op.expand.id] =
             _vector_subtraction(_vector_union(indices_a, indices_b),
                                 _vector_intersection(indices_a, indices_b));
-        if (data.patch_rank_[expand->id] < patch_indices[expand->id].size()) {
-          data.patch_rank_[expand->id] = patch_indices[expand->id].size();
+        if (data.patch_rank_[op.expand.id] <
+            patch_indices[op.expand.id].size()) {
+          data.patch_rank_[op.expand.id] = patch_indices[op.expand.id].size();
         }
         break;
       }
       case ContractionOperation::CUT: {
-        const auto* cut = dynamic_cast<const CutIndex*>(op.get());
-        const std::string cut_index = index_name(cut->tensors);
+        const std::string cut_index = index_name(op.cut.tensors);
         int side = 0;
-        for (auto& tensor : cut->tensors) {
+        for (auto& tensor : op.cut.tensors) {
           auto& indices = grid_indices[tensor[0]][tensor[1]];
-          const std::string copy_name = cut_copy_name(cut->tensors, side);
+          const std::string copy_name = cut_copy_name(op.cut.tensors, side);
           cut_copy_rank[copy_name] = indices.size();
           ++side;
           indices = _vector_subtraction(indices, {cut_index});
@@ -71,16 +70,15 @@ ContractionData ContractionData::Initialize(
         break;
       }
       case ContractionOperation::MERGE: {
-        const auto* merge = dynamic_cast<const MergePatches*>(op.get());
-        const auto& indices_a = patch_indices[merge->target_id];
-        const auto& indices_b = patch_indices[merge->source_id];
-        patch_indices[merge->target_id] =
+        const auto& indices_a = patch_indices[op.merge.target_id];
+        const auto& indices_b = patch_indices[op.merge.source_id];
+        patch_indices[op.merge.target_id] =
             _vector_subtraction(_vector_union(indices_a, indices_b),
                                 _vector_intersection(indices_a, indices_b));
-        if (data.patch_rank_[merge->target_id] <
-            patch_indices[merge->target_id].size()) {
-          data.patch_rank_[merge->target_id] =
-              patch_indices[merge->target_id].size();
+        if (data.patch_rank_[op.merge.target_id] <
+            patch_indices[op.merge.target_id].size()) {
+          data.patch_rank_[op.merge.target_id] =
+              patch_indices[op.merge.target_id].size();
         }
         break;
       }
@@ -144,63 +142,62 @@ ContractionData ContractionData::Initialize(
 }
 
 void ContractionData::ContractGrid(
-    ContractionOrdering ordering, int output_index,
+    std::list<ContractionOperation> ordering, int output_index,
     std::unordered_map<std::string, bool> active_patches) {
   MKLTensor* output;
   while (!ordering.empty()) {
-    std::unique_ptr<ContractionOperation> op = std::move(ordering.front());
+    const ContractionOperation op = ordering.front();
     ordering.pop_front();
-    switch (op->op_type) {
+    switch (op.op_type) {
       case ContractionOperation::EXPAND: {
-        const auto* expand = dynamic_cast<const ExpandPatch*>(op.get());
         // Multiply by the new tensor and store result in scratch.
-        MKLTensor& next = (*tensor_grid_)[expand->tensor[0]][expand->tensor[1]];
-        if (!active_patches[expand->id]) {
+        MKLTensor& next =
+            (*tensor_grid_)[op.expand.tensor[0]][op.expand.tensor[1]];
+        if (!active_patches[op.expand.id]) {
           // First tensor in patch.
-          get_scratch(expand->id) = next;
-          active_patches[expand->id] = true;
+          get_scratch(op.expand.id) = next;
+          active_patches[op.expand.id] = true;
           continue;
         }
-        MKLTensor& prev = get_scratch(expand->id);
-        std::string result_id = result_space(patch_rank_[expand->id]);
+        MKLTensor& prev = get_scratch(op.expand.id);
+        std::string result_id = result_space(patch_rank_[op.expand.id]);
         MKLTensor& result = get_scratch(result_id);
         multiply(prev, next, result, get_scratch(kGeneralSpace).data());
         if (ordering.empty()) {
           output = &result;
           continue;
         }
-        int temp = scratch_map_[expand->id];
-        scratch_map_[expand->id] = scratch_map_[result_id];
+        int temp = scratch_map_[op.expand.id];
+        scratch_map_[op.expand.id] = scratch_map_[result_id];
         scratch_map_[result_id] = temp;
         continue;
       }
       case ContractionOperation::CUT: {
-        const auto* cut = dynamic_cast<const CutIndex*>(op.get());
-        const std::string index = index_name(cut->tensors);
+        const std::string index = index_name(op.cut.tensors);
         MKLTensor& tensor_a =
-            (*tensor_grid_)[cut->tensors[0][0]][cut->tensors[0][1]];
+            (*tensor_grid_)[op.cut.tensors[0][0]][op.cut.tensors[0][1]];
         MKLTensor& copy_a =
-            get_scratch(cut_copy_name(cut->tensors, /*side = */ 0));
+            get_scratch(cut_copy_name(op.cut.tensors, /*side = */ 0));
         copy_a = tensor_a;
         // List of values to evaluate on the cut.
-        std::vector<int> values = cut->values;
+        std::vector<int> values = op.cut.values;
         if (values.empty()) {
           int num_values = tensor_a.get_index_to_dimension().at(index);
           for (int i = 0; i < num_values; ++i) {
             values.push_back(i);
           }
         }
-        if (cut->tensors.size() > 1) {
+        if (op.cut.tensors.size() > 1) {
           // This is a normal cut; each value adds to the same amplitude.
           MKLTensor& tensor_b =
-              (*tensor_grid_)[cut->tensors[1][0]][cut->tensors[1][1]];
+              (*tensor_grid_)[op.cut.tensors[1][0]][op.cut.tensors[1][1]];
           MKLTensor& copy_b =
-              get_scratch(cut_copy_name(cut->tensors, /*side = */ 1));
+              get_scratch(cut_copy_name(op.cut.tensors, /*side = */ 1));
           copy_b = tensor_b;
           for (int val : values) {
             copy_a.project(index, val, tensor_a);
             copy_b.project(index, val, tensor_b);
-            ContractGrid(copy_order(ordering), output_index, active_patches);
+            ContractGrid(ordering, output_index, active_patches);
           }
           tensor_a = copy_a;
           tensor_b = copy_b;
@@ -209,7 +206,7 @@ void ContractionData::ContractGrid(
           output_index *= values.size();
           for (int val : values) {
             copy_a.project(index, val, tensor_a);
-            ContractGrid(copy_order(ordering), output_index, active_patches);
+            ContractGrid(ordering, output_index, active_patches);
             output_index++;
           }
           tensor_a = copy_a;
@@ -217,25 +214,24 @@ void ContractionData::ContractGrid(
         return;  // Post-cut contraction is handled recursively.
       }
       case ContractionOperation::MERGE: {
-        const auto* merge = dynamic_cast<const MergePatches*>(op.get());
         // Multiply two existing tensors and store result in scratch.
-        MKLTensor& patch_1 = get_scratch(merge->source_id);
-        MKLTensor& patch_2 = get_scratch(merge->target_id);
-        if (!active_patches[merge->target_id]) {
+        MKLTensor& patch_1 = get_scratch(op.merge.source_id);
+        MKLTensor& patch_2 = get_scratch(op.merge.target_id);
+        if (!active_patches[op.merge.target_id]) {
           // Copy the old patch into the new space.
           patch_2 = patch_1;
-          active_patches[merge->target_id] = true;
+          active_patches[op.merge.target_id] = true;
           continue;
         }
-        std::string result_id = result_space(patch_rank_[merge->target_id]);
+        std::string result_id = result_space(patch_rank_[op.merge.target_id]);
         MKLTensor& result = get_scratch(result_id);
         multiply(patch_1, patch_2, result, get_scratch(kGeneralSpace).data());
         if (ordering.empty()) {
           output = &result;
           continue;
         }
-        int temp = scratch_map_[merge->target_id];
-        scratch_map_[merge->target_id] = scratch_map_[result_id];
+        int temp = scratch_map_[op.merge.target_id];
+        scratch_map_[op.merge.target_id] = scratch_map_[result_id];
         scratch_map_[result_id] = temp;
         continue;
       }
@@ -255,7 +251,7 @@ void ContractionData::ContractGrid(
 bool ordering_data_to_contraction_ordering(
     std::istream* ordering_data, const int I, const int J,
     const std::optional<std::vector<std::vector<int>>>& off,
-    ContractionOrdering* ordering) {
+    std::list<ContractionOperation>* ordering) {
   static const std::regex cut_value_regex("\\([0-9,]*\\)");
   std::string line;
   std::string error_msg;
@@ -284,7 +280,7 @@ bool ordering_data_to_contraction_ordering(
         error_msg = "Index must specify an active qubit.";
         break;
       }
-      ordering->emplace_back(new ExpandPatch(patch, position));
+      ordering->emplace_back(ExpandPatch(patch, position));
     } else if (operation == "cut") {
       std::vector<int> values;
       std::string values_str;
@@ -322,7 +318,7 @@ bool ordering_data_to_contraction_ordering(
         break;
       }
       if (ss.eof()) {
-        ordering->emplace_back(new CutIndex({position_1}, values));
+        ordering->emplace_back(CutIndex({position_1}, values));
       } else {
         ss >> index_2;
         if (index_2 < 0) {
@@ -338,13 +334,13 @@ bool ordering_data_to_contraction_ordering(
           error_msg = "Index 2 must specify an active qubit.";
           break;
         }
-        ordering->emplace_back(new CutIndex({position_1, position_2}, values));
+        ordering->emplace_back(CutIndex({position_1, position_2}, values));
       }
     } else if (operation == "merge") {
       std::string patch_1, patch_2;
       ss >> patch_1;
       ss >> patch_2;
-      ordering->emplace_back(new MergePatches(patch_1, patch_2));
+      ordering->emplace_back(MergePatches(patch_1, patch_2));
     } else {
       error_msg = "Received an invalid operation in config.";
       break;
@@ -405,31 +401,7 @@ bool find_grid_coord_in_list(
               std::vector<int>({i, j})) != coord_list.value().end();
 }
 
-ContractionOrdering copy_order(const ContractionOrdering& ordering) {
-  ContractionOrdering new_order;
-  for (const auto& op : ordering) {
-    switch (op->op_type) {
-      case ContractionOperation::EXPAND: {
-        const auto* expand = dynamic_cast<const ExpandPatch*>(op.get());
-        new_order.emplace_back(new ExpandPatch(*expand));
-        break;
-      }
-      case ContractionOperation::CUT: {
-        const auto* cut = dynamic_cast<const CutIndex*>(op.get());
-        new_order.emplace_back(new CutIndex(*cut));
-        break;
-      }
-      case ContractionOperation::MERGE: {
-        const auto* merge = dynamic_cast<const MergePatches*>(op.get());
-        new_order.emplace_back(new MergePatches(*merge));
-        break;
-      }
-    }
-  }
-  return new_order;
-}
-
-bool IsOrderingValid(const ContractionOrdering& ordering) {
+bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
   struct PatchState {
     // This patch has expanded, but no cuts have happened since then.
     bool is_active = false;
@@ -452,41 +424,39 @@ bool IsOrderingValid(const ContractionOrdering& ordering) {
                    "Too many errors to log!\n");
       break;
     }
-    switch (op->op_type) {
+    switch (op.op_type) {
       case ContractionOperation::EXPAND: {
-        const auto* expand = dynamic_cast<const ExpandPatch*>(op.get());
-        if (patches[expand->id].is_used) {
+        if (patches[op.expand.id].is_used) {
           next_error += snprintf(
               error_msg + next_error, error_space - next_error,
               "Tensor at (%d,%d) is added to non-empty patch %s after a cut.\n",
-              expand->tensor[0], expand->tensor[1], expand->id.c_str());
+              op.expand.tensor[0], op.expand.tensor[1], op.expand.id.c_str());
         }
-        if (patches[expand->id].is_merged) {
+        if (patches[op.expand.id].is_merged) {
           next_error += snprintf(
               error_msg + next_error, error_space - next_error,
               "Tensor at (%d,%d) is added to previously-merged patch %s.\n",
-              expand->tensor[0], expand->tensor[1], expand->id.c_str());
+              op.expand.tensor[0], op.expand.tensor[1], op.expand.id.c_str());
         }
         char tensor_name[20];
-        snprintf(tensor_name, sizeof(tensor_name), "(%d,%d)", expand->tensor[0],
-                 expand->tensor[1]);
+        snprintf(tensor_name, sizeof(tensor_name), "(%d,%d)",
+                 op.expand.tensor[0], op.expand.tensor[1]);
         if (used_tensors.find(tensor_name) != used_tensors.end()) {
           next_error += snprintf(
               error_msg + next_error, error_space - next_error,
               "Tensor %s is contracted multiple times.\n", tensor_name);
         }
         used_tensors.insert(tensor_name);
-        patches[expand->id].is_active = true;
+        patches[op.expand.id].is_active = true;
         continue;
       }
       case ContractionOperation::CUT: {
-        const auto* cut = dynamic_cast<const CutIndex*>(op.get());
         for (auto& patch_pair : patches) {
           if (patch_pair.second.is_active) {
             patch_pair.second.is_used = true;
           }
         }
-        const std::string index = index_name(cut->tensors);
+        const std::string index = index_name(op.cut.tensors);
         if (cut_indices.find(index) != cut_indices.end()) {
           next_error +=
               snprintf(error_msg + next_error, error_space - next_error,
@@ -496,20 +466,20 @@ bool IsOrderingValid(const ContractionOrdering& ordering) {
         continue;
       }
       case ContractionOperation::MERGE: {
-        const auto* merge = dynamic_cast<const MergePatches*>(op.get());
-        if (patches[merge->source_id].is_merged) {
-          next_error += snprintf(
-              error_msg + next_error, error_space - next_error,
-              "Patch %s is merged multiple times.\n", merge->source_id.c_str());
+        if (patches[op.merge.source_id].is_merged) {
+          next_error +=
+              snprintf(error_msg + next_error, error_space - next_error,
+                       "Patch %s is merged multiple times.\n",
+                       op.merge.source_id.c_str());
         }
-        if (patches[merge->target_id].is_used) {
+        if (patches[op.merge.target_id].is_used) {
           next_error += snprintf(
               error_msg + next_error, error_space - next_error,
               "Patch %s is merged into non-empty patch %s after a cut.\n",
-              merge->source_id.c_str(), merge->target_id.c_str());
+              op.merge.source_id.c_str(), op.merge.target_id.c_str());
         }
-        patches[merge->source_id].is_merged = true;
-        patches[merge->target_id].is_active = true;
+        patches[op.merge.source_id].is_merged = true;
+        patches[op.merge.target_id].is_active = true;
         continue;
       }
     }
@@ -521,7 +491,7 @@ bool IsOrderingValid(const ContractionOrdering& ordering) {
   return false;
 }
 
-void ContractGrid(const ContractionOrdering& ordering,
+void ContractGrid(const std::list<ContractionOperation>& ordering,
                   std::vector<std::vector<MKLTensor>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes) {
   assert(amplitudes != nullptr && "Amplitude return vector must be non-null.");
@@ -534,8 +504,7 @@ void ContractGrid(const ContractionOrdering& ordering,
   for (const auto& patch : data.scratch_list()) {
     active_patches[patch] = false;
   }
-  data.ContractGrid(copy_order(ordering), /*output_index = */ 0,
-                    active_patches);
+  data.ContractGrid(ordering, /*output_index = */ 0, active_patches);
 }
 
 }  // namespace qflex

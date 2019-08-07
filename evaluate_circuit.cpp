@@ -28,20 +28,19 @@ std::vector<std::vector<int>> read_grid_layout_from_stream(
   return qubits_off;
 }
 
-void get_output_states(const ContractionOrdering& ordering,
+void get_output_states(const std::list<ContractionOperation>& ordering,
                        std::vector<std::vector<int>>* final_qubits,
                        std::vector<std::string>* output_states) {
   output_states->push_back("");
   std::vector<std::string> temp_output_states;
   for (const auto& op : ordering) {
-    if (op->op_type != ContractionOperation::CUT) continue;
-    const auto* cut = dynamic_cast<const CutIndex*>(op.get());
+    if (op.op_type != ContractionOperation::CUT) continue;
     // Any qubit with a terminal cut is in the final region.
     // TODO(martinop): update to use the new operation.
-    if (cut->tensors.size() == 1) {
-      final_qubits->push_back(cut->tensors[0]);
+    if (op.cut.tensors.size() == 1) {
+      final_qubits->push_back(op.cut.tensors[0]);
       for (const auto& state : *output_states) {
-        std::vector<int> values = cut->values;
+        std::vector<int> values = op.cut.values;
         if (values.empty()) values = {0, 1};
         for (const int value : values) {
           temp_output_states.push_back(state + std::to_string(value));
@@ -71,7 +70,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
   // Create the ordering for this tensor contraction from file.
   t0 = std::chrono::high_resolution_clock::now();
-  ContractionOrdering ordering;
+  std::list<ContractionOperation> ordering;
   ordering_data_to_contraction_ordering(input->ordering_data, input->I,
                                         input->J, qubits_off, &ordering);
   t1 = std::chrono::high_resolution_clock::now();
