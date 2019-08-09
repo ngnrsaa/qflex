@@ -44,7 +44,7 @@ These are defined as follows:
 - 'y_1_2': Y^1/2 gate
 
 {opcode_with_args} the name of an operator that takes arguments, followed by a comma-separated list (no spaces) of arguments in parentheses.
-These are defined as follows (currently unsupported):
+These are defined as follows:
 
 - 'rz(theta)': Z-rotation by theta radians
 - 'fsim(theta,phi)': fermionic simulation gate
