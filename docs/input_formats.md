@@ -1,9 +1,9 @@
 # Input File Formatting
 
 For each circuit simulated on qFlex, three input files are required:
-1. A "circuit" file, detailing the operations to perform at each timestep.
-1. An "ordering" file, indicating the order in which tensors should be combined.
-1. A "grid" file, representing the positions of active qubits in a 2D lattice.
+1. A circuit file detailing the operations to perform at each timestep.
+1. An ordering file indicating the order in which tensors should be combined.
+1. A grid file representing the positions of active qubits in a 2D lattice.
 
 The purpose of this document is to outline the proper formatting of these files.
 
@@ -12,7 +12,7 @@ The purpose of this document is to outline the proper formatting of these files.
 Circuit files express a series of quantum gates for qFlex to simulate. In these
 files, each gate is represented by a __cycle__ (the timestep in which the gate
 is performed), an __opcode__ (the type of gate to perform), and a list of
-indices denoting which qubits the gate affects.
+__indices__ denoting which qubits the gate affects.
 
 Sample circuit files can be found under [qflex/circuits](/circuits).
 
@@ -23,7 +23,7 @@ file:      gates
 gates:     gate {newline} gates | gate
 gate:      cycle operator qubits | {comment}
 cycle:     {index}
-operator:  {op_no_args} | {op_with_args}
+operator:  {opcode_no_args} | {opcode_with_args}
 qubits:    qubit qubits | qubit
 qubit:     {index}
 ```
@@ -43,8 +43,7 @@ These are defined as follows:
 - 'x_1_2': X^1/2 gate
 - 'y_1_2': Y^1/2 gate
 
-{opcode_with_args} the name of an operator that takes arguments, followed by a
-comma-separated list of arguments in parentheses.
+{opcode_with_args} the name of an operator that takes arguments, followed by a comma-separated list (no spaces) of arguments in parentheses.
 These are defined as follows (currently unsupported):
 
 - 'rz(theta)': Z-rotation by theta radians
@@ -57,11 +56,12 @@ These are defined as follows (currently unsupported):
 ## Ordering files
 
 Circuit-ordering files allow fine-tuned optimization of how qFlex simulates a
-given circuit. As defined in [TODO: link to paper], every simulation begins with
-contraction of all qubit worldlines to a 2D grid; the steps taken after that
-are defined in this file. Each simulation step has an __operation__ (either a
-patch-expansion, a patch-merge, or a cut) and some combination of indices or
-patch names to which the operation applies.
+given circuit. As defined in
+[the original paper](https://arxiv.org/abs/1905.00444), every simulation begins
+with contraction of all qubit worldlines to a 2D grid; the steps taken after
+that are defined in this file. Each simulation step has an __operation__
+(either a patch-expansion, a patch-merge, or a cut) and some combination of
+__indices__ or __patch names__ to which the operation applies.
 
 Sample ordering files can be found under [qflex/ordering](/ordering).
 
@@ -86,7 +86,7 @@ cut:           {cut} {values} {index} | {cut} {values} {index} {index}
 {cut}: the string "cut".
 {patch_name}: any text string representing a tensor-contraction patch; e.g. "pB".
 {index}: any integer value, i.e. \[0-9\]+
-{values}: a comma-separated list of integer values in parentheses. Can be empty.
+{values}: a comma-separated list (no spaces) of integer values in parentheses. Can be empty.
 ```
 
 ## Grid files
@@ -108,8 +108,7 @@ qubit:   {zero} | {one}
 ### Terminal symbol definitions
 
 ```
-{whitespace}: any number of consecutive whitespace characters
-              (tab, space, or newline)
-{zero}: the integer 0.
-{one}: the integer 1.
+{whitespace}: any number of consecutive whitespace characters (tab, space, or newline).
+{zero}: the integer, 0.
+{one}: the integer, 1.
 ```
