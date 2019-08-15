@@ -42,6 +42,20 @@ TEST(ContractionDeathTest, IndexNamingFailures) {
   EXPECT_DEATH(index_name(index), "");
 }
 
+TEST(ContractionTest, ContractGrid) {
+  // Tests that ContractGrid fails on a null amplitude
+  std::list<ContractionOperation> ordering;
+  std::vector<std::vector<MKLTensor>> tensor_grid;
+  EXPECT_DEATH(ContractGrid(ordering, &tensor_grid, nullptr), "");
+
+  // Tests that ContractGrid fails on an invalid ordering
+  std::vector<std::complex<double>> amplitudes;
+  ordering.emplace_back(ExpandPatch("a", {1, 2}));
+  ordering.emplace_back(ExpandPatch("a", {1, 2}));
+  // Create invalid ordering before cling ContractGrid
+  EXPECT_DEATH(ContractGrid(ordering, &tensor_grid, &amplitudes), "");
+}
+
 TEST(ContractionTest, OperationHandling) {
   std::list<ContractionOperation> ordering;
   std::vector<std::vector<int>> index = {{1, 2}, {3, 4}};

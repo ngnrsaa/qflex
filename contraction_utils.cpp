@@ -237,7 +237,7 @@ void ContractionData::ContractGrid(
       }
     }
   }
-  // Not tested
+  // Test for an output of size larger than 1
   if (output->size() != 1) {
     std::cout << "Contraction did not complete; final tensor is ";
     output->print();
@@ -498,13 +498,10 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
 void ContractGrid(const std::list<ContractionOperation>& ordering,
                   std::vector<std::vector<MKLTensor>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes) {
-  // Not tested
   if (amplitudes == nullptr) {
     std::cout << "Amplitude return vector must be non-null." << std::endl;
     assert(amplitudes != nullptr);
   }
-
-  // Not tested
   if (IsOrderingValid(ordering) == false) {
     std::cout << "Ordering must be valid." << std::endl;
     assert(IsOrderingValid(ordering));

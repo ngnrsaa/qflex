@@ -17,7 +17,9 @@ GMOCK_DIR = $(ROOT_DIR)/googletest/googlemock
 
 TESTFLAGS = -I$(GTEST_DIR)/include -L$(GTEST_DIR) -I$(GMOCK_DIR)/include -L$(GMOCK_DIR)
 
-all: evaluate_circuit_test read_circuit_test contraction_utils_test mkl_tensor_test
+ all: contraction_utils_test
+
+# all: evaluate_circuit_test read_circuit_test contraction_utils_test mkl_tensor_test
 
 evaluate_circuit:
 	$(MAKE) -C $(ROOT_DIR) evaluate_circuit.o
