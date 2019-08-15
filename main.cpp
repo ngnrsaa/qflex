@@ -17,6 +17,7 @@ int main(int argc, char** argv) {
   input.J = atoi(argv[current_arg++]);
   input.K = atoi(argv[current_arg++]);
   input.fidelity = atof(argv[current_arg++]);
+
   // Creating streams for input files.
   auto circuit_data = std::ifstream(std::string(argv[current_arg++]));
   assert(circuit_data.good() && "Cannot open circuit data file.");
@@ -27,6 +28,7 @@ int main(int argc, char** argv) {
   auto grid_data = std::ifstream(std::string(argv[current_arg++]));
   assert(grid_data.good() && "Cannot open grid data file.");
   input.grid_data = &grid_data;
+  
   // Setting initial and final circuit states.
   if (argc > current_arg) {
     input.initial_state = std::string(argv[current_arg++]);
