@@ -237,7 +237,7 @@ void ContractionData::ContractGrid(
       }
     }
   }
-  // Not sure how to test this, or is it already taken care of by ContrationTest, SimpleInitializeData
+  // Not tested
   if (output->size() != 1) {
     std::cout << "Contraction did not complete; final tensor is ";
     output->print();
@@ -374,10 +374,8 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
     int len = snprintf(buffer, sizeof(buffer), "(%d,%d),(o)", p1[0], p1[1]);
     return std::string(buffer, len);
   }
-  // Already tested by ContractionTest, IndexNaming, if we get to this point, we know that
-  // we failed to construct a tensor name
-  std::cout << "Failed to construct tensor name with the following vectors: v1 = {" << p1
-            << "}, v2: {" << p2 << "}." << std::endl;
+  std::cout << "Failed to construct tensor name with the following vector sizes: v1 = {" << p1.size()
+            << "}, v2: {" << p2.size() << "}." << std::endl;
   assert(false);
   return "";
 }
@@ -389,7 +387,6 @@ std::string index_name(const std::vector<std::vector<int>>& tensors) {
   if (tensors.size() == 1) {
     return index_name(tensors.at(0), {});
   }
-  // Already also tested by ContrationTest, IndexNaming??
   std::cout << "Failed to construct tensor name with input tensors size: " << tensors.size() << std::endl;
   assert(false);
   return "";
@@ -501,14 +498,13 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
 void ContractGrid(const std::list<ContractionOperation>& ordering,
                   std::vector<std::vector<MKLTensor>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes) {
-  // Don't think this is tested? Not even sure if this method is called
-  if (amplitues == nullptr) {
+  // Not tested
+  if (amplitudes == nullptr) {
     std::cout << "Amplitude return vector must be non-null." << std::endl;
     assert(amplitudes != nullptr);
   }
 
-  // Don't think this is tested either
-  // Also don't think we need to print ordering here because the IsOrderingValid method takes care of that
+  // Not tested
   if (IsOrderingValid(ordering) == false) {
     std::cout << "Ordering must be valid." << std::endl;
     assert(IsOrderingValid(ordering));

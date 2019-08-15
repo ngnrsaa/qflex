@@ -1,0 +1,12 @@
+List of tests to write
+
+1. contraction_utils.cpp
+    ContrationData::ContractGrid
+        test for an output larger than 1
+    ContractGrid
+        pass in amplitudes = nullptr
+        pass in invalid ordering
+
+2. read_circuit.cpp
+    order_func
+Te

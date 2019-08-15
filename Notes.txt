@@ -1,0 +1,84 @@
+Notes
+
+Setup
+
+
+Tests that need to be written
+
+contraction_utils.cpp
+	243
+		in method ContractionData::ContractGrid
+		if the contraction didn't end up with 1 tensor, fail and print tensor
+		Testing
+			Handled by SimpleInitializeData??
+	376
+		in method index_name(vector1, vector2)
+		'Failed to construct tensor name'
+		print vectors
+		Testing
+			Handled by IndexNamingFailures test
+	387
+		in method index_name(vector, tensors)
+		'Failed to construct tensor name'
+		print vector and tensors
+		Testing
+			Handled by IndexNamingFailures test
+	497
+		in external method ContractGrid
+		'Amplitude return vectors must be non-null'
+		just print message
+		Testing
+			Is not tested?
+	498
+		in external method ContractGrid
+		checks IsOrderingValid()
+		Testing
+			Is not tested??
+
+read_circuit.cpp
+	234, 252, 295
+		in order_func, a helper function for grid_of_tensors 3d_to_2d
+		occurs when  there is a pair not found
+		snprintf(error)
+		There are no tests for order_func!!
+	321
+		in circuit_data_to_grid_of_tensors()
+		checks that num_qubits == I * J
+		Not tested??
+	326
+		in circuit_data_to_grid_of_tensors()
+		checks length of initial_conf
+		Not tested
+	328
+		in circuit_data_to_grid_of_tensors()
+		checks length of final_conf
+		Not tested
+	638
+		in read_wave_function_evolution()
+		checks that file can be read 
+		Not tested
+	651
+		in read_wave_function_evolution()
+		Checks that I matches the number of num_qubits
+		Not tested
+
+mkl_tensor.cpp
+	73
+	114
+	156
+	194
+	195
+	217
+	218
+	228
+	234
+	665
+	759
+	760
+	782
+	792
+	860
+
+
+
+
