@@ -1,0 +1,11 @@
+qflex Setup
+
+git clone --branch cpp_only https://github.com/ngnrsaa/qflex.git
+
+git submodule update --init --recursive
+
+export LD_LIBRARY_PATH="/home/alan/intel/compilers_and_libraries_2019.3.199/linux/mkl/lib/intel64:/usr/share/doc/libopenblas-dev"
+
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/home/alan/intel/compilers_and_libraries_2019.3.199/linux/mkl/lib/intel64:/usr/share/doc/libopenblas-dev"
+
+make -C tests
