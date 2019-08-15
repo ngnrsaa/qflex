@@ -315,18 +315,34 @@ void circuit_data_to_grid_of_tensors(
 
   // The first element should be the number of qubits
   *(circuit_data) >> num_qubits;
-  num_qubits = I * J;
+  num_qubits = I * J; //Is this needed??
 
   // Assert for the number of qubits.
-  assert(num_qubits == I * J && "I*J must be equal to the number of qubits.");
+  // Not tested.
+  if (num_qubits != I * J) {
+    std::cout << "I*J must be equal to the number of qubits. Instead, I*J = " << I * J 
+              << " and num_qubits = " << num_qubits << std::endl;
+    assert(num_qubits == I * J);
+  }
+
   // Assert for the length of initial_conf and final_conf_B.
   {
     size_t off_size = off.has_value() ? off.value().size() : 0;
     size_t A_size = A.has_value() ? A.value().size() : 0;
-    assert(initial_conf.size() == num_qubits - off_size &&
-           "initial_conf must be of size equal to the number of qubits.");
-    assert(final_conf_B.size() == num_qubits - off_size - A_size &&
-           "final_conf_B must be of size equal to the number of qubits.");
+    // Not tested
+    if (initial_conf.size() != num_qubits - off_size) {
+      std::cout << "initial_conf: " << initial_conf.size() 
+      << " must be of size equal to the number of qubits: " 
+      << num_qubits - off_size << std::endl;
+      assert(initial_conf.size() == num_qubits - off_size);
+    }
+    // Not tested
+    if (final_conf_B.size() != num_qubits - off_size - A_size) {
+      std::cout << "final_conf_B: " << final_conf_B.size() 
+      << " must be of size equal to the number of qubits: " 
+      << num_qubits - off_size - A_size << std::endl;
+      assert(final_conf_B.size() == num_qubits - off_size - A_size);
+    }
   }
 
   // Creating grid variables.
@@ -635,7 +651,11 @@ void read_wave_function_evolution(
     std::vector<std::vector<std::string>>& outputs, s_type* scratch) {
   // Open file.
   auto io = std::ifstream(filename);
-  assert(io.good() && "Cannot open file.");
+  // Not tested.
+  if (io.bad()) {
+    std::cout << "Cannot open file." << std::endl;
+    assert(io.good());
+  }
 
   // Gotten from the file.
   int num_qubits, cycle, q1, q2;
@@ -648,7 +668,13 @@ void read_wave_function_evolution(
   io >> num_qubits;
 
   // Assert for the number of qubits.
-  assert(num_qubits == I && "I must be equal to the number of qubits.");
+  // Not tested.
+  if (num_qubits != I) {
+    std::cout << "I: " << I << " must be equal to the number of qubits: "
+    << num_qubits << std::endl;
+    assert(num_qubits == I);
+  }
+  
 
   std::string line;
   while (getline(io, line))

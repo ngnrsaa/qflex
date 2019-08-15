@@ -1,6 +1,7 @@
 qflex Setup
 
-git clone --branch cpp_only https://github.com/ngnrsaa/qflex.git
+HTTPS: git clone --branch cpp_only https://github.com/ngnrsaa/qflex.git
+SSH: git clone --branch testing git@github.com:ngnrsaa/qflex.git
 
 git submodule update --init --recursive
 

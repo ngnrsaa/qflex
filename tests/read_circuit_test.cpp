@@ -140,6 +140,32 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   }
 }
 
+TEST(ReadCircuitTest, OrderFunc) {
+  // define inputs for order_func()
+  // such that lpos = -1
+  // such that rpos = -1
+  // such that there is a general error
+}
+
+TEST(ReadCircuitTest, CircuitDataToGridOfTensors) {
+  // define inputs for circuit_data_to_grid_of_tensors()
+  // call it with a bad inital_conf
+  // call it with bad final_conf_B
+}
+
+TEST(ReadCircuitTest, ReadWaveFunctionEvolution) {
+  std::string filename = "test";
+  int I;
+  std::vector<MKLTensor> gates;
+  std::vector<std::vector<std::string>> inputs;
+  std::vector<std::vector<std::string>> outputs;
+  s_type scratch;
+  // Bad input file
+  EXPECT_DEATH(read_wave_function_evolution(filename, I, gates, inputs, outputs, &scratch), "");
+
+
+}
+
 }  // namespace
 }  // namespace qflex
 

@@ -11,6 +11,7 @@ contraction_utils.cpp
 		if the contraction didn't end up with 1 tensor, fail and print tensor
 		Testing
 			Handled by SimpleInitializeData??
+			CHECK THIS ASSERT
 	376
 		in method index_name(vector1, vector2)
 		'Failed to construct tensor name'
@@ -28,30 +29,31 @@ contraction_utils.cpp
 		'Amplitude return vectors must be non-null'
 		just print message
 		Testing
-			Is not tested?
+			Handled by ContractionUtilsTest, ContractGrid test
 	498
 		in external method ContractGrid
 		checks IsOrderingValid()
 		Testing
-			Is not tested??
+			Handled by ContactrionUtilsTest, ContractGrid test
 
 read_circuit.cpp
 	234, 252, 295
 		in order_func, a helper function for grid_of_tensors 3d_to_2d
-		occurs when  there is a pair not found
+		occurs when there is a pair not found
 		snprintf(error)
 		There are no tests for order_func!!
 	321
 		in circuit_data_to_grid_of_tensors()
 		checks that num_qubits == I * J
-		Not tested??
+		Testing
+			This is weird because we already set num_bits = I * J
 	326
 		in circuit_data_to_grid_of_tensors()
 		checks length of initial_conf
 		Not tested
 	328
 		in circuit_data_to_grid_of_tensors()
-		checks length of final_conf
+		checks length of final_conf_B
 		Not tested
 	638
 		in read_wave_function_evolution()
