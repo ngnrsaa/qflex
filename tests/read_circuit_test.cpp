@@ -163,6 +163,7 @@ TEST(ReadCircuitTest, ReadWaveFunctionEvolution) {
   // Bad input file
   EXPECT_DEATH(read_wave_function_evolution(filename, I, gates, inputs, outputs, &scratch), "");
 
+  // call it with a good file, but I != num_qubits
 
 }
 

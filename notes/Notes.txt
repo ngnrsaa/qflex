@@ -66,21 +66,50 @@ read_circuit.cpp
 
 mkl_tensor.cpp
 	73
+		in _init
+		"indices and dimensions should have equal size"
 	114
+		in MKLTensor
+		"the vector data has to match the size of the MKLTensor"
 	156
+		in MKLTensor
+		checks that there is space for the requested tensor dimensions
 	194
+		in project
+		checks that index is indices[0]
 	195
+		in project
+		checks that index_value is in range 
 	217
+		in rename_index
+		checks that old_nbame is a valid index
 	218
+		in rename_index
+		checks that new_name is not an existing index
 	228
+		in bundle
+		checks that indices_to_bundle is contained in indices
 	234
+		in bundle
+		checks that indices_to_bundle is in the order they appear in indices
 	665
+		in reorder
+		checks that new_ordering is a reordering of current indices
 	759
+		in multiply
+		checks that A and C are not the same tensor
 	760
+		in multiply
+		checks that B and C are not the same tensor
 	782
+		in multiply
+		checks that common indices have matching dimensions
 	792
+		in multiply
+		checks that C has enough space for the A*B
 	860
-
+		in _generate_binary_reordering_map
+		checks that the size of the map is 2^num_indices
 
 
 
