@@ -302,9 +302,9 @@ TEST(DeathTests, AllOFThem) {
   std::string index = "x";
   size_t index_value = -1;
   MKLTensor projection_tensor;
-  EXPECT_DEATH(project(index, index_value, projection_tensor));
+  EXPECT_DEATH(project(index, index_value, projection_tensor), "");
   index = "a";
-  EXPECT_DEATH(project(index, index_value, projection_tensor));
+  EXPECT_DEATH(project(index, index_value, projection_tensor), "");
 
 
 }

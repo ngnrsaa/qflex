@@ -75,7 +75,7 @@ void MKLTensor::_init(const std::vector<std::string>& indices,
   if (indices.size() != dimensions.size()) {
     std::cout << "Indices: " << indices.size() << " and dimensions: " 
     << dimensions.size() << " should have equal size." << std::endl;
-    assert(indices.size() == dimensions.size())
+    assert(indices.size() == dimensions.size());
   }
   _indices = indices;
   _dimensions = dimensions;
@@ -120,7 +120,7 @@ MKLTensor::MKLTensor(std::vector<std::string> indices,
   if (this_size != data.size()) {
     std::cout << "The vector data size: " << data.size()
     << " has to match the size of the MKLTensor: " << this_size << std::endl;
-    assert(this_size == data.size())
+    assert(this_size == data.size());
   }
   _capacity = this_size;
   // Fill in the _data.
@@ -164,7 +164,7 @@ void MKLTensor::set_dimensions(const std::vector<size_t>& dimensions) {
     for (int i = 0; i < dimensions.size(); ++i) total_dim *= dimensions[i];
     // not tested
     if (capacity() < total_dim) {
-      std::cout << "The total allocated space: " << capacity 
+      std::cout << "The total allocated space: " << capacity() 
       << "is insufficient for the requested tensor dimensions: "
       << total_dim << std::endl;
       assert(capacity() >= total_dim);
@@ -206,16 +206,16 @@ const s_type* MKLTensor::data() const { return _data; }
 void MKLTensor::project(std::string index, size_t index_value,
                         MKLTensor& projection_tensor) const {
   // not tested                        
-  if (index != indices[0]) {
+  if (index != _indices[0]) {
     std::cout << "Index: " << index << " has to be equal to indices[0]: "
-    << indices[0] << std::endl;
-    assert(index == _indices[0])
+    << _indices[0] << std::endl;
+    assert(index == _indices[0]);
   }
   // not tested
   if (index_value < 0 || index_value > _dimensions[0]) {
     std::cout << "index_value: " << index_value
     << "must be contained in [0, dimensions[0])." << std::endl;
-    assert((index_value >= 0 && index_value < _dimensions[0]))
+    assert((index_value >= 0 && index_value < _dimensions[0]));
   }
   // Resize projection_tensor first.
   std::vector<std::string> projection_indices(_indices.begin() + 1,
@@ -258,7 +258,7 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
   // not tested
   if (!_vector_s_in_vector_s(indices_to_bundle, _indices)) {
     std::cout << "indices_to_bundle has to be contained in indices" << std::endl;
-    assert(_vector_s_in_vector_s(indices_to_bundle, _indices))
+    assert(_vector_s_in_vector_s(indices_to_bundle, _indices));
   }
   std::vector<std::string> subtracted_indices(
       _vector_subtraction(_indices, indices_to_bundle));
@@ -267,7 +267,7 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
   // not tested
   if (indices_to_bundled_original_order != indices_to_bundle) {
     std::cout << "indices_to_bundle must be in the order they appear in indices." << std::endl;
-    assert(indices_to_bundled_original_order == indices_to_bundle);         );
+    assert(indices_to_bundled_original_order == indices_to_bundle);       
   }
   int bundled_dim = 1;
   for (int i = 0; i < indices_to_bundle.size(); ++i) {
@@ -829,7 +829,7 @@ void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy) {
       std::cout << "Common indices must have matching dimensions, but at indice: "
       << i << ", the dimensions are A: " << a_dim 
       << ", B: " << B.get_index_to_dimension().at(common_indices[i]) << std::endl;
-      assert(a_dim == B.get_index_to_dimension().at(common_indices[i]))
+      assert(a_dim == B.get_index_to_dimension().at(common_indices[i]));
     }
     common_dim *= a_dim;
   }
@@ -915,7 +915,7 @@ void _generate_binary_reordering_map(
     std::cout << "Size of map: " << map_old_to_new_position.size()
     << " must be equal to 2^num_indices: " 
     << (size_t)pow(dim, num_indices) << std::endl;
-    assert((size_t)pow(dim, num_indices) == map_old_to_new_position.size())
+    assert((size_t)pow(dim, num_indices) == map_old_to_new_position.size());
   }
 
   // Define super dimensions. See _naive_reorder().
