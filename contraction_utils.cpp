@@ -375,6 +375,7 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
     int len = snprintf(buffer, sizeof(buffer), "(%d,%d),(o)", p1[0], p1[1]);
     return std::string(buffer, len);
   }
+  // use for loop to print out p1 and p2
   std::cout << "Failed to construct tensor name with the following vector sizes: v1 = {" << p1.size()
             << "}, v2: {" << p2.size() << "}." << std::endl;
   assert(false);

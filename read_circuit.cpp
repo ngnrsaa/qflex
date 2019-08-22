@@ -228,7 +228,9 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
     if (lpos == -1) {
       char error[200];
-      snprintf(error, sizeof(error), "Pair not found: (%d,%d),(%d,%d)",
+      // update this 
+      // left hand side not found
+      snprintf(error, sizeof(error), "Left hand side of pair not found: (%d,%d),(%d,%d)",
                local[0], local[1], lhs[0], lhs[1]);
       std::cout << error << std::endl;
       assert(false && "Halting reordering.");
@@ -244,9 +246,11 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       }
       op_num++;
     }
+    // 
     if (rpos == -1) {
       char error[200];
-      snprintf(error, sizeof(error), "Pair not found: (%d,%d),(%d,%d)",
+      // right side not found
+      snprintf(error, sizeof(error), "Right hand side of pair not found: (%d,%d),(%d,%d)",
                local[0], local[1], rhs[0], rhs[1]);
       std::cout << error << std::endl;
       assert(false && "Halting reordering.");
@@ -316,7 +320,7 @@ void circuit_data_to_grid_of_tensors(
   // The first element should be the number of qubits
   *(circuit_data) >> num_qubits;
   num_qubits = I * J; //Is this needed??
-
+  // Open issue
   // Assert for the number of qubits.
   // Not tested.
   if (num_qubits != I * J) {
@@ -653,7 +657,7 @@ void read_wave_function_evolution(
   auto io = std::ifstream(filename);
   // Not tested.
   if (io.bad()) {
-    std::cout << "Cannot open file." << std::endl;
+    std::cout << "Cannot open file: " << filename << std::endl;
     assert(io.good());
   }
 

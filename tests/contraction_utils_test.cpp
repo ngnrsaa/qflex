@@ -369,6 +369,7 @@ TEST(OrderingParserTest, ParserFailures) {
 }
 
 TEST(ContractionUtilsTest, ContractGrid) {
+  // Include Death in test name
   // Amplitude is a null pointer
   std::list<ContractionOperation> ordering;
   std::vector<std::vector<MKLTensor>> tensor_grid;

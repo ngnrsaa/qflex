@@ -286,6 +286,30 @@ TEST(MKLTensorDeathTest, InvalidInput) {
   ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_x, scratch.data()), "");
 }
 
+TEST(DeathTests, AllOFThem) {
+  // Testiing assert in _init(), 
+  std::vector<std::string> indices = {"a", "b"};
+  std::vector<size_t> dimensions = {2, 4, 6};
+  EXPECT_DEATH(_init(indices, dimensions), "");
+
+  // Testing assert in MKLTensor
+  const std::vector<s_type> data;
+  EXPECT_DEATH(MKLTensor(indices, dimensions, data), "");
+
+  // Testing death in set_dimensions
+
+  // Testing death in project
+  std::string index = "x";
+  size_t index_value = -1;
+  MKLTensor projection_tensor;
+  EXPECT_DEATH(project(index, index_value, projection_tensor));
+  index = "a";
+  EXPECT_DEATH(project(index, index_value, projection_tensor));
+
+
+}
+
+
 }  // namespace
 }  // namespace qflex
 

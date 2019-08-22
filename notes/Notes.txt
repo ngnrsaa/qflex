@@ -47,6 +47,7 @@ read_circuit.cpp
 		checks that num_qubits == I * J
 		Testing
 			This is weird because we already set num_bits = I * J
+			Open issue
 	326
 		in circuit_data_to_grid_of_tensors()
 		checks length of initial_conf
@@ -63,6 +64,7 @@ read_circuit.cpp
 		in read_wave_function_evolution()
 		Checks that I matches the number of num_qubits
 		Not tested
+		pass in ifstream
 
 mkl_tensor.cpp
 	73
