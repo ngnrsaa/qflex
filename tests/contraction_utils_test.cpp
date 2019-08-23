@@ -368,7 +368,7 @@ TEST(OrderingParserTest, ParserFailures) {
                                                      qubits_off, &ordering));
 }
 
-TEST(ContractionUtilsTest, ContractGrid) {
+TEST(ContractGridDeathTest, InvalidInput) {
   // Include Death in test name
   // Amplitude is a null pointer
   std::list<ContractionOperation> ordering;

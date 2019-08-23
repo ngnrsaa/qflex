@@ -228,8 +228,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
     if (lpos == -1) {
       char error[200];
-      // update this 
-      // left hand side not found
+      // not tested
       snprintf(error, sizeof(error), "Left hand side of pair not found: (%d,%d),(%d,%d)",
                local[0], local[1], lhs[0], lhs[1]);
       std::cout << error << std::endl;
@@ -249,7 +248,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     // 
     if (rpos == -1) {
       char error[200];
-      // right side not found
+      // not tested
       snprintf(error, sizeof(error), "Right hand side of pair not found: (%d,%d),(%d,%d)",
                local[0], local[1], rhs[0], rhs[1]);
       std::cout << error << std::endl;
@@ -319,10 +318,9 @@ void circuit_data_to_grid_of_tensors(
 
   // The first element should be the number of qubits
   *(circuit_data) >> num_qubits;
-  num_qubits = I * J; //Is this needed??
-  // Open issue
-  // Assert for the number of qubits.
-  // Not tested.
+  num_qubits = I * J; 
+
+  // Github issue is open regarding this, not tested
   if (num_qubits != I * J) {
     std::cout << "I*J must be equal to the number of qubits. Instead, I*J = " << I * J 
               << " and num_qubits = " << num_qubits << std::endl;
@@ -649,6 +647,7 @@ void grid_of_tensors_3D_to_2D(
   scratch = NULL;
 }
 
+// This function is currently not being called.
 void read_wave_function_evolution(
     std::string filename, int I, std::vector<MKLTensor>& gates,
     std::vector<std::vector<std::string>>& inputs,

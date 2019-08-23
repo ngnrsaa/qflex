@@ -288,60 +288,6 @@ TEST(MKLTensorDeathTest, InvalidInput) {
   ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_x, scratch.data()), "");
 }
 
-TEST(DeathTests, InProgress) {
-  // Testiing assert in _init(), 
-  std::vector<std::string> indices = {"a", "b"};
-  std::vector<size_t> dimensions = {2, 4, 6};
-  // EXPECT_DEATH(_init(indices, dimensions), "");
-
-  // Testing assert in MKLTensor
-  const std::vector<s_type> data;
-  EXPECT_DEATH(MKLTensor(indices, dimensions, data), "");
-
-  // Testing death in set_dimensions
-
-  // Testing deaths in rename_index
-  
-  // Testing deaths in bundle
-
-  // Testing deaths in 
-
-}
-
-TEST(MKLTensorProjectDeathTest, InvalidIndexes) {
-  std::vector<std::string> indices = {"a", "b"};
-  std::vector<size_t> dimensions = {2, 4};
-  MKLTensor tensor(indices, dimensions);
-  std::string index = "x";
-  size_t index_value = -1;
-  MKLTensor projection_tensor;
-  
-  EXPECT_DEATH(project(index, index_value, projection_tensor));
-  index = "a";
-  EXPECT_DEATH(project(index, index_value, projection_tensor));
-}
-
-TEST(MKLTensorBundleTest, IndexBundling) {
-  std::vector<std::string> indices = {"a", "b", "c", "d"};
-  std::vector<size_t> dimensions = {2, 2, 2, 2};
-  std::vector<std::complex<float>> data;
-  for (int i = 0; i < 16; i++) {
-    data.push_back(std::complex<float>(i, 0));
-  }
-
-  MKLTensor tensor(indices, dimensions, data);
-  tensor.bundle({"a", "b", "c"}, "abc");
-  std::vector<std::string> expected_indices = {"abc", "d"};
-  std::vector<size_t> expected_dimensions = {8, 2};
-  ASSERT_EQ(tensor.get_indices(), expected_indices);
-  ASSERT_EQ(tensor.get_dimensions(), expected_dimensions);
-
-  std::vector<std::complex<float>> read_data(tensor.data(),
-                                             tensor.data() + tensor.size());
-  for (int i = 0; i < read_data.size(); ++i) {
-    ASSERT_FLOAT_EQ(read_data[i].real(), data[i].real());
-  }
-}
 
 }  // namespace
 }  // namespace qflex

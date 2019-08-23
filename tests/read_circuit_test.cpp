@@ -149,6 +149,7 @@ TEST(ReadCircuitTest, OrderFunc) {
 
 TEST(ReadCircuitTest, CircuitDataToGridOfTensors) {
   // define inputs for circuit_data_to_grid_of_tensors()
+  // sos
   // call it with a bad inital_conf
   // call it with bad final_conf_B
 }

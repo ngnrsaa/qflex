@@ -237,8 +237,7 @@ void ContractionData::ContractGrid(
       }
     }
   }
-  // Test for an output of size larger than 1
-  // Not tested
+  // Check for an output of size larger than 1
   if (output->size() != 1) {
     std::cout << "Contraction did not complete; final tensor is ";
     output->print();
