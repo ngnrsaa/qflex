@@ -250,6 +250,7 @@ void MKLTensor::rename_index(std::string old_name, std::string new_name) {
 void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
                        std::string bundled_index) {
   // Asserts.
+  // print out indices_to_bundle with for loop
   if (!_vector_s_in_vector_s(indices_to_bundle, _indices)) {
     std::cout << "indices_to_bundle has to be contained in indices" << std::endl;
     assert(_vector_s_in_vector_s(indices_to_bundle, _indices));
@@ -260,7 +261,7 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
       _vector_subtraction(_indices, subtracted_indices));
   if (indices_to_bundled_original_order != indices_to_bundle) {
     std::cout << "indices_to_bundle must be in the order they appear in indices." << std::endl;
-    assert(indices_to_bundled_original_order == indices_to_bundle);       
+    assert(indices_to_bundled_original_order == indices_to_bundle);    
   }
   int bundled_dim = 1;
   for (int i = 0; i < indices_to_bundle.size(); ++i) {
@@ -902,6 +903,7 @@ void _generate_binary_reordering_map(
   int dim = 2;  // Hard coded!
   int num_indices = map_old_to_new_idxpos.size();
   // Assert
+  // not tested
   if ((size_t)pow(dim, num_indices) != map_old_to_new_position.size()) {
     std::cout << "Size of map: " << map_old_to_new_position.size()
     << " must be equal to 2^num_indices: " 

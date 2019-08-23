@@ -1,4 +1,8 @@
 Notes
+	SEGFAULT
+	array indices
+	nullpointer checks
+	test in evaluate_circuit_test
 
 Setup
 

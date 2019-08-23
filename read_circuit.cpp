@@ -318,13 +318,19 @@ void circuit_data_to_grid_of_tensors(
 
   // The first element should be the number of qubits
   *(circuit_data) >> num_qubits;
-  num_qubits = I * J; 
+  // TODO: Decide whether to determine number of qubits from the file or from I * J
+  // check this, and TODO, 
+  if (num_qubits != I * J) {
+    stc::cout << "The number of qubits read from the file: " 
+    << num_qubits << " does not match I*J: " << I * J << std::endl;
+    num_qubits = I * J;
+  }  
 
-  // Github issue is open regarding this, not tested
+  // Github issue is open regarding this, will not occur
   if (num_qubits != I * J) {
     std::cout << "I*J must be equal to the number of qubits. Instead, I*J = " << I * J 
               << " and num_qubits = " << num_qubits << std::endl;
-    assert(num_qubits == I * J);
+    assert(num_qubits == I * J); 
   }
 
   // Assert for the length of initial_conf and final_conf_B.
