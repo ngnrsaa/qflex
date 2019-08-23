@@ -375,13 +375,15 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
     return std::string(buffer, len);
   }
   // use for loop to print out p1 and p2
-  std::cout << "Failed to construct tensor name with the following vector sizes: v1 = {" << print_vector(p1)
-            << "}, v2: {" << print_vector(p2) << "}." << std::endl;
+  std::cout << "Failed to construct tensor name with the following vector "
+               "sizes: v1 = {"
+            << print_vector(p1) << "}, v2: {" << print_vector(p2) << "}."
+            << std::endl;
   assert(false);
   return "";
 }
 
-void print_vector(const std::vector<int>& vec) {
+void print_vector(const std::vector<int> &vec) {
   for (std::vector<int>::const_iterator i = vec.begin(); i != vec.end(); ++i)
     std::cout << *i << ' ';
 }

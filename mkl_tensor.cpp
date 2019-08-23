@@ -261,7 +261,7 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
       _vector_subtraction(_indices, subtracted_indices));
   if (indices_to_bundled_original_order != indices_to_bundle) {
     std::cout << "indices_to_bundle must be in the order they appear in indices." << std::endl;
-    assert(indices_to_bundled_original_order == indices_to_bundle);    
+    assert(indices_to_bundled_original_order == indices_to_bundle);
   }
   int bundled_dim = 1;
   for (int i = 0; i < indices_to_bundle.size(); ++i) {
