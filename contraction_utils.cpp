@@ -4,8 +4,10 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <string>
 #include <regex>
 #include <sstream>
+#include <vector>
 #include <unordered_set>
 
 namespace qflex {
@@ -375,15 +377,23 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
     return std::string(buffer, len);
   }
   // use for loop to print out p1 and p2
-  std::cout << "Failed to construct tensor name with the following vector sizes: v1 = {" << print_vector(p1)
-            << "}, v2: {" << print_vector(p2) << "}." << std::endl;
+  std::cout << "Failed to construct tensor name with the following vectors: v1 = {";
+  for(int i = 0; i < p1.size(); i++) {
+    std::cout << p1.at(i);
+    if (i != p1.size() - 1) {
+      std::cout << ", ";
+    }
+  }
+  std::cout << "}, v2 = {";
+  for(int j = 0; j < p2.size(); j++) {
+    std::cout << p2.at(j);
+    if (j != p2.size() - 1) {
+      std::cout << ", ";
+    }
+  }
+  std::cout << "}." << std::endl;
   assert(false);
   return "";
-}
-
-void print_vector(const std::vector<int>& vec) {
-  for (std::vector<int>::const_iterator i = vec.begin(); i != vec.end(); ++i)
-    std::cout << *i << ' ';
 }
 
 std::string index_name(const std::vector<std::vector<int>>& tensors) {
