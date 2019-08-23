@@ -207,9 +207,9 @@ void MKLTensor::project(std::string index, size_t index_value,
               << _indices[0] << "'." << std::endl;
     assert(index == _indices[0]);
   }
-  if (index_value < 0 || index_value > _dimensions[0]) {
+  if (index_value < 0 || index_value >= _dimensions[0]) {
     std::cout << "index_value: " << index_value << " must be contained in [0, "
-              << dimensions[0] << ")." << std::endl;
+              << _dimensions[0] << ")." << std::endl;
     assert((index_value >= 0 && index_value < _dimensions[0]));
   }
   // Resize projection_tensor first.
@@ -251,8 +251,7 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
                        std::string bundled_index) {
   // Asserts.
   if (!_vector_s_in_vector_s(indices_to_bundle, _indices)) {
-    std::cout << "indices_to_bundle: " << indices_to_bundle
-              << " has to be contained in indices" << std::endl;
+    std::cout << "indices_to_bundle has to be contained in indices" << std::endl;
     assert(_vector_s_in_vector_s(indices_to_bundle, _indices));
   }
   std::vector<std::string> subtracted_indices(
@@ -692,8 +691,7 @@ void MKLTensor::reorder(std::vector<std::string> new_ordering,
                         s_type* scratch_copy) {
   // Asserts.
   if (!_vector_s_in_vector_s(new_ordering, _indices) || !_vector_s_in_vector_s(_indices, new_ordering)) {
-    std::cout << "new_ordering: " << new_ordering
-              << " must be a reordering of current indices." << std::endl;
+    std::cout << "new_ordering must be a reordering of current indices." << std::endl;
     assert(_vector_s_in_vector_s(new_ordering, _indices) &&
            _vector_s_in_vector_s(_indices, new_ordering));
   }
