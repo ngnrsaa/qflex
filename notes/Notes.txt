@@ -70,9 +70,11 @@ mkl_tensor.cpp
 	73
 		in _init
 		"indices and dimensions should have equal size"
+		TESTED
 	114
 		in MKLTensor
 		"the vector data has to match the size of the MKLTensor"
+		TESTED
 	156
 		in MKLTensor
 		checks that there is space for the requested tensor dimensions
