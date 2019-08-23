@@ -321,9 +321,9 @@ void circuit_data_to_grid_of_tensors(
   // TODO: Decide whether to determine number of qubits from the file or from I
   // * J check this, and TODO,
   if (num_qubits != I * J) {
-    stc::cout << "The number of qubits read from the file: " << num_qubits
-              << " does not match I*J: " << I * J << std::endl;
-    num_qubits = I * J;
+    std::cout << "The number of qubits read from the file: " 
+    << num_qubits << " does not match I*J: " << I * J << std::endl;
+    num_qubits = I * J;s
   }
 
   // Github issue is open regarding this, will not occur
