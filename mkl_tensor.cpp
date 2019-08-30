@@ -252,7 +252,14 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
   // Asserts.
   // print out indices_to_bundle with for loop
   if (!_vector_s_in_vector_s(indices_to_bundle, _indices)) {
-    std::cout << "indices_to_bundle has to be contained in indices" << std::endl;
+    std::cout << "indices_to_bundle: {";
+    for (int i = 0, i < indices_to_bundle.size(), ++i) {
+        std::cout << indices_to_bundle.at(i) <<
+        if (i != p1.size() - 1) {
+            std::cout << ", ";
+        }
+    } 
+    std::cout << "} has to be contained in indices." << std::endl;
     assert(_vector_s_in_vector_s(indices_to_bundle, _indices));
   }
   std::vector<std::string> subtracted_indices(

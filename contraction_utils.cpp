@@ -377,14 +377,14 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
   }
   // use for loop to print out p1 and p2
   std::cout << "Failed to construct tensor name with the following vectors: v1 = {";
-  for(int i = 0; i < p1.size(); i++) {
+  for(int i = 0; i < p1.size(); ++i) {
     std::cout << p1.at(i);
     if (i != p1.size() - 1) {
       std::cout << ", ";
     }
   }
   std::cout << "}, v2 = {";
-  for(int j = 0; j < p2.size(); j++) {
+  for(int j = 0; j < p2.size(); ) {
     std::cout << p2.at(j);
     if (j != p2.size() - 1) {
       std::cout << ", ";
