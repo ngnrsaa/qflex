@@ -323,7 +323,7 @@ void circuit_data_to_grid_of_tensors(
   if (num_qubits != I * J) {
     std::cout << "The number of qubits read from the file: " 
     << num_qubits << " does not match I*J: " << I * J << std::endl;
-    num_qubits = I * J;s
+    num_qubits = I * J;
   }
 
   // Github issue is open regarding this, will not occur

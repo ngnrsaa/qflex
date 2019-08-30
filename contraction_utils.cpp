@@ -266,6 +266,7 @@ bool ordering_data_to_contraction_ordering(
     // The first element is the operation (expand, cut, or merge).
     ss >> operation;
     if (operation == "expand") {
+      std::string patch;
       int index;
       ss >> patch;
       ss >> index;
