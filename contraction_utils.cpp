@@ -18,6 +18,7 @@ ContractionData ContractionData::Initialize(
     const std::list<ContractionOperation>& ordering,
     std::vector<std::vector<MKLTensor>>* tensor_grid,
     std::vector<std::complex<double>>* amplitudes) {
+  // seg fault nullptrs?
   ContractionData data;
   data.tensor_grid_ = tensor_grid;
   data.amplitudes_ = amplitudes;
@@ -255,6 +256,7 @@ bool ordering_data_to_contraction_ordering(
     std::istream* ordering_data, const int I, const int J,
     const std::optional<std::vector<std::vector<int>>>& off,
     std::list<ContractionOperation>* ordering) {
+  // seg fault nullptr?
   static const std::regex cut_value_regex("\\([0-9,]*\\)");
   std::string line;
   std::string error_msg;
@@ -514,6 +516,7 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
 void ContractGrid(const std::list<ContractionOperation>& ordering,
                   std::vector<std::vector<MKLTensor>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes) {
+  // seg fault nullptr for tensor_grid?
   if (amplitudes == nullptr) {
     std::cout << "Amplitude return vector must be non-null." << std::endl;
     assert(amplitudes != nullptr);
