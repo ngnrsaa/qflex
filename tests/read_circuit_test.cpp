@@ -147,14 +147,20 @@ TEST(ReadCircuitTest, OrderFunc) {
   // such that there is a general error
 }
 
-TEST(ReadCircuitTest, CircuitDataToGridOfTensors) {
-  // define inputs for circuit_data_to_grid_of_tensors()
-  // sos
-  // call it with a bad inital_conf
-  // call it with bad final_conf_B
+// Testing assert calls for initial_conf and final_conf_B of function circuit_data_to_grid_of_tensors()
+TEST(ReadCircuitDeathTest, CircuitDataToGridOfTensors) {
+  std::vector<std::vector<std::vector<MKLTensor>>> grid_of_tensors;
+  s_type scratch[256];
+
+  auto circuit_data = std::stringstream(kNullCircuit);
+  EXPECT_DEATH(circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "001", "01", {}, {},
+                                  grid_of_tensors, scratch), "");
+
+  EXPECT_DEATH(circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "011", {}, {},
+                                  grid_of_tensors, scratch), "");
 }
 
-TEST(ReadCircuitTest, ReadWaveFunctionEvolution) {
+/*TEST(ReadCircuitTest, ReadWaveFunctionEvolution) {
   std::string filename = "test";
   int I;
   std::vector<MKLTensor> gates;
@@ -165,8 +171,7 @@ TEST(ReadCircuitTest, ReadWaveFunctionEvolution) {
   EXPECT_DEATH(read_wave_function_evolution(filename, I, gates, inputs, outputs, &scratch), "");
 
   // call it with a good file, but I != num_qubits
-
-}
+}*/
 
 }  // namespace
 }  // namespace qflex

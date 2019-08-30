@@ -72,8 +72,8 @@ void MKLTensor::_init(const std::vector<std::string>& indices,
                       const std::vector<size_t>& dimensions) {
   if (indices.size() != dimensions.size()) {
     std::cout << "The number of indices: " << indices.size()
-              << " and number of dimensions: " << dimensions.size()
-              << " should be equal." << std::endl;
+              << ", and number of dimensions: " << dimensions.size()
+              << ", should be equal." << std::endl;
     assert(indices.size() == dimensions.size());
   }
   _indices = indices;
@@ -117,7 +117,8 @@ MKLTensor::MKLTensor(std::vector<std::string> indices,
   size_t this_size = size();
   if (this_size != data.size()) {
     std::cout << "The vector data size: " << data.size()
-    << " has to match the size of the MKLTensor: " << this_size << std::endl;
+    << ", has to match the size of the MKLTensor: " << this_size 
+    << "." << std::endl;
     assert(this_size == data.size());
   }
   _capacity = this_size;
@@ -162,8 +163,8 @@ void MKLTensor::set_dimensions(const std::vector<size_t>& dimensions) {
     for (int i = 0; i < dimensions.size(); ++i) total_dim *= dimensions[i];
     if (capacity() < total_dim) {
       std::cout << "The total allocated space: " << capacity()
-                << " is insufficient for the requested tensor dimensions: "
-                << total_dim << std::endl;
+                << ", is insufficient for the requested tensor dimensions: "
+                << total_dim << "." << std::endl;
       assert(capacity() >= total_dim);
     }
   }
@@ -253,9 +254,9 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
   // print out indices_to_bundle with for loop
   if (!_vector_s_in_vector_s(indices_to_bundle, _indices)) {
     std::cout << "indices_to_bundle: {";
-    for (int i = 0, i < indices_to_bundle.size(), ++i) {
-        std::cout << indices_to_bundle.at(i) <<
-        if (i != p1.size() - 1) {
+    for (int i = 0; i < indices_to_bundle.size(); ++i) {
+        std::cout << indices_to_bundle.at(i);
+        if (i != indices_to_bundle.size() - 1) {
             std::cout << ", ";
         }
     } 
@@ -267,9 +268,25 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
   std::vector<std::string> indices_to_bundled_original_order(
       _vector_subtraction(_indices, subtracted_indices));
   if (indices_to_bundled_original_order != indices_to_bundle) {
-    std::cout << "indices_to_bundle must be in the order they appear in indices." << std::endl;
+    std::cout << "indices_to_bundle: {";
+    for (int i = 0; i < indices_to_bundle.size(); ++i) {
+        std::cout << indices_to_bundle.at(i);
+        if (i != indices_to_bundle.size() - 1) {
+            std::cout << ", ";
+        }
+    }
+    std::cout << "} must be in its original order: {";
+    for (int i = 0; i < indices_to_bundled_original_order.size(); ++i) {
+        std::cout << indices_to_bundled_original_order.at(i);
+        if (i != indices_to_bundled_original_order.size() - 1) {
+            std::cout << ", ";
+        }
+    }
+    std::cout << "}." << std::endl;
     assert(indices_to_bundled_original_order == indices_to_bundle);
   }
+
+
   int bundled_dim = 1;
   for (int i = 0; i < indices_to_bundle.size(); ++i) {
     bundled_dim *= _index_to_dimension[indices_to_bundle[i]];
@@ -698,6 +715,7 @@ void MKLTensor::_left_reorder(const std::vector<std::string>& old_ordering,
 void MKLTensor::reorder(std::vector<std::string> new_ordering,
                         s_type* scratch_copy) {
   // Asserts.
+  // for loop
   if (!_vector_s_in_vector_s(new_ordering, _indices) || !_vector_s_in_vector_s(_indices, new_ordering)) {
     std::cout << "new_ordering must be a reordering of current indices." << std::endl;
     assert(_vector_s_in_vector_s(new_ordering, _indices) &&
@@ -828,7 +846,7 @@ void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy) {
           << "Common indices must have matching dimensions, but at index: " << i
           << ", the dimensions are A: " << a_dim
           << ", B: " << B.get_index_to_dimension().at(common_indices[i])
-          << std::endl;
+          << "." << std::endl;
       assert(a_dim == B.get_index_to_dimension().at(common_indices[i]));
     }
     common_dim *= a_dim;
@@ -842,7 +860,7 @@ void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy) {
   if (left_dim * right_dim > C.capacity()) {
     std::cout << "C: " << C.capacity() 
     << " doesn't not have enough space for the product of A*B: " 
-    << left_dim * right_dim << std::endl;
+    << left_dim * right_dim << "." << std::endl;
     assert((left_dim * right_dim <= C.capacity()));
   }
   // Reorder.
@@ -914,7 +932,7 @@ void _generate_binary_reordering_map(
   if ((size_t)pow(dim, num_indices) != map_old_to_new_position.size()) {
     std::cout << "Size of map: " << map_old_to_new_position.size()
     << " must be equal to 2^num_indices: " 
-    << (size_t)pow(dim, num_indices) << std::endl;
+    << pow(dim, num_indices) << "." << std::endl;
     assert((size_t)pow(dim, num_indices) == map_old_to_new_position.size());
   }
 

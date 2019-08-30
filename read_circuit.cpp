@@ -322,7 +322,8 @@ void circuit_data_to_grid_of_tensors(
   // * J check this, and TODO,
   if (num_qubits != I * J) {
     std::cout << "The number of qubits read from the file: " 
-    << num_qubits << " does not match I*J: " << I * J << std::endl;
+    << num_qubits << ", does not match I*J: " << I * J 
+    << "." << std::endl;
     num_qubits = I * J;
   }
 
@@ -339,16 +340,16 @@ void circuit_data_to_grid_of_tensors(
     size_t A_size = A.has_value() ? A.value().size() : 0;
     // Not tested
     if (initial_conf.size() != num_qubits - off_size) {
-      std::cout << "initial_conf: " << initial_conf.size() 
-      << " must be of size equal to the number of qubits: " 
-      << num_qubits - off_size << std::endl;
+      std::cout << "Size of initial_conf: " << initial_conf.size() 
+      << ", must be equal to the number of qubits: " 
+      << num_qubits - off_size << "." << std::endl;
       assert(initial_conf.size() == num_qubits - off_size);
     }
     // Not tested
     if (final_conf_B.size() != num_qubits - off_size - A_size) {
-      std::cout << "final_conf_B: " << final_conf_B.size() 
-      << " must be of size equal to the number of qubits: " 
-      << num_qubits - off_size - A_size << std::endl;
+      std::cout << "Size of final_conf_B: " << final_conf_B.size() 
+      << ", must be equal to the number of qubits: " 
+      << num_qubits - off_size - A_size << "." << std::endl;
       assert(final_conf_B.size() == num_qubits - off_size - A_size);
     }
   }

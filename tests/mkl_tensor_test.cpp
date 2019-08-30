@@ -288,6 +288,12 @@ TEST(MKLTensorDeathTest, InvalidInput) {
   ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_x, scratch.data()), "");
 }
 
+// Test for assert call in function _generate_binary_reordering_map()
+TEST(MKLTensorDeathTest, GenerateBinaryReorderingMapInvalidInput) {
+    const std::vector<int> map_old_to_new_idxpos = {1, 2};
+    std::vector<int> map_old_to_new_position = {1, 2, 3};
+    EXPECT_DEATH(_generate_binary_reordering_map(map_old_to_new_idxpos, map_old_to_new_position), "");
+}
 
 }  // namespace
 }  // namespace qflex
