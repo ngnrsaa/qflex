@@ -6,9 +6,6 @@ CXX = icpc
 MKL_DIR = /home/alan
 
 FLAGS =  -mkl  -qopenmp  -O3  -std=c++17  -march=native
--I${MKL_DIR}/intel/compilers_and_libraries_2019.3.199/linux/mkl/include \
--L${MKL_DIR}/intel/compilers_and_libraries_2019.3.199/linux/mkl/lib/intel64 \
--lmkl_intel_ilp64 -lmkl_core -lmkl_gnu_thread -Wno-narrowing
 
 TEST_DIR = tests
 
