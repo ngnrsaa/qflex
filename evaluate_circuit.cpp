@@ -5,6 +5,7 @@ namespace qflex {
 std::vector<std::vector<int>> read_grid_layout_from_stream(
     std::istream* grid_data, int I, int J) {
   std::vector<std::vector<int>> qubits_off;
+  
   bool on;
   for (int i = 0; i < I; ++i) {
     for (int j = 0; j < J; ++j) {
@@ -31,7 +32,7 @@ std::vector<std::vector<int>> read_grid_layout_from_stream(
 void get_output_states(const std::list<ContractionOperation>& ordering,
                        std::vector<std::vector<int>>* final_qubits,
                        std::vector<std::string>* output_states) {
-  // seg fault nullptrs?
+  
   output_states->push_back("");
   std::vector<std::string> temp_output_states;
   for (const auto& op : ordering) {
@@ -56,6 +57,7 @@ void get_output_states(const std::list<ContractionOperation>& ordering,
 std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     QflexInput* input) {
   // Set precision for the printed floats.
+  
   std::cout.precision(12);
 
   // Timing variables.
@@ -109,7 +111,6 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // Declaring and then filling 2D grid of tensors.
   std::vector<std::vector<MKLTensor>> tensor_grid(input->I);
   for (int i = 0; i < input->I; ++i) {
-    // seg fault?
     tensor_grid[i] = std::vector<MKLTensor>(input->J);
   }
   // Scope so that the 3D grid of tensors is destructed.
@@ -152,7 +153,6 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   ContractGrid(ordering, &tensor_grid, &amplitudes);
   for (int c = 0; c < amplitudes.size(); ++c) {
     result.push_back(std::make_pair(
-        // seg fault?
         input->final_state_A + " " + output_states[c], amplitudes[c]));
   }
 

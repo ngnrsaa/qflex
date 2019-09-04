@@ -140,39 +140,6 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   }
 }
 
-TEST(ReadCircuitTest, OrderFunc) {
-  // define inputs for order_func()
-  // such that lpos = -1
-  // such that rpos = -1
-  // such that there is a general error
-}
-
-// Testing assert calls for initial_conf and final_conf_B of function circuit_data_to_grid_of_tensors()
-TEST(ReadCircuitDeathTest, CircuitDataToGridOfTensors) {
-  std::vector<std::vector<std::vector<MKLTensor>>> grid_of_tensors;
-  s_type scratch[256];
-
-  auto circuit_data = std::stringstream(kNullCircuit);
-  EXPECT_DEATH(circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "001", "01", {}, {},
-                                  grid_of_tensors, scratch), "");
-
-  EXPECT_DEATH(circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "011", {}, {},
-                                  grid_of_tensors, scratch), "");
-}
-
-/*TEST(ReadCircuitTest, ReadWaveFunctionEvolution) {
-  std::string filename = "test";
-  int I;
-  std::vector<MKLTensor> gates;
-  std::vector<std::vector<std::string>> inputs;
-  std::vector<std::vector<std::string>> outputs;
-  s_type scratch;
-  // Bad input file
-  EXPECT_DEATH(read_wave_function_evolution(filename, I, gates, inputs, outputs, &scratch), "");
-
-  // call it with a good file, but I != num_qubits
-}*/
-
 }  // namespace
 }  // namespace qflex
 

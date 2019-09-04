@@ -245,7 +245,6 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       }
       op_num++;
     }
-    // 
     if (rpos == -1) {
       char error[200];
       // not tested

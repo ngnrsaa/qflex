@@ -133,6 +133,7 @@ MKLTensor::MKLTensor(std::vector<std::string> indices,
   _data = data;
 }
 
+
 MKLTensor::MKLTensor(const MKLTensor& other) { _copy(other); }
 
 MKLTensor::~MKLTensor() { _clear(); }
@@ -234,12 +235,12 @@ void MKLTensor::project(std::string index, size_t index_value,
 void MKLTensor::rename_index(std::string old_name, std::string new_name) {
   auto it = find(_indices.begin(), _indices.end(), old_name);
   if (it == _indices.end()) {
-    std::cout << "old_name: " << old_name << " has to be a valid index"
+    std::cout << "old_name: " << old_name << ", has to be a valid index."
               << std::endl;
     assert(it != _indices.end());
   }
   if (find(_indices.begin(), _indices.end(), new_name) != _indices.end()) {
-    std::cout << "new_name: " << new_name << " cannot be an existing index."
+    std::cout << "new_name: " << new_name << ", cannot be an existing index."
               << std::endl;
     assert(find(_indices.begin(), _indices.end(), new_name) == _indices.end());
   }
@@ -311,6 +312,7 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
 
 void MKLTensor::_naive_reorder(std::vector<std::string> new_ordering,
                                s_type* scratch_copy) {
+  
   // Don't do anything if there is nothing to reorder.
   if (new_ordering == _indices) return;
 
@@ -413,6 +415,7 @@ void MKLTensor::_naive_reorder(std::vector<std::string> new_ordering,
 void MKLTensor::_fast_reorder(std::vector<std::string> new_ordering,
                               s_type* scratch_copy) {
   // Create binary orderings.
+  
   std::vector<std::string> old_ordering(_indices);
   std::vector<size_t> old_dimensions(_dimensions);
   int num_indices = old_ordering.size();
@@ -653,6 +656,7 @@ void MKLTensor::_right_reorder(const std::vector<std::string>& old_ordering,
 void MKLTensor::_left_reorder(const std::vector<std::string>& old_ordering,
                               const std::vector<std::string>& new_ordering,
                               int num_indices_right, s_type* scratch_copy) {
+  
   // Don't do anything if there is nothing to reorder.
   if (new_ordering == old_ordering) return;
 
@@ -714,10 +718,17 @@ void MKLTensor::_left_reorder(const std::vector<std::string>& old_ordering,
 
 void MKLTensor::reorder(std::vector<std::string> new_ordering,
                         s_type* scratch_copy) {
+  
   // Asserts.
-  // for loop
   if (!_vector_s_in_vector_s(new_ordering, _indices) || !_vector_s_in_vector_s(_indices, new_ordering)) {
-    std::cout << "new_ordering must be a reordering of current indices." << std::endl;
+    std::cout << "new_ordering: {";
+    for (int i = 0; i < new_ordering.size(); ++i) {
+        std::cout << new_ordering.at(i);
+        if (i != new_ordering.size() - 1) {
+            std::cout << ", ";
+        }
+    }
+    std::cout << "} must be a reordering of current indices." << std::endl;
     assert(_vector_s_in_vector_s(new_ordering, _indices) &&
            _vector_s_in_vector_s(_indices, new_ordering));
   }
@@ -783,6 +794,7 @@ void MKLTensor::print_data() const {
 // use mkl if complexity < some value.
 void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int m, int n, int k) {
+  s
   s_type alpha = 1.0;
   s_type beta = 0.0;
   cblas_cgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, &alpha,
@@ -792,6 +804,7 @@ void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
 
 void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int m, int k) {
+  
   s_type alpha = 1.0;
   s_type beta = 0.0;
   cblas_cgemv(CblasRowMajor, CblasNoTrans, m, k, &alpha, A_data, std::max(1, k),
@@ -800,6 +813,7 @@ void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
 
 void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int n, int k) {
+  
   s_type alpha = 1.0;
   s_type beta = 0.0;
   cblas_cgemv(CblasRowMajor, CblasTrans, k, n, &alpha, A_data, std::max(1, n),
@@ -808,10 +822,12 @@ void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
 
 void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int k) {
+  
   cblas_cdotu_sub(k, A_data, 1, B_data, 1, C_data);
 }
 
 void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy) {
+  
   if (A.data() == C.data()) {
     std::cout << "A and C cannot be the same tensor." << std::endl;
     assert(A.data() != C.data());

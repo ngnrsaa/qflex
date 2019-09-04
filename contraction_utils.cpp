@@ -18,7 +18,7 @@ ContractionData ContractionData::Initialize(
     const std::list<ContractionOperation>& ordering,
     std::vector<std::vector<MKLTensor>>* tensor_grid,
     std::vector<std::complex<double>>* amplitudes) {
-  // seg fault nullptrs?
+  
   ContractionData data;
   data.tensor_grid_ = tensor_grid;
   data.amplitudes_ = amplitudes;
@@ -27,6 +27,7 @@ ContractionData ContractionData::Initialize(
   int bond_dim = 0;
 
   // Indices of tensor_grid elements during the contraction.
+  // seg maybe
   std::vector<std::vector<std::vector<std::string>>> grid_indices(
       tensor_grid->size());
   for (int i = 0; i < tensor_grid->size(); ++i) {
@@ -256,7 +257,7 @@ bool ordering_data_to_contraction_ordering(
     std::istream* ordering_data, const int I, const int J,
     const std::optional<std::vector<std::vector<int>>>& off,
     std::list<ContractionOperation>* ordering) {
-  // seg fault nullptr?
+  
   static const std::regex cut_value_regex("\\([0-9,]*\\)");
   std::string line;
   std::string error_msg;
@@ -387,9 +388,9 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
     }
   }
   std::cout << "}, v2 = {";
-  for(int j = 0; j < p2.size(); ) {
-    std::cout << p2.at(j);
-    if (j != p2.size() - 1) {
+  for(int i = 0; i < p2.size(); ) {
+    std::cout << p2.at(i);
+    if (i != p2.size() - 1) {
       std::cout << ", ";
     }
   }
@@ -516,7 +517,11 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
 void ContractGrid(const std::list<ContractionOperation>& ordering,
                   std::vector<std::vector<MKLTensor>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes) {
-  // seg fault nullptr for tensor_grid?
+  
+  if (tensor_grid == nullptr) {
+    std::cout << "Tensor grid must be non-null." << std::endl;
+    assert(tensor_grid != nullptr);
+  }
   if (amplitudes == nullptr) {
     std::cout << "Amplitude return vector must be non-null." << std::endl;
     assert(amplitudes != nullptr);
