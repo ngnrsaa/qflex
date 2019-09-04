@@ -3,8 +3,6 @@ TARGET1 = qflex
 #Set these:
 CXX = icpc
 
-MKL_DIR = /home/alan
-
 FLAGS =  -mkl  -qopenmp  -O3  -std=c++17  -march=native
 
 TEST_DIR = tests
