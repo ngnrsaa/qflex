@@ -133,8 +133,6 @@ TEST(MKLTensorTest, IndexBundling) {
   }
 }
 
-
-
 // Reorders indices of a tensor and verifies that data changes accordingly.
 TEST(MKLTensorTest, IndexReordering) {
   std::vector<std::string> indices = {"a", "b", "c"};

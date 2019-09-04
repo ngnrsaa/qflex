@@ -133,7 +133,6 @@ MKLTensor::MKLTensor(std::vector<std::string> indices,
   _data = data;
 }
 
-
 MKLTensor::MKLTensor(const MKLTensor& other) { _copy(other); }
 
 MKLTensor::~MKLTensor() { _clear(); }
@@ -312,7 +311,6 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
 
 void MKLTensor::_naive_reorder(std::vector<std::string> new_ordering,
                                s_type* scratch_copy) {
-  
   // Don't do anything if there is nothing to reorder.
   if (new_ordering == _indices) return;
 
@@ -415,7 +413,6 @@ void MKLTensor::_naive_reorder(std::vector<std::string> new_ordering,
 void MKLTensor::_fast_reorder(std::vector<std::string> new_ordering,
                               s_type* scratch_copy) {
   // Create binary orderings.
-  
   std::vector<std::string> old_ordering(_indices);
   std::vector<size_t> old_dimensions(_dimensions);
   int num_indices = old_ordering.size();
@@ -656,7 +653,6 @@ void MKLTensor::_right_reorder(const std::vector<std::string>& old_ordering,
 void MKLTensor::_left_reorder(const std::vector<std::string>& old_ordering,
                               const std::vector<std::string>& new_ordering,
                               int num_indices_right, s_type* scratch_copy) {
-  
   // Don't do anything if there is nothing to reorder.
   if (new_ordering == old_ordering) return;
 
@@ -718,7 +714,6 @@ void MKLTensor::_left_reorder(const std::vector<std::string>& old_ordering,
 
 void MKLTensor::reorder(std::vector<std::string> new_ordering,
                         s_type* scratch_copy) {
-  
   // Asserts.
   if (!_vector_s_in_vector_s(new_ordering, _indices) || !_vector_s_in_vector_s(_indices, new_ordering)) {
     std::cout << "new_ordering: {";
@@ -803,7 +798,6 @@ void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
 
 void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int m, int k) {
-  
   s_type alpha = 1.0;
   s_type beta = 0.0;
   cblas_cgemv(CblasRowMajor, CblasNoTrans, m, k, &alpha, A_data, std::max(1, k),
@@ -812,7 +806,6 @@ void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
 
 void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int n, int k) {
-  
   s_type alpha = 1.0;
   s_type beta = 0.0;
   cblas_cgemv(CblasRowMajor, CblasTrans, k, n, &alpha, A_data, std::max(1, n),
@@ -821,7 +814,6 @@ void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
 
 void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int k) {
-  
   cblas_cdotu_sub(k, A_data, 1, B_data, 1, C_data);
 }
 
@@ -943,7 +935,6 @@ void _generate_binary_reordering_map(
   int dim = 2;  // Hard coded!
   int num_indices = map_old_to_new_idxpos.size();
   // Assert
-  // not tested
   if ((size_t)pow(dim, num_indices) != map_old_to_new_position.size()) {
     std::cout << "Size of map: " << map_old_to_new_position.size()
     << " must be equal to 2^num_indices: " 

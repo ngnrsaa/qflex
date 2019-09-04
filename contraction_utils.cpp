@@ -4,10 +4,8 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
-#include <string>
 #include <regex>
 #include <sstream>
-#include <vector>
 #include <unordered_set>
 
 namespace qflex {
@@ -18,7 +16,6 @@ ContractionData ContractionData::Initialize(
     const std::list<ContractionOperation>& ordering,
     std::vector<std::vector<MKLTensor>>* tensor_grid,
     std::vector<std::complex<double>>* amplitudes) {
-  
   ContractionData data;
   data.tensor_grid_ = tensor_grid;
   data.amplitudes_ = amplitudes;
@@ -27,7 +24,6 @@ ContractionData ContractionData::Initialize(
   int bond_dim = 0;
 
   // Indices of tensor_grid elements during the contraction.
-  // seg maybe
   std::vector<std::vector<std::vector<std::string>>> grid_indices(
       tensor_grid->size());
   for (int i = 0; i < tensor_grid->size(); ++i) {
@@ -257,7 +253,6 @@ bool ordering_data_to_contraction_ordering(
     std::istream* ordering_data, const int I, const int J,
     const std::optional<std::vector<std::vector<int>>>& off,
     std::list<ContractionOperation>* ordering) {
-  
   static const std::regex cut_value_regex("\\([0-9,]*\\)");
   std::string line;
   std::string error_msg;

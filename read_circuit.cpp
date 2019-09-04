@@ -228,7 +228,6 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
     if (lpos == -1) {
       char error[200];
-      // not tested
       snprintf(error, sizeof(error), "Left hand side of pair not found: (%d,%d),(%d,%d)",
                local[0], local[1], lhs[0], lhs[1]);
       std::cout << error << std::endl;
@@ -247,7 +246,6 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
     if (rpos == -1) {
       char error[200];
-      // not tested
       snprintf(error, sizeof(error), "Right hand side of pair not found: (%d,%d),(%d,%d)",
                local[0], local[1], rhs[0], rhs[1]);
       std::cout << error << std::endl;
@@ -337,14 +335,12 @@ void circuit_data_to_grid_of_tensors(
   {
     size_t off_size = off.has_value() ? off.value().size() : 0;
     size_t A_size = A.has_value() ? A.value().size() : 0;
-    // Not tested
     if (initial_conf.size() != num_qubits - off_size) {
       std::cout << "Size of initial_conf: " << initial_conf.size() 
       << ", must be equal to the number of qubits: " 
       << num_qubits - off_size << "." << std::endl;
       assert(initial_conf.size() == num_qubits - off_size);
     }
-    // Not tested
     if (final_conf_B.size() != num_qubits - off_size - A_size) {
       std::cout << "Size of final_conf_B: " << final_conf_B.size() 
       << ", must be equal to the number of qubits: " 
@@ -660,7 +656,6 @@ void read_wave_function_evolution(
     std::vector<std::vector<std::string>>& outputs, s_type* scratch) {
   // Open file.
   auto io = std::ifstream(filename);
-  // Not tested.
   if (io.bad()) {
     std::cout << "Cannot open file: " << filename << std::endl;
     assert(io.good());
@@ -677,7 +672,6 @@ void read_wave_function_evolution(
   io >> num_qubits;
 
   // Assert for the number of qubits.
-  // Not tested.
   if (num_qubits != I) {
     std::cout << "I: " << I << " must be equal to the number of qubits: "
     << num_qubits << std::endl;

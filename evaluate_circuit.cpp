@@ -5,7 +5,6 @@ namespace qflex {
 std::vector<std::vector<int>> read_grid_layout_from_stream(
     std::istream* grid_data, int I, int J) {
   std::vector<std::vector<int>> qubits_off;
-  
   bool on;
   for (int i = 0; i < I; ++i) {
     for (int j = 0; j < J; ++j) {
@@ -32,7 +31,7 @@ std::vector<std::vector<int>> read_grid_layout_from_stream(
 void get_output_states(const std::list<ContractionOperation>& ordering,
                        std::vector<std::vector<int>>* final_qubits,
                        std::vector<std::string>* output_states) {
-  
+
   output_states->push_back("");
   std::vector<std::string> temp_output_states;
   for (const auto& op : ordering) {
@@ -57,7 +56,6 @@ void get_output_states(const std::list<ContractionOperation>& ordering,
 std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     QflexInput* input) {
   // Set precision for the printed floats.
-  
   std::cout.precision(12);
 
   // Timing variables.
