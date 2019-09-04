@@ -794,7 +794,6 @@ void MKLTensor::print_data() const {
 // use mkl if complexity < some value.
 void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int m, int n, int k) {
-  s
   s_type alpha = 1.0;
   s_type beta = 0.0;
   cblas_cgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, &alpha,
