@@ -47,7 +47,7 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
                                  0., 0., 0., -1.})}});
 // clang-format on
 
-std::vector<s_type> gate_array(const std::string& gate_name) {
+std::vector<s_type> gate_array(const std::string &gate_name) {
   static const std::regex rz_regex("rz\\((.*)\\)");
   std::smatch match;
   if (std::regex_match(gate_name, match, rz_regex) && match.size() > 1) {
@@ -72,7 +72,7 @@ std::vector<s_type> gate_array(const std::string& gate_name) {
  * qubit, and third the vector with the singular values (informational only).
  */
 std::vector<std::vector<s_type>> fSim(double theta, double phi,
-                                      s_type* scratch) {
+                                      s_type *scratch) {
   std::vector<s_type> coeffs(
       {{0.0, -0.5 * sin(theta)},
        {0.0, -0.5 * sin(theta)},
@@ -121,7 +121,7 @@ std::vector<std::vector<s_type>> fSim(double theta, double phi,
     std::vector<s_type> m2;
     cnmm(s_type c_, double n_, std::vector<s_type> m1_, std::vector<s_type> m2_)
         : c(c_), n(n_), m1(m1_), m2(m2_) {}
-    bool operator<(const cnmm& other) const { return n < other.n; }
+    bool operator<(const cnmm &other) const { return n < other.n; }
   };
 
   std::vector<cnmm> my_cnmm;
@@ -135,8 +135,10 @@ std::vector<std::vector<s_type>> fSim(double theta, double phi,
 
   std::vector<s_type> q1_tensor, q2_tensor;
   for (auto v : my_cnmm) {
-    for (auto w : v.m1) q1_tensor.emplace_back(w);
-    for (auto w : v.m2) q2_tensor.emplace_back(w);
+    for (auto w : v.m1)
+      q1_tensor.emplace_back(w);
+    for (auto w : v.m2)
+      q2_tensor.emplace_back(w);
   }
 
   MKLTensor q1_mkltensor({"v", "q1i", "q2i"}, {4, 2, 2}, q1_tensor);
@@ -164,7 +166,7 @@ std::vector<std::vector<s_type>> fSim(double theta, double phi,
 // of how many qubits they operate on and whether they're parametrized. Put gate
 // array handling into its own class.
 std::tuple<std::vector<s_type>, std::vector<s_type>, std::vector<size_t>>
-gate_arrays(const std::string& gate_name, s_type* scratch) {
+gate_arrays(const std::string &gate_name, s_type *scratch) {
   static const std::regex fsim_regex("fsim\\((.*),(.*)\\)");
   std::smatch match;
   if (gate_name == "cz") {
@@ -190,8 +192,9 @@ gate_arrays(const std::string& gate_name, s_type* scratch) {
  * @param local vector<int> of the target qubit coordinates.
  * @return function for use as a comparator in std::sort.
  */
-std::function<bool(std::vector<int>, std::vector<int>)> order_func(
-    const std::list<ContractionOperation>& ordering, std::vector<int> local) {
+std::function<bool(std::vector<int>, std::vector<int>)>
+order_func(const std::list<ContractionOperation> &ordering,
+           std::vector<int> local) {
   return [&ordering, local](const std::vector<int> lhs,
                             const std::vector<int> rhs) {
     // Cuts are projected early and should be ordered first.
@@ -206,10 +209,13 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     } else {
       rhs_pair = {rhs, local};
     }
-    for (const auto& op : ordering) {
-      if (op.op_type != ContractionOperation::CUT) continue;
-      if (lhs_pair == op.cut.tensors) return true;
-      if (rhs_pair == op.cut.tensors) return false;
+    for (const auto &op : ordering) {
+      if (op.op_type != ContractionOperation::CUT)
+        continue;
+      if (lhs_pair == op.cut.tensors)
+        return true;
+      if (rhs_pair == op.cut.tensors)
+        return false;
     }
 
     std::string lpatch = "null";
@@ -217,8 +223,9 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     int lpos = -1;
     int rpos = -1;
     int op_num = 0;
-    for (const auto& op : ordering) {
-      if (op.op_type != ContractionOperation::EXPAND) continue;
+    for (const auto &op : ordering) {
+      if (op.op_type != ContractionOperation::EXPAND)
+        continue;
       if (lhs == op.expand.tensor) {
         lpatch = op.expand.id;
         lpos = op_num;
@@ -228,15 +235,17 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
     if (lpos == -1) {
       char error[200];
-      snprintf(error, sizeof(error), "Left hand side of pair not found: (%d,%d),(%d,%d)",
-               local[0], local[1], lhs[0], lhs[1]);
+      snprintf(error, sizeof(error),
+               "Left hand side of pair not found: (%d,%d),(%d,%d)", local[0],
+               local[1], lhs[0], lhs[1]);
       std::cout << error << std::endl;
       assert(false && "Halting reordering.");
     }
 
     op_num = 0;
-    for (const auto& op : ordering) {
-      if (op.op_type != ContractionOperation::EXPAND) continue;
+    for (const auto &op : ordering) {
+      if (op.op_type != ContractionOperation::EXPAND)
+        continue;
       if (rhs == op.expand.tensor) {
         rpatch = op.expand.id;
         rpos = op_num;
@@ -246,8 +255,9 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
     if (rpos == -1) {
       char error[200];
-      snprintf(error, sizeof(error), "Right hand side of pair not found: (%d,%d),(%d,%d)",
-               local[0], local[1], rhs[0], rhs[1]);
+      snprintf(error, sizeof(error),
+               "Right hand side of pair not found: (%d,%d),(%d,%d)", local[0],
+               local[1], rhs[0], rhs[1]);
       std::cout << error << std::endl;
       assert(false && "Halting reordering.");
     }
@@ -257,8 +267,9 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
 
     std::string local_patch;
-    for (const auto& op : ordering) {
-      if (op.op_type != ContractionOperation::EXPAND) continue;
+    for (const auto &op : ordering) {
+      if (op.op_type != ContractionOperation::EXPAND)
+        continue;
       if (local == op.expand.tensor) {
         local_patch = op.expand.id;
         break;
@@ -274,15 +285,20 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
     // Both lhs and rhs are in different patches from local_patch; find out
     // which merges with the local patch first.
-    for (const auto& op : ordering) {
-      if (op.op_type != ContractionOperation::MERGE) continue;
+    for (const auto &op : ordering) {
+      if (op.op_type != ContractionOperation::MERGE)
+        continue;
       if (local_patch == op.merge.source_id) {
-        if (lpatch == op.merge.target_id) return true;
-        if (rpatch == op.merge.target_id) return false;
+        if (lpatch == op.merge.target_id)
+          return true;
+        if (rpatch == op.merge.target_id)
+          return false;
         local_patch = op.merge.target_id;
       } else if (local_patch == op.merge.target_id) {
-        if (lpatch == op.merge.source_id) return true;
-        if (rpatch == op.merge.source_id) return false;
+        if (lpatch == op.merge.source_id)
+          return true;
+        if (rpatch == op.merge.source_id)
+          return false;
         // local_patch is already the target ID.
       }
     }
@@ -297,15 +313,15 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
   };
 }
 
-}  // namespace
+} // namespace
 
 void circuit_data_to_grid_of_tensors(
-    std::istream* circuit_data, int I, int J, int K,
+    std::istream *circuit_data, int I, int J, int K,
     const std::string initial_conf, const std::string final_conf_B,
-    const std::optional<std::vector<std::vector<int>>>& A,
-    const std::optional<std::vector<std::vector<int>>>& off,
-    std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors,
-    s_type* scratch) {
+    const std::optional<std::vector<std::vector<int>>> &A,
+    const std::optional<std::vector<std::vector<int>>> &off,
+    std::vector<std::vector<std::vector<MKLTensor>>> &grid_of_tensors,
+    s_type *scratch) {
   // Gotten from the file.
   int num_qubits, cycle, q1, q2;
   std::string gate;
@@ -315,18 +331,18 @@ void circuit_data_to_grid_of_tensors(
 
   // The first element should be the number of qubits
   *(circuit_data) >> num_qubits;
-  // TODO: Decide whether to determine number of qubits from the file or from I * J
+  // TODO: Decide whether to determine number of qubits from the file or from I
+  // * J
   if (num_qubits != I * J) {
-    std::cout << "The number of qubits read from the file: " 
-    << num_qubits << ", does not match I*J: " << I * J 
-    << "." << std::endl;
+    std::cout << "The number of qubits read from the file: " << num_qubits
+              << ", does not match I*J: " << I * J << "." << std::endl;
     num_qubits = I * J;
   }
 
   // Github issue is open regarding this, will not occur
   if (num_qubits != I * J) {
-    std::cout << "I*J must be equal to the number of qubits. Instead, I*J = " << I * J 
-              << " and num_qubits = " << num_qubits << std::endl;
+    std::cout << "I*J must be equal to the number of qubits. Instead, I*J = "
+              << I * J << " and num_qubits = " << num_qubits << std::endl;
     assert(num_qubits == I * J);
   }
 
@@ -335,15 +351,15 @@ void circuit_data_to_grid_of_tensors(
     size_t off_size = off.has_value() ? off.value().size() : 0;
     size_t A_size = A.has_value() ? A.value().size() : 0;
     if (initial_conf.size() != num_qubits - off_size) {
-      std::cout << "Size of initial_conf: " << initial_conf.size() 
-      << ", must be equal to the number of qubits: " 
-      << num_qubits - off_size << "." << std::endl;
+      std::cout << "Size of initial_conf: " << initial_conf.size()
+                << ", must be equal to the number of qubits: "
+                << num_qubits - off_size << "." << std::endl;
       assert(initial_conf.size() == num_qubits - off_size);
     }
     if (final_conf_B.size() != num_qubits - off_size - A_size) {
-      std::cout << "Size of final_conf_B: " << final_conf_B.size() 
-      << ", must be equal to the number of qubits: " 
-      << num_qubits - off_size - A_size << "." << std::endl;
+      std::cout << "Size of final_conf_B: " << final_conf_B.size()
+                << ", must be equal to the number of qubits: "
+                << num_qubits - off_size - A_size << "." << std::endl;
       assert(final_conf_B.size() == num_qubits - off_size - A_size);
     }
   }
@@ -480,7 +496,7 @@ void circuit_data_to_grid_of_tensors(
     std::string delta_gate = (final_conf_B[idx] == '0') ? "delta_0" : "delta_1";
     grid_of_groups_of_tensors[i][j][k].push_back(
         MKLTensor({"th"}, {2}, gate_array(delta_gate)));
-    idx += 1;  // Move in B only.
+    idx += 1; // Move in B only.
   }
 
   // Contracting each group of gates into a single tensor.
@@ -491,9 +507,9 @@ void circuit_data_to_grid_of_tensors(
           continue;
         }
 
-        std::vector<MKLTensor>& group = grid_of_groups_of_tensors[i][j][k];
+        std::vector<MKLTensor> &group = grid_of_groups_of_tensors[i][j][k];
         std::vector<MKLTensor> group_containers(
-            SUPER_CYCLE_DEPTH + 2,  // +2 for d and H.
+            SUPER_CYCLE_DEPTH + 2, // +2 for d and H.
             MKLTensor({""}, {(int)pow(DIM, 6)}));
         group_containers[0] = group[0];
         int t = 1;
@@ -532,11 +548,11 @@ void circuit_data_to_grid_of_tensors(
 }
 
 void grid_of_tensors_3D_to_2D(
-    std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors_3D,
-    std::vector<std::vector<MKLTensor>>& grid_of_tensors_2D,
+    std::vector<std::vector<std::vector<MKLTensor>>> &grid_of_tensors_3D,
+    std::vector<std::vector<MKLTensor>> &grid_of_tensors_2D,
     std::optional<std::vector<std::vector<int>>> A,
     std::optional<std::vector<std::vector<int>>> off,
-    const std::list<ContractionOperation>& ordering, s_type* scratch) {
+    const std::list<ContractionOperation> &ordering, s_type *scratch) {
   // Get dimensions and super_dim = DIM^k.
   const int I = grid_of_tensors_3D.size();
   const int J = grid_of_tensors_3D[0].size();
@@ -556,8 +572,8 @@ void grid_of_tensors_3D_to_2D(
       }
       std::vector<MKLTensor> group_containers =
           std::vector<MKLTensor>(2, MKLTensor({""}, {container_dim}));
-      MKLTensor* source_container = &group_containers[0];
-      MKLTensor* target_container = &group_containers[1];
+      MKLTensor *source_container = &group_containers[0];
+      MKLTensor *target_container = &group_containers[1];
 
       if (K == 1) {
         grid_of_tensors_2D[i][j] = grid_of_tensors_3D[i][j][0];
@@ -567,7 +583,7 @@ void grid_of_tensors_3D_to_2D(
         for (int k = 1; k < K - 1; ++k) {
           multiply(*source_container, grid_of_tensors_3D[i][j][k + 1],
                    *target_container, scratch);
-          MKLTensor* swap_container = source_container;
+          MKLTensor *swap_container = source_container;
           source_container = target_container;
           target_container = swap_container;
         }
@@ -613,7 +629,7 @@ void grid_of_tensors_3D_to_2D(
       auto order_fn = order_func(ordering, local);
       std::sort(pairs.begin(), pairs.end(), order_fn);
 
-      for (const auto& pair : pairs) {
+      for (const auto &pair : pairs) {
         std::vector<int> q1, q2;
         if (pair[0] < i || pair[1] < j) {
           q1 = pair;
@@ -650,9 +666,9 @@ void grid_of_tensors_3D_to_2D(
 
 // This function is currently not being called.
 void read_wave_function_evolution(
-    std::string filename, int I, std::vector<MKLTensor>& gates,
-    std::vector<std::vector<std::string>>& inputs,
-    std::vector<std::vector<std::string>>& outputs, s_type* scratch) {
+    std::string filename, int I, std::vector<MKLTensor> &gates,
+    std::vector<std::vector<std::string>> &inputs,
+    std::vector<std::vector<std::string>> &outputs, s_type *scratch) {
   // Open file.
   auto io = std::ifstream(filename);
   if (io.bad()) {
@@ -672,15 +688,15 @@ void read_wave_function_evolution(
 
   // Assert for the number of qubits.
   if (num_qubits != I) {
-    std::cout << "I: " << I << " must be equal to the number of qubits: "
-    << num_qubits << std::endl;
+    std::cout << "I: " << I
+              << " must be equal to the number of qubits: " << num_qubits
+              << std::endl;
     assert(num_qubits == I);
   }
-  
 
   std::string line;
   while (getline(io, line))
-    if (line.size() && line[0] != '#') {  // Avoid comments
+    if (line.size() && line[0] != '#') { // Avoid comments
       std::stringstream ss(line);
       // The first element is the cycle
       ss >> cycle;
@@ -720,4 +736,4 @@ void read_wave_function_evolution(
   scratch = NULL;
 }
 
-}  // namespace qflex
+} // namespace qflex

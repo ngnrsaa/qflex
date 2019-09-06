@@ -286,8 +286,13 @@ TEST(MKLTensorDeathTest, InvalidInput) {
   ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_x, scratch.data()), "");
 }
 
-}  // namespace
-}  // namespace qflex
+TEST(MKLTensorVectorToString, IntVectorToString) {
+  std::vector<int> int_test = {1, 2, 4, 8};
+  EXPECT_EQ(_int_vector_to_string(int_test), "{1, 2, 4, 8}");
+}
+
+} // namespace
+} // namespace qflex
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

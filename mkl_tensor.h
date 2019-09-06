@@ -31,7 +31,7 @@ typedef std::complex<float> s_type;
  * Represents an MKLTensor.
  */
 class MKLTensor {
- public:
+public:
   /**
    * Creates an uninitialized MKLTensor.
    */
@@ -59,7 +59,7 @@ class MKLTensor {
    * dimensions.
    */
   MKLTensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
-            const std::vector<s_type>& data);
+            const std::vector<s_type> &data);
 
   /**
    * Creates an MKLTensor. A pointer to the data is passed.
@@ -71,13 +71,13 @@ class MKLTensor {
    * the user to provide enough allocated memory to store the MKLTensor.
    */
   MKLTensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
-            s_type* data);
+            s_type *data);
 
   /**
    * Copy constructor: creates a new MKLTensor that is a copy of another.
    * @param other MKLTensor to be copied.
    */
-  MKLTensor(const MKLTensor& other);
+  MKLTensor(const MKLTensor &other);
 
   /**
    * Destructor: frees all memory associated with a given MKLTensor object.
@@ -95,47 +95,47 @@ class MKLTensor {
    * @param other MKLTensor to copy into the current MKLTensor.
    * @return The current MKLTensor for assignment chaining.
    */
-  const MKLTensor& operator=(const MKLTensor& other);
+  const MKLTensor &operator=(const MKLTensor &other);
 
   /**
    * Get inidices.
    * @return const reference to std::vector<std::string> of indices.
    */
-  const std::vector<std::string>& get_indices() const;
+  const std::vector<std::string> &get_indices() const;
 
   /**
    * Set inidices. This function is deprecated. Use rename_index() or
    * set_dimensions_and_indices().
    * @param const reference to std::vector<std::string> of indices.
    */
-  void set_indices(const std::vector<std::string>& indices);
+  void set_indices(const std::vector<std::string> &indices);
 
   /**
    * Get dimensions.
    * @return const reference to std::vector<int> of dimensions.
    */
-  const std::vector<size_t>& get_dimensions() const;
+  const std::vector<size_t> &get_dimensions() const;
 
   /**
    * Set dimensions. This function is deprecated. Use rename_index() or
    * set_dimensions_and_indices().
    * @param const reference to std::vector<int> of dimensions.
    */
-  void set_dimensions(const std::vector<size_t>& dimensions);
+  void set_dimensions(const std::vector<size_t> &dimensions);
 
   /**
    * Set dimensions and indices.
    * @param const reference to std::vector<std::string> of indices.
    * @param const reference to std::vector<int> of dimensions.
    */
-  void set_indices_and_dimensions(const std::vector<std::string>& indices,
-                                  const std::vector<size_t>& dimensions);
+  void set_indices_and_dimensions(const std::vector<std::string> &indices,
+                                  const std::vector<size_t> &dimensions);
 
   /**
    * Get index_to_dimension dictionary (or unordered_map).
    * @return const reference to unordered_map of index to dimensions.
    */
-  const std::unordered_map<std::string, size_t>& get_index_to_dimension() const;
+  const std::unordered_map<std::string, size_t> &get_index_to_dimension() const;
 
   /**
    * Generate index_to_dimension map from the object's indices and
@@ -160,13 +160,13 @@ class MKLTensor {
    * Get data.
    * @return s_type * to the data of the MKLTensor.
    */
-  s_type* data();
+  s_type *data();
 
   /**
    * Get data.
    * @return const s_type * to the data of the MKLTensor.
    */
-  const s_type* data() const;
+  const s_type *data() const;
 
   /**
    * Project tensor to a value on a particular index. The current MKLTensor
@@ -182,7 +182,7 @@ class MKLTensor {
    * dimensions will be initialized correctly from the project() function.
    */
   void project(std::string index, size_t index_value,
-               MKLTensor& projection_tensor) const;
+               MKLTensor &projection_tensor) const;
 
   /**
    * Rename an index of the MKLTensor.
@@ -212,7 +212,7 @@ class MKLTensor {
    * @param scratch_copy Pointer to s_type with space allocated for scratch
    * work. Allocate at least as much space as the size of the MKLTensor.
    */
-  void reorder(std::vector<std::string> new_ordering, s_type* scratch_copy);
+  void reorder(std::vector<std::string> new_ordering, s_type *scratch_copy);
 
   /**
    * Multiply MKLTensor by scalar.
@@ -242,12 +242,12 @@ class MKLTensor {
    */
   void print_data() const;
 
- private:
+private:
   // Storage.
   std::vector<std::string> _indices;
   std::vector<size_t> _dimensions;
   std::unordered_map<std::string, size_t> _index_to_dimension;
-  s_type* _data;
+  s_type *_data;
 
   // Allocated data space. This value does not change after initialization.
   size_t _capacity;
@@ -262,8 +262,8 @@ class MKLTensor {
    * @param dimensions std::vector<int> with the ordered dimensions of the
    * indices.
    */
-  void _init(const std::vector<std::string>& indices,
-             const std::vector<size_t>& dimensions);
+  void _init(const std::vector<std::string> &indices,
+             const std::vector<size_t> &dimensions);
 
   /**
    * Helper function for the destructor. Clear memory.
@@ -277,7 +277,7 @@ class MKLTensor {
    * be allocated. Changing the size of an MKLTensor is not allowed.
    * @param other MKLTensor to copy into the current MKLTensor.
    */
-  void _copy(const MKLTensor& other);
+  void _copy(const MKLTensor &other);
 
   /**
    * Helper function for reorder(). It is called when smart reordering doesn't
@@ -286,7 +286,7 @@ class MKLTensor {
    * @param scratch_copy Pointer to an s_type array for scracth copying work.
    */
   void _naive_reorder(std::vector<std::string> new_ordering,
-                      s_type* scratch_copy);
+                      s_type *scratch_copy);
 
   /**
    * Helper function for reorder(). It is called when smart reordering
@@ -295,7 +295,7 @@ class MKLTensor {
    * @param scratch_copy Pointer to an s_type array for scratch copying work.
    */
   void _fast_reorder(std::vector<std::string> new_ordering,
-                     s_type* scratch_copy);
+                     s_type *scratch_copy);
 
   /**
    * Helper function for reorder(). Only right moves are taken. For some
@@ -307,8 +307,8 @@ class MKLTensor {
    * new ordering of the right indices.
    * @param num_indices_right number of indices being reordered on the right.
    */
-  void _right_reorder(const std::vector<std::string>& old_ordering,
-                      const std::vector<std::string>& new_ordering,
+  void _right_reorder(const std::vector<std::string> &old_ordering,
+                      const std::vector<std::string> &new_ordering,
                       int num_indices_right);
 
   /**
@@ -324,9 +324,9 @@ class MKLTensor {
    * @param scratch_copy Pointer to an s_type array where scratch copy work
    * is done.
    */
-  void _left_reorder(const std::vector<std::string>& old_ordering,
-                     const std::vector<std::string>& new_ordering,
-                     int num_indices_right, s_type* scratch_copy);
+  void _left_reorder(const std::vector<std::string> &old_ordering,
+                     const std::vector<std::string> &new_ordering,
+                     int num_indices_right, s_type *scratch_copy);
 };
 
 /**
@@ -339,7 +339,7 @@ class MKLTensor {
  * @param n int with the right dimension of B.
  * @param k int with the left dimension of C.
  */
-void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
+void _multiply_MM(const s_type *A_data, const s_type *B_data, s_type *C_data,
                   int m, int n, int k);
 
 /**
@@ -351,7 +351,7 @@ void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
  * @param m int with the left dimension of A.
  * @param k int with the left dimension of C.
  */
-void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
+void _multiply_Mv(const s_type *A_data, const s_type *B_data, s_type *C_data,
                   int m, int k);
 
 /**
@@ -363,7 +363,7 @@ void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
  * @param n int with the right dimension of B.
  * @param k int with the left dimension of C.
  */
-void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
+void _multiply_vM(const s_type *A_data, const s_type *B_data, s_type *C_data,
                   int n, int k);
 
 /**
@@ -374,7 +374,7 @@ void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
  * @param C_data pointer to s_type with the data of scalar C.
  * @param k int with the left dimension of C.
  */
-void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
+void _multiply_vv(const s_type *A_data, const s_type *B_data, s_type *C_data,
                   int k);
 
 /**
@@ -397,7 +397,7 @@ void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
  * reordering. It has to allocate at least as much max(A.size(), B.size())
  * memory.
  */
-void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy);
+void multiply(MKLTensor &A, MKLTensor &B, MKLTensor &C, s_type *scratch_copy);
 
 /**
  * Creates a reordering map for the data of a tensor with binary indices
@@ -414,8 +414,22 @@ void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy);
  * argument.
  */
 void _generate_binary_reordering_map(
-    const std::vector<int>& map_old_to_new_idxpos,
-    std::vector<int>& map_old_to_new_position);
+    const std::vector<int> &map_old_to_new_idxpos,
+    std::vector<int> &map_old_to_new_position);
+
+/**
+ * Converts an int vector into a string
+ * @param input vector<int> int vector to convert.
+ * @return string containing input vector contents
+ **/
+std::string _int_vector_to_string(std::vector<int> input);
+
+/**
+ * Converts a string vector into a string
+ * @param input vector<string> string vector to convert.
+ * @return string containing input vector contents
+ **/
+std::string _string_vector_to_string(std::vector<std::string> input);
 
 /**
  * Generates the standard name of the reordering as a std::string:
@@ -426,15 +440,8 @@ void _generate_binary_reordering_map(
  * dimensions.
  * @return std::string with the standard name of the ordering.
  */
-std::string _reordering_to_string(const std::vector<int>& map_old_to_new_idxpos,
-                                  const std::vector<size_t>& old_dimensions);
-
-                                  /**
- * Converts a string vector into a string
- * @param input vector<string> string vector to convert.
- * @return string containing input vector contents
- **/
-std::string _string_vector_to_string(std::vector<std::string> input);
+std::string _reordering_to_string(const std::vector<int> &map_old_to_new_idxpos,
+                                  const std::vector<size_t> &old_dimensions);
 
 /**
  * Checks whether a particular std::string is in a std::vector<std::string>.
@@ -442,7 +449,7 @@ std::string _string_vector_to_string(std::vector<std::string> input);
  * @param v const reference to std::vector<std::string> where the element might
  * be in.
  */
-bool _string_in_vector(const std::string& s, const std::vector<std::string>& v);
+bool _string_in_vector(const std::string &s, const std::vector<std::string> &v);
 
 /**
  * Checks whether a particular std::string is in a std::vector<std::string>.
@@ -450,8 +457,8 @@ bool _string_in_vector(const std::string& s, const std::vector<std::string>& v);
  * @param v const reference to std::vector<std::string> where the element might
  * be in.
  */
-bool _vector_s_in_vector_s(const std::vector<std::string>& v,
-                           const std::vector<std::string>& w);
+bool _vector_s_in_vector_s(const std::vector<std::string> &v,
+                           const std::vector<std::string> &w);
 
 /**
  * Gets the intersection between two std::vector<std::string>.
@@ -460,8 +467,9 @@ bool _vector_s_in_vector_s(const std::vector<std::string>& v,
  * @return std::vector<std::string> intersection of v and w. Preserves the
  * ordering of v.
  */
-std::vector<std::string> _vector_intersection(
-    const std::vector<std::string>& v, const std::vector<std::string>& w);
+std::vector<std::string>
+_vector_intersection(const std::vector<std::string> &v,
+                     const std::vector<std::string> &w);
 
 /**
  * Gets the union between two std::vector<std::string>.
@@ -470,8 +478,8 @@ std::vector<std::string> _vector_intersection(
  * @return std::vector<std::string> intersection of v and w. The ordering is
  * that one of. v followed by the elements that only appear in w, in w's order.
  */
-std::vector<std::string> _vector_union(const std::vector<std::string>& v,
-                                       const std::vector<std::string>& w);
+std::vector<std::string> _vector_union(const std::vector<std::string> &v,
+                                       const std::vector<std::string> &w);
 
 /**
  * Gets the subtraction of two std::vector<std::string>.
@@ -479,8 +487,8 @@ std::vector<std::string> _vector_union(const std::vector<std::string>& v,
  * @param w const reference to second std::vector<std::string>.
  * @return std::vector<std::string> with v-w in v's order.
  */
-std::vector<std::string> _vector_subtraction(const std::vector<std::string>& v,
-                                             const std::vector<std::string>& w);
+std::vector<std::string> _vector_subtraction(const std::vector<std::string> &v,
+                                             const std::vector<std::string> &w);
 
 /**
  * Gets concatenation of two vectors.
@@ -488,9 +496,10 @@ std::vector<std::string> _vector_subtraction(const std::vector<std::string>& v,
  * @param w const reference to second std::vector<std::string>.
  * @return std::vector<std::string> with concatenation of v and w.
  */
-std::vector<std::string> _vector_concatenation(
-    const std::vector<std::string>& v, const std::vector<std::string>& w);
+std::vector<std::string>
+_vector_concatenation(const std::vector<std::string> &v,
+                      const std::vector<std::string> &w);
 
-}  // namespace qflex
+} // namespace qflex
 
-#endif  // MKL_TENSOR_H
+#endif // MKL_TENSOR_H

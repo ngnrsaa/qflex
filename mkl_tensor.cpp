@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <iterator>
 
 // Time
 #include <chrono>
@@ -68,8 +69,8 @@ std::unordered_map<std::string, std::vector<int>> _REORDER_MAPS;
 
 ///////////////////////////// CLASS FUNCTIONS /////////////////////////////////
 
-void MKLTensor::_init(const std::vector<std::string>& indices,
-                      const std::vector<size_t>& dimensions) {
+void MKLTensor::_init(const std::vector<std::string> &indices,
+                      const std::vector<size_t> &dimensions) {
   if (indices.size() != dimensions.size()) {
     std::cout << "The number of indices: " << indices.size()
               << ", and number of dimensions: " << dimensions.size()
@@ -87,7 +88,7 @@ void MKLTensor::_clear() {
   _data = NULL;
 }
 
-void MKLTensor::_copy(const MKLTensor& other) {
+void MKLTensor::_copy(const MKLTensor &other) {
   if (_indices.empty()) {
     _capacity = other.size();
     _data = new s_type[_capacity];
@@ -97,7 +98,8 @@ void MKLTensor::_copy(const MKLTensor& other) {
   }
   _init(other.get_indices(), other.get_dimensions());
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
-  for (size_t p = 0; p < other.size(); ++p) *(_data + p) = *(other.data() + p);
+  for (size_t p = 0; p < other.size(); ++p)
+    *(_data + p) = *(other.data() + p);
 }
 
 MKLTensor::MKLTensor() { _data = NULL; }
@@ -111,56 +113,58 @@ MKLTensor::MKLTensor(std::vector<std::string> indices,
 
 MKLTensor::MKLTensor(std::vector<std::string> indices,
                      std::vector<size_t> dimensions,
-                     const std::vector<s_type>& data)
+                     const std::vector<s_type> &data)
     : MKLTensor(indices, dimensions) {
   // Check that the data has the same length as this MKLTensor's size().
   size_t this_size = size();
   if (this_size != data.size()) {
     std::cout << "The vector data size: " << data.size()
-    << ", has to match the size of the MKLTensor: " << this_size 
-    << "." << std::endl;
+              << ", has to match the size of the MKLTensor: " << this_size
+              << "." << std::endl;
     assert(this_size == data.size());
   }
   _capacity = this_size;
   // Fill in the _data.
-  for (size_t i = 0; i < this_size; ++i) *(_data + i) = data[i];
+  for (size_t i = 0; i < this_size; ++i)
+    *(_data + i) = data[i];
 }
 
 MKLTensor::MKLTensor(std::vector<std::string> indices,
-                     std::vector<size_t> dimensions, s_type* data) {
+                     std::vector<size_t> dimensions, s_type *data) {
   _init(indices, dimensions);
   _capacity = size();
   _data = data;
 }
 
-MKLTensor::MKLTensor(const MKLTensor& other) { _copy(other); }
+MKLTensor::MKLTensor(const MKLTensor &other) { _copy(other); }
 
 MKLTensor::~MKLTensor() { _clear(); }
 
-const MKLTensor& MKLTensor::operator=(const MKLTensor& other) {
+const MKLTensor &MKLTensor::operator=(const MKLTensor &other) {
   if (this != &other) {
     _copy(other);
   }
   return *this;
 }
 
-const std::vector<std::string>& MKLTensor::get_indices() const {
+const std::vector<std::string> &MKLTensor::get_indices() const {
   return _indices;
 }
 
-void MKLTensor::set_indices(const std::vector<std::string>& indices) {
+void MKLTensor::set_indices(const std::vector<std::string> &indices) {
   _indices = indices;
 }
 
-const std::vector<size_t>& MKLTensor::get_dimensions() const {
+const std::vector<size_t> &MKLTensor::get_dimensions() const {
   return _dimensions;
 }
 
-void MKLTensor::set_dimensions(const std::vector<size_t>& dimensions) {
+void MKLTensor::set_dimensions(const std::vector<size_t> &dimensions) {
   // Assert.
   if (_data) {
     size_t total_dim = 1;
-    for (int i = 0; i < dimensions.size(); ++i) total_dim *= dimensions[i];
+    for (int i = 0; i < dimensions.size(); ++i)
+      total_dim *= dimensions[i];
     if (capacity() < total_dim) {
       std::cout << "The total allocated space: " << capacity()
                 << ", is insufficient for the requested tensor dimensions: "
@@ -172,14 +176,14 @@ void MKLTensor::set_dimensions(const std::vector<size_t>& dimensions) {
 }
 
 void MKLTensor::set_indices_and_dimensions(
-    const std::vector<std::string>& indices,
-    const std::vector<size_t>& dimensions) {
+    const std::vector<std::string> &indices,
+    const std::vector<size_t> &dimensions) {
   // The following line takes care of the total size of the dimensions.
   set_dimensions(dimensions);
   _init(indices, dimensions);
 }
 
-const std::unordered_map<std::string, size_t>&
+const std::unordered_map<std::string, size_t> &
 MKLTensor::get_index_to_dimension() const {
   return _index_to_dimension;
 }
@@ -191,15 +195,16 @@ void MKLTensor::generate_index_to_dimension() {
 
 size_t MKLTensor::size() const {
   size_t total_dim = 1;
-  for (int i = 0; i < _dimensions.size(); ++i) total_dim *= _dimensions[i];
+  for (int i = 0; i < _dimensions.size(); ++i)
+    total_dim *= _dimensions[i];
   return total_dim;
 }
 
 size_t MKLTensor::capacity() const { return _capacity; }
 
-s_type* MKLTensor::data() { return _data; }
+s_type *MKLTensor::data() { return _data; }
 
-const s_type* MKLTensor::data() const { return _data; }
+const s_type *MKLTensor::data() const { return _data; }
 
 void MKLTensor::project(std::string index, size_t index_value,
                         MKLTensor &projection_tensor) const {
@@ -223,7 +228,7 @@ void MKLTensor::project(std::string index, size_t index_value,
   projection_tensor.generate_index_to_dimension();
 
   // Fill projection_tensor with result of projection.
-  s_type* projection_data = projection_tensor.data();
+  s_type *projection_data = projection_tensor.data();
   int projection_size = projection_tensor.size();
   int projection_begin = projection_size * index_value;
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
@@ -251,13 +256,13 @@ void MKLTensor::rename_index(std::string old_name, std::string new_name) {
 void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
                        std::string bundled_index) {
   // Asserts.
-  bool indices_to_bundle_in_indices = _vector_s_in_vector_s(indices_to_bundle, _indices);
+  bool indices_to_bundle_in_indices =
+      _vector_s_in_vector_s(indices_to_bundle, _indices);
   if (!indices_to_bundle_in_indices) {
     std::cout << "indices_to_bundle: "
-    << _string_vector_to_string(indices_to_bundle)
-    << " has to be contained in indices: " 
-    << _string_vector_to_string(_indices)
-    << "." << std::endl;
+              << _string_vector_to_string(indices_to_bundle)
+              << " has to be contained in indices: "
+              << _string_vector_to_string(_indices) << "." << std::endl;
     assert(_vector_s_in_vector_s(indices_to_bundle, _indices));
   }
   std::vector<std::string> subtracted_indices(
@@ -266,10 +271,10 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
       _vector_subtraction(_indices, subtracted_indices));
   if (indices_to_bundled_original_order != indices_to_bundle) {
     std::cout << "indices_to_bundle: "
-    << _string_vector_to_string(indices_to_bundle)
-    << " must be in its original order: "
-    << _string_vector_to_string(indices_to_bundled_original_order)
-    << "." << std::endl;
+              << _string_vector_to_string(indices_to_bundle)
+              << " must be in its original order: "
+              << _string_vector_to_string(indices_to_bundled_original_order)
+              << "." << std::endl;
     assert(indices_to_bundled_original_order == indices_to_bundle);
   }
 
@@ -296,9 +301,10 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
 }
 
 void MKLTensor::_naive_reorder(std::vector<std::string> new_ordering,
-                               s_type* scratch_copy) {
+                               s_type *scratch_copy) {
   // Don't do anything if there is nothing to reorder.
-  if (new_ordering == _indices) return;
+  if (new_ordering == _indices)
+    return;
 
   std::vector<std::string> old_ordering(_indices);
   std::vector<size_t> old_dimensions(_dimensions);
@@ -336,7 +342,8 @@ void MKLTensor::_naive_reorder(std::vector<std::string> new_ordering,
 // Start moving data around.
 // First copy all data into scratch.
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
-  for (size_t p = 0; p < total_dim; ++p) *(scratch_copy + p) = *(_data + p);
+  for (size_t p = 0; p < total_dim; ++p)
+    *(scratch_copy + p) = *(_data + p);
 
   // No combined efficient mapping from old to new positions with actual
   // copies in memory, all in small cache friendly (for old data, not new,
@@ -355,7 +362,8 @@ void MKLTensor::_naive_reorder(std::vector<std::string> new_ordering,
   // External loop loops over blocks.
   while (true) {
     // If end of entire opration, break.
-    if (po == total_dim - 1) break;
+    if (po == total_dim - 1)
+      break;
 
     internal_po = 0;
     // Each iteration of the while block goes through a new position.
@@ -375,9 +383,11 @@ void MKLTensor::_naive_reorder(std::vector<std::string> new_ordering,
           old_counter[j] = 0;
       }
       // If end of block or end of entire operation, break.
-      if ((++internal_po == MAX_RIGHT_DIM) || (po == total_dim - 1)) break;
+      if ((++internal_po == MAX_RIGHT_DIM) || (po == total_dim - 1))
+        break;
       // If last index (0) was increased, then go back to fastest index.
-      if (j < 0) break;
+      if (j < 0)
+        break;
     }
     // Copy data for this block, taking into account offset of small_map...
     // The following line is to avoid casting MAX_RIGHT_DIM to size_t
@@ -397,13 +407,14 @@ void MKLTensor::_naive_reorder(std::vector<std::string> new_ordering,
 }
 
 void MKLTensor::_fast_reorder(std::vector<std::string> new_ordering,
-                              s_type* scratch_copy) {
+                              s_type *scratch_copy) {
   // Create binary orderings.
   std::vector<std::string> old_ordering(_indices);
   std::vector<size_t> old_dimensions(_dimensions);
   int num_indices = old_ordering.size();
   size_t total_dim = 1;
-  for (int i = 0; i < num_indices; ++i) total_dim *= old_dimensions[i];
+  for (int i = 0; i < num_indices; ++i)
+    total_dim *= old_dimensions[i];
   // Create map_old_to_new_idxpos from old to new indices, and new_dimensions.
   std::vector<int> map_old_to_new_idxpos(num_indices);
   std::vector<size_t> new_dimensions(num_indices);
@@ -497,12 +508,12 @@ void MKLTensor::_fast_reorder(std::vector<std::string> new_ordering,
       std::vector<std::string> Rr_new_indices(
           new_binary_ordering.end() - extended_Rr, new_binary_ordering.end());
       if (Rr_old_indices == Rr_new_indices) {
-        std::vector<std::string> Rl_old_indices(
-            old_binary_ordering.begin(),
-            old_binary_ordering.end() - extended_Rr);
-        std::vector<std::string> Rl_new_indices(
-            new_binary_ordering.begin(),
-            new_binary_ordering.end() - extended_Rr);
+        std::vector<std::string> Rl_old_indices(old_binary_ordering.begin(),
+                                                old_binary_ordering.end() -
+                                                    extended_Rr);
+        std::vector<std::string> Rl_new_indices(new_binary_ordering.begin(),
+                                                new_binary_ordering.end() -
+                                                    extended_Rr);
         _left_reorder(Rl_old_indices, Rl_new_indices, extended_Rr,
                       scratch_copy);
         scratch_copy = NULL;
@@ -532,8 +543,10 @@ void MKLTensor::_fast_reorder(std::vector<std::string> new_ordering,
     // Helper vectors that can be reused.
     std::vector<std::string> Lr_indices(Lr), Ll_indices(Ll), Rr_indices(Rr),
         Rl_indices(Rl);
-    for (int i = 0; i < Rr; ++i) Rr_indices[i] = new_binary_ordering[i + Rl];
-    for (int i = 0; i < Rl; ++i) Rl_indices[i] = old_binary_ordering[i];
+    for (int i = 0; i < Rr; ++i)
+      Rr_indices[i] = new_binary_ordering[i + Rl];
+    for (int i = 0; i < Rl; ++i)
+      Rl_indices[i] = old_binary_ordering[i];
     std::vector<std::string> Rr_new_in_Rl_old =
         _vector_intersection(Rl_indices, Rr_indices);
     std::vector<std::string> Rl_old_not_in_Rr_new =
@@ -541,7 +554,8 @@ void MKLTensor::_fast_reorder(std::vector<std::string> new_ordering,
     std::vector<std::string> Rl_first_step =
         _vector_concatenation(Rl_old_not_in_Rr_new, Rr_new_in_Rl_old);
     std::vector<std::string> Rl_zeroth_step(Rl);
-    for (int i = 0; i < Rl; ++i) Rl_zeroth_step[i] = old_binary_ordering[i];
+    for (int i = 0; i < Rl; ++i)
+      Rl_zeroth_step[i] = old_binary_ordering[i];
     _left_reorder(Rl_zeroth_step, Rl_first_step, Rr, scratch_copy);
     // Done with 1).
     // Let's go with 2).
@@ -574,11 +588,12 @@ void MKLTensor::_fast_reorder(std::vector<std::string> new_ordering,
 
 // Assuming all indices are binary for old_ordering and new_ordering.
 // old_ordering and new_ordering refer to the right.
-void MKLTensor::_right_reorder(const std::vector<std::string>& old_ordering,
-                               const std::vector<std::string>& new_ordering,
+void MKLTensor::_right_reorder(const std::vector<std::string> &old_ordering,
+                               const std::vector<std::string> &new_ordering,
                                int num_indices_right) {
   // Don't do anything if there is nothing to reorder.
-  if (new_ordering == old_ordering) return;
+  if (new_ordering == old_ordering)
+    return;
 
   // Create dim, num_indices, map_old_to_new_idxpos from old to new indices,
   // old_dimensions, new_dimensions, and total_dim.
@@ -588,7 +603,8 @@ void MKLTensor::_right_reorder(const std::vector<std::string>& old_ordering,
   std::vector<size_t> old_dimensions(num_indices, dim);
   std::vector<size_t> new_dimensions(num_indices, dim);
   size_t total_dim = 1;
-  for (int i = 0; i < num_indices; ++i) total_dim *= old_dimensions[i];
+  for (int i = 0; i < num_indices; ++i)
+    total_dim *= old_dimensions[i];
   for (int i = 0; i < num_indices; ++i) {
     for (int j = 0; j < num_indices; ++j) {
       if (old_ordering[i] == new_ordering[j]) {
@@ -608,18 +624,18 @@ void MKLTensor::_right_reorder(const std::vector<std::string>& old_ordering,
     _generate_binary_reordering_map(map_old_to_new_idxpos,
                                     _REORDER_MAPS.at(name));
   }
-  const std::vector<int>& map_old_to_new_position = _REORDER_MAPS.at(name);
+  const std::vector<int> &map_old_to_new_position = _REORDER_MAPS.at(name);
 
   // With the map_old_to_new_position, we are ready to reorder within
   // small chuncks.
   int dim_right = total_dim;
-  int dim_left = size() / dim_right;  // Remember, it's all powers of 2, so OK.
+  int dim_left = size() / dim_right; // Remember, it's all powers of 2, so OK.
 #pragma omp parallel
   {
     // For some reason, allocating these spaces and using them is about 2
     // times faster than bringing a pointer to a scratch space and using
     // different chunks of it.
-    s_type* temp_data = new s_type[dim_right];
+    s_type *temp_data = new s_type[dim_right];
 #pragma omp for schedule(static)
     for (int pl = 0; pl < dim_left; ++pl) {
       int current_thread = omp_get_thread_num();
@@ -636,11 +652,12 @@ void MKLTensor::_right_reorder(const std::vector<std::string>& old_ordering,
 
 // Assuming all indices are binary for old_ordering and new_ordering.
 // old_ordering and new_ordering refer to the left.
-void MKLTensor::_left_reorder(const std::vector<std::string>& old_ordering,
-                              const std::vector<std::string>& new_ordering,
-                              int num_indices_right, s_type* scratch_copy) {
+void MKLTensor::_left_reorder(const std::vector<std::string> &old_ordering,
+                              const std::vector<std::string> &new_ordering,
+                              int num_indices_right, s_type *scratch_copy) {
   // Don't do anything if there is nothing to reorder.
-  if (new_ordering == old_ordering) return;
+  if (new_ordering == old_ordering)
+    return;
 
   // Create dim, num_indices, map_old_to_new_idxpos from old to new indices,
   // old_dimensions, new_dimensions, and total_dim.
@@ -650,7 +667,8 @@ void MKLTensor::_left_reorder(const std::vector<std::string>& old_ordering,
   std::vector<size_t> old_dimensions(num_indices, dim);
   std::vector<size_t> new_dimensions(num_indices, dim);
   size_t total_dim = 1;
-  for (int i = 0; i < num_indices; ++i) total_dim *= old_dimensions[i];
+  for (int i = 0; i < num_indices; ++i)
+    total_dim *= old_dimensions[i];
   for (int i = 0; i < num_indices; ++i) {
     for (int j = 0; j < num_indices; ++j) {
       if (old_ordering[i] == new_ordering[j]) {
@@ -671,13 +689,13 @@ void MKLTensor::_left_reorder(const std::vector<std::string>& old_ordering,
     _generate_binary_reordering_map(map_old_to_new_idxpos,
                                     _REORDER_MAPS.at(name));
   }
-  const std::vector<int>& map_old_to_new_position = _REORDER_MAPS.at(name);
+  const std::vector<int> &map_old_to_new_position = _REORDER_MAPS.at(name);
 
   // With the map_old_to_new_position, we are ready to move small chunks.
   int dim_left = total_dim;
   size_t tensor_dim = size();
-  int dim_right = tensor_dim / dim_left;  // Remember, it's all powers of 2,
-                                          // so OK.
+  int dim_right = tensor_dim / dim_left; // Remember, it's all powers of 2,
+                                         // so OK.
 // Copy.
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
   for (size_t p = 0; p < tensor_dim; ++p) {
@@ -699,12 +717,13 @@ void MKLTensor::_left_reorder(const std::vector<std::string>& old_ordering,
 }
 
 void MKLTensor::reorder(std::vector<std::string> new_ordering,
-                        s_type* scratch_copy) {
+                        s_type *scratch_copy) {
   // Asserts.
-  if (!_vector_s_in_vector_s(new_ordering, _indices) || !_vector_s_in_vector_s(_indices, new_ordering)) {
+  if (!_vector_s_in_vector_s(new_ordering, _indices) ||
+      !_vector_s_in_vector_s(_indices, new_ordering)) {
     std::cout << "new_ordering: " << _string_vector_to_string(new_ordering)
-    << " must be a reordering of current indices: " << _string_vector_to_string(_indices)
-    << "." << std::endl;
+              << " must be a reordering of current indices: "
+              << _string_vector_to_string(_indices) << "." << std::endl;
     assert(_vector_s_in_vector_s(new_ordering, _indices) &&
            _vector_s_in_vector_s(_indices, new_ordering));
   }
@@ -725,7 +744,8 @@ void MKLTensor::reorder(std::vector<std::string> new_ordering,
 void MKLTensor::scalar_multiply(s_type scalar) {
   size_t this_size = size();
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
-  for (size_t p = 0; p < this_size; ++p) *(_data + p) = (*(_data + p)) * scalar;
+  for (size_t p = 0; p < this_size; ++p)
+    *(_data + p) = (*(_data + p)) * scalar;
 }
 
 double MKLTensor::tensor_norm() const {
@@ -742,7 +762,8 @@ size_t MKLTensor::num_zeros() const {
   size_t this_size = size();
   s_type complex_0(0.);
   for (size_t p = 0; p < this_size; ++p) {
-    if (*(_data + p) == complex_0) ++count;
+    if (*(_data + p) == complex_0)
+      ++count;
   }
   return count;
 }
@@ -755,20 +776,22 @@ void MKLTensor::print() const {
     print_str += _indices[i];
     print_str += " -> ";
     print_str += std::to_string(_dimensions[i]);
-    if (i < _indices.size() - 1) print_str += ", ";
+    if (i < _indices.size() - 1)
+      print_str += ", ";
   }
   std::cout << print_str << std::endl;
 }
 
 void MKLTensor::print_data() const {
-  for (size_t p = 0; p < size(); ++p) std::cout << *(_data + p) << " ";
+  for (size_t p = 0; p < size(); ++p)
+    std::cout << *(_data + p) << " ";
   std::cout << std::endl;
 }
 
 /////////////////////////// EXTERNAL FUNCTIONS ////////////////////////////////
 
 // use mkl if complexity < some value.
-void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
+void _multiply_MM(const s_type *A_data, const s_type *B_data, s_type *C_data,
                   int m, int n, int k) {
   s_type alpha = 1.0;
   s_type beta = 0.0;
@@ -777,7 +800,7 @@ void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
               std::max(1, n));
 }
 
-void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
+void _multiply_Mv(const s_type *A_data, const s_type *B_data, s_type *C_data,
                   int m, int k) {
   s_type alpha = 1.0;
   s_type beta = 0.0;
@@ -785,7 +808,7 @@ void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
               B_data, 1, &beta, C_data, 1);
 }
 
-void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
+void _multiply_vM(const s_type *A_data, const s_type *B_data, s_type *C_data,
                   int n, int k) {
   s_type alpha = 1.0;
   s_type beta = 0.0;
@@ -793,21 +816,21 @@ void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
               B_data, 1, &beta, C_data, 1);
 }
 
-void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
+void _multiply_vv(const s_type *A_data, const s_type *B_data, s_type *C_data,
                   int k) {
   cblas_cdotu_sub(k, A_data, 1, B_data, 1, C_data);
 }
 
-void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy) {
-  
+void multiply(MKLTensor &A, MKLTensor &B, MKLTensor &C, s_type *scratch_copy) {
+
   if (A.data() == C.data()) {
     std::cout << "A and C cannot be the same tensor: ";
-    C.print_data();
+    C.print();
     assert(A.data() != C.data());
   }
   if (B.data() == C.data()) {
-    std::cout << "B and C cannot be the same tensor.";
-    C.print_data();
+    std::cout << "B and C cannot be the same tensor: ";
+    C.print();
     assert(B.data() != C.data());
   }
 
@@ -835,8 +858,8 @@ void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy) {
       std::cout
           << "Common indices must have matching dimensions, but at index: " << i
           << ", the dimensions are A: " << a_dim
-          << ", B: " << B.get_index_to_dimension().at(common_indices[i])
-          << "." << std::endl;
+          << ", B: " << B.get_index_to_dimension().at(common_indices[i]) << "."
+          << std::endl;
       assert(a_dim == B.get_index_to_dimension().at(common_indices[i]));
     }
     common_dim *= a_dim;
@@ -848,9 +871,9 @@ void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy) {
 
   // Assert.
   if (left_dim * right_dim > C.capacity()) {
-    std::cout << "C: " << C.capacity() 
-    << " doesn't not have enough space for the product of A*B: " 
-    << left_dim * right_dim << "." << std::endl;
+    std::cout << "C: " << C.capacity()
+              << " doesn't not have enough space for the product of A*B: "
+              << left_dim * right_dim << "." << std::endl;
     assert((left_dim * right_dim <= C.capacity()));
   }
   // Reorder.
@@ -913,15 +936,15 @@ void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy) {
 // Split it in parts, as before? Nah, it was all about generating small maps.
 // Here I am generating THE map. This is done only once per map anyway.
 void _generate_binary_reordering_map(
-    const std::vector<int>& map_old_to_new_idxpos,
-    std::vector<int>& map_old_to_new_position) {
-  int dim = 2;  // Hard coded!
+    const std::vector<int> &map_old_to_new_idxpos,
+    std::vector<int> &map_old_to_new_position) {
+  int dim = 2; // Hard coded!
   int num_indices = map_old_to_new_idxpos.size();
   // Assert
   if ((size_t)pow(dim, num_indices) != map_old_to_new_position.size()) {
     std::cout << "Size of map: " << map_old_to_new_position.size()
-    << " must be equal to 2^num_indices: " 
-    << pow(dim, num_indices) << "." << std::endl;
+              << " must be equal to 2^num_indices: " << pow(dim, num_indices)
+              << "." << std::endl;
     assert((size_t)pow(dim, num_indices) == map_old_to_new_position.size());
   }
 
@@ -939,7 +962,7 @@ void _generate_binary_reordering_map(
 
   // Iterate and generate map.
   std::vector<int> old_counter(num_indices, 0);
-  size_t po, pn;  // Position of the data, old and new.
+  size_t po, pn; // Position of the data, old and new.
   int i, j;
   while (true) {
     po = 0;
@@ -955,15 +978,47 @@ void _generate_binary_reordering_map(
       else
         old_counter[j] = 0;
     }
-    if (j < 0) break;
+    if (j < 0)
+      break;
   }
 }
 
-std::string _reordering_to_string(const std::vector<int>& map_old_to_new_idxpos,
-                                  const std::vector<size_t>& old_dimensions) {
+// convert int vector to string
+std::string _int_vector_to_string(std::vector<int> input) {
+  std::ostringstream temp;
+  std::string output;
+  if (!input.empty()) {
+    std::copy(input.begin(), input.end() - 1,
+              std::ostream_iterator<int>(temp, ", "));
+    temp << input.back();
+  }
+  output = "{" + temp.str() + "}";
+  return output;
+}
+
+// convert string vector to string
+std::string _string_vector_to_string(std::vector<std::string> input) {
+  std::string output;
+  output += "{";
+  if (!input.empty()) {
+    for (std::vector<std::string>::const_iterator i = input.begin();
+         i < input.end(); ++i) {
+      output += *i;
+      if (i != input.end() - 1) {
+        output += ", ";
+      }
+    }
+  }
+  output += "}";
+  return output;
+}
+
+std::string _reordering_to_string(const std::vector<int> &map_old_to_new_idxpos,
+                                  const std::vector<size_t> &old_dimensions) {
   int num_indices = map_old_to_new_idxpos.size();
   std::string name("");
-  for (int i = 0; i < num_indices; ++i) name += _ALPHABET[i];
+  for (int i = 0; i < num_indices; ++i)
+    name += _ALPHABET[i];
   name += "->";
   for (int i = 0; i < num_indices; ++i)
     name += _ALPHABET[map_old_to_new_idxpos[i]];
@@ -972,72 +1027,64 @@ std::string _reordering_to_string(const std::vector<int>& map_old_to_new_idxpos,
   return name;
 }
 
-// convert string vector to string
-std::string _string_vector_to_string(std::vector<std::string> input) {
-    std::string output;
-    output += "{";
-    if (!input.empty()) {
-        for(std::vector<std::string>::const_iterator i = input.begin(); i < input.end(); ++i) {
-            output += *i;
-            if (i != input.end() - 1) {
-                output += ", ";
-            }
-        }
-    }
-    output += "}";
-    return output;
-}
-
-bool _string_in_vector(const std::string& s,
-                       const std::vector<std::string>& v) {
+bool _string_in_vector(const std::string &s,
+                       const std::vector<std::string> &v) {
   if (std::find(v.cbegin(), v.cend(), s) != v.cend())
     return true;
   else
     return false;
 }
 
-bool _vector_s_in_vector_s(const std::vector<std::string>& v,
-                           const std::vector<std::string>& w) {
+bool _vector_s_in_vector_s(const std::vector<std::string> &v,
+                           const std::vector<std::string> &w) {
   for (int i = 0; i < v.size(); ++i) {
-    if (!_string_in_vector(v[i], w)) return false;
+    if (!_string_in_vector(v[i], w))
+      return false;
   }
   return true;
 }
 
-std::vector<std::string> _vector_intersection(
-    const std::vector<std::string>& v, const std::vector<std::string>& w) {
+std::vector<std::string>
+_vector_intersection(const std::vector<std::string> &v,
+                     const std::vector<std::string> &w) {
   std::vector<std::string> temp;
   for (auto it = v.cbegin(); it != v.cend(); ++it) {
-    if (_string_in_vector(*it, w)) temp.push_back(*it);
+    if (_string_in_vector(*it, w))
+      temp.push_back(*it);
   }
   return temp;
 }
 
-std::vector<std::string> _vector_union(const std::vector<std::string>& v,
-                                       const std::vector<std::string>& w) {
+std::vector<std::string> _vector_union(const std::vector<std::string> &v,
+                                       const std::vector<std::string> &w) {
   std::vector<std::string> temp(v);
   for (auto it = w.cbegin(); it != w.cend(); ++it) {
-    if (!_string_in_vector(*it, v)) temp.push_back(*it);
+    if (!_string_in_vector(*it, v))
+      temp.push_back(*it);
   }
   return temp;
 }
 
-std::vector<std::string> _vector_subtraction(
-    const std::vector<std::string>& v, const std::vector<std::string>& w) {
+std::vector<std::string>
+_vector_subtraction(const std::vector<std::string> &v,
+                    const std::vector<std::string> &w) {
   std::vector<std::string> temp;
   for (auto it = v.cbegin(); it != v.cend(); ++it) {
-    if (!_string_in_vector(*it, w)) temp.push_back(*it);
+    if (!_string_in_vector(*it, w))
+      temp.push_back(*it);
   }
   return temp;
 }
 
-std::vector<std::string> _vector_concatenation(
-    const std::vector<std::string>& v, const std::vector<std::string>& w) {
+std::vector<std::string>
+_vector_concatenation(const std::vector<std::string> &v,
+                      const std::vector<std::string> &w) {
   std::vector<std::string> temp(v.size() + w.size());
-  for (size_t i = 0; i < v.size(); ++i) temp[i] = v[i];
-  for (size_t i = 0; i < w.size(); ++i) temp[i + v.size()] = w[i];
+  for (size_t i = 0; i < v.size(); ++i)
+    temp[i] = v[i];
+  for (size_t i = 0; i < w.size(); ++i)
+    temp[i + v.size()] = w[i];
   return temp;
 }
 
-}  // namespace qflex
-
+} // namespace qflex

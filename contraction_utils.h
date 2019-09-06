@@ -21,11 +21,11 @@ namespace qflex {
  * @param p2 position of the second connected tensor.
  * @return string name of the index.
  */
-std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2);
+std::string index_name(const std::vector<int> &p1, const std::vector<int> &p2);
 
 // As above, but accepts a list of qubit locations. If the list has only one
 // element, an empty vector will be provided as the second element.
-std::string index_name(const std::vector<std::vector<int>>& tensors);
+std::string index_name(const std::vector<std::vector<int>> &tensors);
 
 /**
  * Returns spatial coordinates on the grid for the given qubit q.
@@ -43,7 +43,7 @@ std::vector<int> get_qubit_coords(int q, int J);
  * @return true if (i, j) is in coord_list.
  */
 bool find_grid_coord_in_list(
-    const std::optional<std::vector<std::vector<int>>>& coord_list, const int i,
+    const std::optional<std::vector<std::vector<int>>> &coord_list, const int i,
     const int j);
 
 struct ExpandPatch {
@@ -78,7 +78,7 @@ struct MergePatches {
 };
 
 struct ContractionOperation {
- public:
+public:
   ContractionOperation(ExpandPatch expand) : op_type(EXPAND), expand(expand) {}
   ContractionOperation(CutIndex cut) : op_type(CUT), cut(cut) {}
   ContractionOperation(MergePatches merge) : op_type(MERGE), merge(merge) {}
@@ -93,13 +93,6 @@ struct ContractionOperation {
 };
 
 /**
- * Converts an int vector into a string
- * @param input vector<int> int vector to convert.
- * @return string containing input vector contents
- **/
-std::string int_vector_to_string(std::vector<int> input);
-
-/**
  * Parses a grid contraction ordering from the given stream.
  * @param circuit_data std::istream containing ordering as a string.
  * @param I int with the first spatial dimension of the grid of qubits.
@@ -109,14 +102,14 @@ std::string int_vector_to_string(std::vector<int> input);
  * @return false if parsing failed at any point, true otherwise.
  **/
 bool ordering_data_to_contraction_ordering(
-    std::istream* ordering_data, const int I, const int J,
-    const std::optional<std::vector<std::vector<int>>>& off,
-    std::list<ContractionOperation>* ordering);
+    std::istream *ordering_data, const int I, const int J,
+    const std::optional<std::vector<std::vector<int>>> &off,
+    std::list<ContractionOperation> *ordering);
 
 // Helper class for the external ContractGrid method. This should not be
 // initialized by external users.
 class ContractionData {
- public:
+public:
   /**
    * Generates a ContractionData object from a contraction ordering, and logs
    * total memory allocated for the contraction.
@@ -126,10 +119,10 @@ class ContractionData {
    * output from grid_of_tensors_3D_to_2D.
    * @param amplitudes vector of amplitudes for each final output requested.
    */
-  static ContractionData Initialize(
-      const std::list<ContractionOperation>& ordering,
-      std::vector<std::vector<MKLTensor>>* tensor_grid,
-      std::vector<std::complex<double>>* amplitudes);
+  static ContractionData
+  Initialize(const std::list<ContractionOperation> &ordering,
+             std::vector<std::vector<MKLTensor>> *tensor_grid,
+             std::vector<std::complex<double>> *amplitudes);
 
   // Keys for scratch-space tensors. Do not reuse outside this file.
   static constexpr char kGeneralSpace[] = "_general_internal_";
@@ -146,7 +139,7 @@ class ContractionData {
   void ContractGrid(std::list<ContractionOperation> ordering, int output_index,
                     std::unordered_map<std::string, bool> active_patches);
 
-  MKLTensor& get_scratch(std::string id) { return scratch_[scratch_map_[id]]; }
+  MKLTensor &get_scratch(std::string id) { return scratch_[scratch_map_[id]]; }
 
   /**
    * Assigns a name to a given cut-copy tensor for mapping into scratch space.
@@ -173,13 +166,13 @@ class ContractionData {
   // Gets the names of all scratch tensors.
   std::vector<std::string> scratch_list() {
     std::vector<std::string> names;
-    for (const auto& name_pos_pair : scratch_map_) {
+    for (const auto &name_pos_pair : scratch_map_) {
       names.push_back(name_pos_pair.first);
     }
     return names;
   }
 
- private:
+private:
   // List of tensors used for scratch space or storage between recursive calls.
   std::vector<MKLTensor> scratch_;
 
@@ -190,10 +183,10 @@ class ContractionData {
   std::unordered_map<std::string, int> patch_rank_;
 
   // Contains the tensor grid produced by grid_of_tensors_3D_to_2D.
-  std::vector<std::vector<MKLTensor>>* tensor_grid_;
+  std::vector<std::vector<MKLTensor>> *tensor_grid_;
 
   // Amplitudes for each final output requested.
-  std::vector<std::complex<double>>* amplitudes_;
+  std::vector<std::complex<double>> *amplitudes_;
 };
 
 /**
@@ -210,7 +203,7 @@ class ContractionData {
  * perform.
  * @return true is the ordering is valid, false otherwise.
  */
-bool IsOrderingValid(const std::list<ContractionOperation>& ordering);
+bool IsOrderingValid(const std::list<ContractionOperation> &ordering);
 
 /**
  * Performs contraction operations specified by 'ordering' on tensor_grid.
@@ -224,10 +217,10 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering);
  * output from grid_of_tensors_3D_to_2D.
  * @param amplitudes vector of amplitudes for each final output requested.
  */
-void ContractGrid(const std::list<ContractionOperation>& ordering,
-                  std::vector<std::vector<MKLTensor>>* tensor_grid,
-                  std::vector<std::complex<double>>* amplitudes);
+void ContractGrid(const std::list<ContractionOperation> &ordering,
+                  std::vector<std::vector<MKLTensor>> *tensor_grid,
+                  std::vector<std::complex<double>> *amplitudes);
 
-}  // namespace qflex
+} // namespace qflex
 
-#endif  // CONTRACTION_UTILS_
+#endif // CONTRACTION_UTILS_
