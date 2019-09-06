@@ -510,7 +510,7 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
   bool valid_ordering = IsOrderingValid(ordering);
   if (!valid_ordering) {
     std::cout << "Ordering must be valid." << std::endl;
-    assert(IsOrderingValid(ordering));
+    assert(valid_ordering);
   }
 
   // Populate ContractionData and perform grid contraction.

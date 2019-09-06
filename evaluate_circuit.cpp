@@ -8,11 +8,12 @@ std::vector<std::vector<int>> read_grid_layout_from_stream(
   bool on;
   for (int i = 0; i < I; ++i) {
     for (int j = 0; j < J; ++j) {
-      if (grid_data->eof()) {
+      bool data_at_end_of_file = grid_data->eof();
+      if (data_at_end_of_file) {
         std::cout << "Grid layout file ran out at (" << i + 1 << "," << j + 1
                   << "). Expected size is (" << I << "," << J << ")."
                   << std::endl;
-        assert(!grid_data->eof());
+        assert(!data_at_end_of_file);
       }
       (*grid_data) >> on;
       if (on == 0) qubits_off.push_back({i, j});
@@ -20,10 +21,11 @@ std::vector<std::vector<int>> read_grid_layout_from_stream(
   }
   // Check for trailing whitespace.
   (*grid_data) >> on;
-  if (!grid_data->eof()) {
+  bool leftover_qubits = !grid_data->eof();
+  if (leftover_qubits) {
     std::cout << "Expected size is (" << I << "," << J << "), "
               << "but grid layout still has qubits left." << std::endl;
-    assert(grid_data->eof());
+    assert(!leftover_qubits);
   }
   return qubits_off;
 }
