@@ -9,6 +9,40 @@ namespace {
 using ::testing::Eq;
 using ::testing::Pointwise;
 
+// This circuit has an invalid one-qubit gate.
+constexpr char kBadCircuit[] = R"(2
+0 h 0
+0 h 1
+1 badgate 0)";
+
+TEST(ReadCircuitDeathTest, BadOneQubitGate) {
+  std::vector<std::vector<std::vector<MKLTensor>>> grid_of_tensors;
+  s_type scratch[256];
+
+  auto circuit_data = std::stringstream(kBadCircuit);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "01", {},
+                                      {}, grid_of_tensors, scratch),
+      "");
+}
+
+// This circuit has an invalid fsim-type gate.
+constexpr char kBadFsimCircuit[] = R"(2
+0 h 0
+0 h 1
+1 fsimbadgate 0 1)";
+
+TEST(ReadCircuitDeathTest, BadFsimGate) {
+  std::vector<std::vector<std::vector<MKLTensor>>> grid_of_tensors;
+  s_type scratch[256];
+
+  auto circuit_data = std::stringstream(kBadFsimCircuit);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "01", {},
+                                      {}, grid_of_tensors, scratch),
+      "");
+}
+
 // This circuit returns the input string with amplitude 1.
 constexpr char kNullCircuit[] = R"(2
 0 h 0

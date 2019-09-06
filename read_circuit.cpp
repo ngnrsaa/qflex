@@ -56,7 +56,11 @@ std::vector<s_type> gate_array(const std::string& gate_name) {
     return std::vector<s_type>({conj(phase), 0., 0., phase});
   }
 
-  // TODO: Better error-checking if the gate name isn't recognised.
+  bool valid_gate = _GATES_DATA.find(gate_name) != _GATES_DATA.end();
+  if (!valid_gate) {
+    std::cout << "Invalid gate name provided: " << gate_name << std::endl;
+    assert(false);
+  }
   return _GATES_DATA.at(gate_name);
 }
 
@@ -180,6 +184,8 @@ gate_arrays(const std::string& gate_name, s_type* scratch) {
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
                       std::vector<size_t>>(ret_val[0], ret_val[1], {4, 2, 2});
   }
+  std::cout << "Invalid gate name provided: " << gate_name << std::endl;
+  assert(false);
 }
 
 /**
