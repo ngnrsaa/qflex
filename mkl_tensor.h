@@ -418,6 +418,20 @@ void _generate_binary_reordering_map(
     std::vector<int>& map_old_to_new_position);
 
 /**
+ * Converts an int vector into a string
+ * @param input vector<int> int vector to convert.
+ * @return string containing input vector contents
+ **/
+std::string _int_vector_to_string(std::vector<int> input);
+
+/**
+ * Converts a string vector into a string
+ * @param input vector<string> string vector to convert.
+ * @return string containing input vector contents
+ **/
+std::string _string_vector_to_string(std::vector<std::string> input);
+
+/**
  * Generates the standard name of the reordering as a std::string:
  * "abc...->fbe...,dim_a,dim_b,...".
  * @param map_old_to_new_idxpos const reference to a std::vector<int> index

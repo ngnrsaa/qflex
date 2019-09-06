@@ -237,6 +237,7 @@ void ContractionData::ContractGrid(
       }
     }
   }
+  // Check for an output of size larger than 1
   if (output->size() != 1) {
     std::cout << "Contraction did not complete; final tensor is ";
     output->print();
@@ -373,7 +374,10 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
     int len = snprintf(buffer, sizeof(buffer), "(%d,%d),(o)", p1[0], p1[1]);
     return std::string(buffer, len);
   }
-  assert(false && "Failed to construct tensor name.");
+  std::cout << "Failed to construct tensor name with the following vectors: p1 = "
+  << _int_vector_to_string(p1) << ", p2 = "
+  << _int_vector_to_string(p2) << "." << std::endl;
+  assert(false);
   return "";
 }
 
@@ -384,7 +388,8 @@ std::string index_name(const std::vector<std::vector<int>>& tensors) {
   if (tensors.size() == 1) {
     return index_name(tensors.at(0), {});
   }
-  assert(false && "Failed to construct tensor name.");
+  std::cout << "Failed to construct tensor name with input tensors size: " << tensors.size() << std::endl;
+  assert(false);
   return "";
 }
 
@@ -494,8 +499,19 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
 void ContractGrid(const std::list<ContractionOperation>& ordering,
                   std::vector<std::vector<MKLTensor>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes) {
-  assert(amplitudes != nullptr && "Amplitude return vector must be non-null.");
-  assert(IsOrderingValid(ordering));
+  if (tensor_grid == nullptr) {
+    std::cout << "Tensor grid must be non-null." << std::endl;
+    assert(tensor_grid != nullptr);
+  }
+  if (amplitudes == nullptr) {
+    std::cout << "Amplitude return vector must be non-null." << std::endl;
+    assert(amplitudes != nullptr);
+  }
+  bool valid_ordering = IsOrderingValid(ordering);
+  if (!valid_ordering) {
+    std::cout << "Ordering must be valid." << std::endl;
+    assert(IsOrderingValid(ordering));
+  }
 
   // Populate ContractionData and perform grid contraction.
   ContractionData data =

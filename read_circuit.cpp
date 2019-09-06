@@ -244,7 +244,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
     if (lpos == -1) {
       char error[200];
-      snprintf(error, sizeof(error), "Pair not found: (%d,%d),(%d,%d)",
+      snprintf(error, sizeof(error), "Left hand side of pair not found: (%d,%d),(%d,%d)",
                local[0], local[1], lhs[0], lhs[1]);
       std::cout << error << std::endl;
       assert(false && "Halting reordering.");
@@ -262,7 +262,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
     if (rpos == -1) {
       char error[200];
-      snprintf(error, sizeof(error), "Pair not found: (%d,%d),(%d,%d)",
+      snprintf(error, sizeof(error), "Right hand side of pair not found: (%d,%d),(%d,%d)",
                local[0], local[1], rhs[0], rhs[1]);
       std::cout << error << std::endl;
       assert(false && "Halting reordering.");
@@ -331,18 +331,37 @@ void circuit_data_to_grid_of_tensors(
 
   // The first element should be the number of qubits
   *(circuit_data) >> num_qubits;
-  num_qubits = I * J;
+  // TODO: Decide whether to determine number of qubits from the file or from I * J
+  if (num_qubits != I * J) {
+    std::cout << "The number of qubits read from the file: " 
+    << num_qubits << ", does not match I*J: " << I * J 
+    << "." << std::endl;
+    num_qubits = I * J;
+  }
 
-  // Assert for the number of qubits.
-  assert(num_qubits == I * J && "I*J must be equal to the number of qubits.");
+  // Github issue is open regarding this, will not occur
+  if (num_qubits != I * J) {
+    std::cout << "I*J must be equal to the number of qubits. Instead, I*J = " << I * J 
+              << " and num_qubits = " << num_qubits << std::endl;
+    assert(num_qubits == I * J);
+  }
+
   // Assert for the length of initial_conf and final_conf_B.
   {
     size_t off_size = off.has_value() ? off.value().size() : 0;
     size_t A_size = A.has_value() ? A.value().size() : 0;
-    assert(initial_conf.size() == num_qubits - off_size &&
-           "initial_conf must be of size equal to the number of qubits.");
-    assert(final_conf_B.size() == num_qubits - off_size - A_size &&
-           "final_conf_B must be of size equal to the number of qubits.");
+    if (initial_conf.size() != num_qubits - off_size) {
+      std::cout << "Size of initial_conf: " << initial_conf.size() 
+      << ", must be equal to the number of qubits: " 
+      << num_qubits - off_size << "." << std::endl;
+      assert(initial_conf.size() == num_qubits - off_size);
+    }
+    if (final_conf_B.size() != num_qubits - off_size - A_size) {
+      std::cout << "Size of final_conf_B: " << final_conf_B.size() 
+      << ", must be equal to the number of qubits: " 
+      << num_qubits - off_size - A_size << "." << std::endl;
+      assert(final_conf_B.size() == num_qubits - off_size - A_size);
+    }
   }
 
   // Creating grid variables.
@@ -645,13 +664,17 @@ void grid_of_tensors_3D_to_2D(
   scratch = NULL;
 }
 
+// This function is currently not being called.
 void read_wave_function_evolution(
     std::string filename, int I, std::vector<MKLTensor>& gates,
     std::vector<std::vector<std::string>>& inputs,
     std::vector<std::vector<std::string>>& outputs, s_type* scratch) {
   // Open file.
   auto io = std::ifstream(filename);
-  assert(io.good() && "Cannot open file.");
+  if (io.bad()) {
+    std::cout << "Cannot open file: " << filename << std::endl;
+    assert(io.good());
+  }
 
   // Gotten from the file.
   int num_qubits, cycle, q1, q2;
@@ -664,7 +687,12 @@ void read_wave_function_evolution(
   io >> num_qubits;
 
   // Assert for the number of qubits.
-  assert(num_qubits == I && "I must be equal to the number of qubits.");
+  if (num_qubits != I) {
+    std::cout << "I: " << I << " must be equal to the number of qubits: "
+    << num_qubits << std::endl;
+    assert(num_qubits == I);
+  }
+  
 
   std::string line;
   while (getline(io, line))

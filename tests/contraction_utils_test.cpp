@@ -20,6 +20,28 @@ TEST(ContractionTest, IndexNaming) {
   EXPECT_EQ(index_name(index), "(1,2),(o)");
 }
 
+TEST(ContractionDeathTest, IndexNamingFailures) {
+  // Empty input.
+  std::vector<std::vector<int>> index = {};
+  EXPECT_DEATH(index_name(index), "");
+
+  // Size mismatch.
+  index = {{1, 2}, {3, 4, 5}};
+  EXPECT_DEATH(index_name(index), "");
+
+  // Invalid size.
+  index = {{1, 2, 3, 4}, {5, 6, 7, 8}};
+  EXPECT_DEATH(index_name(index), "");
+
+  // Wrong number of tensor positions.
+  index = {{1, 2}, {3, 4}, {5, 6}};
+  EXPECT_DEATH(index_name(index), "");
+
+  // Wrong-size terminal index.
+  index = {{1, 2, 3}};
+  EXPECT_DEATH(index_name(index), "");
+}
+
 TEST(ContractionTest, OperationHandling) {
   std::list<ContractionOperation> ordering;
   std::vector<std::vector<int>> index = {{1, 2}, {3, 4}};
@@ -257,28 +279,6 @@ TEST(ContractionTest, ExampleOrdering) {
   ordering.emplace_back(MergePatches("D", "C"));
 
   ASSERT_TRUE(IsOrderingValid(ordering));
-}
-
-TEST(ContractionDeathTest, IndexNamingFailures) {
-  // Empty input.
-  std::vector<std::vector<int>> index = {};
-  EXPECT_DEATH(index_name(index), "");
-
-  // Size mismatch.
-  index = {{1, 2}, {3, 4, 5}};
-  EXPECT_DEATH(index_name(index), "");
-
-  // Invalid size.
-  index = {{1, 2, 3, 4}, {5, 6, 7, 8}};
-  EXPECT_DEATH(index_name(index), "");
-
-  // Wrong number of tensor positions.
-  index = {{1, 2}, {3, 4}, {5, 6}};
-  EXPECT_DEATH(index_name(index), "");
-
-  // Wrong-size terminal index.
-  index = {{1, 2, 3}};
-  EXPECT_DEATH(index_name(index), "");
 }
 
 constexpr char kSimpleOrdering[] = R"(# test comment
