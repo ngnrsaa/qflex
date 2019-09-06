@@ -510,7 +510,6 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
 void ContractGrid(const std::list<ContractionOperation>& ordering,
                   std::vector<std::vector<MKLTensor>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes) {
-  
   if (tensor_grid == nullptr) {
     std::cout << "Tensor grid must be non-null." << std::endl;
     assert(tensor_grid != nullptr);
