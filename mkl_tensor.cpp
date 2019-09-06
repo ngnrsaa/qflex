@@ -251,16 +251,13 @@ void MKLTensor::rename_index(std::string old_name, std::string new_name) {
 void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
                        std::string bundled_index) {
   // Asserts.
-  // print out indices_to_bundle with for loop
-  if (!_vector_s_in_vector_s(indices_to_bundle, _indices)) {
-    std::cout << "indices_to_bundle: {";
-    for (int i = 0; i < indices_to_bundle.size(); ++i) {
-        std::cout << indices_to_bundle.at(i);
-        if (i != indices_to_bundle.size() - 1) {
-            std::cout << ", ";
-        }
-    } 
-    std::cout << "} has to be contained in indices." << std::endl;
+  bool indices_to_bundle_in_indices = _vector_s_in_vector_s(indices_to_bundle, _indices);
+  if (!indices_to_bundle_in_indices) {
+    std::cout << "indices_to_bundle: "
+    << _string_vector_to_string(indices_to_bundle)
+    << " has to be contained in indices: " 
+    << _string_vector_to_string(_indices)
+    << "." << std::endl;
     assert(_vector_s_in_vector_s(indices_to_bundle, _indices));
   }
   std::vector<std::string> subtracted_indices(
@@ -268,24 +265,13 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
   std::vector<std::string> indices_to_bundled_original_order(
       _vector_subtraction(_indices, subtracted_indices));
   if (indices_to_bundled_original_order != indices_to_bundle) {
-    std::cout << "indices_to_bundle: {";
-    for (int i = 0; i < indices_to_bundle.size(); ++i) {
-        std::cout << indices_to_bundle.at(i);
-        if (i != indices_to_bundle.size() - 1) {
-            std::cout << ", ";
-        }
-    }
-    std::cout << "} must be in its original order: {";
-    for (int i = 0; i < indices_to_bundled_original_order.size(); ++i) {
-        std::cout << indices_to_bundled_original_order.at(i);
-        if (i != indices_to_bundled_original_order.size() - 1) {
-            std::cout << ", ";
-        }
-    }
-    std::cout << "}." << std::endl;
+    std::cout << "indices_to_bundle: "
+    << _string_vector_to_string(indices_to_bundle)
+    << " must be in its original order: "
+    << _string_vector_to_string(indices_to_bundled_original_order)
+    << "." << std::endl;
     assert(indices_to_bundled_original_order == indices_to_bundle);
   }
-
 
   int bundled_dim = 1;
   for (int i = 0; i < indices_to_bundle.size(); ++i) {
@@ -716,14 +702,9 @@ void MKLTensor::reorder(std::vector<std::string> new_ordering,
                         s_type* scratch_copy) {
   // Asserts.
   if (!_vector_s_in_vector_s(new_ordering, _indices) || !_vector_s_in_vector_s(_indices, new_ordering)) {
-    std::cout << "new_ordering: {";
-    for (int i = 0; i < new_ordering.size(); ++i) {
-        std::cout << new_ordering.at(i);
-        if (i != new_ordering.size() - 1) {
-            std::cout << ", ";
-        }
-    }
-    std::cout << "} must be a reordering of current indices." << std::endl;
+    std::cout << "new_ordering: " << _string_vector_to_string(new_ordering)
+    << " must be a reordering of current indices: " << _string_vector_to_string(_indices)
+    << "." << std::endl;
     assert(_vector_s_in_vector_s(new_ordering, _indices) &&
            _vector_s_in_vector_s(_indices, new_ordering));
   }
@@ -820,11 +801,13 @@ void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
 void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy) {
   
   if (A.data() == C.data()) {
-    std::cout << "A and C cannot be the same tensor." << std::endl;
+    std::cout << "A and C cannot be the same tensor: ";
+    C.print_data();
     assert(A.data() != C.data());
   }
   if (B.data() == C.data()) {
-    std::cout << "B and C cannot be the same tensor." << std::endl;
+    std::cout << "B and C cannot be the same tensor.";
+    C.print_data();
     assert(B.data() != C.data());
   }
 
@@ -987,6 +970,22 @@ std::string _reordering_to_string(const std::vector<int>& map_old_to_new_idxpos,
   for (int i = 0; i < num_indices; ++i)
     name += "," + std::to_string(old_dimensions[i]);
   return name;
+}
+
+// convert string vector to string
+std::string _string_vector_to_string(std::vector<std::string> input) {
+    std::string output;
+    output += "{";
+    if (!input.empty()) {
+        for(std::vector<std::string>::const_iterator i = input.begin(); i < input.end(); ++i) {
+            output += *i;
+            if (i != input.end() - 1) {
+                output += ", ";
+            }
+        }
+    }
+    output += "}";
+    return output;
 }
 
 bool _string_in_vector(const std::string& s,

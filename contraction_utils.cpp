@@ -249,6 +249,17 @@ void ContractionData::ContractGrid(
 
 // External methods
 
+std::string int_vector_to_string(std::vector<int> input) {
+    std::ostringstream temp;
+    std::string output;
+    if (!input.empty()) {
+        std::copy(input.begin(), input.end() - 1, std::ostream_iterator<int>(temp, ", "));
+        temp << input.back();
+    }
+    output = "{" + temp.str() + "}";
+    return output;
+}
+
 bool ordering_data_to_contraction_ordering(
     std::istream* ordering_data, const int I, const int J,
     const std::optional<std::vector<std::vector<int>>>& off,
@@ -374,22 +385,9 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
     int len = snprintf(buffer, sizeof(buffer), "(%d,%d),(o)", p1[0], p1[1]);
     return std::string(buffer, len);
   }
-  // use for loop to print out p1 and p2
-  std::cout << "Failed to construct tensor name with the following vectors: v1 = {";
-  for(int i = 0; i < p1.size(); ++i) {
-    std::cout << p1.at(i);
-    if (i != p1.size() - 1) {
-      std::cout << ", ";
-    }
-  }
-  std::cout << "}, v2 = {";
-  for(int i = 0; i < p2.size(); ) {
-    std::cout << p2.at(i);
-    if (i != p2.size() - 1) {
-      std::cout << ", ";
-    }
-  }
-  std::cout << "}." << std::endl;
+  std::cout << "Failed to construct tensor name with the following vectors: p1 = "
+  << int_vector_to_string(p1) << ", p2 = "
+  << int_vector_to_string(p2) << "." << std::endl;
   assert(false);
   return "";
 }
@@ -521,7 +519,8 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
     std::cout << "Amplitude return vector must be non-null." << std::endl;
     assert(amplitudes != nullptr);
   }
-  if (IsOrderingValid(ordering) == false) {
+  bool valid_ordering = IsOrderingValid(ordering);
+  if (!valid_ordering) {
     std::cout << "Ordering must be valid." << std::endl;
     assert(IsOrderingValid(ordering));
   }

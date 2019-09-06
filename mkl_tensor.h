@@ -429,6 +429,13 @@ void _generate_binary_reordering_map(
 std::string _reordering_to_string(const std::vector<int>& map_old_to_new_idxpos,
                                   const std::vector<size_t>& old_dimensions);
 
+                                  /**
+ * Converts a string vector into a string
+ * @param input vector<string> string vector to convert.
+ * @return string containing input vector contents
+ **/
+std::string _string_vector_to_string(std::vector<std::string> input);
+
 /**
  * Checks whether a particular std::string is in a std::vector<std::string>.
  * @param s const reference to std::string element.
