@@ -296,7 +296,6 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     std::cout << error << std::endl;
     std::cout << "Halting reordering." << std::endl;
     assert(false);
-    return false;
   };
 }
 

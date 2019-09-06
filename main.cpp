@@ -21,19 +21,19 @@ int main(int argc, char** argv) {
   // Creating streams for input files.
   auto circuit_data = std::ifstream(std::string(argv[current_arg++]));
   if (!circuit_data.good()) {
-      std::cout << "Cannot open circuit data file: " << std::string(argv[current_arg++] << std::endl;
+      std::cout << "Cannot open circuit data file: " << std::string(argv[current_arg++]) << std::endl;
       assert(circuit_data.good());
   }
   input.circuit_data = &circuit_data;
   auto ordering_data = std::ifstream(std::string(argv[current_arg++]));
   if (!ordering_data.good()) {
-      std::cout << "Cannot open ordering data file: " << std::string(argv[current_arg++] << std::endl;
+      std::cout << "Cannot open ordering data file: " << std::string(argv[current_arg++]) << std::endl;
       assert(ordering_data.good());
   }
   input.ordering_data = &ordering_data;
   auto grid_data = std::ifstream(std::string(argv[current_arg++]));
   if (!grid_data.good()) {
-      std::cout << "Cannot open grid data file: " << std::string(argv[current_arg++] << std::endl;
+      std::cout << "Cannot open grid data file: " << std::string(argv[current_arg++]) << std::endl;
       assert(grid_data.good());
   }
   input.grid_data = &grid_data;
