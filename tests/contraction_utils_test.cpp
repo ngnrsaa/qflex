@@ -368,11 +368,6 @@ TEST(OrderingParserTest, ParserFailures) {
                                                      qubits_off, &ordering));
 }
 
-TEST(ContractionUtilsVectToString, IntVectorToString) {
-    std::vector<int> int_test = {1, 2, 4, 8};
-    EXPECT_EQ(int_vector_to_string(int_test), "{1, 2, 4, 8}");   
-}
-
 }  // namespace
 }  // namespace qflex
 

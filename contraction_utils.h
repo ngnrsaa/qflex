@@ -93,13 +93,6 @@ struct ContractionOperation {
 };
 
 /**
- * Converts an int vector into a string
- * @param input vector<int> int vector to convert.
- * @return string containing input vector contents
- **/
-std::string int_vector_to_string(std::vector<int> input);
-
-/**
  * Parses a grid contraction ordering from the given stream.
  * @param circuit_data std::istream containing ordering as a string.
  * @param I int with the first spatial dimension of the grid of qubits.

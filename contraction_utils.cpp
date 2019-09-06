@@ -249,17 +249,6 @@ void ContractionData::ContractGrid(
 
 // External methods
 
-std::string int_vector_to_string(std::vector<int> input) {
-    std::ostringstream temp;
-    std::string output;
-    if (!input.empty()) {
-        std::copy(input.begin(), input.end() - 1, std::ostream_iterator<int>(temp, ", "));
-        temp << input.back();
-    }
-    output = "{" + temp.str() + "}";
-    return output;
-}
-
 bool ordering_data_to_contraction_ordering(
     std::istream* ordering_data, const int I, const int J,
     const std::optional<std::vector<std::vector<int>>>& off,
@@ -386,8 +375,8 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
     return std::string(buffer, len);
   }
   std::cout << "Failed to construct tensor name with the following vectors: p1 = "
-  << int_vector_to_string(p1) << ", p2 = "
-  << int_vector_to_string(p2) << "." << std::endl;
+  << _int_vector_to_string(p1) << ", p2 = "
+  << _int_vector_to_string(p2) << "." << std::endl;
   assert(false);
   return "";
 }
