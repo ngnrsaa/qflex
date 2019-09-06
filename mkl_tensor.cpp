@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <iterator>
 
 // Time
 #include <chrono>
@@ -802,12 +803,12 @@ void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy) {
   
   if (A.data() == C.data()) {
     std::cout << "A and C cannot be the same tensor: ";
-    C.print_data();
+    C.print();
     assert(A.data() != C.data());
   }
   if (B.data() == C.data()) {
-    std::cout << "B and C cannot be the same tensor.";
-    C.print_data();
+    std::cout << "B and C cannot be the same tensor: ";
+    C.print();
     assert(B.data() != C.data());
   }
 
@@ -959,17 +960,16 @@ void _generate_binary_reordering_map(
   }
 }
 
-std::string _reordering_to_string(const std::vector<int>& map_old_to_new_idxpos,
-                                  const std::vector<size_t>& old_dimensions) {
-  int num_indices = map_old_to_new_idxpos.size();
-  std::string name("");
-  for (int i = 0; i < num_indices; ++i) name += _ALPHABET[i];
-  name += "->";
-  for (int i = 0; i < num_indices; ++i)
-    name += _ALPHABET[map_old_to_new_idxpos[i]];
-  for (int i = 0; i < num_indices; ++i)
-    name += "," + std::to_string(old_dimensions[i]);
-  return name;
+// convert int vector to string
+std::string _int_vector_to_string(std::vector<int> input) {
+    std::ostringstream temp;
+    std::string output;
+    if (!input.empty()) {
+        std::copy(input.begin(), input.end() - 1, std::ostream_iterator<int>(temp, ", "));
+        temp << input.back();
+    }
+    output = "{" + temp.str() + "}";
+    return output;
 }
 
 // convert string vector to string
@@ -986,6 +986,19 @@ std::string _string_vector_to_string(std::vector<std::string> input) {
     }
     output += "}";
     return output;
+}
+
+std::string _reordering_to_string(const std::vector<int>& map_old_to_new_idxpos,
+                                  const std::vector<size_t>& old_dimensions) {
+  int num_indices = map_old_to_new_idxpos.size();
+  std::string name("");
+  for (int i = 0; i < num_indices; ++i) name += _ALPHABET[i];
+  name += "->";
+  for (int i = 0; i < num_indices; ++i)
+    name += _ALPHABET[map_old_to_new_idxpos[i]];
+  for (int i = 0; i < num_indices; ++i)
+    name += "," + std::to_string(old_dimensions[i]);
+  return name;
 }
 
 bool _string_in_vector(const std::string& s,
