@@ -8,10 +8,9 @@
 // Example:
 // $ ./qflex.x 11 12 2 0.005 ./circuits/ben_11_16_0.txt \
 //       ./ordering/bristlecone_48.txt ./grid/bristlecone_48.txt
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   // Reading input.
-  if (argc < 8)
-    throw std::logic_error("ERROR: Not enough arguments.");
+  if (argc < 8) throw std::logic_error("ERROR: Not enough arguments.");
   int current_arg = 1;
   qflex::QflexInput input;
   input.I = atoi(argv[current_arg++]);
@@ -29,7 +28,7 @@ int main(int argc, char **argv) {
   auto grid_data = std::ifstream(std::string(argv[current_arg++]));
   assert(grid_data.good() && "Cannot open grid data file.");
   input.grid_data = &grid_data;
-
+  
   // Setting initial and final circuit states.
   if (argc > current_arg) {
     input.initial_state = std::string(argv[current_arg++]);
@@ -44,8 +43,8 @@ int main(int argc, char **argv) {
 
   // Printing output.
   for (int c = 0; c < amplitudes.size(); ++c) {
-    const auto &state = amplitudes[c].first;
-    const auto &amplitude = amplitudes[c].second;
+    const auto& state = amplitudes[c].first;
+    const auto& amplitude = amplitudes[c].second;
     std::cout << input.initial_state << " --> " << state << ": "
               << std::real(amplitude) << " " << std::imag(amplitude)
               << std::endl;

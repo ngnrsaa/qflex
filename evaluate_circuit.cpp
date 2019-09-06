@@ -2,8 +2,8 @@
 
 namespace qflex {
 
-std::vector<std::vector<int>>
-read_grid_layout_from_stream(std::istream *grid_data, int I, int J) {
+std::vector<std::vector<int>> read_grid_layout_from_stream(
+    std::istream* grid_data, int I, int J) {
   std::vector<std::vector<int>> qubits_off;
   bool on;
   for (int i = 0; i < I; ++i) {
@@ -15,8 +15,7 @@ read_grid_layout_from_stream(std::istream *grid_data, int I, int J) {
         assert(!grid_data->eof());
       }
       (*grid_data) >> on;
-      if (on == 0)
-        qubits_off.push_back({i, j});
+      if (on == 0) qubits_off.push_back({i, j});
     }
   }
   // Check for trailing whitespace.
@@ -29,22 +28,20 @@ read_grid_layout_from_stream(std::istream *grid_data, int I, int J) {
   return qubits_off;
 }
 
-void get_output_states(const std::list<ContractionOperation> &ordering,
-                       std::vector<std::vector<int>> *final_qubits,
-                       std::vector<std::string> *output_states) {
+void get_output_states(const std::list<ContractionOperation>& ordering,
+                       std::vector<std::vector<int>>* final_qubits,
+                       std::vector<std::string>* output_states) {
   output_states->push_back("");
   std::vector<std::string> temp_output_states;
-  for (const auto &op : ordering) {
-    if (op.op_type != ContractionOperation::CUT)
-      continue;
+  for (const auto& op : ordering) {
+    if (op.op_type != ContractionOperation::CUT) continue;
     // Any qubit with a terminal cut is in the final region.
     // TODO(martinop): update to use the new operation.
     if (op.cut.tensors.size() == 1) {
       final_qubits->push_back(op.cut.tensors[0]);
-      for (const auto &state : *output_states) {
+      for (const auto& state : *output_states) {
         std::vector<int> values = op.cut.values;
-        if (values.empty())
-          values = {0, 1};
+        if (values.empty()) values = {0, 1};
         for (const int value : values) {
           temp_output_states.push_back(state + std::to_string(value));
         }
@@ -55,8 +52,8 @@ void get_output_states(const std::list<ContractionOperation> &ordering,
   }
 }
 
-std::vector<std::pair<std::string, std::complex<double>>>
-EvaluateCircuit(QflexInput *input) {
+std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
+    QflexInput* input) {
   // Set precision for the printed floats.
   std::cout.precision(12);
 
@@ -99,7 +96,7 @@ EvaluateCircuit(QflexInput *input) {
 
   // Scratch space to be reused for operations.
   t0 = std::chrono::high_resolution_clock::now();
-  s_type *scratch = new s_type[(int)pow(super_dim, 7)];
+  s_type* scratch = new s_type[(int)pow(super_dim, 7)];
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
@@ -165,4 +162,4 @@ EvaluateCircuit(QflexInput *input) {
   return result;
 }
 
-} // namespace qflex
+}  // namespace qflex

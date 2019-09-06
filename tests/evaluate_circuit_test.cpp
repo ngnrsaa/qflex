@@ -7,14 +7,14 @@ namespace qflex {
 namespace {
 
 class GetOutputStatesTest : public testing::Test {
-public:
+ public:
   bool TestOutputExpectations() {
     get_output_states(ordering_, &final_qubits_, &output_states_);
     EXPECT_EQ(final_qubits_, expected_final_qubits_);
     EXPECT_EQ(output_states_, expected_output_states_);
   }
 
-protected:
+ protected:
   std::vector<std::vector<int>> final_qubits_, expected_final_qubits_;
   std::vector<std::string> output_states_, expected_output_states_;
   std::list<ContractionOperation> ordering_;
@@ -191,10 +191,10 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
   EXPECT_NEAR(amplitudes[1].second.real(), 0.0, 1e-5);
 }
 
-} // namespace
-} // namespace qflex
+}  // namespace
+}  // namespace qflex
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

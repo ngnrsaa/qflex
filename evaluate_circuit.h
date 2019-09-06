@@ -24,9 +24,9 @@ namespace qflex {
 struct QflexInput {
   int I, J, K;
   double fidelity;
-  std::istream *circuit_data;
-  std::istream *ordering_data;
-  std::istream *grid_data;
+  std::istream* circuit_data;
+  std::istream* ordering_data;
+  std::istream* grid_data;
   std::string initial_state;
   std::string final_state_A;
   bool enable_timing_logs = false;
@@ -40,8 +40,8 @@ struct QflexInput {
  * @param J int with the second spatial dimension of the grid of qubits.
  * @return a list of coordinates for "off" qubits in the I x J grid provided.
  */
-std::vector<std::vector<int>>
-read_grid_layout_from_stream(std::istream *grid_data, int I, int J);
+std::vector<std::vector<int>> read_grid_layout_from_stream(
+    std::istream* grid_data, int I, int J);
 
 /**
  * Determines the final qubit positions and output states for a given ordering.
@@ -51,9 +51,9 @@ read_grid_layout_from_stream(std::istream *grid_data, int I, int J);
  * @param output_states vector of output states for the given contraction
  * ordering, to be populated by this method.
  */
-void get_output_states(const std::list<ContractionOperation> &ordering,
-                       std::vector<std::vector<int>> *final_qubits,
-                       std::vector<std::string> *output_states);
+void get_output_states(const std::list<ContractionOperation>& ordering,
+                       std::vector<std::vector<int>>* final_qubits,
+                       std::vector<std::string>* output_states);
 
 /**
  * Evaluates a circuit and returns the final amplitudes of each state resulting
@@ -68,9 +68,9 @@ void get_output_states(const std::list<ContractionOperation> &ordering,
  * States for qubits with terminal cuts are listed at the end onf the state
  * bitstring, in the order of their terminal cuts.
  */
-std::vector<std::pair<std::string, std::complex<double>>>
-EvaluateCircuit(QflexInput *input);
+std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
+    QflexInput* input);
 
-} // namespace qflex
+}  // namespace qflex
 
-#endif // EVALUATE_CIRCUIT_
+#endif  // EVALUATE_CIRCUIT_

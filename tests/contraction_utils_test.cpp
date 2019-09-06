@@ -198,7 +198,7 @@ TEST(ContractionTest, SimpleInitializeData) {
   auto data = ContractionData::Initialize(ordering, &tensor_grid, &amplitudes);
 
   std::unordered_map<std::string, bool> active_patches;
-  for (const auto &patch : data.scratch_list()) {
+  for (const auto& patch : data.scratch_list()) {
     active_patches[patch] = false;
   }
   data.ContractGrid(ordering, /*output_index=*/0, active_patches);
@@ -218,62 +218,62 @@ TEST(ContractionTest, ExampleOrdering) {
   std::list<ContractionOperation> ordering;
   const std::vector<std::vector<int>> order_A = {
       {0, 0}, {0, 1}, {1, 0}, {1, 1}, {0, 2}, {2, 0}, {1, 2}, {2, 1}, {2, 2}};
-  for (const auto &coord : order_A) {
+  for (const auto& coord : order_A) {
     ordering.emplace_back(ExpandPatch("A", coord));
   }
   const std::vector<std::vector<int>> order_pB = {
       {6, 0}, {5, 0}, {4, 0}, {3, 0}, {6, 1}, {5, 1}, {4, 1}, {3, 1}};
-  for (const auto &coord : order_pB) {
+  for (const auto& coord : order_pB) {
     ordering.emplace_back(ExpandPatch("pB", coord));
   }
   const std::vector<std::vector<int>> order_ppD = {
       {6, 6}, {6, 5}, {5, 6}, {5, 5}, {6, 4}, {4, 6}, {5, 4}, {4, 5}, {4, 4}};
-  for (const auto &coord : order_ppD) {
+  for (const auto& coord : order_ppD) {
     ordering.emplace_back(ExpandPatch("ppD", coord));
   }
   const std::vector<std::vector<std::vector<int>>> cuts_1 = {{{6, 2}, {6, 3}}};
-  for (const auto &cut : cuts_1) {
+  for (const auto& cut : cuts_1) {
     ordering.emplace_back(CutIndex(cut));
   }
   // Copies tensor "pB" to "B" for reuse.
   ordering.emplace_back(MergePatches("pB", "B"));
   const std::vector<std::vector<int>> order_B = {
       {6, 2}, {5, 2}, {4, 2}, {3, 2}};
-  for (const auto &coord : order_B) {
+  for (const auto& coord : order_B) {
     ordering.emplace_back(ExpandPatch("B", coord));
   }
   ordering.emplace_back(MergePatches("A", "B"));
   // Copies tensor "ppD" to "pD" for reuse.
   ordering.emplace_back(MergePatches("ppD", "pD"));
   const std::vector<std::vector<int>> order_pD = {{6, 3}, {5, 3}, {4, 3}};
-  for (const auto &coord : order_pD) {
+  for (const auto& coord : order_pD) {
     ordering.emplace_back(ExpandPatch("pD", coord));
   }
   const std::vector<std::vector<int>> order_pC = {{0, 6}, {1, 6}, {2, 6},
                                                   {0, 5}, {1, 5}, {2, 5}};
-  for (const auto &coord : order_pC) {
+  for (const auto& coord : order_pC) {
     ordering.emplace_back(ExpandPatch("pC", coord));
   }
   const std::vector<std::vector<std::vector<int>>> cuts_2 = {{{2, 6}, {3, 6}}};
-  for (const auto &cut : cuts_2) {
+  for (const auto& cut : cuts_2) {
     ordering.emplace_back(CutIndex(cut));
   }
   // Copies tensor "pD" to "D" for reuse.
   ordering.emplace_back(MergePatches("pD", "D"));
   const std::vector<std::vector<int>> order_D = {
       {3, 6}, {3, 5}, {3, 4}, {3, 3}};
-  for (const auto &coord : order_D) {
+  for (const auto& coord : order_D) {
     ordering.emplace_back(ExpandPatch("D", coord));
   }
   ordering.emplace_back(MergePatches("B", "D"));
   const std::vector<std::vector<int>> order_C = {{0, 4}, {1, 4}, {2, 4},
                                                  {0, 3}, {1, 3}, {2, 3}};
   // These are "terminal cuts" for fast sampling over output values of C.
-  for (const auto &tensor : order_C) {
+  for (const auto& tensor : order_C) {
     ordering.emplace_back(CutIndex({tensor}));
   }
   ordering.emplace_back(MergePatches("pC", "C"));
-  for (const auto &coord : order_C) {
+  for (const auto& coord : order_C) {
     ordering.emplace_back(ExpandPatch("C", coord));
   }
   ordering.emplace_back(MergePatches("D", "C"));
@@ -368,10 +368,15 @@ TEST(OrderingParserTest, ParserFailures) {
                                                      qubits_off, &ordering));
 }
 
-} // namespace
-} // namespace qflex
+TEST(ContractionUtilsVectToString, IntVectorToString) {
+    std::vector<int> int_test = {1, 2, 4, 8};
+    EXPECT_EQ(int_vector_to_string(int_test), "{1, 2, 4, 8}");   
+}
 
-int main(int argc, char **argv) {
+}  // namespace
+}  // namespace qflex
+
+int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

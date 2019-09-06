@@ -56,12 +56,12 @@ const int DIM = 2;
  * performed in this function.
  */
 void circuit_data_to_grid_of_tensors(
-    std::istream *circuit_data, int I, int J, int K,
+    std::istream* circuit_data, int I, int J, int K,
     const std::string initial_conf, const std::string final_conf_B,
-    const std::optional<std::vector<std::vector<int>>> &A,
-    const std::optional<std::vector<std::vector<int>>> &off,
-    std::vector<std::vector<std::vector<MKLTensor>>> &grid_of_tensors,
-    s_type *scratch);
+    const std::optional<std::vector<std::vector<int>>>& A,
+    const std::optional<std::vector<std::vector<int>>>& off,
+    std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors,
+    s_type* scratch);
 
 /**
  * Contracts a 3D grid of tensors onto a 2D grid of tensors, contracting
@@ -81,11 +81,11 @@ void circuit_data_to_grid_of_tensors(
  * work.
  */
 void grid_of_tensors_3D_to_2D(
-    std::vector<std::vector<std::vector<MKLTensor>>> &grid_of_tensors_3D,
-    std::vector<std::vector<MKLTensor>> &grid_of_tensors_2D,
+    std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors_3D,
+    std::vector<std::vector<MKLTensor>>& grid_of_tensors_2D,
     std::optional<std::vector<std::vector<int>>> A,
     std::optional<std::vector<std::vector<int>>> off,
-    const std::list<ContractionOperation> &ordering, s_type *scratch);
+    const std::list<ContractionOperation>& ordering, s_type* scratch);
 
 /**
  * Read circuit from file and fill vector of tensors (of gates), vector with
@@ -103,10 +103,10 @@ void grid_of_tensors_3D_to_2D(
  *
  */
 void read_wave_function_evolution(
-    std::string filename, int I, std::vector<MKLTensor> &gates,
-    std::vector<std::vector<std::string>> &inputs,
-    std::vector<std::vector<std::string>> &outputs, s_type *scratch);
+    std::string filename, int I, std::vector<MKLTensor>& gates,
+    std::vector<std::vector<std::string>>& inputs,
+    std::vector<std::vector<std::string>>& outputs, s_type* scratch);
 
-} // namespace qflex
+}  // namespace qflex
 
-#endif // READ_CIRCUIT_
+#endif  // READ_CIRCUIT_
