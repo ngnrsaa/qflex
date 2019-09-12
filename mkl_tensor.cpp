@@ -239,10 +239,11 @@ void MKLTensor::rename_index(std::string old_name, std::string new_name) {
               << std::endl;
     assert(it != _indices.end());
   }
-  if (find(_indices.begin(), _indices.end(), new_name) != _indices.end()) {
+  bool new_name_is_existing_index = (find(_indices.begin(), _indices.end(), new_name) != _indices.end());
+  if (new_name_is_existing_index) {
     std::cout << "new_name: " << new_name << ", cannot be an existing index."
               << std::endl;
-    assert(find(_indices.begin(), _indices.end(), new_name) == _indices.end());
+    assert(!new_name_is_existing_index);
   }
   *it = new_name;
   _index_to_dimension[new_name] = _index_to_dimension[old_name];
@@ -259,7 +260,7 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
     << " has to be contained in indices: " 
     << _string_vector_to_string(_indices)
     << "." << std::endl;
-    assert(_vector_s_in_vector_s(indices_to_bundle, _indices));
+    assert(indices_to_bundle_in_indices);
   }
   std::vector<std::string> subtracted_indices(
       _vector_subtraction(_indices, indices_to_bundle));
@@ -702,12 +703,13 @@ void MKLTensor::_left_reorder(const std::vector<std::string>& old_ordering,
 void MKLTensor::reorder(std::vector<std::string> new_ordering,
                         s_type* scratch_copy) {
   // Asserts.
-  if (!_vector_s_in_vector_s(new_ordering, _indices) || !_vector_s_in_vector_s(_indices, new_ordering)) {
+  bool new_ordering_in_indices = _vector_s_in_vector_s(new_ordering, _indices);
+  bool indices_in_new_ordering = _vector_s_in_vector_s(_indices, new_ordering);
+  if (!new_ordering_in_indices || !indices_in_new_ordering) {
     std::cout << "new_ordering: " << _string_vector_to_string(new_ordering)
     << " must be a reordering of current indices: " << _string_vector_to_string(_indices)
     << "." << std::endl;
-    assert(_vector_s_in_vector_s(new_ordering, _indices) &&
-           _vector_s_in_vector_s(_indices, new_ordering));
+    assert(new_ordering_in_indices && indices_in_new_ordering);
   }
   bool fast = true;
   for (int i = 0; i < _dimensions.size(); ++i) {

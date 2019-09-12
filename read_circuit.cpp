@@ -253,7 +253,8 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       snprintf(error, sizeof(error), "Left hand side of pair not found: (%d,%d),(%d,%d)",
                local[0], local[1], lhs[0], lhs[1]);
       std::cout << error << std::endl;
-      assert(false && "Halting reordering.");
+      std::cout << "Halting reordering." << std::endl;
+      assert(false);
     }
 
     op_num = 0;
@@ -271,7 +272,8 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       snprintf(error, sizeof(error), "Right hand side of pair not found: (%d,%d),(%d,%d)",
                local[0], local[1], rhs[0], rhs[1]);
       std::cout << error << std::endl;
-      assert(false && "Halting reordering.");
+      std::cout << "Halting reordering." << std::endl;
+      assert(false);
     }
     if (lpatch == rpatch) {
       // lhs and rhs are in the same patch.
@@ -314,8 +316,8 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
              "Failed to compare (%d,%d) and (%d,%d) for local (%d,%d).", lhs[0],
              lhs[1], rhs[0], rhs[1], local[0], local[1]);
     std::cout << error << std::endl;
-    assert(false && "Halting reordering.");
-    return false;
+    std::cout << "Halting reordering." << std::endl;
+    assert(false);
   };
 }
 
