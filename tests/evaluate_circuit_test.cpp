@@ -8,7 +8,7 @@ namespace {
 
 class GetOutputStatesTest : public testing::Test {
  public:
-  bool TestOutputExpectations() {
+  void TestOutputExpectations() {
     get_output_states(ordering_, &final_qubits_, &output_states_);
     EXPECT_EQ(final_qubits_, expected_final_qubits_);
     EXPECT_EQ(output_states_, expected_output_states_);

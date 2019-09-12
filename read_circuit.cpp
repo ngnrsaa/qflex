@@ -56,7 +56,11 @@ std::vector<s_type> gate_array(const std::string& gate_name) {
     return std::vector<s_type>({conj(phase), 0., 0., phase});
   }
 
-  // TODO: Better error-checking if the gate name isn't recognised.
+  bool valid_gate = _GATES_DATA.find(gate_name) != _GATES_DATA.end();
+  if (!valid_gate) {
+    std::cout << "Invalid gate name provided: " << gate_name << std::endl;
+    assert(false);
+  }
   return _GATES_DATA.at(gate_name);
 }
 
@@ -180,11 +184,29 @@ gate_arrays(const std::string& gate_name, s_type* scratch) {
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
                       std::vector<size_t>>(ret_val[0], ret_val[1], {4, 2, 2});
   }
+  std::cout << "Invalid gate name provided: " << gate_name << std::endl;
+  assert(false);
 }
 
 /**
- * Helper method for grid_of_tensors_3D_to_2D which determines the order for
- * tensor indices around a target qubit based on contraction order and cuts.
+ * Helper method for grid_of_tensors_3D_to_2D which generates a comparator
+ * function for sorting the indices of a tensor at grid position "local" into
+ * the order prescribed by "ordering".
+ *
+ * The resulting comparator takes two grid positions adjacent to "local" as
+ * input ("lhs" and "rhs") and determines the relative order in which the
+ * tensors at each position are contracted with the tensor at "local". The
+ * comparator returns:
+ *   - true if the lhs tensor is contracted with the local tensor before the
+ *     rhs tensor is contracted with the local tensor
+ *   - false if the rhs tensor is contracted with the local tensor before the
+ *     lhs tensor is contracted with the local tensor
+ *   - error if either the lhs or rhs tensor is never contracted with the local
+ *     tensor (this usually indicates an issue in the provided ordering)
+ *
+ * Generating and applying this comparator for all grid tensors ensures that
+ * contraction (using the order given by "ordering") will never require further
+ * reordering of tensor indices.
  * @param ordering std::list<ContractionOperation> providing the steps required
  * to contract the tensor grid.
  * @param local vector<int> of the target qubit coordinates.
