@@ -67,21 +67,24 @@ std::vector<s_type> gate_array(const std::string& gate_name) {
 /**
  * Returns vector of vectors of s_type with the Schmidt decomposition of the
  * fSim gate.
- * @param theta double with the angle $theta$. Modulo $2\pi$ is taken.
- * @param phi double with the angle $phi$. Modulo $2\pi$ is taken.
+ * @param theta s_type::value_type with the angle $theta$. Modulo $2\pi$ is taken.
+ * @param phi s_type::value_type with the angle $phi$. Modulo $2\pi$ is taken.
  * @param scratch pointer to s_type array with scratch space for all operations
  * performed in this function.
  * @return vector<vector<s_type>> with three elements: first the vector with
  * entries of the first qubit, second the vector with entries of the second
  * qubit, and third the vector with the singular values (informational only).
  */
-std::vector<std::vector<s_type>> fSim(double theta, double phi,
+std::vector<std::vector<s_type>> fSim(s_type::value_type theta, s_type::value_type phi,
                                       s_type* scratch) {
+
+  static_assert(std::is_floating_point<typename s_type::value_type>::value);
+
   std::vector<s_type> coeffs(
-      {{0.0, -0.5 * sin(theta)},
-       {0.0, -0.5 * sin(theta)},
-       {0.5 * (cos(-theta / 2.) - cos(theta)), 0.5 * sin(-theta / 2.)},
-       {0.5 * (cos(-theta / 2.) + cos(theta)), 0.5 * sin(-theta / 2.)}});
+      {{0.0, -std::sin(theta) / 2},
+       {0.0, -std::sin(theta) / 2},
+       {(std::cos(-theta / 2) - std::cos(theta)) / 2, std::sin(-theta / 2) / 2},
+       {(std::cos(-theta / 2) + std::cos(theta)) / 2, std::sin(-theta / 2) / 2}});
 
   std::vector<double> norm_coeffs(coeffs.size());
   for (int i = 0; i < coeffs.size(); ++i) {
@@ -91,25 +94,25 @@ std::vector<std::vector<s_type>> fSim(double theta, double phi,
   std::vector<std::vector<s_type>> q1_matrices(
       {{{0., 0.}, {1., 0.}, {1., 0.}, {0., 0.}},
        {{0., 0.}, {0., 1.}, {0., -1.}, {0., 0.}},
-       {{cos(phi / 4.), sin(phi / 4.)},
+       {{std::cos(phi / 4), std::sin(phi / 4)},
         {0., 0.},
         {0., 0.},
-        {-cos(-phi / 4.), -sin(-phi / 4.)}},
-       {{cos(phi / 4.), sin(phi / 4.)},
+        {-std::cos(-phi / 4), -std::sin(-phi / 4)}},
+       {{std::cos(phi / 4), std::sin(phi / 4)},
         {0., 0.},
         {0., 0.},
-        {cos(-phi / 4.), sin(-phi / 4.)}}});
+        {std::cos(-phi / 4), std::sin(-phi / 4)}}});
   std::vector<std::vector<s_type>> q2_matrices(
       {{{0., 0.}, {1., 0.}, {1., 0.}, {0., 0.}},
        {{0., 0.}, {0., 1.}, {0., -1.}, {0., 0.}},
-       {{cos(phi / 4.), sin(phi / 4.)},
+       {{std::cos(phi / 4), std::sin(phi / 4)},
         {0., 0.},
         {0., 0.},
-        {-cos(-phi / 4.), -sin(-phi / 4.)}},
-       {{cos(phi / 4.), sin(phi / 4.)},
+        {-std::cos(-phi / 4), -std::sin(-phi / 4)}},
+       {{std::cos(phi / 4), std::sin(phi / 4)},
         {0., 0.},
         {0., 0.},
-        {cos(-phi / 4.), sin(-phi / 4.)}}});
+        {std::cos(-phi / 4), std::sin(-phi / 4)}}});
 
   for (int i = 0; i < coeffs.size(); ++i) {
     for (int j = 0; j < q1_matrices[i].size(); ++j) {

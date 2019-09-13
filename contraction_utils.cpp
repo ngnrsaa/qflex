@@ -92,7 +92,7 @@ ContractionData ContractionData::Initialize(
   for (const auto& patch_rank_pair : data.patch_rank_) {
     max_rank = std::max(patch_rank_pair.second, max_rank);
   }
-  int max_size = (int)pow(bond_dim, max_rank);
+  long unsigned int max_size = (long unsigned int)pow(bond_dim, max_rank);
 
   // General-purpose scratch space (primarily used for tensor reordering).
   data.scratch_.push_back(Tensor({""}, {max_size}));
@@ -101,7 +101,7 @@ ContractionData ContractionData::Initialize(
 
   // "Swap tensor" space, used to store operation results.
   for (int rank = 1; rank <= max_rank; ++rank) {
-    const int size = (int)pow(bond_dim, rank);
+    const long unsigned int size = (long unsigned int)pow(bond_dim, rank);
     data.scratch_.push_back(Tensor({""}, {size}));
     data.scratch_map_[result_space(rank)] = rank;
     allocated_space += size;
@@ -109,7 +109,7 @@ ContractionData ContractionData::Initialize(
 
   int patch_pos = data.scratch_map_.size();
   for (const auto& patch_rank_pair : data.patch_rank_) {
-    const int size = (int)pow(bond_dim, patch_rank_pair.second);
+    const long unsigned int size = (long unsigned int)pow(bond_dim, patch_rank_pair.second);
     data.scratch_.push_back(Tensor({""}, {size}));
     data.scratch_map_[patch_rank_pair.first] = patch_pos++;
     allocated_space += size;
@@ -119,7 +119,7 @@ ContractionData ContractionData::Initialize(
   // to the same grid tensor, only one copy needs to be stored.
   int cut_copy_pos = data.scratch_map_.size();
   for (const auto& copy_rank_pair : cut_copy_rank) {
-    const int size = (int)pow(bond_dim, copy_rank_pair.second);
+    const long unsigned int size = (long unsigned int)pow(bond_dim, copy_rank_pair.second);
     data.scratch_.push_back(Tensor({""}, {size}));
     data.scratch_map_[copy_rank_pair.first] = patch_pos++;
     allocated_space += size;
