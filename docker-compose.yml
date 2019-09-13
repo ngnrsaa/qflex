@@ -1,0 +1,5 @@
+version: "3"
+services:
+  qflex:
+    container_name: qflex
+    build: ./
