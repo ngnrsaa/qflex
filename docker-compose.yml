@@ -1,5 +1,6 @@
 version: "3"
 services:
   qflex:
+    image: qflex:tests
     container_name: qflex
     build: ./
