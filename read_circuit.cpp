@@ -137,21 +137,21 @@ std::vector<std::vector<s_type>> fSim(double theta, double phi,
   sort(my_cnmm.begin(), my_cnmm.end());
   reverse(my_cnmm.begin(), my_cnmm.end());
 
-  std::vector<s_type> q1_tensor, q2_tensor;
+  std::vector<s_type> vec_q1_tensor, vec_q2_tensor;
   for (auto v : my_cnmm) {
-    for (auto w : v.m1) q1_tensor.emplace_back(w);
-    for (auto w : v.m2) q2_tensor.emplace_back(w);
+    for (auto w : v.m1) vec_q1_tensor.emplace_back(w);
+    for (auto w : v.m2) vec_q2_tensor.emplace_back(w);
   }
 
-  MKLTensor q1_mkltensor({"v", "q1i", "q2i"}, {4, 2, 2}, q1_tensor);
-  MKLTensor q2_mkltensor({"v", "q1i", "q2i"}, {4, 2, 2}, q2_tensor);
-  q1_mkltensor.reorder({"q1i", "v", "q2i"}, scratch);
-  q2_mkltensor.reorder({"q1i", "v", "q2i"}, scratch);
-  std::vector<s_type> q1_reordered_tensor(q1_mkltensor.size());
-  std::vector<s_type> q2_reordered_tensor(q2_mkltensor.size());
-  for (int i = 0; i < q1_mkltensor.size(); ++i) {
-    q1_reordered_tensor[i] = *(q1_mkltensor.data() + i);
-    q2_reordered_tensor[i] = *(q2_mkltensor.data() + i);
+  Tensor q1_tensor({"v", "q1i", "q2i"}, {4, 2, 2}, vec_q1_tensor);
+  Tensor q2_tensor({"v", "q1i", "q2i"}, {4, 2, 2}, vec_q2_tensor);
+  q1_tensor.reorder({"q1i", "v", "q2i"}, scratch);
+  q2_tensor.reorder({"q1i", "v", "q2i"}, scratch);
+  std::vector<s_type> q1_reordered_tensor(q1_tensor.size());
+  std::vector<s_type> q2_reordered_tensor(q2_tensor.size());
+  for (int i = 0; i < q1_tensor.size(); ++i) {
+    q1_reordered_tensor[i] = *(q1_tensor.data() + i);
+    q2_reordered_tensor[i] = *(q2_tensor.data() + i);
   }
 
   sort(norm_coeffs.begin(), norm_coeffs.end());
@@ -328,7 +328,7 @@ void circuit_data_to_grid_of_tensors(
     const std::string initial_conf, const std::string final_conf_B,
     const std::optional<std::vector<std::vector<int>>>& A,
     const std::optional<std::vector<std::vector<int>>>& off,
-    std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors,
+    std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch) {
   // Gotten from the file.
   int num_qubits, cycle, q1, q2;
@@ -373,21 +373,21 @@ void circuit_data_to_grid_of_tensors(
   }
 
   // Creating grid variables.
-  std::vector<std::vector<std::vector<std::vector<MKLTensor>>>>
+  std::vector<std::vector<std::vector<std::vector<Tensor>>>>
       grid_of_groups_of_tensors(I);
-  grid_of_tensors = std::vector<std::vector<std::vector<MKLTensor>>>(I);
+  grid_of_tensors = std::vector<std::vector<std::vector<Tensor>>>(I);
   std::vector<std::vector<std::vector<int>>> counter_group(I);
   for (int i = 0; i < I; ++i) {
     grid_of_groups_of_tensors[i] =
-        std::vector<std::vector<std::vector<MKLTensor>>>(J);
-    grid_of_tensors[i] = std::vector<std::vector<MKLTensor>>(J);
+        std::vector<std::vector<std::vector<Tensor>>>(J);
+    grid_of_tensors[i] = std::vector<std::vector<Tensor>>(J);
     counter_group[i] = std::vector<std::vector<int>>(J);
     for (int j = 0; j < J; ++j) {
-      grid_of_groups_of_tensors[i][j] = std::vector<std::vector<MKLTensor>>(K);
-      grid_of_tensors[i][j] = std::vector<MKLTensor>(K);
+      grid_of_groups_of_tensors[i][j] = std::vector<std::vector<Tensor>>(K);
+      grid_of_tensors[i][j] = std::vector<Tensor>(K);
       counter_group[i][j] = std::vector<int>(K, 0);
       for (int k = 0; k < K; ++k) {
-        grid_of_groups_of_tensors[i][j][k] = std::vector<MKLTensor>();
+        grid_of_groups_of_tensors[i][j][k] = std::vector<Tensor>();
       }
     }
   }
@@ -402,9 +402,9 @@ void circuit_data_to_grid_of_tensors(
     }
     std::string delta_gate = (initial_conf[idx] == '0') ? "delta_0" : "delta_1";
     grid_of_groups_of_tensors[i][j][0].push_back(
-        MKLTensor({"th"}, {2}, gate_array(delta_gate)));
+        Tensor({"th"}, {2}, gate_array(delta_gate)));
     grid_of_groups_of_tensors[i][j][0].push_back(
-        MKLTensor({"th", "t0"}, {2, 2}, gate_array("h")));
+        Tensor({"th", "t0"}, {2, 2}, gate_array("h")));
     idx += 1;
   }
 
@@ -450,7 +450,7 @@ void circuit_data_to_grid_of_tensors(
             std::to_string(counter_group[i_j_1[0]][i_j_1[1]][super_cycle] + 1);
         ++counter_group[i_j_1[0]][i_j_1[1]][super_cycle];
         grid_of_groups_of_tensors[i_j_1[0]][i_j_1[1]][super_cycle].push_back(
-            MKLTensor({input_index, output_index}, {2, 2}, gate_array(gate)));
+            Tensor({input_index, output_index}, {2, 2}, gate_array(gate)));
       }
       if (q2 >= 0 && cycle > 0 && cycle <= SUPER_CYCLE_DEPTH * K) {
         if (find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]) ||
@@ -479,10 +479,10 @@ void circuit_data_to_grid_of_tensors(
         ++counter_group[i_j_1[0]][i_j_1[1]][super_cycle];
         ++counter_group[i_j_2[0]][i_j_2[1]][super_cycle];
         grid_of_groups_of_tensors[i_j_1[0]][i_j_1[1]][super_cycle].push_back(
-            MKLTensor({input_index_1, virtual_index, output_index_1},
+            Tensor({input_index_1, virtual_index, output_index_1},
                       dimensions, gate_q1));
         grid_of_groups_of_tensors[i_j_2[0]][i_j_2[1]][super_cycle].push_back(
-            MKLTensor({input_index_2, virtual_index, output_index_2},
+            Tensor({input_index_2, virtual_index, output_index_2},
                       dimensions, gate_q2));
       }
     }
@@ -497,13 +497,13 @@ void circuit_data_to_grid_of_tensors(
     }
     std::string last_index = "t" + std::to_string(counter_group[i][j][k]);
     grid_of_groups_of_tensors[i][j][k].push_back(
-        MKLTensor({"th", last_index}, {2, 2}, gate_array("h")));
+        Tensor({"th", last_index}, {2, 2}, gate_array("h")));
     if (find_grid_coord_in_list(A, i, j)) {
       continue;
     }
     std::string delta_gate = (final_conf_B[idx] == '0') ? "delta_0" : "delta_1";
     grid_of_groups_of_tensors[i][j][k].push_back(
-        MKLTensor({"th"}, {2}, gate_array(delta_gate)));
+        Tensor({"th"}, {2}, gate_array(delta_gate)));
     idx += 1;  // Move in B only.
   }
 
@@ -515,10 +515,10 @@ void circuit_data_to_grid_of_tensors(
           continue;
         }
 
-        std::vector<MKLTensor>& group = grid_of_groups_of_tensors[i][j][k];
-        std::vector<MKLTensor> group_containers(
+        std::vector<Tensor>& group = grid_of_groups_of_tensors[i][j][k];
+        std::vector<Tensor> group_containers(
             SUPER_CYCLE_DEPTH + 2,  // +2 for d and H.
-            MKLTensor({""}, {(int)pow(DIM, 6)}));
+            Tensor({""}, {(int)pow(DIM, 6)}));
         group_containers[0] = group[0];
         int t = 1;
         for (t = 1; t < group.size(); ++t) {
@@ -556,8 +556,8 @@ void circuit_data_to_grid_of_tensors(
 }
 
 void grid_of_tensors_3D_to_2D(
-    std::vector<std::vector<std::vector<MKLTensor>>>& grid_of_tensors_3D,
-    std::vector<std::vector<MKLTensor>>& grid_of_tensors_2D,
+    std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors_3D,
+    std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
     std::optional<std::vector<std::vector<int>>> A,
     std::optional<std::vector<std::vector<int>>> off,
     const std::list<ContractionOperation>& ordering, s_type* scratch) {
@@ -578,10 +578,10 @@ void grid_of_tensors_3D_to_2D(
       if (find_grid_coord_in_list(A, i, j)) {
         container_dim *= DIM;
       }
-      std::vector<MKLTensor> group_containers =
-          std::vector<MKLTensor>(2, MKLTensor({""}, {container_dim}));
-      MKLTensor* source_container = &group_containers[0];
-      MKLTensor* target_container = &group_containers[1];
+      std::vector<Tensor> group_containers =
+          std::vector<Tensor>(2, Tensor({""}, {container_dim}));
+      Tensor* source_container = &group_containers[0];
+      Tensor* target_container = &group_containers[1];
 
       if (K == 1) {
         grid_of_tensors_2D[i][j] = grid_of_tensors_3D[i][j][0];
@@ -591,7 +591,7 @@ void grid_of_tensors_3D_to_2D(
         for (int k = 1; k < K - 1; ++k) {
           multiply(*source_container, grid_of_tensors_3D[i][j][k + 1],
                    *target_container, scratch);
-          MKLTensor* swap_container = source_container;
+          Tensor* swap_container = source_container;
           source_container = target_container;
           target_container = swap_container;
         }
@@ -674,7 +674,7 @@ void grid_of_tensors_3D_to_2D(
 
 // This function is currently not being called.
 void read_wave_function_evolution(
-    std::string filename, int I, std::vector<MKLTensor>& gates,
+    std::string filename, int I, std::vector<Tensor>& gates,
     std::vector<std::vector<std::string>>& inputs,
     std::vector<std::vector<std::string>>& outputs, s_type* scratch) {
   // Open file.
@@ -722,7 +722,7 @@ void read_wave_function_evolution(
       if (q2 < 0) {
         std::string input_index = std::to_string(q1) + ",i";
         std::string output_index = std::to_string(q1) + ",o";
-        gates.push_back(MKLTensor({input_index, output_index}, {DIM, DIM},
+        gates.push_back(Tensor({input_index, output_index}, {DIM, DIM},
                                   gate_array(gate)));
         inputs.push_back({input_index});
         outputs.push_back({output_index});
@@ -734,7 +734,7 @@ void read_wave_function_evolution(
         std::string output_index2 = std::to_string(q2) + ",o";
         inputs.push_back({input_index1, input_index2});
         outputs.push_back({output_index1, output_index2});
-        gates.push_back(MKLTensor(
+        gates.push_back(Tensor(
             {input_index1, input_index2, output_index1, output_index2},
             {DIM, DIM, DIM, DIM}, gate_array(gate)));
       }

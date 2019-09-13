@@ -4,7 +4,7 @@ TARGET1 = qflex
 CXX = g++
 
 FLAGS =  -fopenmp  -O3  -std=c++17  -march=native -lgsl -lgslcblas
-#FLAFS += -DMKL_TENSOR  # Use MKL instead of GSL CBLAS
+#FLAGS += -DMKL_TENSOR  # Use MKL instead of GSL CBLAS
 
 TEST_DIR = tests
 
