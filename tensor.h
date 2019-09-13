@@ -9,10 +9,14 @@
  * @date Modified: August 2018
  */
 
-#ifndef MKL_TENSOR_H
-#define MKL_TENSOR_H
+#ifndef TENSOR_H
+#define TENSOR_H
 
+#ifdef MKL_TENSOR
 #include <mkl.h>
+#else
+#include <gsl/gsl_cblas.h>
+#endif
 
 #include <complex>
 #include <iostream>

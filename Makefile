@@ -1,13 +1,14 @@
 TARGET1 = qflex
 
 #Set these:
-CXX = icpc
+CXX = g++
 
-FLAGS =  -mkl  -qopenmp  -O3  -std=c++17  -march=native
+FLAGS =  -fopenmp  -O3  -std=c++17  -march=native -lgsl -lgslcblas
+#FLAFS += -DMKL_TENSOR  # Use MKL instead of GSL CBLAS
 
 TEST_DIR = tests
 
-OBJS1 = main.o evaluate_circuit.o mkl_tensor.o contraction_utils.o read_circuit.o
+OBJS1 = main.o evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o
 
 $(TARGET1): $(OBJS1)
 	$(CXX) -o $(TARGET1).x $(FLAGS) $(OBJS1)

@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "mkl_tensor.h"
+#include "tensor.h"
 
 namespace qflex {
 

@@ -8,7 +8,7 @@
  * @date Modified: August 2018
  */
 
-#include "mkl_tensor.h"
+#include "tensor.h"
 
 #include <omp.h>
 

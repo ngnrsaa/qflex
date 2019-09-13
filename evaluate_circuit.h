@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "contraction_utils.h"
-#include "mkl_tensor.h"
+#include "tensor.h"
 #include "read_circuit.h"
 
 namespace qflex {
