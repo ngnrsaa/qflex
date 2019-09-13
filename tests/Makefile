@@ -3,7 +3,13 @@ TARGET1 = qflex
 #Set these:
 CXX = g++
 
-FLAGS =  -fopenmp  -O3  -std=c++17  -march=native -lgsl -lgslcblas
+FLAGS =  -O3  -std=c++17  -march=native
+
+ifeq ($(CXX), icpc)
+	FLAGS += -mkl -qopenmp -DMKL_TENSOR
+else
+  FLAGS += -fopenmp -lgsl -lgslcblas
+endif
 
 ROOT_DIR = ..
 
