@@ -294,6 +294,14 @@ TEST(MKLTensorTest, VectorToString) {
   EXPECT_EQ(_string_vector_to_string(string_test), "{a, b, d}");
 }
 
+TEST(MKLTensorDeathTest, GenerateBinaryReorderingMapInvalidInput) {
+    const std::vector<int> map_old_to_new_idxpos = {1, 2};
+    std::vector<int> map_old_to_new_position = {1, 2, 3};
+
+    // Size of map must be equal to 2 ^ (number of indices)
+    EXPECT_DEATH(_generate_binary_reordering_map(map_old_to_new_idxpos, map_old_to_new_position), "");
+}
+
 }  // namespace
 }  // namespace qflex
 

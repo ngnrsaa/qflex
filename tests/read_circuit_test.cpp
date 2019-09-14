@@ -174,6 +174,20 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   }
 }
 
+TEST(ReadCircuitDeathTest, CircuitDataToGridOfTensors) {
+  std::vector<std::vector<std::vector<MKLTensor>>> grid_of_tensors;
+  s_type scratch[256];
+  auto circuit_data = std::stringstream(kNullCircuit);
+
+  // Input configuration must be equal to the number of qubits
+  EXPECT_DEATH(circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "001", "01", {}, {},
+                                  grid_of_tensors, scratch), "");
+                                  
+  // Output configuration must be equal to the number of qubits
+  EXPECT_DEATH(circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "011", {}, {},
+                                  grid_of_tensors, scratch), "");
+}
+
 }  // namespace
 }  // namespace qflex
 

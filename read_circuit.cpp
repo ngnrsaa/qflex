@@ -348,6 +348,9 @@ void circuit_data_to_grid_of_tensors(
   }
 
   // Github issue is open regarding this, will not occur
+  // This is redundant with the if statement above, what should I do about these two?
+  // I added the above if statement a while back, this if statement below is what was
+  // originally in the codebase. Maybe leave it until we figure out the issue?
   if (num_qubits != I * J) {
     std::cout << "I*J must be equal to the number of qubits. Instead, I*J = " << I * J 
               << " and num_qubits = " << num_qubits << std::endl;
@@ -673,6 +676,7 @@ void grid_of_tensors_3D_to_2D(
 }
 
 // This function is currently not being called.
+// TODO: Decide whether or not to deprecate function, also needs to be tested.
 void read_wave_function_evolution(
     std::string filename, int I, std::vector<MKLTensor>& gates,
     std::vector<std::vector<std::string>>& inputs,
