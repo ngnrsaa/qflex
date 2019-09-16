@@ -10,6 +10,11 @@ with low fidelity.  qFlex targets quantum circuits in the range of sizes
 expected for supremacy experiments based on random quantum circuits, in order to
 verify and benchmark such experiments.
 
+## Documentation
+
+qFlex scientific documentation and results can be found [here](tbd) and [here](tbd).
+For the technical documentations, see [qflex/docs](/docs).
+
 ## Licence
 
 The Flexible Quantum Circuit Simulator (qFlex) framework is licensed under the
