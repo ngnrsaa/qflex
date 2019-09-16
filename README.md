@@ -1,3 +1,7 @@
+# qFlex: A flexible high-performance simulator for the verification and benchmarking of quantum circuits implemented on real hardware
+
+## Description
+
 Flexible Quantum Circuit Simulator (qFlex) implements an efficient tensor
 network, CPU-based simulator of large quantum circuits. qFlex computes exact
 probability amplitudes, a task that proves essential for the verification of
@@ -6,10 +10,9 @@ with low fidelity.  qFlex targets quantum circuits in the range of sizes
 expected for supremacy experiments based on random quantum circuits, in order to
 verify and benchmark such experiments.
 
-Copyright © 2019, United States Government as represented by the Administrator
-of the National Aeronautics and Space Administration. All rights reserved.
+## Licence
 
-The Flexible Quantum Circuit Simulator (qFlex)  framework is licensed under the
+The Flexible Quantum Circuit Simulator (qFlex) framework is licensed under the
 Apache License, Version 2.0 (the "License"); you may not use this application
 except in compliance with the License. You may obtain a copy of the License at
 http://www.apache.org/licenses/LICENSE-2.0. 
