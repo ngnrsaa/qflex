@@ -347,16 +347,6 @@ void circuit_data_to_grid_of_tensors(
     num_qubits = I * J;
   }
 
-  // Github issue is open regarding this, will not occur
-  // This is redundant with the if statement above, what should I do about these two?
-  // I added the above if statement a while back, this if statement below is what was
-  // originally in the codebase. Maybe leave it until we figure out the issue?
-  if (num_qubits != I * J) {
-    std::cout << "I*J must be equal to the number of qubits. Instead, I*J = " << I * J 
-              << " and num_qubits = " << num_qubits << std::endl;
-    assert(num_qubits == I * J);
-  }
-
   // Assert for the length of initial_conf and final_conf_B.
   {
     size_t off_size = off.has_value() ? off.value().size() : 0;

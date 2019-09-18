@@ -368,7 +368,7 @@ TEST(OrderingParserTest, ParserFailures) {
                                                      qubits_off, &ordering));
 }
 
-TEST(ContractionDeathTest, ContractGridInvalidINput) {
+TEST(ContractionDeathTest, ContractGridInvalidInput) {
   std::list<ContractionOperation> ordering;
   std::vector<std::vector<MKLTensor>> tensor_grid;
   std::vector<std::complex<double>> amplitudes;
@@ -379,7 +379,7 @@ TEST(ContractionDeathTest, ContractGridInvalidINput) {
   // Amplitude cannot be null pointer
   EXPECT_DEATH(ContractGrid(ordering, &tensor_grid, nullptr), "");
 
-  // Ordering cannot be invalid
+  // Ordering must be valid to contract grid
   ordering.emplace_back(ExpandPatch("a", {1, 2}));
   ordering.emplace_back(ExpandPatch("a", {1, 2}));
   EXPECT_DEATH(ContractGrid(ordering, &tensor_grid, &amplitudes), "");
