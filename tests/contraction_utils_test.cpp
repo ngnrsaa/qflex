@@ -370,7 +370,7 @@ TEST(OrderingParserTest, ParserFailures) {
 
 TEST(ContractionDeathTest, ContractGridInvalidInput) {
   std::list<ContractionOperation> ordering;
-  std::vector<std::vector<MKLTensor>> tensor_grid;
+  std::vector<std::vector<Tensor>> tensor_grid;
   std::vector<std::complex<double>> amplitudes;
   
   // Tensor grid cannot be null pointer

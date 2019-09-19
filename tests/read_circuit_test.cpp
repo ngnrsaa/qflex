@@ -175,7 +175,7 @@ TEST(ReadCircuitTest, CondenseToGrid) {
 }
 
 TEST(ReadCircuitDeathTest, CircuitDataToGridOfTensors) {
-  std::vector<std::vector<std::vector<MKLTensor>>> grid_of_tensors;
+  std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
   s_type scratch[256];
   auto circuit_data = std::stringstream(kNullCircuit);
 

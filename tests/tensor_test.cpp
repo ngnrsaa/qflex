@@ -286,8 +286,8 @@ TEST(TensorDeathTest, InvalidInput) {
   ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_x, scratch.data()), "");
 }
 
-// Testing this function by direct call because too nested to test by calling MKLTensor::reorder
-TEST(MKLTensorDeathTest, GenerateBinaryReorderingMapInvalidInput) {
+// Testing this function by direct call because too nested to test by calling Tensor::reorder
+TEST(TensorDeathTest, GenerateBinaryReorderingMapInvalidInput) {
     const std::vector<int> map_old_to_new_idxpos = {1, 2};
     std::vector<int> map_old_to_new_position = {1, 2, 3};
 
