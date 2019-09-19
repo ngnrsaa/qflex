@@ -352,13 +352,6 @@ void circuit_data_to_grid_of_tensors(
     num_qubits = I * J;
   }
 
-  // Github issue is open regarding this, will not occur
-  if (num_qubits != I * J) {
-    std::cout << "I*J must be equal to the number of qubits. Instead, I*J = "
-              << I * J << " and num_qubits = " << num_qubits << std::endl;
-    assert(num_qubits == I * J);
-  }
-
   // Assert for the length of initial_conf and final_conf_B.
   {
     size_t off_size = off.has_value() ? off.value().size() : 0;
@@ -678,6 +671,7 @@ void grid_of_tensors_3D_to_2D(
 }
 
 // This function is currently not being called.
+// TODO: Decide whether or not to deprecate function, also needs to be tested.
 void read_wave_function_evolution(
     std::string filename, int I, std::vector<Tensor>& gates,
     std::vector<std::vector<std::string>>& inputs,
