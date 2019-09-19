@@ -1,6 +1,6 @@
 /**
- * @file mkl_tensor.cpp
- * Implementation of the MKLTensor class.
+ * @file tensor.cpp
+ * Implementation of the Tensor class.
  * @see https://github.com/benjaminvillalonga/optimized_parallel_QC_with_TN
  *
  * @author Benjamin Villalonga
@@ -8,7 +8,7 @@
  * @date Modified: August 2018
  */
 
-#include "mkl_tensor.h"
+#include "tensor.h"
 
 #include <omp.h>
 
@@ -69,7 +69,7 @@ std::unordered_map<std::string, std::vector<int>> _REORDER_MAPS;
 
 ///////////////////////////// CLASS FUNCTIONS /////////////////////////////////
 
-void MKLTensor::_init(const std::vector<std::string>& indices,
+void Tensor::_init(const std::vector<std::string>& indices,
                       const std::vector<size_t>& dimensions) {
   if (indices.size() != dimensions.size()) {
     std::cout << "The number of indices: " << indices.size()
@@ -83,12 +83,12 @@ void MKLTensor::_init(const std::vector<std::string>& indices,
     _index_to_dimension[indices[i]] = dimensions[i];
 }
 
-void MKLTensor::_clear() {
+void Tensor::_clear() {
   delete[] _data;
   _data = NULL;
 }
 
-void MKLTensor::_copy(const MKLTensor& other) {
+void Tensor::_copy(const Tensor& other) {
   if (_indices.empty()) {
     _capacity = other.size();
     _data = new s_type[_capacity];
@@ -101,24 +101,24 @@ void MKLTensor::_copy(const MKLTensor& other) {
   for (size_t p = 0; p < other.size(); ++p) *(_data + p) = *(other.data() + p);
 }
 
-MKLTensor::MKLTensor() { _data = NULL; }
+Tensor::Tensor() { _data = NULL; }
 
-MKLTensor::MKLTensor(std::vector<std::string> indices,
+Tensor::Tensor(std::vector<std::string> indices,
                      std::vector<size_t> dimensions) {
   _init(indices, dimensions);
   _capacity = size();
   _data = new s_type[_capacity];
 }
 
-MKLTensor::MKLTensor(std::vector<std::string> indices,
+Tensor::Tensor(std::vector<std::string> indices,
                      std::vector<size_t> dimensions,
                      const std::vector<s_type>& data)
-    : MKLTensor(indices, dimensions) {
-  // Check that the data has the same length as this MKLTensor's size().
+    : Tensor(indices, dimensions) {
+  // Check that the data has the same length as this Tensor's size().
   size_t this_size = size();
   if (this_size != data.size()) {
     std::cout << "The vector data size: " << data.size()
-    << ", has to match the size of the MKLTensor: " << this_size 
+    << ", has to match the size of the Tensor: " << this_size 
     << "." << std::endl;
     assert(this_size == data.size());
   }
@@ -127,37 +127,37 @@ MKLTensor::MKLTensor(std::vector<std::string> indices,
   for (size_t i = 0; i < this_size; ++i) *(_data + i) = data[i];
 }
 
-MKLTensor::MKLTensor(std::vector<std::string> indices,
+Tensor::Tensor(std::vector<std::string> indices,
                      std::vector<size_t> dimensions, s_type* data) {
   _init(indices, dimensions);
   _capacity = size();
   _data = data;
 }
 
-MKLTensor::MKLTensor(const MKLTensor& other) { _copy(other); }
+Tensor::Tensor(const Tensor& other) { _copy(other); }
 
-MKLTensor::~MKLTensor() { _clear(); }
+Tensor::~Tensor() { _clear(); }
 
-const MKLTensor& MKLTensor::operator=(const MKLTensor& other) {
+const Tensor& Tensor::operator=(const Tensor& other) {
   if (this != &other) {
     _copy(other);
   }
   return *this;
 }
 
-const std::vector<std::string>& MKLTensor::get_indices() const {
+const std::vector<std::string>& Tensor::get_indices() const {
   return _indices;
 }
 
-void MKLTensor::set_indices(const std::vector<std::string>& indices) {
+void Tensor::set_indices(const std::vector<std::string>& indices) {
   _indices = indices;
 }
 
-const std::vector<size_t>& MKLTensor::get_dimensions() const {
+const std::vector<size_t>& Tensor::get_dimensions() const {
   return _dimensions;
 }
 
-void MKLTensor::set_dimensions(const std::vector<size_t>& dimensions) {
+void Tensor::set_dimensions(const std::vector<size_t>& dimensions) {
   // Assert.
   if (_data) {
     size_t total_dim = 1;
@@ -172,7 +172,7 @@ void MKLTensor::set_dimensions(const std::vector<size_t>& dimensions) {
   _dimensions = dimensions;
 }
 
-void MKLTensor::set_indices_and_dimensions(
+void Tensor::set_indices_and_dimensions(
     const std::vector<std::string>& indices,
     const std::vector<size_t>& dimensions) {
   // The following line takes care of the total size of the dimensions.
@@ -181,29 +181,29 @@ void MKLTensor::set_indices_and_dimensions(
 }
 
 const std::unordered_map<std::string, size_t>&
-MKLTensor::get_index_to_dimension() const {
+Tensor::get_index_to_dimension() const {
   return _index_to_dimension;
 }
 
-void MKLTensor::generate_index_to_dimension() {
+void Tensor::generate_index_to_dimension() {
   for (int i = 0; i < _indices.size(); ++i)
     _index_to_dimension[_indices[i]] = _dimensions[i];
 }
 
-size_t MKLTensor::size() const {
+size_t Tensor::size() const {
   size_t total_dim = 1;
   for (int i = 0; i < _dimensions.size(); ++i) total_dim *= _dimensions[i];
   return total_dim;
 }
 
-size_t MKLTensor::capacity() const { return _capacity; }
+size_t Tensor::capacity() const { return _capacity; }
 
-s_type* MKLTensor::data() { return _data; }
+s_type* Tensor::data() { return _data; }
 
-const s_type* MKLTensor::data() const { return _data; }
+const s_type* Tensor::data() const { return _data; }
 
-void MKLTensor::project(std::string index, size_t index_value,
-                        MKLTensor &projection_tensor) const {
+void Tensor::project(std::string index, size_t index_value,
+                        Tensor &projection_tensor) const {
   if (index != _indices[0]) {
     std::cout << "Index: '" << index << "' has to be equal to indices[0]: '"
               << _indices[0] << "'." << std::endl;
@@ -232,7 +232,7 @@ void MKLTensor::project(std::string index, size_t index_value,
     *(projection_data + p) = *(_data + projection_begin + p);
 }
 
-void MKLTensor::rename_index(std::string old_name, std::string new_name) {
+void Tensor::rename_index(std::string old_name, std::string new_name) {
   auto it = find(_indices.begin(), _indices.end(), old_name);
   if (it == _indices.end()) {
     std::cout << "old_name: " << old_name << ", has to be a valid index."
@@ -250,7 +250,7 @@ void MKLTensor::rename_index(std::string old_name, std::string new_name) {
   _index_to_dimension.erase(old_name);
 }
 
-void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
+void Tensor::bundle(std::vector<std::string> indices_to_bundle,
                        std::string bundled_index) {
   // Asserts.
   bool indices_to_bundle_in_indices = _vector_s_in_vector_s(indices_to_bundle, _indices);
@@ -297,7 +297,7 @@ void MKLTensor::bundle(std::vector<std::string> indices_to_bundle,
   _dimensions = new_dimensions;
 }
 
-void MKLTensor::_naive_reorder(std::vector<std::string> new_ordering,
+void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
                                s_type* scratch_copy) {
   // Don't do anything if there is nothing to reorder.
   if (new_ordering == _indices) return;
@@ -398,7 +398,7 @@ void MKLTensor::_naive_reorder(std::vector<std::string> new_ordering,
   scratch_copy = NULL;
 }
 
-void MKLTensor::_fast_reorder(std::vector<std::string> new_ordering,
+void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
                               s_type* scratch_copy) {
   // Create binary orderings.
   std::vector<std::string> old_ordering(_indices);
@@ -576,7 +576,7 @@ void MKLTensor::_fast_reorder(std::vector<std::string> new_ordering,
 
 // Assuming all indices are binary for old_ordering and new_ordering.
 // old_ordering and new_ordering refer to the right.
-void MKLTensor::_right_reorder(const std::vector<std::string>& old_ordering,
+void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
                                const std::vector<std::string>& new_ordering,
                                int num_indices_right) {
   // Don't do anything if there is nothing to reorder.
@@ -638,7 +638,7 @@ void MKLTensor::_right_reorder(const std::vector<std::string>& old_ordering,
 
 // Assuming all indices are binary for old_ordering and new_ordering.
 // old_ordering and new_ordering refer to the left.
-void MKLTensor::_left_reorder(const std::vector<std::string>& old_ordering,
+void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
                               const std::vector<std::string>& new_ordering,
                               int num_indices_right, s_type* scratch_copy) {
   // Don't do anything if there is nothing to reorder.
@@ -700,7 +700,7 @@ void MKLTensor::_left_reorder(const std::vector<std::string>& old_ordering,
   scratch_copy = NULL;
 }
 
-void MKLTensor::reorder(std::vector<std::string> new_ordering,
+void Tensor::reorder(std::vector<std::string> new_ordering,
                         s_type* scratch_copy) {
   // Asserts.
   bool new_ordering_in_indices = _vector_s_in_vector_s(new_ordering, _indices);
@@ -725,13 +725,13 @@ void MKLTensor::reorder(std::vector<std::string> new_ordering,
   }
 }
 
-void MKLTensor::scalar_multiply(s_type scalar) {
+void Tensor::scalar_multiply(s_type scalar) {
   size_t this_size = size();
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
   for (size_t p = 0; p < this_size; ++p) *(_data + p) = (*(_data + p)) * scalar;
 }
 
-double MKLTensor::tensor_norm() const {
+double Tensor::tensor_norm() const {
   double total_norm(0.0);
   size_t this_size = size();
   for (size_t p = 0; p < this_size; ++p) {
@@ -740,7 +740,7 @@ double MKLTensor::tensor_norm() const {
   return total_norm;
 }
 
-size_t MKLTensor::num_zeros() const {
+size_t Tensor::num_zeros() const {
   size_t count(0);
   size_t this_size = size();
   s_type complex_0(0.);
@@ -750,8 +750,8 @@ size_t MKLTensor::num_zeros() const {
   return count;
 }
 
-void MKLTensor::print() const {
-  std::string print_str("MKLTensor of rank ");
+void Tensor::print() const {
+  std::string print_str("Tensor of rank ");
   print_str += std::to_string(_indices.size());
   print_str += ": ";
   for (int i = 0; i < _indices.size(); ++i) {
@@ -763,14 +763,14 @@ void MKLTensor::print() const {
   std::cout << print_str << std::endl;
 }
 
-void MKLTensor::print_data() const {
+void Tensor::print_data() const {
   for (size_t p = 0; p < size(); ++p) std::cout << *(_data + p) << " ";
   std::cout << std::endl;
 }
 
 /////////////////////////// EXTERNAL FUNCTIONS ////////////////////////////////
 
-// use mkl if complexity < some value.
+// use  if complexity < some value.
 void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int m, int n, int k) {
   s_type alpha = 1.0;
@@ -801,7 +801,7 @@ void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
   cblas_cdotu_sub(k, A_data, 1, B_data, 1, C_data);
 }
 
-void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy) {
+void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   
   if (A.data() == C.data()) {
     std::cout << "A and C cannot be the same tensor: ";

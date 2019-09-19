@@ -14,7 +14,7 @@ namespace qflex {
 
 ContractionData ContractionData::Initialize(
     const std::list<ContractionOperation>& ordering,
-    std::vector<std::vector<MKLTensor>>* tensor_grid,
+    std::vector<std::vector<Tensor>>* tensor_grid,
     std::vector<std::complex<double>>* amplitudes) {
   ContractionData data;
   data.tensor_grid_ = tensor_grid;
@@ -92,25 +92,25 @@ ContractionData ContractionData::Initialize(
   for (const auto& patch_rank_pair : data.patch_rank_) {
     max_rank = std::max(patch_rank_pair.second, max_rank);
   }
-  int max_size = (int)pow(bond_dim, max_rank);
+  long unsigned int max_size = (long unsigned int)pow(bond_dim, max_rank);
 
   // General-purpose scratch space (primarily used for tensor reordering).
-  data.scratch_.push_back(MKLTensor({""}, {max_size}));
+  data.scratch_.push_back(Tensor({""}, {max_size}));
   data.scratch_map_[kGeneralSpace] = 0;
   allocated_space += max_size;
 
   // "Swap tensor" space, used to store operation results.
   for (int rank = 1; rank <= max_rank; ++rank) {
-    const int size = (int)pow(bond_dim, rank);
-    data.scratch_.push_back(MKLTensor({""}, {size}));
+    const long unsigned int size = (long unsigned int)pow(bond_dim, rank);
+    data.scratch_.push_back(Tensor({""}, {size}));
     data.scratch_map_[result_space(rank)] = rank;
     allocated_space += size;
   }
 
   int patch_pos = data.scratch_map_.size();
   for (const auto& patch_rank_pair : data.patch_rank_) {
-    const int size = (int)pow(bond_dim, patch_rank_pair.second);
-    data.scratch_.push_back(MKLTensor({""}, {size}));
+    const long unsigned int size = (long unsigned int)pow(bond_dim, patch_rank_pair.second);
+    data.scratch_.push_back(Tensor({""}, {size}));
     data.scratch_map_[patch_rank_pair.first] = patch_pos++;
     allocated_space += size;
   }
@@ -119,8 +119,8 @@ ContractionData ContractionData::Initialize(
   // to the same grid tensor, only one copy needs to be stored.
   int cut_copy_pos = data.scratch_map_.size();
   for (const auto& copy_rank_pair : cut_copy_rank) {
-    const int size = (int)pow(bond_dim, copy_rank_pair.second);
-    data.scratch_.push_back(MKLTensor({""}, {size}));
+    const long unsigned int size = (long unsigned int)pow(bond_dim, copy_rank_pair.second);
+    data.scratch_.push_back(Tensor({""}, {size}));
     data.scratch_map_[copy_rank_pair.first] = patch_pos++;
     allocated_space += size;
   }
@@ -144,14 +144,14 @@ ContractionData ContractionData::Initialize(
 void ContractionData::ContractGrid(
     std::list<ContractionOperation> ordering, int output_index,
     std::unordered_map<std::string, bool> active_patches) {
-  MKLTensor* output;
+  Tensor* output;
   while (!ordering.empty()) {
     const ContractionOperation op = ordering.front();
     ordering.pop_front();
     switch (op.op_type) {
       case ContractionOperation::EXPAND: {
         // Multiply by the new tensor and store result in scratch.
-        MKLTensor& next =
+        Tensor& next =
             (*tensor_grid_)[op.expand.tensor[0]][op.expand.tensor[1]];
         if (!active_patches[op.expand.id]) {
           // First tensor in patch.
@@ -159,9 +159,9 @@ void ContractionData::ContractGrid(
           active_patches[op.expand.id] = true;
           continue;
         }
-        MKLTensor& prev = get_scratch(op.expand.id);
+        Tensor& prev = get_scratch(op.expand.id);
         std::string result_id = result_space(patch_rank_[op.expand.id]);
-        MKLTensor& result = get_scratch(result_id);
+        Tensor& result = get_scratch(result_id);
         multiply(prev, next, result, get_scratch(kGeneralSpace).data());
         if (ordering.empty()) {
           output = &result;
@@ -174,9 +174,9 @@ void ContractionData::ContractGrid(
       }
       case ContractionOperation::CUT: {
         const std::string index = index_name(op.cut.tensors);
-        MKLTensor& tensor_a =
+        Tensor& tensor_a =
             (*tensor_grid_)[op.cut.tensors[0][0]][op.cut.tensors[0][1]];
-        MKLTensor& copy_a =
+        Tensor& copy_a =
             get_scratch(cut_copy_name(op.cut.tensors, /*side = */ 0));
         copy_a = tensor_a;
         // List of values to evaluate on the cut.
@@ -189,9 +189,9 @@ void ContractionData::ContractGrid(
         }
         if (op.cut.tensors.size() > 1) {
           // This is a normal cut; each value adds to the same amplitude.
-          MKLTensor& tensor_b =
+          Tensor& tensor_b =
               (*tensor_grid_)[op.cut.tensors[1][0]][op.cut.tensors[1][1]];
-          MKLTensor& copy_b =
+          Tensor& copy_b =
               get_scratch(cut_copy_name(op.cut.tensors, /*side = */ 1));
           copy_b = tensor_b;
           for (int val : values) {
@@ -215,8 +215,8 @@ void ContractionData::ContractGrid(
       }
       case ContractionOperation::MERGE: {
         // Multiply two existing tensors and store result in scratch.
-        MKLTensor& patch_1 = get_scratch(op.merge.source_id);
-        MKLTensor& patch_2 = get_scratch(op.merge.target_id);
+        Tensor& patch_1 = get_scratch(op.merge.source_id);
+        Tensor& patch_2 = get_scratch(op.merge.target_id);
         if (!active_patches[op.merge.target_id]) {
           // Copy the old patch into the new space.
           patch_2 = patch_1;
@@ -224,7 +224,7 @@ void ContractionData::ContractGrid(
           continue;
         }
         std::string result_id = result_space(patch_rank_[op.merge.target_id]);
-        MKLTensor& result = get_scratch(result_id);
+        Tensor& result = get_scratch(result_id);
         multiply(patch_1, patch_2, result, get_scratch(kGeneralSpace).data());
         if (ordering.empty()) {
           output = &result;
@@ -497,7 +497,7 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
 }
 
 void ContractGrid(const std::list<ContractionOperation>& ordering,
-                  std::vector<std::vector<MKLTensor>>* tensor_grid,
+                  std::vector<std::vector<Tensor>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes) {
   if (tensor_grid == nullptr) {
     std::cout << "Tensor grid must be non-null." << std::endl;

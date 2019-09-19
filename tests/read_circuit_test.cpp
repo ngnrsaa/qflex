@@ -16,7 +16,7 @@ constexpr char kBadCircuit[] = R"(2
 1 badgate 0)";
 
 TEST(ReadCircuitDeathTest, BadOneQubitGate) {
-  std::vector<std::vector<std::vector<MKLTensor>>> grid_of_tensors;
+  std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
   s_type scratch[256];
 
   auto circuit_data = std::stringstream(kBadCircuit);
@@ -33,7 +33,7 @@ constexpr char kBadFsimCircuit[] = R"(2
 1 fsimbadgate 0 1)";
 
 TEST(ReadCircuitDeathTest, BadFsimGate) {
-  std::vector<std::vector<std::vector<MKLTensor>>> grid_of_tensors;
+  std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
   s_type scratch[256];
 
   auto circuit_data = std::stringstream(kBadFsimCircuit);
@@ -53,7 +53,7 @@ constexpr char kNullCircuit[] = R"(2
 // Verifies that circuits can be read from file and the resulting gates match
 // the expected circuit.
 TEST(ReadCircuitTest, NullCircuit) {
-  std::vector<std::vector<std::vector<MKLTensor>>> grid_of_tensors;
+  std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
   s_type scratch[256];
 
   auto circuit_data = std::stringstream(kNullCircuit);
@@ -112,7 +112,7 @@ constexpr char kSimpleCircuit[] = R"(5
 // Verifies that collapsing the 3D tensor network to a 2D grid behaves as
 // expected.
 TEST(ReadCircuitTest, CondenseToGrid) {
-  std::vector<std::vector<std::vector<MKLTensor>>> tensor_grid_3D;
+  std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
   std::vector<std::vector<int>> qubits_A = {{2, 1}};
   std::vector<std::vector<int>> qubits_off = {{2, 0}};
   s_type* scratch = new s_type[256];
@@ -124,9 +124,9 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   ASSERT_EQ(tensor_grid_3D[0].size(), 2);
   ASSERT_EQ(tensor_grid_3D[0][0].size(), 2);
 
-  std::vector<std::vector<MKLTensor>> tensor_grid_2D;
+  std::vector<std::vector<Tensor>> tensor_grid_2D;
   for (int i = 0; i < 3; ++i) {
-    tensor_grid_2D.push_back(std::vector<MKLTensor>(2));
+    tensor_grid_2D.push_back(std::vector<Tensor>(2));
   }
   // Working from either end, create two patches and meet in the middle.
   std::list<ContractionOperation> ordering;

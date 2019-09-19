@@ -1,6 +1,6 @@
 /**
- * @file mkl_tensor.h
- * Definition of the MKLTensor class, which implements tensors with MKL's
+ * @file tensor.h
+ * Definition of the Tensor class, which implements tensors with
  * matrix multiplication and a self-written entry reordering algorithm.
  * @see https://github.com/benjaminvillalonga/optimized_parallel_QC_with_TN
  *
@@ -9,10 +9,14 @@
  * @date Modified: August 2018
  */
 
-#ifndef MKL_TENSOR_H
-#define MKL_TENSOR_H
+#ifndef TENSOR_H
+#define TENSOR_H
 
+#ifdef MKL_TENSOR
 #include <mkl.h>
+#else
+#include <gsl/gsl_cblas.h>
+#endif
 
 #include <complex>
 #include <iostream>
@@ -28,26 +32,26 @@ namespace qflex {
 typedef std::complex<float> s_type;
 
 /**
- * Represents an MKLTensor.
+ * Represents an Tensor.
  */
-class MKLTensor {
+class Tensor {
  public:
   /**
-   * Creates an uninitialized MKLTensor.
+   * Creates an uninitialized Tensor.
    */
-  MKLTensor();
+  Tensor();
 
   /**
-   * Creates an MKLTensor. New space is allocated.
+   * Creates an Tensor. New space is allocated.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
    * @param dimensions std::vector<size_t> with the ordered dimensions of the
    * indices.
    */
-  MKLTensor(std::vector<std::string> indices, std::vector<size_t> dimensions);
+  Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions);
 
   /**
-   * Creates an MKLTensor. New space is allocated and filled with a copy of
+   * Creates an Tensor. New space is allocated and filled with a copy of
    * the vector's data. Useful for small tensors where the copying time is
    * negligible.
    * @param indices std::vector<std::string> with the names of the indices in
@@ -55,47 +59,47 @@ class MKLTensor {
    * @param dimensions std::vector<size_t> with the ordered dimensions of the
    * indices.
    * @param data std::vector<s_type> with the data to be copied. It has to
-   * match in length the dimension of the MKLTensor, as given by the
+   * match in length the dimension of the Tensor, as given by the
    * dimensions.
    */
-  MKLTensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
+  Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
             const std::vector<s_type>& data);
 
   /**
-   * Creates an MKLTensor. A pointer to the data is passed.
+   * Creates an Tensor. A pointer to the data is passed.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
    * @param dimensions std::vector<int> with the ordered dimensions of the
    * indices.
    * @param data pointer to the data of the tensor. It is responsibility of
-   * the user to provide enough allocated memory to store the MKLTensor.
+   * the user to provide enough allocated memory to store the Tensor.
    */
-  MKLTensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
+  Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
             s_type* data);
 
   /**
-   * Copy constructor: creates a new MKLTensor that is a copy of another.
-   * @param other MKLTensor to be copied.
+   * Copy constructor: creates a new Tensor that is a copy of another.
+   * @param other Tensor to be copied.
    */
-  MKLTensor(const MKLTensor& other);
+  Tensor(const Tensor& other);
 
   /**
-   * Destructor: frees all memory associated with a given MKLTensor object.
+   * Destructor: frees all memory associated with a given Tensor object.
    * Invoked by the syste.
    */
-  ~MKLTensor();
+  ~Tensor();
 
   /**
-   * Assignment operator for setting two MKLTensor equal to one another.
-   * It is responsibility of the user to copy onto an MKLTensor with the same
+   * Assignment operator for setting two Tensor equal to one another.
+   * It is responsibility of the user to copy onto an Tensor with the same
    * total dimension as other. If there is space allocated, no new space will
-   * be allocated. Changing the size of an MKLTensor is not allowed, although
-   * if this MKLTensor has at least as much space allocated as other, then
+   * be allocated. Changing the size of an Tensor is not allowed, although
+   * if this Tensor has at least as much space allocated as other, then
    * everything will run smoothly, with a non-optimal usage of memory.
-   * @param other MKLTensor to copy into the current MKLTensor.
-   * @return The current MKLTensor for assignment chaining.
+   * @param other Tensor to copy into the current Tensor.
+   * @return The current Tensor for assignment chaining.
    */
-  const MKLTensor& operator=(const MKLTensor& other);
+  const Tensor& operator=(const Tensor& other);
 
   /**
    * Get inidices.
@@ -144,48 +148,48 @@ class MKLTensor {
   void generate_index_to_dimension();
 
   /**
-   * Get size (total dimension) of the MKLTensor.
-   * @return int with the number of elements in the MKLTensor.
+   * Get size (total dimension) of the Tensor.
+   * @return int with the number of elements in the Tensor.
    */
   size_t size() const;
 
   /**
-   * Get the allocated space of the MKLTensor. This tensor can be resized to
+   * Get the allocated space of the Tensor. This tensor can be resized to
    * any shape with total dimension less than this value.
-   * @return int with the capacity of the MKLTensor.
+   * @return int with the capacity of the Tensor.
    */
   size_t capacity() const;
 
   /**
    * Get data.
-   * @return s_type * to the data of the MKLTensor.
+   * @return s_type * to the data of the Tensor.
    */
   s_type* data();
 
   /**
    * Get data.
-   * @return const s_type * to the data of the MKLTensor.
+   * @return const s_type * to the data of the Tensor.
    */
   const s_type* data() const;
 
   /**
-   * Project tensor to a value on a particular index. The current MKLTensor
+   * Project tensor to a value on a particular index. The current Tensor
    * has to be ordered with the index to project in first place. This forces
    * the user to follow efficient practices, and be aware of the costs
    * involved in operations.
    * @param index std::string with the name of the index to fix.
    * @param index_value int with the value to which the index is fixed.
-   * @param projection_tensor Reference to the MKLTensor to which the current
-   * MKLTensor will be projected. It is responsibility of the user to provide
-   * enough allocated space to store the projected MKLTensor. A trivial tensor
+   * @param projection_tensor Reference to the Tensor to which the current
+   * Tensor will be projected. It is responsibility of the user to provide
+   * enough allocated space to store the projected Tensor. A trivial tensor
    * with the right amount of allocated space can be passed. The indices and
    * dimensions will be initialized correctly from the project() function.
    */
   void project(std::string index, size_t index_value,
-               MKLTensor& projection_tensor) const;
+               Tensor& projection_tensor) const;
 
   /**
-   * Rename an index of the MKLTensor.
+   * Rename an index of the Tensor.
    * @param old_name std::string with the old name of an index.
    * @param new_name std::string with the new name of an index.
    */
@@ -204,24 +208,24 @@ class MKLTensor {
               std::string bundled_index);
 
   /**
-   * Reorder the indices of the MKLTensor. This is an intensive operation,
+   * Reorder the indices of the Tensor. This is an intensive operation,
    * And the second leading bottleneck in the contraction of a tensor network
    * after the multiplication of properly ordered tensors.
    * @param new_ordering std::vector<std::string> with the new ordering of the
    * indices.
    * @param scratch_copy Pointer to s_type with space allocated for scratch
-   * work. Allocate at least as much space as the size of the MKLTensor.
+   * work. Allocate at least as much space as the size of the Tensor.
    */
   void reorder(std::vector<std::string> new_ordering, s_type* scratch_copy);
 
   /**
-   * Multiply MKLTensor by scalar.
-   * @param s_type scalar that multiplies the MKLTensor.
+   * Multiply Tensor by scalar.
+   * @param s_type scalar that multiplies the Tensor.
    */
   void scalar_multiply(s_type scalar);
 
   /**
-   * Compute the L2 norm (squared) of this MKLTensor.
+   * Compute the L2 norm (squared) of this Tensor.
    */
   double tensor_norm() const;
 
@@ -233,12 +237,12 @@ class MKLTensor {
   size_t num_zeros() const;
 
   /**
-   * Prints information about the MKLTensor.
+   * Prints information about the Tensor.
    */
   void print() const;
 
   /**
-   * Prints the data of the MKLTensor.
+   * Prints the data of the Tensor.
    */
   void print_data() const;
 
@@ -272,12 +276,12 @@ class MKLTensor {
 
   /**
    * Helper function for the copy constructor and the assignment operator.
-   * It is responsibility of the user to copy onto an MKLTensor with the same
+   * It is responsibility of the user to copy onto an Tensor with the same
    * total dimension as other. If there is space allocated, no new space will
-   * be allocated. Changing the size of an MKLTensor is not allowed.
-   * @param other MKLTensor to copy into the current MKLTensor.
+   * be allocated. Changing the size of an Tensor is not allowed.
+   * @param other Tensor to copy into the current Tensor.
    */
-  void _copy(const MKLTensor& other);
+  void _copy(const Tensor& other);
 
   /**
    * Helper function for reorder(). It is called when smart reordering doesn't
@@ -330,7 +334,7 @@ class MKLTensor {
 };
 
 /**
- * Call MKL matrix x matrix multiplication C = A * B, or self-written if the
+ * Call  matrix x matrix multiplication C = A * B, or self-written if the
  * matrices are small.
  * @param A_data const pointer to s_type array with the data of matrix A.
  * @param B_data const pointer to s_type array with the data of matrix B.
@@ -343,7 +347,7 @@ void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int m, int n, int k);
 
 /**
- * Call MKL matrix x vector multiplication C = A * B, or self-written if the
+ * Call matrix x vector multiplication C = A * B, or self-written if the
  * objects are small.
  * @param A_data const pointer to s_type array with the data of matrix A.
  * @param B_data const pointer to s_type array with the data of vector B.
@@ -355,7 +359,7 @@ void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int m, int k);
 
 /**
- * Call MKL vector x matrix multiplication C = A * B, or self-written if the
+ * Call vector x matrix multiplication C = A * B, or self-written if the
  * objects are small.
  * @param A_data const pointer to s_type array with the data of vector A.
  * @param B_data const pointer to s_type array with the data of matrix B.
@@ -367,7 +371,7 @@ void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int n, int k);
 
 /**
- * Call MKL vector x vector multiplication C = A * B, or self-written if the
+ * Call vector x vector multiplication C = A * B, or self-written if the
  * matrices are small.
  * @param A_data const pointer to s_type array with the data of vector A.
  * @param B_data const pointer to s_type array with the data of vector B.
@@ -385,19 +389,19 @@ void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
  * ordered correctly, reordering will be applied, which can be costly; relative
  * ordering will be preserved for the final indices, and A's ordering for the
  * contracted indices.
- * @param A Reference to MKLTensor A. A can be reordered, and therfore modified.
- * @param B Reference to MKLTensor B. B can be reordered, and therfore modified.
- * @param C Reference to MKLTensor C, where the product of A and B will be
+ * @param A Reference to Tensor A. A can be reordered, and therfore modified.
+ * @param B Reference to Tensor B. B can be reordered, and therfore modified.
+ * @param C Reference to Tensor C, where the product of A and B will be
  * stored. It is responsibility of the user to allocate sufficient memory for C.
  * C can allocate more memory than needed, which allows for flexible reuse of
- * MKLTensors; this should be used only occasionally in cases where critical
+ * Tensors; this should be used only occasionally in cases where critical
  * optimization is needed. C can be initialized trivially, and the function
  * multiply will initialize indices and dimensions correctly.
  * @param scratch_copy Pointer to s_type array for scratch work while
  * reordering. It has to allocate at least as much max(A.size(), B.size())
  * memory.
  */
-void multiply(MKLTensor& A, MKLTensor& B, MKLTensor& C, s_type* scratch_copy);
+void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy);
 
 /**
  * Creates a reordering map for the data of a tensor with binary indices
@@ -500,4 +504,4 @@ std::vector<std::string> _vector_concatenation(
 
 }  // namespace qflex
 
-#endif  // MKL_TENSOR_H
+#endif  // TENSOR_H

@@ -153,9 +153,9 @@ TEST(ContractionTest, CutSafety) {
 // This circuit should return the input string with amplitude ~= 1 when summing
 // over the cut values, but only when the output of (2,1) is a zero.
 TEST(ContractionTest, SimpleInitializeData) {
-  std::vector<std::vector<MKLTensor>> tensor_grid;
+  std::vector<std::vector<Tensor>> tensor_grid;
   for (int i = 0; i < 3; ++i) {
-    tensor_grid.push_back(std::vector<MKLTensor>(2));
+    tensor_grid.push_back(std::vector<Tensor>(2));
   }
   // clang-format off
   std::vector<std::complex<float>> I_4 =
@@ -177,12 +177,12 @@ TEST(ContractionTest, SimpleInitializeData) {
        0, 1, 0, 0};
   // clang-format on
 
-  tensor_grid[0][0] = MKLTensor({"(0,0),(0,1)", "(0,0),(1,0)"}, {4, 4}, I_4);
-  tensor_grid[0][1] = MKLTensor({"(0,1),(1,1)", "(0,0),(0,1)"}, {4, 4}, I_4);
-  tensor_grid[1][0] = MKLTensor({"(0,0),(1,0)", "(1,0),(1,1)"}, {4, 4}, I_4);
+  tensor_grid[0][0] = Tensor({"(0,0),(0,1)", "(0,0),(1,0)"}, {4, 4}, I_4);
+  tensor_grid[0][1] = Tensor({"(0,1),(1,1)", "(0,0),(0,1)"}, {4, 4}, I_4);
+  tensor_grid[1][0] = Tensor({"(0,0),(1,0)", "(1,0),(1,1)"}, {4, 4}, I_4);
   tensor_grid[1][1] =
-      MKLTensor({"(0,1),(1,1)", "(1,1),(2,1)", "(1,0),(1,1)"}, {4, 4, 4}, I_8);
-  tensor_grid[2][1] = MKLTensor({"(2,1),(o)", "(1,1),(2,1)"}, {2, 4}, I_2x4);
+      Tensor({"(0,1),(1,1)", "(1,1),(2,1)", "(1,0),(1,1)"}, {4, 4, 4}, I_8);
+  tensor_grid[2][1] = Tensor({"(2,1),(o)", "(1,1),(2,1)"}, {2, 4}, I_2x4);
 
   std::list<ContractionOperation> ordering;
   ordering.emplace_back(CutIndex({{0, 1}, {1, 1}}));

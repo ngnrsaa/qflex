@@ -1,0 +1,16 @@
+version: "3"
+services:
+  qflex:
+    image: qflex
+    container_name: qflex
+    build:
+      context: ./
+      dockerfile: Dockerfile
+  qflex-tests:
+    image: qflex:tests
+    container_name: qflex-tests
+    build:
+      context: ./
+      dockerfile: tests/Dockerfile
+    depends_on:
+    - qflex
