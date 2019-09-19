@@ -372,7 +372,7 @@ TEST(ContractionDeathTest, ContractGridInvalidInput) {
   std::list<ContractionOperation> ordering;
   std::vector<std::vector<Tensor>> tensor_grid;
   std::vector<std::complex<double>> amplitudes;
-  
+
   // Tensor grid cannot be null pointer.
   EXPECT_DEATH(ContractGrid(ordering, nullptr, &amplitudes), "");
 
