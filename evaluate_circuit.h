@@ -30,8 +30,8 @@
 #include <vector>
 
 #include "contraction_utils.h"
-#include "tensor.h"
 #include "read_circuit.h"
+#include "tensor.h"
 
 namespace qflex {
 

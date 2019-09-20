@@ -368,6 +368,23 @@ TEST(OrderingParserTest, ParserFailures) {
                                                      qubits_off, &ordering));
 }
 
+TEST(ContractionDeathTest, ContractGridInvalidInput) {
+  std::list<ContractionOperation> ordering;
+  std::vector<std::vector<Tensor>> tensor_grid;
+  std::vector<std::complex<double>> amplitudes;
+
+  // Tensor grid cannot be null pointer.
+  EXPECT_DEATH(ContractGrid(ordering, nullptr, &amplitudes), "");
+
+  // Amplitude cannot be null pointer.
+  EXPECT_DEATH(ContractGrid(ordering, &tensor_grid, nullptr), "");
+
+  // Ordering must be valid to contract grid.
+  ordering.emplace_back(ExpandPatch("a", {1, 2}));
+  ordering.emplace_back(ExpandPatch("a", {1, 2}));
+  EXPECT_DEATH(ContractGrid(ordering, &tensor_grid, &amplitudes), "");
+}
+
 }  // namespace
 }  // namespace qflex
 

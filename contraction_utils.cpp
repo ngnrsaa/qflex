@@ -123,7 +123,8 @@ ContractionData ContractionData::Initialize(
 
   int patch_pos = data.scratch_map_.size();
   for (const auto& patch_rank_pair : data.patch_rank_) {
-    const long unsigned int size = (long unsigned int)pow(bond_dim, patch_rank_pair.second);
+    const long unsigned int size =
+        (long unsigned int)pow(bond_dim, patch_rank_pair.second);
     data.scratch_.push_back(Tensor({""}, {size}));
     data.scratch_map_[patch_rank_pair.first] = patch_pos++;
     allocated_space += size;
@@ -133,7 +134,8 @@ ContractionData ContractionData::Initialize(
   // to the same grid tensor, only one copy needs to be stored.
   int cut_copy_pos = data.scratch_map_.size();
   for (const auto& copy_rank_pair : cut_copy_rank) {
-    const long unsigned int size = (long unsigned int)pow(bond_dim, copy_rank_pair.second);
+    const long unsigned int size =
+        (long unsigned int)pow(bond_dim, copy_rank_pair.second);
     data.scratch_.push_back(Tensor({""}, {size}));
     data.scratch_map_[copy_rank_pair.first] = patch_pos++;
     allocated_space += size;
@@ -388,9 +390,10 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
     int len = snprintf(buffer, sizeof(buffer), "(%d,%d),(o)", p1[0], p1[1]);
     return std::string(buffer, len);
   }
-  std::cout << "Failed to construct tensor name with the following vectors: p1 = "
-  << _int_vector_to_string(p1) << ", p2 = "
-  << _int_vector_to_string(p2) << "." << std::endl;
+  std::cout
+      << "Failed to construct tensor name with the following vectors: p1 = "
+      << _int_vector_to_string(p1) << ", p2 = " << _int_vector_to_string(p2)
+      << "." << std::endl;
   assert(false);
   return "";
 }
@@ -402,7 +405,8 @@ std::string index_name(const std::vector<std::vector<int>>& tensors) {
   if (tensors.size() == 1) {
     return index_name(tensors.at(0), {});
   }
-  std::cout << "Failed to construct tensor name with input tensors size: " << tensors.size() << std::endl;
+  std::cout << "Failed to construct tensor name with input tensors size: "
+            << tensors.size() << std::endl;
   assert(false);
   return "";
 }
