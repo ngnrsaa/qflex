@@ -368,6 +368,12 @@ bool ordering_data_to_contraction_ordering(
               << "\" with error: " << error_msg << std::endl;
     return false;
   }
+  // Ensure ordering generated is valid
+  bool valid_ordering = IsOrderingValid(*ordering);
+  if (!valid_ordering) {
+    std::cout << "Ordering must be valid." << std::endl;
+    assert(valid_ordering);
+  }
   return true;
 }
 
@@ -522,11 +528,6 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
   if (amplitudes == nullptr) {
     std::cout << "Amplitude return vector must be non-null." << std::endl;
     assert(amplitudes != nullptr);
-  }
-  bool valid_ordering = IsOrderingValid(ordering);
-  if (!valid_ordering) {
-    std::cout << "Ordering must be valid." << std::endl;
-    assert(valid_ordering);
   }
 
   // Populate ContractionData and perform grid contraction.

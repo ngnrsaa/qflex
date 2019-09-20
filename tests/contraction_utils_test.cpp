@@ -382,6 +382,10 @@ TEST(OrderingParserDeathTest, InvalidInput) {
   EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J, qubits_off, nullptr), "");
 }
 
+TEST(OrderingParserDeathTest, InvalidOrderingGenerated) {
+  // call ordering_data_to_contraction_ordering() in a matter such that it generates an invalid ordering.
+}
+
 TEST(ContractionDeathTest, ContractGridInvalidInput) {
   std::list<ContractionOperation> ordering;
   std::vector<std::vector<Tensor>> tensor_grid;
@@ -392,11 +396,6 @@ TEST(ContractionDeathTest, ContractGridInvalidInput) {
 
   // Amplitudes cannot be null pointer.
   EXPECT_DEATH(ContractGrid(ordering, &tensor_grid, nullptr), "");
-
-  // Ordering must be valid to contract grid.
-  ordering.emplace_back(ExpandPatch("a", {1, 2}));
-  ordering.emplace_back(ExpandPatch("a", {1, 2}));
-  EXPECT_DEATH(ContractGrid(ordering, &tensor_grid, &amplitudes), "");
 }
 
 TEST(ContractionDeathTest, InitializeInvalidInput) {
