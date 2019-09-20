@@ -10,7 +10,7 @@ ifeq ($(CXX), icpc)
 else
 	# see instructions at https://pybind11.readthedocs.io/en/stable/basics.html
 	# python3-dev is required for pybind11 to work
-  FLAGS += -Iinclude -fPIC `python3 -m pybind11 --includes` -fopenmp -lgsl -lgslcblas
+  FLAGS += -Ipybind11/include -fPIC `python3 -m pybind11 --includes` -fopenmp -lgsl -lgslcblas
 endif
 
 TEST_DIR = tests
