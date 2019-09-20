@@ -1,1 +1,0 @@
-icpc -mkl -o main -O3 -std=c++17 -march=native -qopenmp mkl_tensor.cpp main.cpp

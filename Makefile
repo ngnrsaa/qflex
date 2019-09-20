@@ -1,7 +1,7 @@
 TARGET1 = qflex
 
-#Set these:
 CXX = g++
+#CXX = icpc
 
 FLAGS =  -O3  -std=c++17  -march=native
 

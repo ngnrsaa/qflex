@@ -15,7 +15,14 @@ verify and benchmark such experiments.
 qFlex scientific documentation and results can be found [here](tbd) and [here](tbd).
 For the technical documentations, see [qflex/docs](/docs).
 
+## Build Using Docker
+
+To run qFlex in a docker container, see [qflex/docs/docker.md](/docs/docker.md).
+
 ## Licence
+
+Copyright © 2019, United States Government as represented by the Administrator
+of the National Aeronautics and Space Administration. All rights reserved.
 
 The Flexible Quantum Circuit Simulator (qFlex) framework is licensed under the
 Apache License, Version 2.0 (the "License"); you may not use this application

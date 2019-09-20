@@ -3,7 +3,7 @@
  * Implementation of the Tensor class.
  * @see https://github.com/benjaminvillalonga/optimized_parallel_QC_with_TN
  *
- * @author Benjamin Villalonga
+ * @author Benjamin Villalonga (main contributor), Bron Nelson, Sergio Boixo and Salvatore Mandra
  * @date Created: August 2018
  * @date Modified: August 2018
  *
