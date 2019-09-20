@@ -81,7 +81,6 @@ std::vector<std::vector<s_type>> fSim(s_type::value_type theta, s_type::value_ty
     std::cout << "Scratch must be non-null." << std::endl;
     assert(scratch != nullptr);
   }
-  // Super nested call but I still tested this
   static_assert(std::is_floating_point<typename s_type::value_type>::value);
 
   std::vector<s_type> coeffs(
