@@ -262,7 +262,7 @@ bool ordering_data_to_contraction_ordering(
     const std::optional<std::vector<std::vector<int>>>& off,
     std::list<ContractionOperation>* ordering) {
   if (ordering_data == nullptr) {
-    std::cout << "Ordering data must be non-null." << std::endl;
+    std::cout << "Ordering data stream must be non-null." << std::endl;
     assert(ordering_data != nullptr);
   }
   if (ordering == nullptr) {

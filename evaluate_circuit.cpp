@@ -5,7 +5,7 @@ namespace qflex {
 std::vector<std::vector<int>> read_grid_layout_from_stream(
     std::istream* grid_data, int I, int J) {
   if (grid_data == nullptr) {
-    std::cout << "Grid data must be non-null." << std::endl;
+    std::cout << "Grid data stream must be non-null." << std::endl;
     assert(grid_data != nullptr);
   }
   std::vector<std::vector<int>> qubits_off;

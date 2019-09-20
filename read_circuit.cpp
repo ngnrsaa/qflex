@@ -341,7 +341,7 @@ void circuit_data_to_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch) {
   if (circuit_data == nullptr) {
-    std::cout << "Circuit data must be non-null." << std::endl;
+    std::cout << "Circuit data stream must be non-null." << std::endl;
     assert(circuit_data != nullptr);
   }
   if (scratch == nullptr) {
