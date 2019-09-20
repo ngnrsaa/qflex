@@ -8,18 +8,26 @@ FLAGS =  -O3  -std=c++17  -march=native
 ifeq ($(CXX), icpc)
 	FLAGS += -mkl -qopenmp -DMKL_TENSOR
 else
-  FLAGS += -fopenmp -lgsl -lgslcblas
+	# see instructions at https://pybind11.readthedocs.io/en/stable/basics.html
+	# python3-dev is required for pybind11 to work
+  FLAGS += -Iinclude -fPIC `python3 -m pybind11 --includes` -fopenmp -lgsl -lgslcblas
 endif
 
 TEST_DIR = tests
 
-OBJS1 = main.o evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o
+OBJS1 = evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o
 
-$(TARGET1): $(OBJS1)
-	$(CXX) -o $(TARGET1).x $(OBJS1) $(FLAGS)
+$(TARGET1): main.o $(OBJS1)
+	$(CXX) -o $(TARGET1).x main.o $(OBJS1) $(FLAGS)
+
+pybind: pybind_main.o $(OBJS1)
+	$(CXX) -shared -o $(TARGET1)`python3-config --extension-suffix` pybind_main.o $(OBJS1) $(FLAGS)
 
 main.o: main.cpp
 	$(CXX) -c main.cpp $(FLAGS)
+
+pybind_main.o: pybind_main.cpp
+	$(CXX) -c pybind_main.cpp $(FLAGS)
 
 evaluate_circuit.o: evaluate_circuit.cpp
 	$(CXX) -c evaluate_circuit.cpp $(FLAGS)
@@ -38,3 +46,6 @@ tensor.o: tensor.cpp
 clean:
 	rm -f ./*.x ./*.a ./*.so ./*.o ./*.mod
 	$(MAKE) -C $(TEST_DIR) clean
+
+
+# c++ -O3 -Wall -shared -std=c++11 -fPIC `python3 -m pybind11 --includes` example.cpp -o example`python3-config --extension-suffix`

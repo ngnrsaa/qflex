@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/complex.h>
 namespace py = pybind11;
 
 #include <omp.h>
@@ -95,13 +96,15 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(std::vector<s
         qflex::EvaluateCircuit(&input);
 
     // Printing output.
+    std::cout << "This is from C++" << std::endl;
     for (int c = 0; c < amplitudes.size(); ++c) {
         const auto &state = amplitudes[c].first;
         const auto &amplitude = amplitudes[c].second;
-        std::cout << input.initial_state << " --> " << state << ": "
+        std::cout << "XXXX" << " --> " << state << ": "
                 << std::real(amplitude) << " " << std::imag(amplitude)
                 << std::endl;
     }
+    std::cout << std::endl;
 
     return amplitudes;
 }
