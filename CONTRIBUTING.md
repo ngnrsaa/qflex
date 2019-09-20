@@ -16,8 +16,8 @@ You generally only need to submit a CLA once, so if you've already submitted one
 (even if it was for a different project), you probably don't need to do it
 again.
 
-For contributions to qFlex covered by NASA copyright (whereas indicated) requires an additional
-[NASA CLA](nasa-cla/).
+For contributions to qFlex covered by NASA copyright (whereas indicated), an
+additional [NASA CLA](nasa-cla/) is required.
 
 ## Pull Request Process and Code Review
 
