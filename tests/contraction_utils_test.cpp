@@ -382,8 +382,19 @@ TEST(OrderingParserDeathTest, InvalidInput) {
   EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J, qubits_off, nullptr), "");
 }
 
+constexpr char kInvalidOrdering[] = R"(# test comment
+expand a 1
+expand a 1
+)";
 TEST(OrderingParserDeathTest, InvalidOrderingGenerated) {
-  // call ordering_data_to_contraction_ordering() in a matter such that it generates an invalid ordering.
+  auto ordering_data = std::stringstream(kInvalidOrdering);
+  std::list<ContractionOperation> ordering;
+  std::vector<std::vector<int>> qubits_off = {{2, 0}};
+  int I = 3;
+  int J = 2;
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering), "");
+
 }
 
 TEST(ContractionDeathTest, ContractGridInvalidInput) {

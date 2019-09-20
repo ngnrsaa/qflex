@@ -235,6 +235,9 @@ TEST(TensorDeathTest, InvalidInput) {
   std::vector<std::complex<float>> data(8);
   ASSERT_DEATH(Tensor({"a", "b"}, {2, 2}, data), "");
 
+  // Data passed into Tensor cannot be null pointer.
+  ASSERT_DEATH(Tensor({"a", "b"}, {2, 2}, nullptr), "");
+
   Tensor tensor_abc({"a", "b", "c"}, {2, 2, 2});
   Tensor tensor_ac({"a", "c"}, {2, 2});
 
@@ -267,6 +270,9 @@ TEST(TensorDeathTest, InvalidInput) {
   // Reordering to non-existent indices.
   ASSERT_DEATH(tensor_abc.reorder({"b", "y", "x"}, scratch.data()), "");
 
+  // Scratch copy passed to reordering cannot be null pointer.
+  ASSERT_DEATH(tensor_abc.reorder({"a", "b"}, nullptr), "");
+
   Tensor tensor_cd({"c", "d"}, {2, 2});
   Tensor tensor_abd({"a", "b", "d"}, {2, 2, 2});
 
@@ -284,6 +290,9 @@ TEST(TensorDeathTest, InvalidInput) {
 
   // Output tensor for multiplication is too small.
   ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_x, scratch.data()), "");
+
+  // Scratch copy passed to multiply cannot be null pointer.
+  ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_x, nullptr), "");
 }
 
 // Testing this function by direct call because too nested to test by calling Tensor::reorder

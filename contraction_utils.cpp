@@ -371,7 +371,7 @@ bool ordering_data_to_contraction_ordering(
   // Ensure ordering generated is valid
   bool valid_ordering = IsOrderingValid(*ordering);
   if (!valid_ordering) {
-    std::cout << "Ordering must be valid." << std::endl;
+    std::cout << "Generated ordering must be valid." << std::endl;
     assert(valid_ordering);
   }
   return true;
