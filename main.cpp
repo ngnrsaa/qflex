@@ -22,25 +22,27 @@ int main(int argc, char** argv) {
   std::string circuit_filename = std::string(argv[current_arg++]);
   auto circuit_data = std::ifstream(circuit_filename);
   if (!circuit_data.good()) {
-      std::cout << "Cannot open circuit data file: " << circuit_filename << std::endl;
-      assert(circuit_data.good());
+    std::cout << "Cannot open circuit data file: " << circuit_filename
+              << std::endl;
+    assert(circuit_data.good());
   }
   input.circuit_data = &circuit_data;
   std::string ordering_filename = std::string(argv[current_arg++]);
   auto ordering_data = std::ifstream(ordering_filename);
   if (!ordering_data.good()) {
-      std::cout << "Cannot open ordering data file: " << ordering_filename << std::endl;
-      assert(ordering_data.good());
+    std::cout << "Cannot open ordering data file: " << ordering_filename
+              << std::endl;
+    assert(ordering_data.good());
   }
   input.ordering_data = &ordering_data;
   std::string grid_filename = std::string(argv[current_arg++]);
   auto grid_data = std::ifstream(grid_filename);
   if (!grid_data.good()) {
-      std::cout << "Cannot open grid data file: " << grid_filename << std::endl;
-      assert(grid_data.good());
+    std::cout << "Cannot open grid data file: " << grid_filename << std::endl;
+    assert(grid_data.good());
   }
   input.grid_data = &grid_data;
-  
+
   // Setting initial and final circuit states.
   if (argc > current_arg) {
     input.initial_state = std::string(argv[current_arg++]);

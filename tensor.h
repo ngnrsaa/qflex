@@ -63,7 +63,7 @@ class Tensor {
    * dimensions.
    */
   Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
-            const std::vector<s_type>& data);
+         const std::vector<s_type>& data);
 
   /**
    * Creates an Tensor. A pointer to the data is passed.
@@ -75,7 +75,7 @@ class Tensor {
    * the user to provide enough allocated memory to store the Tensor.
    */
   Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
-            s_type* data);
+         s_type* data);
 
   /**
    * Copy constructor: creates a new Tensor that is a copy of another.

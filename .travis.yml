@@ -1,0 +1,19 @@
+language: cpp
+
+services:
+  - docker
+
+addons:
+  apt:
+    packages:
+    - clang-format
+
+before_script:
+  - bash check-format.sh
+  - docker-compose build
+
+script:
+  - docker run -ti --rm qflex:tests
+  - docker run -ti --rm qflex:latest 11 12 2 0.005 \
+    /qflex/circuits/ben_11_16_0.txt /qflex/ordering/bristlecone_48.txt \
+    /qflex/grid/bristlecone_48.txt
