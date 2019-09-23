@@ -295,13 +295,16 @@ TEST(TensorDeathTest, InvalidInput) {
   ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_x, nullptr), "");
 }
 
-// Testing this function by direct call because too nested to test by calling Tensor::reorder
+// Testing this function by direct call because too nested to test by calling
+// Tensor::reorder
 TEST(TensorDeathTest, GenerateBinaryReorderingMapInvalidInput) {
-    const std::vector<int> map_old_to_new_idxpos = {1, 2};
-    std::vector<int> map_old_to_new_position = {1, 2, 3};
+  const std::vector<int> map_old_to_new_idxpos = {1, 2};
+  std::vector<int> map_old_to_new_position = {1, 2, 3};
 
-    // Size of map must be equal to 2 ^ (number of indices).
-    EXPECT_DEATH(_generate_binary_reordering_map(map_old_to_new_idxpos, map_old_to_new_position), "");
+  // Size of map must be equal to 2 ^ (number of indices).
+  EXPECT_DEATH(_generate_binary_reordering_map(map_old_to_new_idxpos,
+                                               map_old_to_new_position),
+               "");
 }
 
 }  // namespace

@@ -188,12 +188,16 @@ TEST(ReadCircuitDeathTest, CircuitDataToGridOfTensorsInvalidInput) {
                                   grid_of_tensors, nullptr), ""); 
 
   // Input configuration length must be equal to the number of qubits.
-  EXPECT_DEATH(circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "001", "01", {}, {},
-                                  grid_of_tensors, scratch), "");
-                                  
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "001", "01", {},
+                                      {}, grid_of_tensors, scratch),
+      "");
+
   // Output configuration length must be equal to the number of qubits.
-  EXPECT_DEATH(circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "011", {}, {},
-                                  grid_of_tensors, scratch), "");
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "011", {},
+                                      {}, grid_of_tensors, scratch),
+      "");
 }
 
 TEST(ReadCircuitDeathTest, GridOfTensors3DTo2DInvalidInput) {

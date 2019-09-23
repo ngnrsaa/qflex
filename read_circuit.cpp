@@ -67,7 +67,8 @@ std::vector<s_type> gate_array(const std::string& gate_name) {
 /**
  * Returns vector of vectors of s_type with the Schmidt decomposition of the
  * fSim gate.
- * @param theta s_type::value_type with the angle $theta$. Modulo $2\pi$ is taken.
+ * @param theta s_type::value_type with the angle $theta$. Modulo $2\pi$ is
+ * taken.
  * @param phi s_type::value_type with the angle $phi$. Modulo $2\pi$ is taken.
  * @param scratch pointer to s_type array with scratch space for all operations
  * performed in this function.
@@ -81,13 +82,15 @@ std::vector<std::vector<s_type>> fSim(s_type::value_type theta, s_type::value_ty
     std::cout << "Scratch must be non-null." << std::endl;
     assert(scratch != nullptr);
   }
+
   static_assert(std::is_floating_point<typename s_type::value_type>::value);
 
   std::vector<s_type> coeffs(
       {{0.0, -std::sin(theta) / 2},
        {0.0, -std::sin(theta) / 2},
        {(std::cos(-theta / 2) - std::cos(theta)) / 2, std::sin(-theta / 2) / 2},
-       {(std::cos(-theta / 2) + std::cos(theta)) / 2, std::sin(-theta / 2) / 2}});
+       {(std::cos(-theta / 2) + std::cos(theta)) / 2,
+        std::sin(-theta / 2) / 2}});
 
   std::vector<double> norm_coeffs(coeffs.size());
   for (int i = 0; i < coeffs.size(); ++i) {
@@ -260,8 +263,9 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
     if (lpos == -1) {
       char error[200];
-      snprintf(error, sizeof(error), "Left hand side of pair not found: (%d,%d),(%d,%d)",
-               local[0], local[1], lhs[0], lhs[1]);
+      snprintf(error, sizeof(error),
+               "Left hand side of pair not found: (%d,%d),(%d,%d)", local[0],
+               local[1], lhs[0], lhs[1]);
       std::cout << error << std::endl;
       std::cout << "Halting reordering." << std::endl;
       assert(false);
@@ -279,8 +283,9 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
     if (rpos == -1) {
       char error[200];
-      snprintf(error, sizeof(error), "Right hand side of pair not found: (%d,%d),(%d,%d)",
-               local[0], local[1], rhs[0], rhs[1]);
+      snprintf(error, sizeof(error),
+               "Right hand side of pair not found: (%d,%d),(%d,%d)", local[0],
+               local[1], rhs[0], rhs[1]);
       std::cout << error << std::endl;
       std::cout << "Halting reordering." << std::endl;
       assert(false);
@@ -357,11 +362,10 @@ void circuit_data_to_grid_of_tensors(
 
   // The first element should be the number of qubits
   *(circuit_data) >> num_qubits;
-  // TODO: Decide whether to determine number of qubits from the file or from I * J
+  // TODO: Decide whether to determine number of qubits from file or from I*J
   if (num_qubits != I * J) {
-    std::cout << "The number of qubits read from the file: " 
-    << num_qubits << ", does not match I*J: " << I * J 
-    << "." << std::endl;
+    std::cout << "The number of qubits read from the file: " << num_qubits
+              << ", does not match I*J: " << I * J << "." << std::endl;
     num_qubits = I * J;
   }
 
@@ -370,15 +374,15 @@ void circuit_data_to_grid_of_tensors(
     size_t off_size = off.has_value() ? off.value().size() : 0;
     size_t A_size = A.has_value() ? A.value().size() : 0;
     if (initial_conf.size() != num_qubits - off_size) {
-      std::cout << "Size of initial_conf: " << initial_conf.size() 
-      << ", must be equal to the number of qubits: " 
-      << num_qubits - off_size << "." << std::endl;
+      std::cout << "Size of initial_conf: " << initial_conf.size()
+                << ", must be equal to the number of qubits: "
+                << num_qubits - off_size << "." << std::endl;
       assert(initial_conf.size() == num_qubits - off_size);
     }
     if (final_conf_B.size() != num_qubits - off_size - A_size) {
-      std::cout << "Size of final_conf_B: " << final_conf_B.size() 
-      << ", must be equal to the number of qubits: " 
-      << num_qubits - off_size - A_size << "." << std::endl;
+      std::cout << "Size of final_conf_B: " << final_conf_B.size()
+                << ", must be equal to the number of qubits: "
+                << num_qubits - off_size - A_size << "." << std::endl;
       assert(final_conf_B.size() == num_qubits - off_size - A_size);
     }
   }
@@ -490,11 +494,11 @@ void circuit_data_to_grid_of_tensors(
         ++counter_group[i_j_1[0]][i_j_1[1]][super_cycle];
         ++counter_group[i_j_2[0]][i_j_2[1]][super_cycle];
         grid_of_groups_of_tensors[i_j_1[0]][i_j_1[1]][super_cycle].push_back(
-            Tensor({input_index_1, virtual_index, output_index_1},
-                      dimensions, gate_q1));
+            Tensor({input_index_1, virtual_index, output_index_1}, dimensions,
+                   gate_q1));
         grid_of_groups_of_tensors[i_j_2[0]][i_j_2[1]][super_cycle].push_back(
-            Tensor({input_index_2, virtual_index, output_index_2},
-                      dimensions, gate_q2));
+            Tensor({input_index_2, virtual_index, output_index_2}, dimensions,
+                   gate_q2));
       }
     }
   // Insert Hadamards and deltas to last layer.
@@ -716,11 +720,11 @@ void read_wave_function_evolution(
 
   // Assert for the number of qubits.
   if (num_qubits != I) {
-    std::cout << "I: " << I << " must be equal to the number of qubits: "
-    << num_qubits << std::endl;
+    std::cout << "I: " << I
+              << " must be equal to the number of qubits: " << num_qubits
+              << std::endl;
     assert(num_qubits == I);
   }
-  
 
   std::string line;
   while (getline(io, line))
@@ -742,8 +746,8 @@ void read_wave_function_evolution(
       if (q2 < 0) {
         std::string input_index = std::to_string(q1) + ",i";
         std::string output_index = std::to_string(q1) + ",o";
-        gates.push_back(Tensor({input_index, output_index}, {DIM, DIM},
-                                  gate_array(gate)));
+        gates.push_back(
+            Tensor({input_index, output_index}, {DIM, DIM}, gate_array(gate)));
         inputs.push_back({input_index});
         outputs.push_back({output_index});
       }
@@ -754,9 +758,9 @@ void read_wave_function_evolution(
         std::string output_index2 = std::to_string(q2) + ",o";
         inputs.push_back({input_index1, input_index2});
         outputs.push_back({output_index1, output_index2});
-        gates.push_back(Tensor(
-            {input_index1, input_index2, output_index1, output_index2},
-            {DIM, DIM, DIM, DIM}, gate_array(gate)));
+        gates.push_back(
+            Tensor({input_index1, input_index2, output_index1, output_index2},
+                   {DIM, DIM, DIM, DIM}, gate_array(gate)));
       }
     }
 
