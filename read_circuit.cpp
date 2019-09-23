@@ -76,8 +76,13 @@ std::vector<s_type> gate_array(const std::string& gate_name) {
  * entries of the first qubit, second the vector with entries of the second
  * qubit, and third the vector with the singular values (informational only).
  */
-std::vector<std::vector<s_type>> fSim(s_type::value_type theta,
-                                      s_type::value_type phi, s_type* scratch) {
+std::vector<std::vector<s_type>> fSim(s_type::value_type theta, s_type::value_type phi,
+                                      s_type* scratch) {
+  if (scratch == nullptr) {
+    std::cout << "Scratch must be non-null." << std::endl;
+    assert(scratch != nullptr);
+  }
+
   static_assert(std::is_floating_point<typename s_type::value_type>::value);
 
   std::vector<s_type> coeffs(
@@ -173,6 +178,10 @@ std::vector<std::vector<s_type>> fSim(s_type::value_type theta,
 // array handling into its own class.
 std::tuple<std::vector<s_type>, std::vector<s_type>, std::vector<size_t>>
 gate_arrays(const std::string& gate_name, s_type* scratch) {
+  if (scratch == nullptr) {
+    std::cout << "Scratch must be non-null." << std::endl;
+    assert(scratch != nullptr);
+  }
   static const std::regex fsim_regex("fsim\\((.*),(.*)\\)");
   std::smatch match;
   if (gate_name == "cz") {
@@ -336,6 +345,14 @@ void circuit_data_to_grid_of_tensors(
     const std::optional<std::vector<std::vector<int>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch) {
+  if (circuit_data == nullptr) {
+    std::cout << "Circuit data stream must be non-null." << std::endl;
+    assert(circuit_data != nullptr);
+  }
+  if (scratch == nullptr) {
+    std::cout << "Scratch must be non-null." << std::endl;
+    assert(scratch != nullptr);
+  }
   // Gotten from the file.
   int num_qubits, cycle, q1, q2;
   std::string gate;
@@ -559,6 +576,10 @@ void grid_of_tensors_3D_to_2D(
     std::optional<std::vector<std::vector<int>>> A,
     std::optional<std::vector<std::vector<int>>> off,
     const std::list<ContractionOperation>& ordering, s_type* scratch) {
+  if (scratch == nullptr) {
+    std::cout << "Scratch must be non-null." << std::endl;
+    assert(scratch != nullptr);
+  }
   // Get dimensions and super_dim = DIM^k.
   const int I = grid_of_tensors_3D.size();
   const int J = grid_of_tensors_3D[0].size();
@@ -676,6 +697,10 @@ void read_wave_function_evolution(
     std::string filename, int I, std::vector<Tensor>& gates,
     std::vector<std::vector<std::string>>& inputs,
     std::vector<std::vector<std::string>>& outputs, s_type* scratch) {
+  if (scratch == nullptr) {
+    std::cout << "Scratch must be non-null." << std::endl;
+    assert(scratch != nullptr);
+  }
   // Open file.
   auto io = std::ifstream(filename);
   if (io.bad()) {
