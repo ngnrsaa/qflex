@@ -455,6 +455,7 @@ void circuit_data_to_grid_of_tensors(
       // Fill in one-qubit gates.
       if (q2 < 0 && cycle > 0 && cycle <= SUPER_CYCLE_DEPTH * K) {
         if (find_grid_coord_in_list(off, i_j_1[0], i_j_1[1])) {
+          // Add error
           continue;
         }
         std::string input_index =
@@ -467,9 +468,11 @@ void circuit_data_to_grid_of_tensors(
         grid_of_groups_of_tensors[i_j_1[0]][i_j_1[1]][super_cycle].push_back(
             Tensor({input_index, output_index}, {2, 2}, gate_array(gate)));
       }
+      // Fill in two-qubit gates.
       if (q2 >= 0 && cycle > 0 && cycle <= SUPER_CYCLE_DEPTH * K) {
         if (find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]) ||
             find_grid_coord_in_list(off, i_j_2[0], i_j_2[1])) {
+              // Add another error with specific details
           continue;
         }
         std::vector<s_type> gate_q1;
