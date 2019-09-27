@@ -422,10 +422,10 @@ void circuit_data_to_grid_of_tensors(
         Tensor({"th", "t0"}, {2, 2}, gate_array("h")));
     idx += 1;
   }
-
+  
   std::string line;
   // Read one line at a time from the circuit, skipping comments.
-  while (getline(*circuit_data, line))
+  while (getline(*circuit_data, line)) {
     if (line.size() && line[0] != '#') {
       std::stringstream ss(line);
       // The first element is the cycle
@@ -454,8 +454,9 @@ void circuit_data_to_grid_of_tensors(
 
       // Fill in one-qubit gates.
       if (q2 < 0 && cycle > 0 && cycle <= SUPER_CYCLE_DEPTH * K) {
+        // Check that position is an active qubit
         if (find_grid_coord_in_list(off, i_j_1[0], i_j_1[1])) {
-          // Add error
+          std::cout << "Coordinates (" << i_j_1[0] << ", " << i_j_1[1] << ") must be of an active qubit." << std::endl;
           continue;
         }
         std::string input_index =
@@ -470,9 +471,13 @@ void circuit_data_to_grid_of_tensors(
       }
       // Fill in two-qubit gates.
       if (q2 >= 0 && cycle > 0 && cycle <= SUPER_CYCLE_DEPTH * K) {
-        if (find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]) ||
-            find_grid_coord_in_list(off, i_j_2[0], i_j_2[1])) {
-              // Add another error with specific details
+        // Check that positions are active qubits
+        if (find_grid_coord_in_list(off, i_j_1[0], i_j_1[1])) {
+          std::cout << "Coordinates (" << i_j_1[0] << ", " << i_j_1[1] << ") must be of an active qubit." << std::endl;
+          continue;
+        }
+        if (find_grid_coord_in_list(off, i_j_2[0], i_j_2[1])) {
+          std::cout << "Coordinates (" << i_j_2[0] << ", " << i_j_2[1] << ") must be of an active qubit." << std::endl;
           continue;
         }
         std::vector<s_type> gate_q1;
@@ -504,6 +509,7 @@ void circuit_data_to_grid_of_tensors(
                    gate_q2));
       }
     }
+  }
   // Insert Hadamards and deltas to last layer.
   idx = 0;
   for (int q = 0; q < num_qubits; ++q) {
