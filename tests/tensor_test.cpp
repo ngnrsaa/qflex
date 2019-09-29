@@ -102,7 +102,7 @@ TEST(TensorTest, TensorProjection) {
   const std::vector<std::complex<float>> proj_data_1(
       projection_tensor_1.data(), projection_tensor_1.data() + psize);
   const std::vector<std::complex<float>> proj_data_2(
-      projection_tensor_2.data(), projection_tensor_1.data() + psize);
+      projection_tensor_2.data(), projection_tensor_2.data() + psize);
   for (int i = 0; i < psize; ++i) {
     ASSERT_FLOAT_EQ(proj_data_1[i].real(), data[i + psize].real());
     ASSERT_FLOAT_EQ(proj_data_2[i].real(), data[i + psize].real());
