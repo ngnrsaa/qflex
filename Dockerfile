@@ -1,10 +1,9 @@
 # Base OS
-FROM debian:stable-slim
+FROM alpine:latest
 
 # Install dependencies
-RUN apt-get update
-RUN apt-get -y upgrade
-RUN apt-get -y install make g++ libgsl-dev libgslcblas0 git
+RUN apk update
+RUN apk add g++ make gsl-dev git bash
 
 # Copy qflex
 COPY ./ /qflex/
