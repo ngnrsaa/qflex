@@ -30,6 +30,14 @@ ContractionData ContractionData::Initialize(
     const std::list<ContractionOperation>& ordering,
     std::vector<std::vector<Tensor>>* tensor_grid,
     std::vector<std::complex<double>>* amplitudes) {
+  if (tensor_grid == nullptr) {
+    std::cout << "Tensor grid must be non-null." << std::endl;
+    assert(tensor_grid != nullptr);
+  }
+  if (amplitudes == nullptr) {
+    std::cout << "Amplitude return vector must be non-null." << std::endl;
+    assert(amplitudes != nullptr);
+  }
   ContractionData data;
   data.tensor_grid_ = tensor_grid;
   data.amplitudes_ = amplitudes;
@@ -269,6 +277,14 @@ bool ordering_data_to_contraction_ordering(
     std::istream* ordering_data, const int I, const int J,
     const std::optional<std::vector<std::vector<int>>>& off,
     std::list<ContractionOperation>* ordering) {
+  if (ordering_data == nullptr) {
+    std::cout << "Ordering data stream must be non-null." << std::endl;
+    assert(ordering_data != nullptr);
+  }
+  if (ordering == nullptr) {
+    std::cout << "Ordering must be non-null." << std::endl;
+    assert(ordering != nullptr);
+  }
   static const std::regex cut_value_regex("\\([0-9,]*\\)");
   std::string line;
   std::string error_msg;
@@ -367,6 +383,12 @@ bool ordering_data_to_contraction_ordering(
     std::cout << "Parsing failed on line: \"" << line
               << "\" with error: " << error_msg << std::endl;
     return false;
+  }
+  // Ensure ordering generated is valid
+  bool valid_ordering = IsOrderingValid(*ordering);
+  if (!valid_ordering) {
+    std::cout << "Generated ordering must be valid." << std::endl;
+    assert(valid_ordering);
   }
   return true;
 }
@@ -524,11 +546,6 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
   if (amplitudes == nullptr) {
     std::cout << "Amplitude return vector must be non-null." << std::endl;
     assert(amplitudes != nullptr);
-  }
-  bool valid_ordering = IsOrderingValid(ordering);
-  if (!valid_ordering) {
-    std::cout << "Ordering must be valid." << std::endl;
-    assert(valid_ordering);
   }
 
   // Populate ContractionData and perform grid contraction.

@@ -18,6 +18,10 @@ namespace qflex {
 
 std::vector<std::vector<int>> read_grid_layout_from_stream(
     std::istream* grid_data, int I, int J) {
+  if (grid_data == nullptr) {
+    std::cout << "Grid data stream must be non-null." << std::endl;
+    assert(grid_data != nullptr);
+  }
   std::vector<std::vector<int>> qubits_off;
   bool on;
   for (int i = 0; i < I; ++i) {
@@ -47,6 +51,10 @@ std::vector<std::vector<int>> read_grid_layout_from_stream(
 void get_output_states(const std::list<ContractionOperation>& ordering,
                        std::vector<std::vector<int>>* final_qubits,
                        std::vector<std::string>* output_states) {
+  if (final_qubits == nullptr) {
+    std::cout << "Final qubits must be non-null." << std::endl;
+    assert(final_qubits != nullptr);
+  }
   output_states->push_back("");
   std::vector<std::string> temp_output_states;
   for (const auto& op : ordering) {
@@ -70,6 +78,10 @@ void get_output_states(const std::list<ContractionOperation>& ordering,
 
 std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     QflexInput* input) {
+  if (input == nullptr) {
+    std::cout << "Input must be non-null." << std::endl;
+    assert(input != nullptr);
+  }
   // Set precision for the printed floats.
   std::cout.precision(12);
 
