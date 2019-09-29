@@ -3,7 +3,7 @@ FROM alpine:latest
 
 # Install dependencies
 RUN apk update
-RUN apk add g++ make gsl-dev git bash
+RUN apk add g++ make gsl-dev git
 
 # Copy qflex
 COPY ./ /qflex/
