@@ -3,72 +3,61 @@
 OMP_NUM_THREADS=4
 
 get_location() {
-  location=$(whereis $1)
-  location=($location)
-  echo ${location[1]}
+  if whereis --version >/dev/null 2>/dev/null; then
+    location=$(whereis $1)
+    location=($location)
+    echo ${location[1]}
+  else
+    echo $1
+  fi
 }
 
-# Check if whereis exists
-if whereis whereis >/dev/null 2>/dev/null; then
-  echo "[OK] Whereis is installed."
-else
-  echo "[ERROR] Whereis is required."
-  exit -1
-fi
-
-# Check if unshare exists and that user namespaces are enabled
-if $(get_location unshare) -r echo >/dev/null 2>/dev/null; then
-  echo "[OK] User Namespaces are enabled." >&2
-else
-  echo "[ERROR] User Namespaces are not enabled." >&2
-  exit -1
-fi
-
-# Check if curl exists
 if $(get_location curl) -V >/dev/null 2>/dev/null; then
-  echo "[OK] Curl is installed."
+  echo "[OK] curl is installed."
 else
-  echo "[ERROR] Curl is required."
+  echo "[ERROR] curl is required."
   exit -1
 fi
 
-# Check if tar exists
-if $(get_location tar) --version >/dev/null 2>/dev/null; then
-  echo "[OK] Tar is installed."
-else
-  echo "[ERROR] Tar is required."
-  exit -1
-fi
-
-# Check if chroot exists
-if $(get_location chroot) --version >/dev/null 2>/dev/null; then
-  echo "[OK] Chroot is installed."
-else
-  echo "[ERROR] Chroot is required."
-  exit -1
-fi
+for exe in tar sed grep chroot unshare; do
+  if $(get_location $exe) --version >/dev/null 2>/dev/null; then
+    echo "[OK] $exe is installed."
+  else
+    echo "[ERROR] $exe is required."
+    exit -1
+  fi
+done
 
 alpine_url="http://dl-cdn.alpinelinux.org/alpine/v3.10/releases/$(uname -m)/"
 latest_miniroot=$(curl $alpine_url/latest-releases.yaml 2>/dev/null | grep 'file:' | grep miniroot | sed 's/ *file: *//g')
 
-# Download alpine
-curl $alpine_url/$latest_miniroot --output rootfs.tar.gz
+# Temporary folder
+root=/tmp/qflex_rootless_${RANDOM}
 
-# Create container
-#root=/tmp/qflex_rootless_${RANDOM}
-root=/tmp/qflex_rootless_123
+# Check if root already exists
+if [[ -d $root ]]; then
+  echo "[ERROR] $root already exists."
+  exit -1
+fi
 
-echo "[CHROOT] $root" >&2
+# Create folder
+echo "[CHROOR] Create folder $root." >&2
+mkdir $root
 
 # Get commands with absolute path
-unshare="$(get_location unshare) -rf"
+unshare="$(get_location unshare) -muipUCrf"
 chroot="$(get_location chroot) $root/"
 
+# Download alpine
+echo "[CHROOT] Download $alpine_url/$latest_miniroot." >&2
+curl $alpine_url/$latest_miniroot --output $root/rootfs.tar.gz
+
 # Extract rootfs
-mkdir $root
-tar xvf rootfs.tar.gz -C $root >/dev/null
+echo "[CHROOT] Extract rootfs." >&2
+tar xvf $root/rootfs.tar.gz -C $root >/dev/null
 
 # Copy /etc/resolv.conf for internet access
+echo "[CHROOT] Copy /etc/resolv.conf." >&2
 cp -fv /etc/resolv.conf $root/etc/
 
 # Copy qflex
@@ -114,4 +103,4 @@ $unshare $chroot /install_qflex.sh
 echo "[CHROOT] Run tests." >&2
 $unshare $chroot /qflex/tests/run_all.sh
 
-echo "[CHROOT] $root" >&2
+echo "[CHROOT] Container in: $root" >&2
