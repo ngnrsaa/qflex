@@ -96,7 +96,8 @@ for cmd in tar git sed grep mktemp chroot unshare; do
 done
 
 # Check if unshare can be run
-if [[ $(unshare -r echo 2>/dev/null; echo $?) != 0 ]]; then
+unshare -r echo >/dev/null 2>/dev/null
+if [[ $? != 0 ]]; then
   echo "[ERROR] Not enough privilegies to run unshare. Use: sudo echo 1 > /proc/sys/kernel/unprivileged_userns_clone" >&2
   exit -1
 fi

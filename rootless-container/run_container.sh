@@ -73,6 +73,13 @@ for cmd in env chroot unshare; do
   fi
 done
 
+# Check if unshare can be run
+unshare -r echo >/dev/null 2>/dev/null
+if [[ $? != 0 ]]; then
+  echo "[ERROR] Not enough privilegies to run unshare. Use: sudo echo 1 > /proc/sys/kernel/unprivileged_userns_clone" >&2
+  exit -1
+fi
+
 # Get commands with absolute path
 unshare="$(get_location unshare) -muipUCrf"
 chroot="$(get_location chroot) $user_root/ $(get_location env) -i PATH=/bin/:/sbin:/usr/bin/:/usr/sbin/:/usr/local/bin:/usr/local/sbin"
