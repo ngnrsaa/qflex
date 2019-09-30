@@ -85,6 +85,19 @@ TEST_F(GetOutputStatesTest, OnlyUseTerminalCuts) {
   TestOutputExpectations();
 }
 
+// Nullptr input in get_output_states()
+TEST(GetOutputStatesDeathTest, InvalidInput) {
+  std::list<ContractionOperation> ordering;
+  std::vector<std::vector<int>> final_qubits;
+  std::vector<std::string> output_states;
+
+  // Final qubits cannot be null pointer.
+  EXPECT_DEATH(get_output_states(ordering, nullptr, &output_states), "");
+
+  // Output states cannot be null pointer.
+  EXPECT_DEATH(get_output_states(ordering, &final_qubits, nullptr), "");
+}
+
 // Grid layout with trailing whitespace.
 constexpr char kTestGrid[] = R"(0 1 1 0
                                 1 1 1 1
@@ -190,6 +203,13 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
   EXPECT_EQ(amplitudes[1].first, "0000 1");
   EXPECT_NEAR(amplitudes[1].second.real(), 0.0, 1e-5);
 }
+
+// Nullptr input in EvaluateCircuit()
+TEST(EvaluateCircuitDeathTest, InvalidInput) {
+  // Input cannot be null pointer.
+  EXPECT_DEATH(EvaluateCircuit(nullptr), "");
+}
+
 
 }  // namespace
 }  // namespace qflex

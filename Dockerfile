@@ -1,10 +1,9 @@
 # Base OS
-FROM debian:stable-slim
+FROM alpine:latest
 
 # Install dependencies
-RUN apt-get update
-RUN apt-get -y upgrade
-RUN apt-get -y install make g++ libgsl-dev libgslcblas0 git
+RUN apk update
+RUN apk add g++ make gsl-dev git
 
 # Copy qflex
 COPY ./ /qflex/
@@ -15,7 +14,7 @@ WORKDIR /qflex/
 RUN git submodule update --init --recursive
 
 # Compile qflex
-RUN make
+RUN make -j${OMP_NUM_THREADS}
 
 ENTRYPOINT ["/qflex/qflex.x"]
 CMD []

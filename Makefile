@@ -16,7 +16,7 @@ TEST_DIR = tests
 OBJS1 = main.o evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o
 
 $(TARGET1): $(OBJS1)
-	$(CXX) -o $(TARGET1).x $(FLAGS) $(OBJS1)
+	$(CXX) -o $(TARGET1).x $(OBJS1) $(FLAGS)
 
 main.o: main.cpp
 	$(CXX) -c main.cpp $(FLAGS)
