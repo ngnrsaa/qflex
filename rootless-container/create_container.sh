@@ -3,12 +3,57 @@
 # Get Script path
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
-if [[ $# -ne 1 ]]; then
-  echo -e "\n\n\tUsage: $0 [-|folder]\n\n" >&2
+print_help() {
+  echo -e "\n\tUsage: $(basename $0) {-|folder} [-h -x]\n"            >&2
+  echo -e "\t\tCreate rootless container for qflex in [folder]."      >&2
+  echo -e "\t\tIf [folder] == \"-\", use a temporary folder instead." >&2
+  echo                                                                >&2
+  echo -e "\tOptions:"                                                >&2
+  echo -e "\t\t-h   : Print this help."                               >&2
+  echo -e "\t\t-x   : Do not run tests (just create container)."      >&2
+  echo                                                                >&2
+}
+
+user_root=""
+no_tests=""
+num_args=$#
+
+# Check that args are given
+if [[ $num_args == 0 ]]; then
+  print_help
   exit -1
 fi
 
-user_root=$1
+# Parse options
+for((idx=1; idx<=$num_args; ++idx)); do
+  if [[ $idx == 1 ]]; then
+    if [[ $idx == 1 && ${1:0:1} == "-" && $1 != "-" ]]; then
+      print_help
+      exit -1
+    fi
+    user_root=$1
+  else
+    if [[ ${1:0:1} == "-" ]]; then
+      case $1 in
+        -h)
+          print_help
+          exit -1
+          ;;
+        -x)
+          no_tests=1
+          ;;
+        *)
+          print_help
+          exit -1
+          ;;
+      esac
+    else
+      print_help
+      exit -1
+    fi
+  fi
+  shift
+done
 
 get_location() {
   if whereis --version >/dev/null 2>/dev/null; then
@@ -84,6 +129,10 @@ git submodule update --init --recursive
 
 # Make qFlex
 make -j$OMP_NUM_THREADS
+EOF
+
+if [[ -z $no_tests || $no_tests != "1" ]]; then
+cat >> $root/install_qflex.sh << EOF
 
 # Change folder
 cd tests
@@ -96,13 +145,16 @@ echo "#!/bin/sh" > /qflex/tests/run_all.sh
 for file in /qflex/tests/*.x; do echo \$file; done >> /qflex/tests/run_all.sh
 chmod 755 /qflex/tests/run_all.sh
 EOF
+fi
 chmod 755 $root/install_qflex.sh
 
 echo "[CHROOT] Install qFlex." >&2
 $unshare $chroot /install_qflex.sh
 
-echo "[CHROOT] Run tests." >&2
-$unshare $chroot /qflex/tests/run_all.sh
+if [[ -z $no_tests || $no_tests != "1" ]]; then
+  echo "[CHROOT] Run tests." >&2
+  $unshare $chroot /qflex/tests/run_all.sh
+fi
 
 echo "[CHROOT] Container in: $root" >&2
 
