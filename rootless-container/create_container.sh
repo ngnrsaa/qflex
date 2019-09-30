@@ -95,6 +95,12 @@ for cmd in tar git sed grep mktemp chroot unshare; do
   fi
 done
 
+# Check if unshare can be run
+if [[ $(unshare -r echo 2>/dev/null; echo $?) != 0 ]]; then
+  echo "[ERROR] Not enough privilegies to run unshare. Use: sudo echo 1 > /proc/sys/kernel/unprivileged_userns_clone" >&2
+  exit -1
+fi
+
 alpine_url="http://dl-cdn.alpinelinux.org/alpine/v3.10/releases/$(uname -m)/"
 latest_miniroot=$(curl $alpine_url/latest-releases.yaml 2>/dev/null | grep 'file:' | grep miniroot | sed 's/ *file: *//g')
 
