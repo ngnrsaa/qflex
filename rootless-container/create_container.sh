@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Get Script path
+SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
+
 if [[ $# -ne 1 ]]; then
   echo -e "\n\n\tUsage: $0 [-|folder]\n\n" >&2
   exit -1
@@ -61,7 +64,7 @@ cp -fv /etc/resolv.conf $root/etc/
 
 # Clone qflex
 echo "[CHROOT] Clone qFlex." >&2
-git clone ../ $root/qflex
+git clone $SCRIPTPATH/../ $root/qflex
 
 echo "[CHROOT] Update APK." >&2
 $unshare $chroot /sbin/apk update
