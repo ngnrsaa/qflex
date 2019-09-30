@@ -111,7 +111,7 @@ root=$(mktemp -d -t qflex-XXXXXXXXXXX)
 
 # Get commands with absolute path
 unshare="$(get_location unshare) -muipUCrf"
-chroot="$(get_location chroot) $root/ $(get_location env) -i PATH=/bin/:/sbin:/usr/bin/:/usr/sbin/:/usr/local/bin:/usr/local/sbin"
+chroot="$(get_location chroot) $root/ $(get_location env) -i PATH=/bin/:/sbin:/usr/bin/:/usr/sbin/:/usr/local/bin:/usr/local/sbin OMP_NUM_THREADS=$OMP_NUM_THREADS"
 
 # Download alpine
 echo "[CHROOT] Download $alpine_url/$latest_miniroot." >&2
@@ -146,7 +146,7 @@ cd /qflex
 git submodule update --init --recursive
 
 # Make qFlex
-make -j$OMP_NUM_THREADS
+make -j\$OMP_NUM_THREADS
 EOF
 
 if [[ -z $no_tests || $no_tests != "1" ]]; then
@@ -156,7 +156,7 @@ cat >> $root/install_qflex.sh << EOF
 cd tests
 
 # Make tests
-make -j$OMP_NUM_THREADS
+make -j\$OMP_NUM_THREADS
 
 # Create script to run tests
 echo "#!/bin/sh" > /qflex/tests/run_all.sh
