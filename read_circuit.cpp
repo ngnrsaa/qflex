@@ -457,8 +457,8 @@ void circuit_data_to_grid_of_tensors(
         // Check that position is an active qubit
         bool qubit_off = find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]);
         if (qubit_off) {
-          std::cout << "(" << i_j_1[0] << ", " << i_j_1[1] << 
-          ") must be of coordinates an active qubit." << std::endl;
+          std::cout << "The qubit in '" << line << "' references (" << i_j_1[0] << ", " << i_j_1[1] << 
+          ") which must be coordinates of an active qubit." << std::endl;
           assert(!qubit_off);
         }
         std::string input_index =
@@ -477,13 +477,13 @@ void circuit_data_to_grid_of_tensors(
         bool first_qubit_off = find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]);
         bool second_qubit_off = find_grid_coord_in_list(off, i_j_2[0], i_j_2[1]);
         if (first_qubit_off) {
-          std::cout << "(" << i_j_1[0] << ", " << i_j_1[1] << 
-          ") must be coordinates of an active qubit." << std::endl;
+          std::cout << "The first qubit of '" << line << "' references (" << i_j_1[0] << ", " << i_j_1[1] << 
+          ") which must be coordinates of an active qubit." << std::endl;
           assert(!first_qubit_off);
         }
         if (second_qubit_off) {
-          std::cout << "(" << i_j_2[0] << ", " << i_j_2[1] << 
-          ") must be coordinates of an active qubit." << std::endl;
+          std::cout << "The second qubit of '" << line << "' references (" << i_j_2[0] << ", " << i_j_2[1] << 
+          ") which must be coordinates of an active qubit." << std::endl;
           assert(!second_qubit_off);
         }
         std::vector<s_type> gate_q1;
