@@ -1,6 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 OMP_NUM_THREADS=4
+
+if [[ $# -ge 2 ]]; then
+  echo -e "\n\n\tUsage: $0 [root]\n\n" >&2
+  exit -1
+fi
+
+if [[ $# -eq 1 ]]; then
+  user_root=$1
+fi
 
 get_location() {
   if whereis --version >/dev/null 2>/dev/null; then
@@ -19,11 +28,11 @@ else
   exit -1
 fi
 
-for exe in tar sed grep chroot unshare; do
-  if $(get_location $exe) --version >/dev/null 2>/dev/null; then
-    echo "[OK] $exe is installed."
+for cmd in tar sed grep chroot unshare; do
+  if $(get_location $cmd) --version >/dev/null 2>/dev/null; then
+    echo "[OK] $cmd is installed."
   else
-    echo "[ERROR] $exe is required."
+    echo "[ERROR] $cmd is required."
     exit -1
   fi
 done
@@ -104,3 +113,8 @@ echo "[CHROOT] Run tests." >&2
 $unshare $chroot /qflex/tests/run_all.sh
 
 echo "[CHROOT] Container in: $root" >&2
+
+if [[ x$user_root != "x" ]]; then
+  echo "[CHROOT] Moving container --> $user_root." >&2
+  mv $root $user_root
+fi
