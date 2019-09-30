@@ -14,7 +14,7 @@ WORKDIR /qflex/
 RUN git submodule update --init --recursive
 
 # Compile qflex
-RUN make
+RUN make -j${OMP_NUM_THREADS}
 
 ENTRYPOINT ["/qflex/qflex.x"]
 CMD []

@@ -6,11 +6,15 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
+    environment:
+      - OMP_NUM_THREADS=4
   qflex-tests:
-    image: qflex:tests
+    image: qflex-tests
     container_name: qflex-tests
     build:
       context: ./
       dockerfile: tests/Dockerfile
+    environment:
+      - OMP_NUM_THREADS=4
     depends_on:
     - qflex

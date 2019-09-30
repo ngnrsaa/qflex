@@ -3,7 +3,7 @@ FROM qflex
 
 # Compile tests
 WORKDIR /qflex/tests/
-RUN make
+RUN make -j${OMP_NUM_THREADS}
 
 # Create tests script
 RUN echo "#!/bin/sh" >> run_all.sh
