@@ -2,14 +2,12 @@
 
 OMP_NUM_THREADS=4
 
-if [[ $# -ge 2 ]]; then
-  echo -e "\n\n\tUsage: $0 [root]\n\n" >&2
+if [[ $# -ne 1 ]]; then
+  echo -e "\n\n\tUsage: $0 [-|folder]\n\n" >&2
   exit -1
 fi
 
-if [[ $# -eq 1 ]]; then
-  user_root=$1
-fi
+user_root=$1
 
 get_location() {
   if whereis --version >/dev/null 2>/dev/null; then
@@ -114,7 +112,7 @@ $unshare $chroot /qflex/tests/run_all.sh
 
 echo "[CHROOT] Container in: $root" >&2
 
-if [[ x$user_root != "x" ]]; then
+if [[ x$user_root != "x-" ]]; then
   echo "[CHROOT] Moving container --> $user_root." >&2
   mv $root $user_root
 fi
