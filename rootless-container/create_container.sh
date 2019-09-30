@@ -106,7 +106,7 @@ alpine_url="http://dl-cdn.alpinelinux.org/alpine/v3.10/releases/$(uname -m)/"
 latest_miniroot=$(curl $alpine_url/latest-releases.yaml 2>/dev/null | grep 'file:' | grep miniroot | sed 's/ *file: *//g')
 
 # Create temporary folder
-echo "[CHROOR] Create temporary folder $root." >&2
+echo "[CHROOT] Create temporary folder $root." >&2
 root=$(mktemp -d -t qflex-XXXXXXXXXXX)
 
 # Get commands with absolute path
