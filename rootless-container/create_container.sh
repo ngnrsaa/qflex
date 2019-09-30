@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-OMP_NUM_THREADS=4
-
 if [[ $# -ne 1 ]]; then
   echo -e "\n\n\tUsage: $0 [-|folder]\n\n" >&2
   exit -1
@@ -26,7 +24,7 @@ else
   exit -1
 fi
 
-for cmd in tar sed grep chroot unshare; do
+for cmd in tar git sed grep mktemp chroot unshare; do
   if $(get_location $cmd) --version >/dev/null 2>/dev/null; then
     echo "[OK] $cmd is installed."
   else
@@ -39,13 +37,7 @@ alpine_url="http://dl-cdn.alpinelinux.org/alpine/v3.10/releases/$(uname -m)/"
 latest_miniroot=$(curl $alpine_url/latest-releases.yaml 2>/dev/null | grep 'file:' | grep miniroot | sed 's/ *file: *//g')
 
 # Temporary folder
-root=/tmp/qflex_rootless_${RANDOM}
-
-# Check if root already exists
-if [[ -d $root ]]; then
-  echo "[ERROR] $root already exists."
-  exit -1
-fi
+root=$(mktemp -d -t qflex-XXXXXXXXXXX)
 
 # Create folder
 echo "[CHROOR] Create folder $root." >&2
@@ -67,10 +59,9 @@ tar xvf $root/rootfs.tar.gz -C $root >/dev/null
 echo "[CHROOT] Copy /etc/resolv.conf." >&2
 cp -fv /etc/resolv.conf $root/etc/
 
-# Copy qflex
-echo "[CHROOT] Copy qFlex." >&2
-mkdir $root/qflex
-cp -r ../ $root/qflex
+# Clone qflex
+echo "[CHROOT] Clone qFlex." >&2
+git clone ../ $root/qflex
 
 echo "[CHROOT] Update APK." >&2
 $unshare $chroot /sbin/apk update
