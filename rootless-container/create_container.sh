@@ -55,6 +55,20 @@ for((idx=1; idx<=$num_args; ++idx)); do
   shift
 done
 
+# Check if folder exists
+if [[ ! -w $(realpath $(dirname $user_root)) ]]; then
+  echo "Directory $(realpath $(dirname $user_root)) does not exist or not writable by you."
+  print_help
+  exit -1
+fi
+
+# Check if root folder does not exists
+if [[ -d $(realpath $user_root) ]]; then
+  echo "Directory $(realpath $user_root) already exists." >&2
+  print_help
+  exit -1
+fi
+
 get_location() {
   if whereis --version >/dev/null 2>/dev/null; then
     location=$(whereis $1)
@@ -84,16 +98,13 @@ done
 alpine_url="http://dl-cdn.alpinelinux.org/alpine/v3.10/releases/$(uname -m)/"
 latest_miniroot=$(curl $alpine_url/latest-releases.yaml 2>/dev/null | grep 'file:' | grep miniroot | sed 's/ *file: *//g')
 
-# Temporary folder
+# Create temporary folder
+echo "[CHROOR] Create temporary folder $root." >&2
 root=$(mktemp -d -t qflex-XXXXXXXXXXX)
-
-# Create folder
-echo "[CHROOR] Create folder $root." >&2
-mkdir $root
 
 # Get commands with absolute path
 unshare="$(get_location unshare) -muipUCrf"
-chroot="$(get_location chroot) $root/"
+chroot="$(get_location chroot) $root/ $(get_location env) -i PATH=/bin/:/sbin:/usr/bin/:/usr/sbin/:/usr/local/bin:/usr/local/sbin"
 
 # Download alpine
 echo "[CHROOT] Download $alpine_url/$latest_miniroot." >&2
