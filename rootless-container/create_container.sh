@@ -14,6 +14,16 @@ print_help() {
   echo                                                                >&2
 }
 
+get_location() {
+  if whereis --version >/dev/null 2>/dev/null; then
+    location=$(whereis $1)
+    location=($location)
+    echo ${location[1]}
+  else
+    echo $1
+  fi
+}
+
 user_root=""
 no_tests=""
 num_args=$#
@@ -73,21 +83,17 @@ if [[ $user_root != "-" ]]; then
 
 fi
 
-get_location() {
-  if whereis --version >/dev/null 2>/dev/null; then
-    location=$(whereis $1)
-    location=($location)
-    echo ${location[1]}
-  else
-    echo $1
-  fi
-}
-
 if $(get_location curl) -V >/dev/null 2>/dev/null; then
   echo "[OK] curl is installed." >&2
+  curl="$(get_location curl) --output"
 else
-  echo "[ERROR] curl is required." >&2
-  exit -1
+  if $(get_location wget) --version >/dev/null 2>/dev/null; then
+    echo "[OK] wget is installed." >&2
+    curl="$(get_location wget) -O"
+  else
+    echo "[ERROR] Either curl or wget is required." >&2
+    exit -1
+  fi
 fi
 
 for cmd in tar git sed grep mktemp chroot unshare; do
@@ -107,7 +113,7 @@ if [[ $? != 0 ]]; then
 fi
 
 alpine_url="http://dl-cdn.alpinelinux.org/alpine/v3.10/releases/$(uname -m)/"
-latest_miniroot=$(curl $alpine_url/latest-releases.yaml 2>/dev/null | grep 'file:' | grep miniroot | sed 's/ *file: *//g')
+latest_miniroot=$($curl - $alpine_url/latest-releases.yaml 2>/dev/null | grep 'file:' | grep miniroot | sed 's/ *file: *//g')
 
 # Create temporary folder if the user does not provide a target folder
 if [[ $user_root == "-" ]]; then
@@ -124,7 +130,7 @@ chroot="$(get_location chroot) $root/ $(get_location env) -i PATH=/bin/:/sbin:/u
 
 # Download alpine
 echo "[CHROOT] Download $alpine_url/$latest_miniroot." >&2
-curl $alpine_url/$latest_miniroot --output $root/rootfs.tar.gz
+$curl $root/rootfs.tar.gz $alpine_url/$latest_miniroot
 
 # Extract rootfs
 echo "[CHROOT] Extract rootfs." >&2
