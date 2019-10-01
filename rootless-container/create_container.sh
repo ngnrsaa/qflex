@@ -56,17 +56,21 @@ for((idx=1; idx<=$num_args; ++idx)); do
 done
 
 # Check if folder exists
-if [[ ! -w $(realpath $(dirname $user_root)) ]]; then
-  echo "Directory $(realpath $(dirname $user_root)) does not exist or not writable by you."
-  print_help
-  exit -1
-fi
+if [[ $user_root != "-" ]]; then
 
-# Check if root folder does not exists
-if [[ -d $(realpath $user_root) ]]; then
-  echo "Directory $(realpath $user_root) already exists." >&2
-  print_help
-  exit -1
+  if [[ ! -w $(realpath $(dirname $user_root)) ]]; then
+    echo "Directory $(realpath $(dirname $user_root)) does not exist or not writable by you."
+    print_help
+    exit -1
+  fi
+  
+  # Check if root folder does not exists
+  if [[ -d $(realpath $user_root) ]]; then
+    echo "Directory $(realpath $user_root) already exists." >&2
+    print_help
+    exit -1
+  fi
+
 fi
 
 get_location() {
@@ -105,9 +109,14 @@ fi
 alpine_url="http://dl-cdn.alpinelinux.org/alpine/v3.10/releases/$(uname -m)/"
 latest_miniroot=$(curl $alpine_url/latest-releases.yaml 2>/dev/null | grep 'file:' | grep miniroot | sed 's/ *file: *//g')
 
-# Create temporary folder
-echo "[CHROOT] Create temporary folder $root." >&2
-root=$(mktemp -d -t qflex-XXXXXXXXXXX)
+# Create temporary folder if the user does not provide a target folder
+if [[ $user_root == "-" ]]; then
+  echo "[CHROOT] Create temporary folder $root." >&2
+  root=$(mktemp -d -t qflex-XXXXXXXXXXX)
+else
+  mkdir $user_root
+  root=$user_root
+fi
 
 # Get commands with absolute path
 unshare="$(get_location unshare) -muipUCrf"
@@ -174,9 +183,4 @@ if [[ -z $no_tests || $no_tests != "1" ]]; then
   $unshare $chroot /qflex/tests/run_all.sh
 fi
 
-echo "[CHROOT] Container in: $root" >&2
-
-if [[ x$user_root != "x-" ]]; then
-  echo "[CHROOT] Moving container --> $user_root." >&2
-  mv $root $user_root
-fi
+echo "[CHROOT] Container in: $(realpath $root)" >&2
