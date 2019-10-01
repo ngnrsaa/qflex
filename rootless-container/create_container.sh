@@ -59,7 +59,7 @@ done
 if [[ $user_root != "-" ]]; then
 
   if [[ ! -w $(realpath $(dirname $user_root)) ]]; then
-    echo "Directory $(realpath $(dirname $user_root)) does not exist or not writable by you."
+    echo "Directory $(realpath $(dirname $user_root)) does not exist or not writable by you." >&2
     print_help
     exit -1
   fi
@@ -84,17 +84,17 @@ get_location() {
 }
 
 if $(get_location curl) -V >/dev/null 2>/dev/null; then
-  echo "[OK] curl is installed."
+  echo "[OK] curl is installed." >&2
 else
-  echo "[ERROR] curl is required."
+  echo "[ERROR] curl is required." >&2
   exit -1
 fi
 
 for cmd in tar git sed grep mktemp chroot unshare; do
   if $(get_location $cmd) --version >/dev/null 2>/dev/null; then
-    echo "[OK] $cmd is installed."
+    echo "[OK] $cmd is installed." >&2
   else
-    echo "[ERROR] $cmd is required."
+    echo "[ERROR] $cmd is required." >&2
     exit -1
   fi
 done
