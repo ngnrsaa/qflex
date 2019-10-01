@@ -425,7 +425,7 @@ void circuit_data_to_grid_of_tensors(
 
   std::string line;
   // Read one line at a time from the circuit, skipping comments.
-  while (getline(*circuit_data, line))
+  while (getline(*circuit_data, line)) {
     if (line.size() && line[0] != '#') {
       std::stringstream ss(line);
       // The first element is the cycle
@@ -454,8 +454,12 @@ void circuit_data_to_grid_of_tensors(
 
       // Fill in one-qubit gates.
       if (q2 < 0 && cycle > 0 && cycle <= SUPER_CYCLE_DEPTH * K) {
-        if (find_grid_coord_in_list(off, i_j_1[0], i_j_1[1])) {
-          continue;
+        // Check that position is an active qubit
+        bool qubit_off = find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]);
+        if (qubit_off) {
+          std::cout << "The qubit in '" << line << "' references (" << i_j_1[0] << ", " << i_j_1[1] << 
+          ") which must be coordinates of an active qubit." << std::endl;
+          assert(!qubit_off);
         }
         std::string input_index =
             "t" +
@@ -467,10 +471,20 @@ void circuit_data_to_grid_of_tensors(
         grid_of_groups_of_tensors[i_j_1[0]][i_j_1[1]][super_cycle].push_back(
             Tensor({input_index, output_index}, {2, 2}, gate_array(gate)));
       }
+      // Fill in two-qubit gates.
       if (q2 >= 0 && cycle > 0 && cycle <= SUPER_CYCLE_DEPTH * K) {
-        if (find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]) ||
-            find_grid_coord_in_list(off, i_j_2[0], i_j_2[1])) {
-          continue;
+        // Check that positions are active qubits
+        bool first_qubit_off = find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]);
+        bool second_qubit_off = find_grid_coord_in_list(off, i_j_2[0], i_j_2[1]);
+        if (first_qubit_off) {
+          std::cout << "The first qubit of '" << line << "' references (" << i_j_1[0] << ", " << i_j_1[1] << 
+          ") which must be coordinates of an active qubit." << std::endl;
+          assert(!first_qubit_off);
+        }
+        if (second_qubit_off) {
+          std::cout << "The second qubit of '" << line << "' references (" << i_j_2[0] << ", " << i_j_2[1] << 
+          ") which must be coordinates of an active qubit." << std::endl;
+          assert(!second_qubit_off);
         }
         std::vector<s_type> gate_q1;
         std::vector<s_type> gate_q2;
@@ -501,6 +515,7 @@ void circuit_data_to_grid_of_tensors(
                    gate_q2));
       }
     }
+  }
   // Insert Hadamards and deltas to last layer.
   idx = 0;
   for (int q = 0; q < num_qubits; ++q) {
