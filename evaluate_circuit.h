@@ -15,28 +15,29 @@
 #include <unordered_map>
 #include <vector>
 
+#include "qflex_input.h"
 #include "contraction_utils.h"
 #include "read_circuit.h"
 #include "tensor.h"
 
 namespace qflex {
 
-struct QflexInput {
-  int grid_height;
-  int grid_width;
-  int super_cycles;
+// struct QflexInput {
+//   int grid_height;
+//   int grid_width;
+//   int super_cycles;
 
-  //deprecated?
-  double fidelity;
+//   //deprecated?
+//   double fidelity;
 
-  bool enable_timing_logs = false;
+//   bool enable_timing_logs = false;
 
-  std::istream* circuit_data;
-  std::istream* ordering_data;
-  std::istream* grid_data;
-  std::string initial_state;
-  std::string final_state_A;
-};
+//   std::istream* circuit_data;
+//   std::istream* ordering_data;
+//   std::istream* grid_data;
+//   std::string initial_state;
+//   std::string final_state_A;
+// };
 
 /**
  * Reads in grid layout from a file, which should be formatted as an grid_height x grid_width grid
@@ -47,7 +48,8 @@ struct QflexInput {
  * @return a list of coordinates for "off" qubits in the grid_height x grid_width grid provided.
  */
 std::vector<std::vector<int>> read_grid_layout_from_stream(
-    std::istream* grid_data, int grid_height, int grid_width);
+    // std::istream* grid_data, int grid_height, int grid_width);
+    QflexInput* input);
 
 /**
  * Determines the final qubit positions and output states for a given ordering.

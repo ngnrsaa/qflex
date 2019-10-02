@@ -330,8 +330,10 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
 }  // namespace
 
 void circuit_data_to_grid_of_tensors(
-    std::istream* circuit_data, int I, int J, int K,
-    const std::string initial_conf, const std::string final_conf_B,
+    // std::istream* circuit_data, 
+    // int grid_height, int grid_width, int super_cycles,
+    // const std::string initial_conf, const std::string final_conf_B,
+    QflexInput* input,
     const std::optional<std::vector<std::vector<int>>>& A,
     const std::optional<std::vector<std::vector<int>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
@@ -344,47 +346,51 @@ void circuit_data_to_grid_of_tensors(
   int super_cycle;
 
   // The first element should be the number of qubits
-  *(circuit_data) >> num_qubits;
-  // TODO: Decide whether to determine number of qubits from file or from I*J
-  if (num_qubits != I * J) {
+  *(input->circuit_data) >> num_qubits;
+  // TODO: Decide whether to determine number of qubits from file or from grid_height*grid_width
+  if (num_qubits != input->grid_height * input->grid_width) {
     std::cout << "The number of qubits read from the file: " << num_qubits
-              << ", does not match I*J: " << I * J << "." << std::endl;
-    num_qubits = I * J;
+              << ", does not match grid_height*grid_width: " << input->grid_height * input->grid_width << "." << std::endl;
+    num_qubits = input->grid_height * input->grid_width;
   }
 
   // Assert for the length of initial_conf and final_conf_B.
   {
     size_t off_size = off.has_value() ? off.value().size() : 0;
     size_t A_size = A.has_value() ? A.value().size() : 0;
-    if (initial_conf.size() != num_qubits - off_size) {
-      std::cout << "Size of initial_conf: " << initial_conf.size()
+    if (input->initial_state.size() != num_qubits - off_size) {
+      std::cout << "Size of initial_conf: " << input->initial_state.size()
                 << ", must be equal to the number of qubits: "
                 << num_qubits - off_size << "." << std::endl;
-      assert(initial_conf.size() == num_qubits - off_size);
+      assert(input->initial_state.size() == num_qubits - off_size);
     }
-    if (final_conf_B.size() != num_qubits - off_size - A_size) {
-      std::cout << "Size of final_conf_B: " << final_conf_B.size()
+
+    if (input->final_state_A.size() != num_qubits - off_size - A_size) {
+      std::cout << "Size of final_conf_B: " << input->final_state_A.size()
                 << ", must be equal to the number of qubits: "
                 << num_qubits - off_size - A_size << "." << std::endl;
-      assert(final_conf_B.size() == num_qubits - off_size - A_size);
+      assert(input->final_state_A.size() == num_qubits - off_size - A_size);
     }
   }
 
   // Creating grid variables.
   std::vector<std::vector<std::vector<std::vector<Tensor>>>>
-      grid_of_groups_of_tensors(I);
-  grid_of_tensors = std::vector<std::vector<std::vector<Tensor>>>(I);
-  std::vector<std::vector<std::vector<int>>> counter_group(I);
-  for (int i = 0; i < I; ++i) {
+      grid_of_groups_of_tensors(input->grid_height);
+  grid_of_tensors = std::vector<std::vector<std::vector<Tensor>>>(input->grid_height);
+  std::vector<std::vector<std::vector<int>>> counter_group(input->grid_height);
+
+  for (int i = 0; i < input->grid_height; ++i) {
     grid_of_groups_of_tensors[i] =
-        std::vector<std::vector<std::vector<Tensor>>>(J);
-    grid_of_tensors[i] = std::vector<std::vector<Tensor>>(J);
-    counter_group[i] = std::vector<std::vector<int>>(J);
-    for (int j = 0; j < J; ++j) {
-      grid_of_groups_of_tensors[i][j] = std::vector<std::vector<Tensor>>(K);
-      grid_of_tensors[i][j] = std::vector<Tensor>(K);
-      counter_group[i][j] = std::vector<int>(K, 0);
-      for (int k = 0; k < K; ++k) {
+        std::vector<std::vector<std::vector<Tensor>>>(input->grid_width);
+    grid_of_tensors[i] = std::vector<std::vector<Tensor>>(input->grid_width);
+    counter_group[i] = std::vector<std::vector<int>>(input->grid_width);
+    
+    for (int j = 0; j < input->grid_width; ++j) {
+      grid_of_groups_of_tensors[i][j] = std::vector<std::vector<Tensor>>(input->super_cycles);
+      grid_of_tensors[i][j] = std::vector<Tensor>(input->super_cycles);
+      counter_group[i][j] = std::vector<int>(input->super_cycles, 0);
+      
+      for (int k = 0; k < input->super_cycles; ++k) {
         grid_of_groups_of_tensors[i][j][k] = std::vector<Tensor>();
       }
     }
@@ -393,12 +399,13 @@ void circuit_data_to_grid_of_tensors(
   // Insert deltas and Hadamards to first layer.
   int idx = 0;
   for (int q = 0; q < num_qubits; ++q) {
-    std::vector<int> i_j = get_qubit_coords(q, J);
+    std::vector<int> i_j = get_qubit_coords(q, input->grid_width);
     int i = i_j[0], j = i_j[1];
     if (find_grid_coord_in_list(off, i, j)) {
       continue;
     }
-    std::string delta_gate = (initial_conf[idx] == '0') ? "delta_0" : "delta_1";
+
+    std::string delta_gate = (input->initial_state[idx] == '0') ? "delta_0" : "delta_1";
     grid_of_groups_of_tensors[i][j][0].push_back(
         Tensor({"th"}, {2}, gate_array(delta_gate)));
     grid_of_groups_of_tensors[i][j][0].push_back(
@@ -408,7 +415,7 @@ void circuit_data_to_grid_of_tensors(
 
   std::string line;
   // Read one line at a time from the circuit, skipping comments.
-  while (getline(*circuit_data, line))
+  while (std::getline((*input->circuit_data), line))
     if (line.size() && line[0] != '#') {
       std::stringstream ss(line);
       // The first element is the cycle
@@ -429,14 +436,14 @@ void circuit_data_to_grid_of_tensors(
       }
 
       // Get i, j and super_cycle
-      i_j_1 = get_qubit_coords(q1, J);
+      i_j_1 = get_qubit_coords(q1, input->grid_width);
       if (q2 >= 0) {
-        i_j_2 = get_qubit_coords(q2, J);
+        i_j_2 = get_qubit_coords(q2, input->grid_width);
       }
       super_cycle = (cycle - 1) / SUPER_CYCLE_DEPTH;
 
       // Fill in one-qubit gates.
-      if (q2 < 0 && cycle > 0 && cycle <= SUPER_CYCLE_DEPTH * K) {
+      if (q2 < 0 && cycle > 0 && cycle <= SUPER_CYCLE_DEPTH * input->super_cycles) {
         if (find_grid_coord_in_list(off, i_j_1[0], i_j_1[1])) {
           continue;
         }
@@ -450,7 +457,8 @@ void circuit_data_to_grid_of_tensors(
         grid_of_groups_of_tensors[i_j_1[0]][i_j_1[1]][super_cycle].push_back(
             Tensor({input_index, output_index}, {2, 2}, gate_array(gate)));
       }
-      if (q2 >= 0 && cycle > 0 && cycle <= SUPER_CYCLE_DEPTH * K) {
+
+      if (q2 >= 0 && cycle > 0 && cycle <= SUPER_CYCLE_DEPTH * input->super_cycles) {
         if (find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]) ||
             find_grid_coord_in_list(off, i_j_2[0], i_j_2[1])) {
           continue;
@@ -487,9 +495,10 @@ void circuit_data_to_grid_of_tensors(
   // Insert Hadamards and deltas to last layer.
   idx = 0;
   for (int q = 0; q < num_qubits; ++q) {
-    std::vector<int> i_j = get_qubit_coords(q, J);
-    int i = i_j[0], j = i_j[1];
-    int k = K - 1;
+    std::vector<int> i_j = get_qubit_coords(q, input->grid_width);
+    int i = i_j[0];
+    int j = i_j[1];
+    int k = input->super_cycles - 1;
     if (find_grid_coord_in_list(off, i, j)) {
       continue;
     }
@@ -499,16 +508,17 @@ void circuit_data_to_grid_of_tensors(
     if (find_grid_coord_in_list(A, i, j)) {
       continue;
     }
-    std::string delta_gate = (final_conf_B[idx] == '0') ? "delta_0" : "delta_1";
+
+    std::string delta_gate = (input->final_state_A[idx] == '0') ? "delta_0" : "delta_1";
     grid_of_groups_of_tensors[i][j][k].push_back(
         Tensor({"th"}, {2}, gate_array(delta_gate)));
     idx += 1;  // Move in B only.
   }
 
   // Contracting each group of gates into a single tensor.
-  for (int i = 0; i < I; ++i)
-    for (int j = 0; j < J; ++j)
-      for (int k = 0; k < K; ++k) {
+  for (int i = 0; i < input->grid_height; ++i)
+    for (int j = 0; j < input->grid_width; ++j)
+      for (int k = 0; k < input->super_cycles; ++k) {
         if (find_grid_coord_in_list(off, i, j)) {
           continue;
         }
@@ -527,9 +537,9 @@ void circuit_data_to_grid_of_tensors(
       }
 
   // Rename "t..." indices.
-  for (int i = 0; i < I; ++i)
-    for (int j = 0; j < J; ++j)
-      for (int k = 0; k < K; ++k) {
+  for (int i = 0; i < input->grid_height; ++i)
+    for (int j = 0; j < input->grid_width; ++j)
+      for (int k = 0; k < input->super_cycles; ++k) {
         if (find_grid_coord_in_list(off, i, j)) {
           continue;
         }
@@ -537,12 +547,12 @@ void circuit_data_to_grid_of_tensors(
           std::string new_first_index = index_name({i, j, k - 1}, {i, j, k});
           grid_of_tensors[i][j][k].rename_index("t0", new_first_index);
         }
-        if (k < K - 1) {
+        if (k < input->super_cycles - 1) {
           std::string last_index = "t" + std::to_string(counter_group[i][j][k]);
           std::string new_last_index = index_name({i, j, k}, {i, j, k + 1});
           grid_of_tensors[i][j][k].rename_index(last_index, new_last_index);
         }
-        if (k == K - 1 && find_grid_coord_in_list(A, i, j)) {
+        if (k == input->super_cycles - 1 && find_grid_coord_in_list(A, i, j)) {
           std::string last_index = "th";
           std::string new_last_index = index_name({i, j}, {});
           grid_of_tensors[i][j][k].rename_index(last_index, new_last_index);
@@ -559,15 +569,19 @@ void grid_of_tensors_3D_to_2D(
     std::optional<std::vector<std::vector<int>>> A,
     std::optional<std::vector<std::vector<int>>> off,
     const std::list<ContractionOperation>& ordering, s_type* scratch) {
-  // Get dimensions and super_dim = DIM^k.
-  const int I = grid_of_tensors_3D.size();
-  const int J = grid_of_tensors_3D[0].size();
-  const int K = grid_of_tensors_3D[0][0].size();
-  const int super_dim = (int)pow(DIM, K);
+  /*
+    These dimensions are set in circuit_data_to_grid_of_tensors()
+
+    Get dimensions and super_dim = DIM^k.
+  */
+  const int grid_height = grid_of_tensors_3D.size();
+  const int grid_width = grid_of_tensors_3D[0].size();
+  const int super_cycles = grid_of_tensors_3D[0][0].size();
+  const int super_dim = (int)pow(DIM, super_cycles);
 
   // Contract vertically and fill grid_of_tensors_2D.
-  for (int i = 0; i < I; ++i) {
-    for (int j = 0; j < J; ++j) {
+  for (int i = 0; i < grid_height; ++i) {
+    for (int j = 0; j < grid_width; ++j) {
       if (find_grid_coord_in_list(off, i, j)) {
         continue;
       }
@@ -581,12 +595,12 @@ void grid_of_tensors_3D_to_2D(
       Tensor* source_container = &group_containers[0];
       Tensor* target_container = &group_containers[1];
 
-      if (K == 1) {
+      if (super_cycles == 1) {
         grid_of_tensors_2D[i][j] = grid_of_tensors_3D[i][j][0];
       } else {
         multiply(grid_of_tensors_3D[i][j][0], grid_of_tensors_3D[i][j][1],
                  *source_container, scratch);
-        for (int k = 1; k < K - 1; ++k) {
+        for (int k = 1; k < super_cycles - 1; ++k) {
           multiply(*source_container, grid_of_tensors_3D[i][j][k + 1],
                    *target_container, scratch);
           Tensor* swap_container = source_container;
@@ -599,8 +613,8 @@ void grid_of_tensors_3D_to_2D(
   }
 
   // Reorder and bundle.
-  for (int i = 0; i < I; ++i) {
-    for (int j = 0; j < J; ++j) {
+  for (int i = 0; i < grid_height; ++i) {
+    for (int j = 0; j < grid_width; ++j) {
       if (find_grid_coord_in_list(off, i, j)) {
         continue;
       }
@@ -617,10 +631,10 @@ void grid_of_tensors_3D_to_2D(
       if (j > 0 && !find_grid_coord_in_list(off, i, j - 1)) {
         pairs.push_back({i, j - 1});
       }
-      if (i < I - 1 && !find_grid_coord_in_list(off, i + 1, j)) {
+      if (i < grid_height - 1 && !find_grid_coord_in_list(off, i + 1, j)) {
         pairs.push_back({i + 1, j});
       }
-      if (j < J - 1 && !find_grid_coord_in_list(off, i, j + 1)) {
+      if (j < grid_width - 1 && !find_grid_coord_in_list(off, i, j + 1)) {
         pairs.push_back({i, j + 1});
       }
 
@@ -644,7 +658,7 @@ void grid_of_tensors_3D_to_2D(
           q1 = local;
           q2 = pair;
         }
-        for (int k = 0; k < K; ++k) {
+        for (int k = 0; k < super_cycles; ++k) {
           ordered_indices_3D.push_back(
               index_name({q1[0], q1[1], k}, {q2[0], q2[1], k}));
         }
@@ -659,8 +673,8 @@ void grid_of_tensors_3D_to_2D(
       max_idx = indices_2D.size();
       for (int idx_num = 0; idx_num < max_idx; ++idx_num) {
         std::vector<std::string> indices_to_bundle(
-            ordered_indices_3D.begin() + idx_num * K + fr_buffer,
-            ordered_indices_3D.begin() + (idx_num + 1) * K + fr_buffer);
+            ordered_indices_3D.begin() + idx_num * super_cycles + fr_buffer,
+            ordered_indices_3D.begin() + (idx_num + 1) * super_cycles + fr_buffer);
         grid_of_tensors_2D[i][j].bundle(indices_to_bundle, indices_2D[idx_num]);
       }
     }
@@ -673,7 +687,7 @@ void grid_of_tensors_3D_to_2D(
 // This function is currently not being called.
 // TODO: Decide whether or not to deprecate function, also needs to be tested.
 void read_wave_function_evolution(
-    std::string filename, int I, std::vector<Tensor>& gates,
+    std::string filename, int grid_height, std::vector<Tensor>& gates,
     std::vector<std::vector<std::string>>& inputs,
     std::vector<std::vector<std::string>>& outputs, s_type* scratch) {
   // Open file.
@@ -694,11 +708,11 @@ void read_wave_function_evolution(
   io >> num_qubits;
 
   // Assert for the number of qubits.
-  if (num_qubits != I) {
-    std::cout << "I: " << I
+  if (num_qubits != grid_height) {
+    std::cout << "grid_height: " << grid_height
               << " must be equal to the number of qubits: " << num_qubits
               << std::endl;
-    assert(num_qubits == I);
+    assert(num_qubits == grid_height);
   }
 
   std::string line;

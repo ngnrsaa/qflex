@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "qflex_input.h"
 #include "contraction_utils.h"
 #include "tensor.h"
 
@@ -56,8 +57,10 @@ const int DIM = 2;
  * performed in this function.
  */
 void circuit_data_to_grid_of_tensors(
-    std::istream* circuit_data, int I, int J, int K,
-    const std::string initial_conf, const std::string final_conf_B,
+    // std::istream* circuit_data, int I, int J, int K,
+    // const std::string initial_conf, const std::string final_conf_B,
+    QflexInput* input,
+    //
     const std::optional<std::vector<std::vector<int>>>& A,
     const std::optional<std::vector<std::vector<int>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,

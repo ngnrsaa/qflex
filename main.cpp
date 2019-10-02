@@ -1,5 +1,6 @@
 #include <omp.h>
 
+#include "qflex_input.h"
 #include "evaluate_circuit.h"
 
 // Input: ./qflex.x I J K fidelity circuit_filename ordering_filename \
