@@ -22,26 +22,32 @@
 namespace qflex {
 
 struct QflexInput {
-  int I, J, K;
+  int grid_height;
+  int grid_width;
+  int super_cycles;
+
+  //deprecated?
   double fidelity;
+
+  bool enable_timing_logs = false;
+
   std::istream* circuit_data;
   std::istream* ordering_data;
   std::istream* grid_data;
   std::string initial_state;
   std::string final_state_A;
-  bool enable_timing_logs = false;
 };
 
 /**
- * Reads in grid layout from a file, which should be formatted as an I x J grid
+ * Reads in grid layout from a file, which should be formatted as an grid_height x grid_width grid
  * of zeroes (for "off" qubits) and ones (for "on" qubits).\
  * @param grid_data std::istream* containing grid layout stored as a string.
- * @param I int with the first spatial dimension of the grid of qubits.
- * @param J int with the second spatial dimension of the grid of qubits.
- * @return a list of coordinates for "off" qubits in the I x J grid provided.
+ * @param grid_height int with the first spatial dimension of the grid of qubits.
+ * @param grid_width int with the second spatial dimension of the grid of qubits.
+ * @return a list of coordinates for "off" qubits in the grid_height x grid_width grid provided.
  */
 std::vector<std::vector<int>> read_grid_layout_from_stream(
-    std::istream* grid_data, int I, int J);
+    std::istream* grid_data, int grid_height, int grid_width);
 
 /**
  * Determines the final qubit positions and output states for a given ordering.

@@ -66,15 +66,15 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   std::chrono::duration<double> time_span;
 
   // Reading input.
-  const int super_dim = (int)pow(DIM, input->K);
+  const int super_dim = (int)pow(DIM, input->super_cycles);
   auto qubits_off =
-      read_grid_layout_from_stream(input->grid_data, input->I, input->J);
+      read_grid_layout_from_stream(input->grid_data, input->grid_height, input->grid_width);
 
   // Create the ordering for this tensor contraction from file.
   t0 = std::chrono::high_resolution_clock::now();
   std::list<ContractionOperation> ordering;
-  ordering_data_to_contraction_ordering(input->ordering_data, input->I,
-                                        input->J, qubits_off, &ordering);
+  ordering_data_to_contraction_ordering(input->ordering_data, input->grid_height,
+                                        input->grid_width, qubits_off, &ordering);
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
@@ -88,7 +88,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   std::vector<std::string> output_states;
   get_output_states(ordering, &final_qubits, &output_states);
 
-  int init_length = input->I * input->J - qubits_off.size();
+  int init_length = input->grid_height * input->grid_width - qubits_off.size();
   if (input->initial_state.empty()) {
     input->initial_state = std::string(init_length, '0');
   }
@@ -108,17 +108,17 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   }
 
   // Declaring and then filling 2D grid of tensors.
-  std::vector<std::vector<Tensor>> tensor_grid(input->I);
-  for (int i = 0; i < input->I; ++i) {
-    tensor_grid[i] = std::vector<Tensor>(input->J);
+  std::vector<std::vector<Tensor>> tensor_grid(input->grid_height);
+  for (int i = 0; i < input->grid_height; ++i) {
+    tensor_grid[i] = std::vector<Tensor>(input->grid_width);
   }
   // Scope so that the 3D grid of tensors is destructed.
   {
     // Creating 3D grid of tensors from file.
     t0 = std::chrono::high_resolution_clock::now();
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
-    circuit_data_to_grid_of_tensors(input->circuit_data, input->I, input->J,
-                                    input->K, input->initial_state,
+    circuit_data_to_grid_of_tensors(input->circuit_data, input->grid_height, input->grid_width,
+                                    input->super_cycles, input->initial_state,
                                     input->final_state_A, final_qubits,
                                     qubits_off, tensor_grid_3D, scratch);
     t1 = std::chrono::high_resolution_clock::now();

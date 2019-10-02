@@ -13,9 +13,9 @@ int main(int argc, char** argv) {
   if (argc < 8) throw std::logic_error("ERROR: Not enough arguments.");
   int current_arg = 1;
   qflex::QflexInput input;
-  input.I = atoi(argv[current_arg++]);
-  input.J = atoi(argv[current_arg++]);
-  input.K = atoi(argv[current_arg++]);
+  input.grid_height = atoi(argv[current_arg++]);
+  input.grid_width = atoi(argv[current_arg++]);
+  input.super_cycles = atoi(argv[current_arg++]);
   input.fidelity = atof(argv[current_arg++]);
 
   // Creating streams for input files.
