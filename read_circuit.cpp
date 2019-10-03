@@ -76,8 +76,13 @@ std::vector<s_type> gate_array(const std::string& gate_name) {
  * entries of the first qubit, second the vector with entries of the second
  * qubit, and third the vector with the singular values (informational only).
  */
-std::vector<std::vector<s_type>> fSim(s_type::value_type theta,
-                                      s_type::value_type phi, s_type* scratch) {
+std::vector<std::vector<s_type>> fSim(s_type::value_type theta, s_type::value_type phi,
+                                      s_type* scratch) {
+  if (scratch == nullptr) {
+    std::cout << "Scratch must be non-null." << std::endl;
+    assert(scratch != nullptr);
+  }
+
   static_assert(std::is_floating_point<typename s_type::value_type>::value);
 
   std::vector<s_type> coeffs(
@@ -173,6 +178,10 @@ std::vector<std::vector<s_type>> fSim(s_type::value_type theta,
 // array handling into its own class.
 std::tuple<std::vector<s_type>, std::vector<s_type>, std::vector<size_t>>
 gate_arrays(const std::string& gate_name, s_type* scratch) {
+  if (scratch == nullptr) {
+    std::cout << "Scratch must be non-null." << std::endl;
+    assert(scratch != nullptr);
+  }
   static const std::regex fsim_regex("fsim\\((.*),(.*)\\)");
   std::smatch match;
   if (gate_name == "cz") {
@@ -338,6 +347,15 @@ void circuit_data_to_grid_of_tensors(
     const std::optional<std::vector<std::vector<int>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch) {
+
+  if (input->circuit_data == nullptr) {
+    std::cout << "Circuit data stream must be non-null." << std::endl;
+    assert(input->circuit_data != nullptr);
+  }
+  if (scratch == nullptr) {
+    std::cout << "Scratch must be non-null." << std::endl;
+    assert(scratch != nullptr);
+  }
   // Gotten from the file.
   int num_qubits, cycle, q1, q2;
   std::string gate;
@@ -415,7 +433,8 @@ void circuit_data_to_grid_of_tensors(
 
   std::string line;
   // Read one line at a time from the circuit, skipping comments.
-  while (std::getline((*input->circuit_data), line))
+
+  while (std::getline((*input->circuit_data), line)){
     if (line.size() && line[0] != '#') {
       std::stringstream ss(line);
       // The first element is the cycle
@@ -443,9 +462,14 @@ void circuit_data_to_grid_of_tensors(
       super_cycle = (cycle - 1) / SUPER_CYCLE_DEPTH;
 
       // Fill in one-qubit gates.
+
       if (q2 < 0 && cycle > 0 && cycle <= SUPER_CYCLE_DEPTH * input->super_cycles) {
-        if (find_grid_coord_in_list(off, i_j_1[0], i_j_1[1])) {
-          continue;
+        // Check that position is an active qubit
+        bool qubit_off = find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]);
+        if (qubit_off) {
+          std::cout << "The qubit in '" << line << "' references (" << i_j_1[0] << ", " << i_j_1[1] << 
+          ") which must be coordinates of an active qubit." << std::endl;
+          assert(!qubit_off);
         }
         std::string input_index =
             "t" +
@@ -457,11 +481,20 @@ void circuit_data_to_grid_of_tensors(
         grid_of_groups_of_tensors[i_j_1[0]][i_j_1[1]][super_cycle].push_back(
             Tensor({input_index, output_index}, {2, 2}, gate_array(gate)));
       }
-
+      // Fill in two-qubit gates.
       if (q2 >= 0 && cycle > 0 && cycle <= SUPER_CYCLE_DEPTH * input->super_cycles) {
-        if (find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]) ||
-            find_grid_coord_in_list(off, i_j_2[0], i_j_2[1])) {
-          continue;
+        // Check that positions are active qubits
+        bool first_qubit_off = find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]);
+        bool second_qubit_off = find_grid_coord_in_list(off, i_j_2[0], i_j_2[1]);
+        if (first_qubit_off) {
+          std::cout << "The first qubit of '" << line << "' references (" << i_j_1[0] << ", " << i_j_1[1] << 
+          ") which must be coordinates of an active qubit." << std::endl;
+          assert(!first_qubit_off);
+        }
+        if (second_qubit_off) {
+          std::cout << "The second qubit of '" << line << "' references (" << i_j_2[0] << ", " << i_j_2[1] << 
+          ") which must be coordinates of an active qubit." << std::endl;
+          assert(!second_qubit_off);
         }
         std::vector<s_type> gate_q1;
         std::vector<s_type> gate_q2;
@@ -492,6 +525,7 @@ void circuit_data_to_grid_of_tensors(
                    gate_q2));
       }
     }
+  }
   // Insert Hadamards and deltas to last layer.
   idx = 0;
   for (int q = 0; q < num_qubits; ++q) {
@@ -574,6 +608,10 @@ void grid_of_tensors_3D_to_2D(
 
     Get dimensions and super_dim = DIM^k.
   */
+ if (scratch == nullptr) {
+    std::cout << "Scratch must be non-null." << std::endl;
+    assert(scratch != nullptr);
+  }
   const int grid_height = grid_of_tensors_3D.size();
   const int grid_width = grid_of_tensors_3D[0].size();
   const int super_cycles = grid_of_tensors_3D[0][0].size();
@@ -690,6 +728,10 @@ void read_wave_function_evolution(
     std::string filename, int grid_height, std::vector<Tensor>& gates,
     std::vector<std::vector<std::string>>& inputs,
     std::vector<std::vector<std::string>>& outputs, s_type* scratch) {
+  if (scratch == nullptr) {
+    std::cout << "Scratch must be non-null." << std::endl;
+    assert(scratch != nullptr);
+  }
   // Open file.
   auto io = std::ifstream(filename);
   if (io.bad()) {

@@ -368,6 +368,35 @@ TEST(OrderingParserTest, ParserFailures) {
                                                      qubits_off, &ordering));
 }
 
+TEST(OrderingParserDeathTest, InvalidInput) {
+  auto ordering_data = std::stringstream(kSimpleOrdering);
+  std::list<ContractionOperation> ordering;
+  std::vector<std::vector<int>> qubits_off = {{2, 0}};
+  int I = 3;
+  int J = 2;
+
+  // Ordering data cannot be null pointer. 
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(nullptr, I, J, qubits_off, &ordering), "");
+  
+  // Ordering cannot be null pointer. 
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J, qubits_off, nullptr), "");
+}
+
+constexpr char kInvalidOrdering[] = R"(# test comment
+expand a 1
+expand a 1
+)";
+TEST(OrderingParserDeathTest, InvalidOrderingGenerated) {
+  auto ordering_data = std::stringstream(kInvalidOrdering);
+  std::list<ContractionOperation> ordering;
+  std::vector<std::vector<int>> qubits_off = {{2, 0}};
+  int I = 3;
+  int J = 2;
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering), "");
+
+}
+
 TEST(ContractionDeathTest, ContractGridInvalidInput) {
   std::list<ContractionOperation> ordering;
   std::vector<std::vector<Tensor>> tensor_grid;
@@ -376,13 +405,20 @@ TEST(ContractionDeathTest, ContractGridInvalidInput) {
   // Tensor grid cannot be null pointer.
   EXPECT_DEATH(ContractGrid(ordering, nullptr, &amplitudes), "");
 
-  // Amplitude cannot be null pointer.
+  // Amplitudes cannot be null pointer.
   EXPECT_DEATH(ContractGrid(ordering, &tensor_grid, nullptr), "");
+}
 
-  // Ordering must be valid to contract grid.
-  ordering.emplace_back(ExpandPatch("a", {1, 2}));
-  ordering.emplace_back(ExpandPatch("a", {1, 2}));
-  EXPECT_DEATH(ContractGrid(ordering, &tensor_grid, &amplitudes), "");
+TEST(ContractionDeathTest, InitializeInvalidInput) {
+  std::list<ContractionOperation> ordering;
+  std::vector<std::vector<Tensor>> tensor_grid;
+  std::vector<std::complex<double>> amplitudes;
+
+  // Tensor grid cannot be null pointer.
+  EXPECT_DEATH(ContractionData::Initialize(ordering, nullptr, &amplitudes), "");
+  
+  // Amplitudes cannot be null pointer.
+  EXPECT_DEATH(ContractionData::Initialize(ordering, &tensor_grid, nullptr), "");
 }
 
 }  // namespace
