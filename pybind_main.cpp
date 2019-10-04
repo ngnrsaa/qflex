@@ -19,33 +19,26 @@ namespace py = pybind11;
 std::vector<std::pair<std::string, std::complex<double>>> simulate(
     std::vector<std::string> circuit_content,
     std::vector<std::string> ordering_content,
-    std::vector<std::string> grid_content) {
+    std::vector<std::string> grid_content,
+    int grid_height,
+    int grid_width,
+    int super_cycles) {
   // Reading input.
   // if (argc < 8) throw std::logic_error("ERROR: Not enough arguments.");
   int current_arg = 1;
   qflex::QflexInput input;
 
-  //   input.I = atoi(argv[current_arg++]);
-  //   input.J = atoi(argv[current_arg++]);
-  //   input.K = atoi(argv[current_arg++]);
-  //   input.fidelity = atof(argv[current_arg++]);
-
   /*
       TODO: for the moment, hard coded
   */
-  input.I = 11;
-  input.J = 12;
-  input.K = 2;
+  input.grid_height = grid_height;
+  input.grid_width = grid_width;
+  input.super_cycles = super_cycles;
+  
+  //deprecated?
   input.fidelity = 0.005;
 
   // Creating streams for input files.
-  //   std::string circuit_filename = std::string(argv[current_arg++]);
-  //   auto circuit_data = std::ifstream(circuit_filename);
-  //   if (!circuit_data.good()) {
-  //     std::cout << "Cannot open circuit data file: " << circuit_filename
-  //               << std::endl;
-  //     assert(circuit_data.good());
-  //   }
   std::stringstream circuit_stream;
   for (std::vector<std::string>::size_type i = 0; i < circuit_content.size();
        i++) {
@@ -53,13 +46,6 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
   }
   input.circuit_data = &circuit_stream;
 
-  //   std::string ordering_filename = std::string(argv[current_arg++]);
-  //   auto ordering_data = std::ifstream(ordering_filename);
-  //   if (!ordering_data.good()) {
-  //     std::cout << "Cannot open ordering data file: " << ordering_filename
-  //               << std::endl;
-  //     assert(ordering_data.good());
-  //   }
   std::stringstream ordering_stream;
   for (std::vector<std::string>::size_type i = 0; i < ordering_content.size();
        i++) {
@@ -67,12 +53,6 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
   }
   input.ordering_data = &ordering_stream;
 
-  //   std::string grid_filename = std::string(argv[current_arg++]);
-  //   auto grid_data = std::ifstream(grid_filename);
-  //   if (!grid_data.good()) {
-  //     std::cout << "Cannot open grid data file: " << grid_filename <<
-  //     std::endl; assert(grid_data.good());
-  //   }
   std::stringstream grid_stream;
   for (std::vector<std::string>::size_type i = 0; i < grid_content.size();
        i++) {
