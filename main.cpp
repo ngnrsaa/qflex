@@ -8,9 +8,14 @@
 // Example:
 // $ ./qflex.x 11 12 2 0.005 ./circuits/bristlecone_48_1-40-1_0.txt \
 //       ./ordering/bristlecone_48.txt ./grid/bristlecone_48.txt
+//
 int main(int argc, char** argv) {
   // Reading input.
-  if (argc < 8) throw std::logic_error("ERROR: Not enough arguments.");
+  if (argc < 8) {
+    std::cerr << "\n\tUsage: qflex I J K fidelity circuit_filename ordering_filename grid_filename [initial_conf] [final_conf]\n\n";
+    throw std::logic_error("ERROR: Not enough arguments.");
+  }
+
   int current_arg = 1;
   qflex::QflexInput input;
   input.I = atoi(argv[current_arg++]);
