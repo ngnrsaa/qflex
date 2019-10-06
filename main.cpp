@@ -6,7 +6,7 @@
 //            grid_filename [initial_conf] [final_conf]
 //
 // Example:
-// $ ./qflex.x 11 12 2 0.005 ./circuits/ben_11_16_0.txt \
+// $ ./qflex.x 11 12 2 0.005 ./circuits/bristlecone_48_1-40-1_0.txt \
 //       ./ordering/bristlecone_48.txt ./grid/bristlecone_48.txt
 int main(int argc, char** argv) {
   // Reading input.
