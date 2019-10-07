@@ -1,11 +1,11 @@
 #include <omp.h>
 
-#include "evaluate_circuit.h"
 #include "docopt.h"
+#include "evaluate_circuit.h"
 
 static const char VERSION[] = "qFlex v1.0";
 static const char USAGE[] =
-R"(Flexible Quantum Circuit Simulator (qFlex) implements an efficient
+    R"(Flexible Quantum Circuit Simulator (qFlex) implements an efficient
 tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
@@ -34,27 +34,40 @@ tensor network, CPU-based simulator of large quantum circuits.
 //       ./ordering/bristlecone_48.txt ./grid/bristlecone_48.txt
 //
 int main(int argc, char** argv) {
-
-  std::map<std::string, docopt::value> args = docopt::docopt(USAGE, {argv+1, argv+argc}, true, VERSION);
+  std::map<std::string, docopt::value> args =
+      docopt::docopt(USAGE, {argv + 1, argv + argc}, true, VERSION);
 
   // Reading input
   qflex::QflexInput input;
-  input.I = bool(args["-x"])?args["-x"].asLong():args["<grid_x>"].asLong();
-  input.J = bool(args["-y"])?args["-y"].asLong():args["<grid_y>"].asLong();
-  input.K = bool(args["--depth"])?args["--depth"].asLong():args["<depth>"].asLong();
-  input.fidelity = std::stof(bool(args["--fidelity"])?args["--fidelity"].asString():args["<fidelity>"].asString());
+  input.I = bool(args["-x"]) ? args["-x"].asLong() : args["<grid_x>"].asLong();
+  input.J = bool(args["-y"]) ? args["-y"].asLong() : args["<grid_y>"].asLong();
+  input.K = bool(args["--depth"]) ? args["--depth"].asLong()
+                                  : args["<depth>"].asLong();
+  input.fidelity =
+      std::stof(bool(args["--fidelity"]) ? args["--fidelity"].asString()
+                                         : args["<fidelity>"].asString());
 
   // Get initial/final configurations
-  if(bool(args["--initial-conf"])) input.initial_state = args["--initial-conf"].asString();
-  else if(bool(args["<initial_conf>"])) input.initial_state = args["<initial_conf>"].asString();
+  if (bool(args["--initial-conf"]))
+    input.initial_state = args["--initial-conf"].asString();
+  else if (bool(args["<initial_conf>"]))
+    input.initial_state = args["<initial_conf>"].asString();
 
-  if(bool(args["--final-conf"])) input.final_state_A = args["--final-conf"].asString();
-  else if(bool(args["<final_conf>"])) input.final_state_A = args["<final_conf>"].asString();
+  if (bool(args["--final-conf"]))
+    input.final_state_A = args["--final-conf"].asString();
+  else if (bool(args["<final_conf>"]))
+    input.final_state_A = args["<final_conf>"].asString();
 
   // Getting filenames
-  std::string circuit_filename = bool(args["--circuit"])?args["--circuit"].asString():args["<circuit_filename>"].asString();
-  std::string ordering_filename = bool(args["--ordering"])?args["--ordering"].asString():args["<ordering_filename>"].asString();
-  std::string grid_filename = bool(args["--grid"])?args["--grid"].asString():args["<grid_filename>"].asString();
+  std::string circuit_filename = bool(args["--circuit"])
+                                     ? args["--circuit"].asString()
+                                     : args["<circuit_filename>"].asString();
+  std::string ordering_filename = bool(args["--ordering"])
+                                      ? args["--ordering"].asString()
+                                      : args["<ordering_filename>"].asString();
+  std::string grid_filename = bool(args["--grid"])
+                                  ? args["--grid"].asString()
+                                  : args["<grid_filename>"].asString();
 
   // Creating streams for input files.
   auto circuit_data = std::ifstream(circuit_filename);
