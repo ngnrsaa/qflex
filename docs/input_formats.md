@@ -14,7 +14,8 @@ files, each gate is represented by a __cycle__ (the timestep in which the gate
 is performed), an __opcode__ (the type of gate to perform), and a list of
 __indices__ denoting which qubits the gate affects.
 
-Sample circuit files can be found under [qflex/circuits](/circuits).
+Sample circuit files can be found under [qflex/circuits](/circuits) with the
+following format: `[circuit_type]_[circuit_size]_[circuit_depth]_[idx].txt`.
 
 ### Formal grammar
 
