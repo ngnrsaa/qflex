@@ -36,7 +36,7 @@ the simulation parameters):
 # docker run -ti --rm -v $PWD/circuits:/qflex/circuits:ro \
                       -v $PWD/ordering:/qflex/ordering:ro \
                       -v $PWD/grid:/qflex/grid:ro \
-                      qflex:latest 11 12 2 0.005 /qflex/circuits/ben_11_16_0.txt \
+                      qflex:latest 11 12 2 0.005 /qflex/circuits/bristlecone_48_1-40-1_0.txt \
                                                  /qflex/ordering/bristlecone_48.txt \
                                                  /qflex/grid/bristlecone_48.txt
 ```
