@@ -4,7 +4,7 @@ TARGET1 = qflex
 CXX = g++
 #CXX = icpc
 
-FLAGS =  -O3  -std=c++17  -march=native
+FLAGS =  -O3  -std=c++17  -march=native -Idocopt.cpp/
 
 ifeq ($(CXX), icpc)
 	FLAGS += -mkl -qopenmp -DMKL_TENSOR
@@ -17,10 +17,10 @@ TEST_DIR = tests
 OBJS1 = main.o evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o
 
 $(TARGET1): $(OBJS1)
-	$(CXX) -o $(TARGET1).x $(OBJS1) $(FLAGS)
+	$(CXX) -o $(TARGET1).x $(OBJS1) $(FLAGS) docopt.cpp/docopt.cpp
 
 main.o: main.cpp
-	$(CXX) -c main.cpp $(FLAGS)
+	$(CXX) -c main.cpp docopt.cpp/docopt.cpp $(FLAGS)
 
 evaluate_circuit.o: evaluate_circuit.cpp
 	$(CXX) -c evaluate_circuit.cpp $(FLAGS)
