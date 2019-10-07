@@ -16,8 +16,8 @@ tensor network, CPU-based simulator of large quantum circuits.
 
   Options:
     -h,--help                              Show this help.
-    -x=<grid_x>                            Size of x-axis of grid.
-    -y=<grid_y>                            Size of y-axis of grid.
+    -x <grid_x>                            Size of x-axis of grid.
+    -y <grid_y>                            Size of y-axis of grid.
     -d,--depth=<depth>                     Target circuit depth.
     -f,--fidelity=<fidelity>               Target circuit fidelity.
     -c,--circuit=<circuit_filename>        Circuit filename.
