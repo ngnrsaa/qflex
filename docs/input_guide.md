@@ -90,22 +90,22 @@ __indices__ or __patch names__ to which the operation applies.
 
 ### File format
 
-Each line in this file contains a simulation step, either a patch-expansion,
-a patch-merge, or a cut. 
-***patch-expansion:*** contracting an index onto a given patch.
+Each line in this file contains a simulation step, either a __patch-expansion__, a __patch-merge__, or a __cut__. 
+
+__patch-expansion:__ contracting an index onto a given patch.
 ```
 expand <patch_name> <index>
 
 patch_name: A text string representing a tensor-contraction patch.
 index:      The integer index of the qubit being contracted onto the patch.
 ```
-***patch-merge:*** contracting two patches.
+__patch-merge:__ contracting two patches.
 ```
 merge <patch_name> <patch_name>
 
 patch_name: A text string representing a tensor-contraction patch.
 ```
-***cut:*** cutting a tensor or between two tensors
+__cut:__ cutting a tensor or between two tensors
 ```
 cut <values> <indices>
 
