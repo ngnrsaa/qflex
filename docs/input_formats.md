@@ -96,9 +96,10 @@ expand <patch_name> <index>
 
 patch_name: A text string representing a tensor-contraction patch.
 index:      The integer index of the qubit being contracted onto the patch.
-
+```
 Example:
-expand A 24 -> This would contract the tensor with the index 24 onto the A patch.
+```
+expand A 24 -> This contracts the tensor with the index 24 onto the A patch.
 ```
 
 __patch-merge:__ contracting two fully expanded (contracted) patches.
@@ -106,9 +107,10 @@ __patch-merge:__ contracting two fully expanded (contracted) patches.
 merge <patch_name> <patch_name>
 
 patch_name: A text string representing a tensor-contraction patch.
-
+```
 Example:
-merge A B ->This contracts the patches A and B, which are both single tensors.
+```
+merge A B -> This contracts the patches A and B, which are both single tensors.
 ```
 
 __cut:__ cutting a tensor or between two tensors
@@ -118,9 +120,10 @@ cut <values> <indices>
 values:     A comma-separated list in parentheses with no spaces of integer values
             to be assigned to the index during the cut. Can be empty.
 indices:    The index or indices to apply the cut.
-
+```
 Example:
-cut (0,1) 24 42 -> This would cut betwen tensors 24 and 42 and project the values 1 and 0 on the cut.
+```
+cut (0,1) 24 42 -> This performs a cut betwen tensors 24 and 42 and projects the values 1 and 0 on the cut.
 ```
 
 Sample ordering files can be found under [qflex/ordering](/ordering).
@@ -159,6 +162,8 @@ recommended to arrange them in a format matching the chip they represent.
 
 Each file should contain a grid of 1s and 0s, where the 1s signify a qubit
 that is active, and the 0s signify inactive qubits.
+
+Example:
 ```
 0 0 1 1 0 0
 0 1 1 1 1 0
