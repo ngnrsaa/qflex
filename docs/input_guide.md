@@ -14,14 +14,9 @@ files, each gate is represented by a __cycle__ (the timestep in which the gate
 is performed), an __opcode__ (the type of gate to perform), and a list of
 __indices__ denoting which qubits the gate affects.
 
-Sample circuit files can be found under [qflex/circuits](/circuits).
+### File format
 
-### File Format
 First line of the file should contain the number of qubits in the circuit.
-```
-48
-```
-
 Each line after that contains a gate in the following format:
 ```
 <cycle> <gate> <qubits>
@@ -35,15 +30,16 @@ gate:       The type of gate to perform from the following list:
                 - 'x_1_2': X^1/2 gate
                 - 'y_1_2': Y^1/2 gate
             Gates with arguments:
-                - 'rz(t heta)': Z-rotation by theta radians
+                - 'rz(theta)': Z-rotation by theta radians
                 - 'fsim(theta,phi)': fermionic simulation gate
                 - theta: |01> to |10> swap angle
                 - phi: conditional phase angle
                 - Examples: fsim(pi/2,0) = iSWAP; fsim(0,pi) = CZ
-qubits:     The indices of the qubit or qubits that the gate affect. 
+qubits:     The integer indices of the qubit or qubits that the gate affect. 
             Currently, the indices are zero indexed and run from left to right, top to bottom.
 ```
 
+Sample circuit files can be found under [qflex/circuits](/circuits).
 
 ### Formal grammar
 
@@ -88,9 +84,34 @@ Circuit-ordering files allow fine-tuned optimization of how qFlex simulates a
 given circuit. As defined in
 [the original paper](https://arxiv.org/abs/1905.00444), every simulation begins
 with contraction of all qubit worldlines to a 2D grid; the steps taken after
-that are defined in this file. Each simulation step has an __operation__
+are defined in this file. Each simulation step has an __operation__
 (either a patch-expansion, a patch-merge, or a cut) and some combination of
 __indices__ or __patch names__ to which the operation applies.
+
+### File format
+
+Each line in this file contains a simulation step, either a patch-expansion,
+a patch-merge, or a cut. 
+***patch-expansion:*** contracting an index onto a given patch.
+```
+expand <patch_name> <index>
+
+patch_name: A text string representing a tensor-contraction patch.
+index:      The integer index of the qubit being contracted onto the patch.
+```
+***patch-merge:*** contracting two patches.
+```
+merge <patch_name> <patch_name>
+
+patch_name: A text string representing a tensor-contraction patch.
+```
+***cut:*** cutting a tensor or between two tensors
+```
+cut <values> <indices>
+
+values:     A comma-separated list (no spaces) of integer values in parentheses to be assigned to the index during the cut.               Can be empty.
+indices:    The index or indices to apply the cut.
+```
 
 Sample ordering files can be found under [qflex/ordering](/ordering).
 
@@ -125,6 +146,14 @@ qubits in a 2D lattice. These files are whitespace-agnostic, so it is
 recommended to arrange them in a format matching the chip they represent.
 
 Sample grid files can be found under [qflex/grid](/grid).
+
+### File format
+```
+0 0 1 1 0 0
+0 1 1 1 1 0
+0 1 1 1 1 0
+0 0 1 1 0 0
+```
 
 ### Formal grammar
 
