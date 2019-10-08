@@ -105,7 +105,8 @@ __cut:__ cutting a tensor or between two tensors
 ```
 cut <values> <indices>
 
-values:     A comma-separated list (no spaces) of integer values in parentheses to be assigned to the index during the cut.               Can be empty.
+values:     A comma-separated list in parentheses with no spaces of integer values
+            to be assigned to the index during the cut. Can be empty.
 indices:    The index or indices to apply the cut.
 ```
 
