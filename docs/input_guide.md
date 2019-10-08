@@ -25,23 +25,24 @@ First line of the file should contain the number of qubits in the circuit.
 Each line after that contains a gate in the following format:
 ```
 <cycle> <gate> <qubits>
-```
 
-cycle: The integer value of the timestep in which the gate is performed.
-gate: The type of gate to perform from the following list:
-    Gates without arguments:
-        - 'h': Hadamard gate
-        - 'cz': Controlled-Z gate
-        - 't': T gate (equivalent to Z^1/4)
-        - 'x_1_2': X^1/2 gate
-        - 'y_1_2': Y^1/2 gate
-    Gates with arguments:
-    - 'rz(t heta)': Z-rotation by theta radians
-        - 'fsim(theta,phi)': fermionic simulation gate
-        - theta: |01> to |10> swap angle
-        - phi: conditional phase angle
-        - Examples: fsim(pi/2,0) = iSWAP; fsim(0,pi) = CZ
-qubits: The indices of the qubit or qubits that the gate affect. Currently, the indices are zero indexed and run from left to right, top to bottom.
+cycle:      The integer value of the timestep in which the gate is performed.
+gate:       The type of gate to perform from the following list:
+            Gates without arguments:
+                - 'h': Hadamard gate
+                - 'cz': Controlled-Z gate
+                - 't': T gate (equivalent to Z^1/4)
+                - 'x_1_2': X^1/2 gate
+                - 'y_1_2': Y^1/2 gate
+            Gates with arguments:
+                - 'rz(t heta)': Z-rotation by theta radians
+                - 'fsim(theta,phi)': fermionic simulation gate
+                - theta: |01> to |10> swap angle
+                - phi: conditional phase angle
+                - Examples: fsim(pi/2,0) = iSWAP; fsim(0,pi) = CZ
+qubits:     The indices of the qubit or qubits that the gate affect. 
+            Currently, the indices are zero indexed and run from left to right, top to bottom.
+```
 
 
 ### Formal grammar
