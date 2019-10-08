@@ -65,7 +65,7 @@ void get_output_states(const std::list<ContractionOperation>& ordering,
  *
  * @param input args required to specify a circuit for evaluation.
  * @return vector of <state bitstring, amplitude> pairs for each output state.
- * States for qubits with terminal cuts are listed at the end onf the state
+ * States for qubits with terminal cuts are listed at the end of the state
  * bitstring, in the order of their terminal cuts.
  */
 std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
