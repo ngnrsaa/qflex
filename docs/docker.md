@@ -48,7 +48,7 @@ changes are made after qFlex images are built). To run simulations using the
 default input files, `-v` flags may be dropped:
 
 ```
-# docker run -ti --rm qflex:latest 11 12 2 0.005 /qflex/circuits/ben_11_16_0.txt \
+# docker run -ti --rm qflex:latest 11 12 2 0.005 /qflex/circuits/bristlecone_48_1-40-1_0.txt \
                                                  /qflex/ordering/bristlecone_48.txt \
                                                  /qflex/grid/bristlecone_48.txt
 ```
