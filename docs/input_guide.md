@@ -19,10 +19,10 @@ __indices__ denoting which qubits the gate affects.
 First line of the file should contain the number of qubits in the circuit.
 Each line after that contains a gate in the following format:
 ```
-<cycle> <gate> <qubits>
+<cycle> <opcode> <indices>
 
 cycle:      The integer value of the timestep in which the gate is performed.
-gate:       The type of gate to perform from the following list:
+opcode:       The type of gate to perform from the following list:
             Gates without arguments:
                 - 'h': Hadamard gate
                 - 'cz': Controlled-Z gate
@@ -84,13 +84,9 @@ Circuit-ordering files allow fine-tuned optimization of how qFlex simulates a
 given circuit. As defined in
 [the original paper](https://arxiv.org/abs/1905.00444), every simulation begins
 with contraction of all qubit worldlines to a 2D grid; the steps taken after
-are defined in this file. Each simulation step has an __operation__
-(either a patch-expansion, a patch-merge, or a cut) and some combination of
-__indices__ or __patch names__ to which the operation applies.
+are defined in this file. Each simulation step is either a __patch-expansion__, a __patch-merge__, or a __cut__. 
 
 ### File format
-
-Each line in this file contains a simulation step, either a __patch-expansion__, a __patch-merge__, or a __cut__. 
 
 __patch-expansion:__ contracting an index onto a given patch.
 ```
