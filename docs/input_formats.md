@@ -22,7 +22,7 @@ Each line after that contains a gate in the following format:
 <cycle> <opcode> <indices>
 
 cycle:      The integer value of the timestep in which the gate is performed.
-opcode:       The type of gate to perform from the following list:
+opcode:     The type of gate to perform from the following list:
             Gates without arguments:
                 - 'h': Hadamard gate
                 - 'cz': Controlled-Z gate
@@ -35,7 +35,7 @@ opcode:       The type of gate to perform from the following list:
                     - theta: |01> to |10> swap angle
                     - phi: conditional phase angle
                     - Examples: fsim(pi/2,0) = iSWAP; fsim(0,pi) = CZ
-qubits:     The integer indices of the qubit or qubits that the gate affect. 
+indices:     The integer indices of the qubit or qubits that the gate affect. 
             Currently, the indices are zero indexed and run from left to right, top to bottom.
 ```
 
@@ -84,7 +84,9 @@ Circuit-ordering files allow fine-tuned optimization of how qFlex simulates a
 given circuit. As defined in
 [the original paper](https://arxiv.org/abs/1905.00444), every simulation begins
 with contraction of all qubit worldlines to a 2D grid; the steps taken after
-are defined in this file. Each simulation step is either a __patch-expansion__, a __patch-merge__, or a __cut__. 
+are defined in this file. Each simulation step is either a __patch-expansion__, a __patch-merge__, or a __cut__.
+In this notation, a "patch" refers to a section of the tensor grid that has been contracted into a single tensor. 
+Multiple patches are used to improve parallelism and reduce the maximum required tensor rank.
 
 ### File format
 
@@ -94,13 +96,21 @@ expand <patch_name> <index>
 
 patch_name: A text string representing a tensor-contraction patch.
 index:      The integer index of the qubit being contracted onto the patch.
+
+Example:
+expand A 24 -> This would contract the tensor with the index 24 onto the A patch.
 ```
-__patch-merge:__ contracting two patches.
+
+__patch-merge:__ contracting two fully expanded (contracted) patches.
 ```
 merge <patch_name> <patch_name>
 
 patch_name: A text string representing a tensor-contraction patch.
+
+Example:
+merge A B ->This contracts the patches A and B, which are both single tensors.
 ```
+
 __cut:__ cutting a tensor or between two tensors
 ```
 cut <values> <indices>
@@ -108,6 +118,9 @@ cut <values> <indices>
 values:     A comma-separated list in parentheses with no spaces of integer values
             to be assigned to the index during the cut. Can be empty.
 indices:    The index or indices to apply the cut.
+
+Example:
+cut (0,1) 24 42 -> This would cut betwen tensors 24 and 42 and project the values 1 and 0 on the cut.
 ```
 
 Sample ordering files can be found under [qflex/ordering](/ordering).
@@ -142,15 +155,18 @@ Grid files are a simple list of 1s and 0s indicating the positions of active
 qubits in a 2D lattice. These files are whitespace-agnostic, so it is
 recommended to arrange them in a format matching the chip they represent.
 
-Sample grid files can be found under [qflex/grid](/grid).
-
 ### File format
+
+Each file should contain a grid of 1s and 0s, where the 1s signify a qubit
+that is active, and the 0s signify inactive qubits.
 ```
 0 0 1 1 0 0
 0 1 1 1 1 0
 0 1 1 1 1 0
 0 0 1 1 0 0
 ```
+
+Sample grid files can be found under [qflex/grid](/grid).
 
 ### Formal grammar
 
