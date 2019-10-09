@@ -211,7 +211,6 @@ def create_ordering_data(
     if not current_patch_2:
       for q in expand_qubits:
         patches[q] = current_patch_1
-        # DO NOT SUBMIT: convert (x, y) to qubit index
         output.append('expand {} {}'.format(current_patch_1,
                                             qubit_order.index(q)))
     else:
@@ -310,7 +309,6 @@ def circuit_to_ordering(
         min_steps = steps
     if min_cut:
       cut_indices.add(frozenset(min_cut))
-  # DO NOT SUBMIT: convert (x, y) to qubit index
   order_data = []
   for cut in cut_indices:
     order_data.append('cut () %d %d' % tuple(qubit_order.index(c) for c in cut))
