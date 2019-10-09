@@ -95,6 +95,7 @@ class Node:
     self.bonds = set()
 
   def rank(self):
+    """Returns the rank of the tensor this node represents."""
     return sum([b.dim() for b in self.bonds])
 
   def add_bond(self, bond):
@@ -220,7 +221,6 @@ def create_ordering_data(
       for qubit in patches:
         if patches[qubit] == current_patch_1:
           patches[qubit] = current_patch_2
-  # Prints an ordering file with descriptive comments.
   return output
 
 
@@ -248,7 +248,6 @@ def get_steps_for_graph(g: Graph):
       if cost < min_cost:
         min_cost = cost
         min_bond = bond
-    # print('step {}: {}'.format(k, min_bond))
     g.contract(min_bond)
     time_cost += min_cost[2]
     contraction_steps.append(min_bond)
@@ -301,14 +300,14 @@ def circuit_to_ordering(
         if index != cut_index and index not in cut_indices:
           g.add_bond(op.qubits, op)
       cost, steps = get_steps_for_graph(g)
-      print('cut () {} {}'.format(cut_op.qubits[0], cut_op.qubits[1]))
-      print('time cost: {}\n'.format(cost))
       if cost < min_cost:
         min_cost = cost
         min_cut = cut_op.qubits
         min_steps = steps
     if min_cut:
       cut_indices.add(frozenset(min_cut))
+    else:  # Cut failed to reduce contraction cost; stop early.
+      break
   order_data = []
   for cut in cut_indices:
     order_data.append('cut () %d %d' % tuple(qubit_order.index(c) for c in cut))

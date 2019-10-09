@@ -9,7 +9,12 @@ from python import order_circuit_simulation as order_lib
 
 
 def test_circuit_to_ordering():
-  """Tests the circuit-to-ordering conversion."""
+  """Tests the circuit-to-ordering conversion.
+
+  This is mostly a change-detecting test, as the heuristic is known to be
+  non-optimal. If this test fails, verify that the new output is an improvement
+  over the old output (either in time or memory cost) and update the test.
+  """
   qubits = []
   size = 4
   for x in range(size):
