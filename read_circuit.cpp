@@ -76,8 +76,8 @@ std::vector<s_type> gate_array(const std::string& gate_name) {
  * entries of the first qubit, second the vector with entries of the second
  * qubit, and third the vector with the singular values (informational only).
  */
-std::vector<std::vector<s_type>> fSim(s_type::value_type theta, s_type::value_type phi,
-                                      s_type* scratch) {
+std::vector<std::vector<s_type>> fSim(s_type::value_type theta,
+                                      s_type::value_type phi, s_type* scratch) {
   if (scratch == nullptr) {
     std::cout << "Scratch must be non-null." << std::endl;
     assert(scratch != nullptr);
@@ -457,8 +457,10 @@ void circuit_data_to_grid_of_tensors(
         // Check that position is an active qubit
         bool qubit_off = find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]);
         if (qubit_off) {
-          std::cout << "The qubit in '" << line << "' references (" << i_j_1[0] << ", " << i_j_1[1] << 
-          ") which must be coordinates of an active qubit." << std::endl;
+          std::cout << "The qubit in '" << line << "' references (" << i_j_1[0]
+                    << ", " << i_j_1[1]
+                    << ") which must be coordinates of an active qubit."
+                    << std::endl;
           assert(!qubit_off);
         }
         std::string input_index =
@@ -475,15 +477,20 @@ void circuit_data_to_grid_of_tensors(
       if (q2 >= 0 && cycle > 0 && cycle <= SUPER_CYCLE_DEPTH * K) {
         // Check that positions are active qubits
         bool first_qubit_off = find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]);
-        bool second_qubit_off = find_grid_coord_in_list(off, i_j_2[0], i_j_2[1]);
+        bool second_qubit_off =
+            find_grid_coord_in_list(off, i_j_2[0], i_j_2[1]);
         if (first_qubit_off) {
-          std::cout << "The first qubit of '" << line << "' references (" << i_j_1[0] << ", " << i_j_1[1] << 
-          ") which must be coordinates of an active qubit." << std::endl;
+          std::cout << "The first qubit of '" << line << "' references ("
+                    << i_j_1[0] << ", " << i_j_1[1]
+                    << ") which must be coordinates of an active qubit."
+                    << std::endl;
           assert(!first_qubit_off);
         }
         if (second_qubit_off) {
-          std::cout << "The second qubit of '" << line << "' references (" << i_j_2[0] << ", " << i_j_2[1] << 
-          ") which must be coordinates of an active qubit." << std::endl;
+          std::cout << "The second qubit of '" << line << "' references ("
+                    << i_j_2[0] << ", " << i_j_2[1]
+                    << ") which must be coordinates of an active qubit."
+                    << std::endl;
           assert(!second_qubit_off);
         }
         std::vector<s_type> gate_q1;
