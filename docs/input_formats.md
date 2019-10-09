@@ -113,7 +113,8 @@ Example:
 merge A B -> This contracts the patches A and B, which are both single tensors.
 ```
 
-__cut:__ cutting a tensor or between two tensors
+__cut:__ projection of all indices shared by two tensors onto a single value
+         OR projection of final state of a single tensor onto an index
 ```
 cut <values> <indices>
 
