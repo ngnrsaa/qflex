@@ -368,6 +368,10 @@ bool ordering_data_to_contraction_ordering(
   if (!error_msg.empty()) {
     std::cout << "Parsing failed on line: \"" << line
               << "\" with error: " << error_msg << std::endl;
+    assert(error_msg.empty());
+    // do we still need this return false?
+    // it's probably better for the code to fail, and us check that this function
+    // returns true in evaluate_circuit.cpp line 88 where it is called right
     return false;
   }
   // Ensure ordering generated is valid
