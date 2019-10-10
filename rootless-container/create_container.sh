@@ -11,6 +11,7 @@ print_help() {
   echo -e "\tOptions:"                                                    >&2
   echo -e "\t\t-h   : Print this help."                                   >&2
   echo -e "\t\t-x   : Do not install qFlex (just create container)."      >&2
+  echo -e "\t\t-c   : Install Cirq."                                      >&2
   echo                                                                    >&2
 }
 
@@ -26,6 +27,7 @@ get_location() {
 
 user_root=""
 no_inst=""
+cirq=""
 num_args=$#
 
 # Check that args are given
@@ -48,6 +50,9 @@ for((idx=1; idx<=$num_args; ++idx)); do
         -h)
           print_help
           exit -1
+          ;;
+        -c)
+          cirq=1
           ;;
         -x)
           no_inst=1
@@ -186,6 +191,28 @@ chmod 755 /qflex/tests/run_all.sh
 EOF
 chmod 755 $root/install_qflex.sh
 
+cat > $root/install_cirq.sh << EOF
+#!/bin/sh
+
+# Update repository
+/sbin/apk update
+
+# Install dependencies
+/sbin/apk add g++ make libpng-dev freetype-dev python3-dev \
+               py-scipy py-numpy-dev py-cffi glib gtk+3.0 gobject-introspection
+/usr/bin/pip3 install pgi
+/usr/bin/pip3 install cairocffi
+
+# Install Cirq
+/usr/bin/pip3 install cirq
+
+# Used by multiprocessing
+mkdir -p /dev/shm
+
+/usr/bin/python3 -c "import cirq; print(cirq.Circuit())"
+EOF
+chmod 755 $root/install_cirq.sh
+
 if [[ -z $no_inst || $no_inst != "1" ]]; then
   echo "[CHROOT] Install qFlex." >&2
   $unshare $chroot /install_qflex.sh
@@ -194,6 +221,13 @@ if [[ -z $no_inst || $no_inst != "1" ]]; then
   $unshare $chroot /qflex/tests/run_all.sh
 else
   echo "[CHROOT] To install qFlex, run /install_qflex.sh in the container." >&2
+fi
+
+if [[ -z $cirq || $cirq != "1" ]]; then
+  echo "[CHROOT] To install Cirq, run /install_cirq.sh in the container." >&2
+else
+  echo "[CHROOT] Install Cirq." >&2
+  $unshare $chroot /install_cirq.sh
 fi
 
 echo "[CHROOT] Container in: $(realpath $root)" >&2
