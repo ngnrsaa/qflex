@@ -14,3 +14,4 @@
 *.x
 .*swp
 todo.txt
+__pycache__
