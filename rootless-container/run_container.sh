@@ -82,6 +82,6 @@ fi
 
 # Get commands with absolute path
 unshare="$(get_location unshare) -muipUCrf"
-chroot="$(get_location chroot) $user_root/ $(get_location env) -i PATH=/bin/:/sbin:/usr/bin/:/usr/sbin/:/usr/local/bin:/usr/local/sbin OMP_NUM_THREADS=${OMP_NUM_THREADS:-1}"
+chroot="$(get_location chroot) $user_root/ $(get_location env) -i PATH=/bin/:/sbin:/usr/bin/:/usr/sbin/:/usr/local/bin:/usr/local/sbin OMP_NUM_THREADS=${OMP_NUM_THREADS:-1} LANG=${LANG:-en}"
 
 $unshare $chroot /bin/sh

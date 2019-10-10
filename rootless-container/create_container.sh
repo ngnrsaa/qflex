@@ -4,14 +4,14 @@
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 print_help() {
-  echo -e "\n\tUsage: $(basename $0) {-|folder} [-h -x]\n"            >&2
-  echo -e "\t\tCreate rootless container for qflex in [folder]."      >&2
-  echo -e "\t\tIf [folder] == \"-\", use a temporary folder instead." >&2
-  echo                                                                >&2
-  echo -e "\tOptions:"                                                >&2
-  echo -e "\t\t-h   : Print this help."                               >&2
-  echo -e "\t\t-x   : Do not run tests (just create container)."      >&2
-  echo                                                                >&2
+  echo -e "\n\tUsage: $(basename $0) {-|folder} [-h -x]\n"                >&2
+  echo -e "\t\tCreate rootless container for qflex in [folder]."          >&2
+  echo -e "\t\tIf [folder] == \"-\", use a temporary folder instead."     >&2
+  echo                                                                    >&2
+  echo -e "\tOptions:"                                                    >&2
+  echo -e "\t\t-h   : Print this help."                                   >&2
+  echo -e "\t\t-x   : Do not install qFlex (just create container)."      >&2
+  echo                                                                    >&2
 }
 
 get_location() {
@@ -25,7 +25,7 @@ get_location() {
 }
 
 user_root=""
-no_tests=""
+no_inst=""
 num_args=$#
 
 # Check that args are given
@@ -50,7 +50,7 @@ for((idx=1; idx<=$num_args; ++idx)); do
           exit -1
           ;;
         -x)
-          no_tests=1
+          no_inst=1
           ;;
         *)
           print_help
@@ -126,7 +126,7 @@ fi
 
 # Get commands with absolute path
 unshare="$(get_location unshare) -muipUCrf"
-chroot="$(get_location chroot) $root/ $(get_location env) -i PATH=/bin/:/sbin:/usr/bin/:/usr/sbin/:/usr/local/bin:/usr/local/sbin OMP_NUM_THREADS=${OMP_NUM_THREADS:-1}"
+chroot="$(get_location chroot) $root/ $(get_location env) -i PATH=/bin/:/sbin:/usr/bin/:/usr/sbin/:/usr/local/bin:/usr/local/sbin OMP_NUM_THREADS=${OMP_NUM_THREADS:-1} LANG=${LANG:-en}"
 
 # Download alpine
 echo "[CHROOT] Download $alpine_url/$latest_miniroot." >&2
@@ -144,15 +144,13 @@ cp -fv /etc/resolv.conf $root/etc/
 echo "[CHROOT] Clone qFlex." >&2
 git clone $SCRIPTPATH/../ $root/qflex
 
-echo "[CHROOT] Update APK." >&2
-$unshare $chroot /sbin/apk update
-
-echo "[CHROOT] Install g++ make gsl-dev git" >&2
-$unshare $chroot /sbin/apk add g++ make gsl-dev git
-
 echo "[CHROOT] Create installation script." >&2
 cat > $root/install_qflex.sh << EOF
 #!/bin/sh
+
+# Install dependencies
+/sbin/apk update
+/sbin/apk add g++ make gsl-dev git
 
 # Change folder
 cd /qflex
@@ -162,10 +160,6 @@ git submodule update --init --recursive
 
 # Make qFlex
 make -j\$OMP_NUM_THREADS
-EOF
-
-if [[ -z $no_tests || $no_tests != "1" ]]; then
-cat >> $root/install_qflex.sh << EOF
 
 # Change folder
 cd tests
@@ -190,15 +184,16 @@ for file in /qflex/tests/*.x; do
 done >> /qflex/tests/run_all.sh
 chmod 755 /qflex/tests/run_all.sh
 EOF
-fi
 chmod 755 $root/install_qflex.sh
 
-echo "[CHROOT] Install qFlex." >&2
-$unshare $chroot /install_qflex.sh
+if [[ -z $no_inst || $no_inst != "1" ]]; then
+  echo "[CHROOT] Install qFlex." >&2
+  $unshare $chroot /install_qflex.sh
 
-if [[ -z $no_tests || $no_tests != "1" ]]; then
   echo "[CHROOT] Run tests." >&2
   $unshare $chroot /qflex/tests/run_all.sh
+else
+  echo "[CHROOT] To install qFlex, run /install_qflex.sh in the container." >&2
 fi
 
 echo "[CHROOT] Container in: $(realpath $root)" >&2
