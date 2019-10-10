@@ -22,6 +22,8 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     std::vector<std::string> grid_content,
     int grid_height,
     int grid_width,
+    std::string initial_state,
+    std::string final_state,
     int super_cycles) {
 
   qflex::QflexInput input;
@@ -55,16 +57,9 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
   }
   input.grid_data = &grid_stream;
 
-  /*
-      TODO: for the moment, the following two are not sent as parameters
-  */
-  // Setting initial and final circuit states.
-  // if (argc > current_arg) {
-  //     input.initial_state = std::string(argv[current_arg++]);
-  // }
-  // if (argc > current_arg) {
-  //     input.final_state_A = std::string(argv[current_arg++]);
-  // }
+   // Setting initial and final circuit states.
+   input.initial_state = initial_state;
+   input.final_state_A = final_state;
 
   // Evaluating circuit.
   std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
