@@ -3,9 +3,14 @@
  * Helper functions to read quantum circuits from a file.
  * @see https://github.com/benjaminvillalonga/optimized_parallel_QC_with_TN
  *
- * @author Benjamin Villalonga
+ * @author Benjamin Villalonga (main contributor), Bron Nelson, Sergio Boixo and Salvatore Mandra
  * @date Created: September 2018
  * @date Modified: February 2019
+ *
+ * @copyright: Copyright © 2019, United States Government, as represented 
+ * by the Administrator of the National Aeronautics and Space Administration. 
+ * All rights reserved.
+ * @licence: Apache License, Version 2.0
  */
 
 #include "read_circuit.h"

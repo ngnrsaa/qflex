@@ -1,6 +1,5 @@
 TARGET1 = qflex
 
-#Set these:
 CXX = g++
 #CXX = icpc
 
