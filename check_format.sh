@@ -39,26 +39,26 @@ done
 status=0
 
 if ! [ ${#malformed_files[@]} -eq 0 ]; then
-  echo "Files require formatting: ${malformed_files[@]}"
+  echo "C++ files require formatting: ${malformed_files[@]}"
   echo
   echo "Run the following command to auto-format these files:"
   echo "clang-format --style=Google -i ${malformed_files[@]}"
   echo
   status=1
 else
-  echo "All files are formatted correctly."
+  echo "All C++ files are formatted correctly."
   echo
 fi
 
 if ! [ ${#malformed_py_files[@]} -eq 0 ]; then
-  echo "Files require formatting: ${malformed_py_files[@]}"
+  echo "Python files require formatting: ${malformed_py_files[@]}"
   echo
   echo "Run the following command to auto-format these files:"
   echo "yapf3 --style=Google -i ${malformed_py_files[@]}"
   echo
   status=1
 else
-  echo "All files are formatted correctly."
+  echo "All Python files are formatted correctly."
   echo
 fi
 
