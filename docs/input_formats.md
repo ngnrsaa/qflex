@@ -36,7 +36,7 @@ opcode:     The type of gate to perform from the following list:
                     - phi: conditional phase angle
                     - Examples: fsim(pi/2,0) = iSWAP; fsim(0,pi) = CZ
 indices:     The integer indices of the qubit or qubits that the gate affect. 
-            Currently, the indices are zero indexed and run from left to right, top to bottom.
+             Currently, the indices are zero indexed and run from left to right, top to bottom.
 ```
 
 Sample circuit files can be found under [qflex/circuits](/circuits).
