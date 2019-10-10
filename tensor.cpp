@@ -128,6 +128,11 @@ Tensor::Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
 
 Tensor::Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
                s_type* data) {
+  if (data == nullptr) {
+    std::cout << "Data must be non-null." << std::endl;
+    assert(data != nullptr);
+  }
+
   _init(indices, dimensions);
   _capacity = size();
   _data = data;
@@ -296,6 +301,11 @@ void Tensor::bundle(std::vector<std::string> indices_to_bundle,
 
 void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
                             s_type* scratch_copy) {
+  if (scratch_copy == nullptr) {
+    std::cout << "Scratch copy must be non-null." << std::endl;
+    assert(scratch_copy != nullptr);
+  }
+
   // Don't do anything if there is nothing to reorder.
   if (new_ordering == _indices) return;
 
@@ -397,6 +407,11 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
 
 void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
                            s_type* scratch_copy) {
+  if (scratch_copy == nullptr) {
+    std::cout << "Scratch copy must be non-null." << std::endl;
+    assert(scratch_copy != nullptr);
+  }
+
   // Create binary orderings.
   std::vector<std::string> old_ordering(_indices);
   std::vector<size_t> old_dimensions(_dimensions);
@@ -638,6 +653,11 @@ void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
 void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
                            const std::vector<std::string>& new_ordering,
                            int num_indices_right, s_type* scratch_copy) {
+  if (scratch_copy == nullptr) {
+    std::cout << "Scratch copy must be non-null." << std::endl;
+    assert(scratch_copy != nullptr);
+  }
+
   // Don't do anything if there is nothing to reorder.
   if (new_ordering == old_ordering) return;
 
@@ -699,6 +719,11 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
 
 void Tensor::reorder(std::vector<std::string> new_ordering,
                      s_type* scratch_copy) {
+  if (scratch_copy == nullptr) {
+    std::cout << "Scratch copy must be non-null." << std::endl;
+    assert(scratch_copy != nullptr);
+  }
+
   // Asserts.
   bool new_ordering_in_indices = _vector_s_in_vector_s(new_ordering, _indices);
   bool indices_in_new_ordering = _vector_s_in_vector_s(_indices, new_ordering);
@@ -770,6 +795,18 @@ void Tensor::print_data() const {
 // use  if complexity < some value.
 void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int m, int n, int k) {
+  if (A_data == nullptr) {
+    std::cout << "Data from Tensor A must be non-null." << std::endl;
+    assert(A_data != nullptr);
+  }
+  if (B_data == nullptr) {
+    std::cout << "Data from Tensor B must be non-null." << std::endl;
+    assert(B_data != nullptr);
+  }
+  if (C_data == nullptr) {
+    std::cout << "Data from Tensor C must be non-null." << std::endl;
+    assert(C_data != nullptr);
+  }
   s_type alpha = 1.0;
   s_type beta = 0.0;
   cblas_cgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, &alpha,
@@ -779,6 +816,18 @@ void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
 
 void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int m, int k) {
+  if (A_data == nullptr) {
+    std::cout << "Data from Tensor A must be non-null." << std::endl;
+    assert(A_data != nullptr);
+  }
+  if (B_data == nullptr) {
+    std::cout << "Data from Tensor B must be non-null." << std::endl;
+    assert(B_data != nullptr);
+  }
+  if (C_data == nullptr) {
+    std::cout << "Data from Tensor C must be non-null." << std::endl;
+    assert(C_data != nullptr);
+  }
   s_type alpha = 1.0;
   s_type beta = 0.0;
   cblas_cgemv(CblasRowMajor, CblasNoTrans, m, k, &alpha, A_data, std::max(1, k),
@@ -787,6 +836,18 @@ void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
 
 void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int n, int k) {
+  if (A_data == nullptr) {
+    std::cout << "Data from Tensor A must be non-null." << std::endl;
+    assert(A_data != nullptr);
+  }
+  if (B_data == nullptr) {
+    std::cout << "Data from Tensor B must be non-null." << std::endl;
+    assert(B_data != nullptr);
+  }
+  if (C_data == nullptr) {
+    std::cout << "Data from Tensor C must be non-null." << std::endl;
+    assert(C_data != nullptr);
+  }
   s_type alpha = 1.0;
   s_type beta = 0.0;
   cblas_cgemv(CblasRowMajor, CblasTrans, k, n, &alpha, A_data, std::max(1, n),
@@ -795,10 +856,27 @@ void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
 
 void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int k) {
+  if (A_data == nullptr) {
+    std::cout << "Data from Tensor A must be non-null." << std::endl;
+    assert(A_data != nullptr);
+  }
+  if (B_data == nullptr) {
+    std::cout << "Data from Tensor B must be non-null." << std::endl;
+    assert(B_data != nullptr);
+  }
+  if (C_data == nullptr) {
+    std::cout << "Data from Tensor C must be non-null." << std::endl;
+    assert(C_data != nullptr);
+  }
   cblas_cdotu_sub(k, A_data, 1, B_data, 1, C_data);
 }
 
 void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
+  if (scratch_copy == nullptr) {
+    std::cout << "Scratch copy must be non-null." << std::endl;
+    assert(scratch_copy != nullptr);
+  }
+
   if (A.data() == C.data()) {
     std::cout << "A and C cannot be the same tensor: ";
     C.print();

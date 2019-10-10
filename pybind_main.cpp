@@ -14,7 +14,7 @@ namespace py = pybind11;
 //
 // Example:
 // $ ./qflex.x 11 12 2 0.005 ./circuits/ben_11_16_0.txt \
-//       ./ordering/bristlecone_48.txt ./grid/bristlecone_48.txt
+//       ./ordering/bristlecone_70.txt ./grid/bristlecone_70.txt
 
 std::vector<std::pair<std::string, std::complex<double>>> simulate(
     std::vector<std::string> circuit_content,
@@ -23,19 +23,14 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     int grid_height,
     int grid_width,
     int super_cycles) {
-  // Reading input.
-  // if (argc < 8) throw std::logic_error("ERROR: Not enough arguments.");
-  int current_arg = 1;
+
   qflex::QflexInput input;
 
-  /*
-      TODO: for the moment, hard coded
-  */
-  input.grid_height = grid_height;
-  input.grid_width = grid_width;
-  input.super_cycles = super_cycles;
-  
-  //deprecated?
+  input.I = grid_height;
+  input.J = grid_width;
+  input.K = super_cycles;
+
+  //is deprecated. to be removed.
   input.fidelity = 0.005;
 
   // Creating streams for input files.

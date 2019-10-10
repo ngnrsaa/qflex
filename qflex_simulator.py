@@ -1,24 +1,25 @@
-from typing import Union, List, Any
+from typing import Union, List, Any, Sequence
 
 import cirq
 from cirq import study, schedules, ops, circuits
-from qflex_virtual_device import QFlexVirtualDevice
 
 import qflex
 
+from cirq_amplitudes_sim import SimulatesAmplitudes
+from qflex_virtual_device import QFlexVirtualDevice
 
-class QFlexSimulator(cirq.SimulatesFinalState):
+class QFlexSimulator(SimulatesAmplitudes):
 
     def __init__(self):
         return
 
-    def simulate_sweep(
-        self,
-        program: Union[circuits.Circuit, schedules.Schedule],
-        params: study.Sweepable,
-        qubit_order: ops.QubitOrderOrList = ops.QubitOrder.DEFAULT,
-        initial_state: Any = None,
-    ) -> List['SimulationTrialResult']:
+    def compute_amplitudes_sweep(
+            self,
+            program: Union[circuits.Circuit, schedules.Schedule],
+            bitstrings: Sequence[int],
+            params: study.Sweepable,
+            qubit_order: ops.QubitOrderOrList = ops.QubitOrder.DEFAULT,
+    ) -> Sequence[Sequence[complex]]:
 
         if not isinstance(program, circuits.Circuit):
             raise ValueError('{!r} is not a Circuit'.format(program))
@@ -26,7 +27,7 @@ class QFlexSimulator(cirq.SimulatesFinalState):
         if not isinstance(program.device, QFlexVirtualDevice):
             raise ValueError('{!r} is not a QFlexVirtualDevice'.format(program.device))
         else:
-            print("OK device")
+            print("The circuits's device is a QFlexVirtualDevice...OK")
 
         # A strange way...
         amplitudes = qflex.simulate(program.device.compute_circuit_data(program),
@@ -37,7 +38,7 @@ class QFlexSimulator(cirq.SimulatesFinalState):
                                     2)
 
         # hard coded
-        input_initial_state = "XXXX" + initial_state
+        input_initial_state = "XXXX" #000000000
         measurements = {}
         for amp in amplitudes:
             state = amp[0]
@@ -46,11 +47,3 @@ class QFlexSimulator(cirq.SimulatesFinalState):
             print(input_initial_state + " --> " + state + ": " + \
                   str(amplitude.real) + " " + str(amplitude.imag))
 
-            # measurements[]
-
-        params = {}
-        measurements = {1: 1}
-
-        trial_res = cirq.TrialResult(params=params, measurements=measurements)
-
-        return [trial_res]

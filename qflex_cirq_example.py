@@ -36,7 +36,15 @@ mydevice = QFlexVirtualDevice(arrangement=_BRISTLECONE70)
 a = cirq.GridQubit(0, 5)
 moment = cirq.Moment([cirq.H(a)])
 
+# Take a QFlex circuit and generate a Cirq circuit from it
+# The Cirq circuit will be afterwards transformed into a Qflex circuit
+from transform_to_cirq_circuit import convert_qflex_circuit_file
+mycirc = convert_qflex_circuit_file("circuits/ben_11_16_0.txt")
+
 # Run the simulation
-mysim.simulate(cirq.Circuit(moments=[moment], device=mydevice),
+myres = mysim.simulate(cirq.Circuit(mycirc._moments, device=mydevice),
                initial_state="YYYY")
+
+print("\n\nAfter QFlexCirq")
+print(myres)
 

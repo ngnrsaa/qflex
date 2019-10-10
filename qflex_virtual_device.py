@@ -38,7 +38,7 @@ class QFlexVirtualDevice(cirq.Device):
         return self._sizey
 
     def compute_index(self, row, col):
-        return row * self.sizex + col
+        return row * self.sizey + col
 
 
     def compute_circuit_data(self, program):
@@ -49,8 +49,9 @@ class QFlexVirtualDevice(cirq.Device):
         :param program: Decomposed circuit
         :return: Lists of strings to be sent to the C++ QFlex Simulator
         """
-        # TODO: Hard coded number of qubits in the circuit
-        circuit_data = ["1\n"]
+        # TODO: Circuit assumed to be operating on all virt. device qubits
+        first_line = str(len(self._qubits)) + "\n"
+        circuit_data = [first_line]
 
         # Access moment in unorthodox manner?
         for mi, moment in enumerate(program._moments):
@@ -73,7 +74,7 @@ class QFlexVirtualDevice(cirq.Device):
                     qflex_gate = "t"
 
                 # The moment is missing
-                qflex_gate = "{} {} {}\n".format(mi, qflex_gate, qub_str)
+                qflex_gate = "{} {} {}\n".format(mi, qflex_gate, qub_str.strip())
                 circuit_data.append(qflex_gate)
 
         # circuit_data = []
@@ -103,6 +104,13 @@ class QFlexVirtualDevice(cirq.Device):
             file_name = "ordering/bristlecone_48.txt"
         elif self._arrangement == _BRISTLECONE70:
             file_name = "ordering/bristlecone_70.txt"
+
+
+        # Create the graph and check isomorphism with
+        # Take supremacy 48 circuit, generate graph with Orion PR
+        # Compare graph with the graph from the users circuit
+        # If isomorphic use ordering/....
+        # Otherwise heuristic
 
         lines = []
         if file_name != "no_file":
@@ -200,6 +208,11 @@ class QFlexVirtualDevice(cirq.Device):
         self.validate_operation(scheduled_operation.operation)
 
     def validate_circuit(self, circuit):
+        #
+        # TODO: Force to operate only on grids 48 and 70
+        # Circuit and grid should have same number of qubits
+        # Otherwise -> Problem
+        #
         for moment in circuit:
             for operation in moment.operations:
                 self.validate_operation(operation)
@@ -209,6 +222,9 @@ class QFlexVirtualDevice(cirq.Device):
             self.validate_scheduled_operation(schedule, scheduled_operation)
 
 
+"""
+Rely only on grid
+"""
 _BRISTLECONE48 = """000001100000
                     000011110000
                     000111111000

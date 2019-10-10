@@ -43,6 +43,41 @@ TEST(ReadCircuitDeathTest, BadFsimGate) {
       "");
 }
 
+// These circuits reference inactive qubits.
+constexpr char kBadTGate[] = R"(2
+1 t 0)";
+
+constexpr char kBadCzGate[] = R"(2
+1 cz 0 1)";
+
+TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
+  std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
+  std::vector<std::vector<int>> off_qubits = {{0,0}};
+  s_type scratch[256];
+  
+  // One qubit gate must be on active qubit.
+  auto circuit_data = std::stringstream(kBadTGate);
+  EXPECT_DEATH(
+    circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "0", "1", {}, 
+                                    off_qubits, grid_of_tensors, scratch),
+    "");
+
+  // Two qubit gate must have active qubit as first qubit input.
+  circuit_data = std::stringstream(kBadCzGate);
+  EXPECT_DEATH(
+    circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "0", "1", {}, 
+                                    off_qubits, grid_of_tensors, scratch),
+    "");
+
+  // Two qubit gate must have active qubit as second qubit input.
+  off_qubits = {{1, 0}};
+  EXPECT_DEATH(
+    circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "0", "1", {}, 
+                                    off_qubits, grid_of_tensors, scratch),
+    "");
+
+}
+
 // This circuit returns the input string with amplitude 1.
 constexpr char kNullCircuit[] = R"(2
 0 h 0
@@ -174,10 +209,18 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   }
 }
 
-TEST(ReadCircuitDeathTest, CircuitDataToGridOfTensors) {
+TEST(ReadCircuitDeathTest, CircuitDataToGridOfTensorsInvalidInput) {
   std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
   s_type scratch[256];
   auto circuit_data = std::stringstream(kNullCircuit);
+
+  // Circuit data cannot be null pointer.
+  EXPECT_DEATH(circuit_data_to_grid_of_tensors(nullptr, 2, 1, 1, "01", "01", {}, {},
+                                  grid_of_tensors, scratch), "");
+
+  // Scratch cannot be null pointer. 
+  EXPECT_DEATH(circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "01", "01", {}, {},
+                                  grid_of_tensors, nullptr), ""); 
 
   // Input configuration length must be equal to the number of qubits.
   EXPECT_DEATH(
@@ -190,6 +233,17 @@ TEST(ReadCircuitDeathTest, CircuitDataToGridOfTensors) {
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "011", {},
                                       {}, grid_of_tensors, scratch),
       "");
+}
+
+TEST(ReadCircuitDeathTest, GridOfTensors3DTo2DInvalidInput) {
+  std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors_3D;
+  std::vector<std::vector<Tensor>> grid_of_tensors_2D;
+  std::optional<std::vector<std::vector<int>>> A;
+  std::optional<std::vector<std::vector<int>>> off;
+  std::list<ContractionOperation> ordering;
+
+  // Scratch cannot be null pointer.
+  EXPECT_DEATH(grid_of_tensors_3D_to_2D(grid_of_tensors_3D, grid_of_tensors_2D, A, off, ordering, nullptr), "");
 }
 
 }  // namespace

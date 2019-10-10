@@ -2,8 +2,9 @@ TARGET1 = qflex
 
 #Set these:
 CXX = g++
+#CXX = icpc
 
-FLAGS =  -O3  -std=c++17  -march=native
+FLAGS =  -O3  -std=c++17  -march=native -Idocopt.cpp/
 
 ifeq ($(CXX), icpc)
 	FLAGS += -mkl -qopenmp -DMKL_TENSOR
@@ -24,7 +25,7 @@ pybind: pybind_main.o $(OBJS1)
 	$(CXX) -shared -o $(TARGET1)`python3-config --extension-suffix` pybind_main.o $(OBJS1) $(FLAGS)
 
 main.o: main.cpp
-	$(CXX) -c main.cpp $(FLAGS)
+	$(CXX) -c main.cpp docopt.cpp/docopt.cpp $(FLAGS)
 
 pybind_main.o: pybind_main.cpp
 	$(CXX) -c pybind_main.cpp $(FLAGS)
