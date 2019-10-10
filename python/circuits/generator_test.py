@@ -6,8 +6,7 @@ Invocation:
 
 from typing import Dict, Set, Tuple
 
-import generator
-
+from python.circuits import generator
 
 def test_qubit_numbers():
     """Verify all devices have the correct number of qubits."""
