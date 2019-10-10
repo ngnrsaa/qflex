@@ -375,11 +375,15 @@ TEST(OrderingParserDeathTest, InvalidInput) {
   int I = 3;
   int J = 2;
 
-  // Ordering data cannot be null pointer. 
-  EXPECT_DEATH(ordering_data_to_contraction_ordering(nullptr, I, J, qubits_off, &ordering), "");
-  
-  // Ordering cannot be null pointer. 
-  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J, qubits_off, nullptr), "");
+  // Ordering data cannot be null pointer.
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(nullptr, I, J, qubits_off,
+                                                     &ordering),
+               "");
+
+  // Ordering cannot be null pointer.
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, nullptr),
+               "");
 }
 
 constexpr char kInvalidOrdering[] = R"(# test comment
@@ -393,8 +397,8 @@ TEST(OrderingParserDeathTest, InvalidOrderingGenerated) {
   int I = 3;
   int J = 2;
   EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering), "");
-
+                                                     qubits_off, &ordering),
+               "");
 }
 
 TEST(ContractionDeathTest, ContractGridInvalidInput) {
@@ -416,9 +420,10 @@ TEST(ContractionDeathTest, InitializeInvalidInput) {
 
   // Tensor grid cannot be null pointer.
   EXPECT_DEATH(ContractionData::Initialize(ordering, nullptr, &amplitudes), "");
-  
+
   // Amplitudes cannot be null pointer.
-  EXPECT_DEATH(ContractionData::Initialize(ordering, &tensor_grid, nullptr), "");
+  EXPECT_DEATH(ContractionData::Initialize(ordering, &tensor_grid, nullptr),
+               "");
 }
 
 }  // namespace

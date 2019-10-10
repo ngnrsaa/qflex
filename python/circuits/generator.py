@@ -100,6 +100,7 @@ Gate = NamedTuple('Gate', [('name', str), ('qubits', Tuple[int, ...])])
 
 class Cycle:
     """Circuit cycle consisting of gates applied to disjoint sets of qubits."""
+
     def __init__(self) -> None:
         self.gates: List[Gate] = []
 
@@ -121,6 +122,7 @@ class Cycle:
 
     def to_qsim_lines(self) -> Sequence[str]:
         """Returns list of lines describing this cycle in qsim format."""
+
         def gate_to_qsim_line(gate: Gate) -> str:
             return gate.name + ' ' + ' '.join(str(q) for q in gate.qubits)
 
@@ -129,6 +131,7 @@ class Cycle:
 
 class Circuit:
     """Quantum circuit."""
+
     def __init__(self) -> None:
         self.cycles: List[Cycle] = []
         self.n_qubits = 0
@@ -156,6 +159,7 @@ class Circuit:
 
 class PseudoRandomGateGenerator(Iterator[str]):
     """Generator of pseudo-random single-qubit gates."""
+
     def __init__(self, valid_gates: Sequence[str]) -> None:
         self._valid_gates = valid_gates
         self._last_gate: Optional[str] = None
@@ -169,9 +173,8 @@ class PseudoRandomGateGenerator(Iterator[str]):
 
 class PseudoRandomCircuitGenerator:
     """Generator of pseudo-random quantum circuits."""
-    def __init__(self,
-                 device: Device,
-                 single_qubit_gates: Sequence[str],
+
+    def __init__(self, device: Device, single_qubit_gates: Sequence[str],
                  two_qubit_gate: str) -> None:
         self._device = device
         self._single_qubit_gates = single_qubit_gates
@@ -205,8 +208,8 @@ class PseudoRandomCircuitGenerator:
         circuit = Circuit()
         for _ in range(depth):
             circuit.append(self._generate_local_operations_cycle(prggs))
-            circuit.append(
-                self._generate_interaction_cycle(next(pattern_names)))
+            circuit.append(self._generate_interaction_cycle(
+                next(pattern_names)))
         circuit.append(self._generate_local_operations_cycle(prggs))
 
         random.setstate(prng_state)
@@ -233,12 +236,11 @@ if __name__ == '__main__':
         for d in DEVICES.values())
 
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument(
-        '--device',
-        type=str,
-        required=True,
-        choices=DEVICES.keys(),
-        help=f'device name; one of: {AVAILABLE_DEVICES}')
+    arg_parser.add_argument('--device',
+                            type=str,
+                            required=True,
+                            choices=DEVICES.keys(),
+                            help=f'device name; one of: {AVAILABLE_DEVICES}')
     arg_parser.add_argument(
         '--single_qubit_gates',
         type=str,
@@ -257,13 +259,11 @@ if __name__ == '__main__':
         required=True,
         help=
         f'sequence of device-specific coupler activation patterns; available '
-        f'patterns by device: {AVAILABLE_PATTERNS}'
-    )
-    arg_parser.add_argument(
-        '--depth',
-        type=int,
-        required=True,
-        help='number of layers of two-qubit gates')
+        f'patterns by device: {AVAILABLE_PATTERNS}')
+    arg_parser.add_argument('--depth',
+                            type=int,
+                            required=True,
+                            help='number of layers of two-qubit gates')
     arg_parser.add_argument(
         '--seed',
         type=int,
