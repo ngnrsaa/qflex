@@ -131,8 +131,8 @@ Tensor::Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
   for (size_t i = 0; i < this_size; ++i) *(_data + i) = data[i];
 }
 
-Tensor::Tensor(std::vector<std::string> indices,
-                     std::vector<size_t> dimensions, s_type* data) {
+Tensor::Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
+               s_type* data) {
   if (data == nullptr) {
     std::cout << "Data must be non-null." << std::endl;
     assert(data != nullptr);
@@ -305,7 +305,7 @@ void Tensor::bundle(std::vector<std::string> indices_to_bundle,
 }
 
 void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
-                               s_type* scratch_copy) {
+                            s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
     std::cout << "Scratch copy must be non-null." << std::endl;
     assert(scratch_copy != nullptr);
@@ -411,7 +411,7 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
 }
 
 void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
-                              s_type* scratch_copy) {
+                           s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
     std::cout << "Scratch copy must be non-null." << std::endl;
     assert(scratch_copy != nullptr);
@@ -656,13 +656,13 @@ void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
 // Assuming all indices are binary for old_ordering and new_ordering.
 // old_ordering and new_ordering refer to the left.
 void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
-                              const std::vector<std::string>& new_ordering,
-                              int num_indices_right, s_type* scratch_copy) {
+                           const std::vector<std::string>& new_ordering,
+                           int num_indices_right, s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
     std::cout << "Scratch copy must be non-null." << std::endl;
     assert(scratch_copy != nullptr);
   }
-  
+
   // Don't do anything if there is nothing to reorder.
   if (new_ordering == old_ordering) return;
 
@@ -723,7 +723,7 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
 }
 
 void Tensor::reorder(std::vector<std::string> new_ordering,
-                        s_type* scratch_copy) {
+                     s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
     std::cout << "Scratch copy must be non-null." << std::endl;
     assert(scratch_copy != nullptr);
