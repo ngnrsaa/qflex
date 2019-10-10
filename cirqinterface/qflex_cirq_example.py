@@ -24,8 +24,8 @@ In order to call this example (on Linux machines)
 import cirq
 
 # The interface between Cirq and the Python interface to the C++ QFlex
-from qflex_virtual_device import QFlexVirtualDevice, _BRISTLECONE70
-from qflex_simulator import QFlexSimulator
+from cirqinterface.qflex_virtual_device import QFlexVirtualDevice, _BRISTLECONE70
+from cirqinterface.qflex_simulator import QFlexSimulator
 
 mysim = QFlexSimulator()
 
@@ -39,11 +39,14 @@ moment = cirq.Moment([cirq.H(a)])
 # Take a QFlex circuit and generate a Cirq circuit from it
 # The Cirq circuit will be afterwards transformed into a Qflex circuit
 from transform_to_cirq_circuit import convert_qflex_circuit_file
-mycirc = convert_qflex_circuit_file("circuits/ben_11_16_0.txt")
+mycirc = convert_qflex_circuit_file("circuits/bristlecone_70_1-40-1_0.txt")
 
+circ_on_device = cirq.Circuit(mycirc._moments, device=mydevice)
+
+print("\n\n\ Running QFlex simulation")
 # Run the simulation
-myres = mysim.simulate(cirq.Circuit(mycirc._moments, device=mydevice),
-               initial_state="YYYY")
+myres = mysim.compute_amplitudes(program=circ_on_device,
+                                 bitstrings=[1])
 
 print("\n\nAfter QFlexCirq")
 print(myres)

@@ -1,12 +1,11 @@
-from typing import Union, List, Any, Sequence
+from typing import Union, Sequence
 
-import cirq
 from cirq import study, schedules, ops, circuits
 
 import qflex
 
-from cirq_amplitudes_sim import SimulatesAmplitudes
-from qflex_virtual_device import QFlexVirtualDevice
+from cirqinterface.cirq_amplitudes_sim import SimulatesAmplitudes
+from cirqinterface.qflex_virtual_device import QFlexVirtualDevice
 
 class QFlexSimulator(SimulatesAmplitudes):
 

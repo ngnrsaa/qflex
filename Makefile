@@ -16,13 +16,13 @@ endif
 
 TEST_DIR = tests
 
-OBJS1 = evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o
+OBJS1 = evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o docopt.o
 
 $(TARGET1): main.o $(OBJS1)
 	$(CXX) -o $(TARGET1).x main.o $(OBJS1) $(FLAGS)
 
 pybind: pybind_main.o $(OBJS1)
-	$(CXX) -shared -o $(TARGET1)`python3-config --extension-suffix` pybind_main.o $(OBJS1) $(FLAGS)
+	$(CXX) -shared -o ./cirqinterface/$(TARGET1)`python3-config --extension-suffix` pybind_main.o $(OBJS1) $(FLAGS)
 
 main.o: main.cpp
 	$(CXX) -c main.cpp docopt.cpp/docopt.cpp $(FLAGS)
