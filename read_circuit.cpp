@@ -313,6 +313,8 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
     // Both lhs and rhs are in different patches from local_patch; find out
     // which merges with the local patch first.
+    // DO NOT SUBMIT: likely error in read_circuit.cpp
+    // Need to handle (l|r)patch changing, too. (H,C)->L, J->L
     for (const auto& op : ordering) {
       if (op.op_type != ContractionOperation::MERGE) continue;
       if (local_patch == op.merge.source_id) {
@@ -323,6 +325,10 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
         if (lpatch == op.merge.source_id) return true;
         if (rpatch == op.merge.source_id) return false;
         // local_patch is already the target ID.
+      } else if (lpatch == op.merge.source_id) {
+        lpatch = op.merge.target_id;
+      } else if (rpatch == op.merge.source_id) {
+        rpatch = op.merge.target_id;
       }
     }
     // Error in comparison - likely issue in contraction ordering.
