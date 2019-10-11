@@ -332,7 +332,7 @@ TEST(OrderingParserTest, ParseSimpleOrdering) {
   }
 }
 
-TEST(OrderingParserTest, ParserFailures) {
+TEST(OrderingParserDeathTest, ParserFailures) {
   std::list<ContractionOperation> ordering;
   std::vector<std::vector<int>> qubits_off = {{2, 0}};
   std::stringstream ordering_data;
