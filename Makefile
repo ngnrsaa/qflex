@@ -3,7 +3,7 @@ TARGET1 = qflex
 CXX = g++
 #CXX = icpc
 
-FLAGS =  -O3  -std=c++17  -march=native -Idocopt.cpp/
+FLAGS =  -O3  -std=c++17  -march=native -Idocopt.cpp/ -ITAL_SH/ 
 
 ifeq ($(CXX), icpc)
 	FLAGS += -mkl -qopenmp -DMKL_TENSOR
@@ -13,7 +13,7 @@ endif
 
 TEST_DIR = tests
 
-OBJS1 = main.o evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o docopt.o
+OBJS1 = main.o evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o docopt.o TAL_SH/libtalsh.a
 
 $(TARGET1): $(OBJS1)
 	$(CXX) -o $(TARGET1).x $(OBJS1) $(FLAGS)
@@ -36,8 +36,12 @@ tensor.o: tensor.cpp
 docopt.o:
 	$(CXX) -c docopt.cpp/docopt.cpp $(FLAGS)
 
+TAL_SH/libtalsh.a:
+	$(MAKE) -C TAL_SH/
+
 
 .PHONY: clean
 clean:
 	rm -f ./*.x ./*.a ./*.so ./*.o ./*.mod
 	$(MAKE) -C $(TEST_DIR) clean
+	$(MAKE) -C TAL_SH/ clean
