@@ -36,6 +36,8 @@
 
 namespace qflex {
 
+using tensor_type = Tensor;
+
 struct QflexInput {
   int I, J, K;
   double fidelity;

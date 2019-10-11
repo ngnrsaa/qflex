@@ -27,6 +27,8 @@
 
 namespace qflex {
 
+using tensor_type = Tensor;
+
 /**
  * Method for assigning names to indices in the grid. Accepted formats include:
  *   - {i_1, j_1}, {i_2, j_2}: two-qubit contraction.
@@ -130,13 +132,13 @@ class ContractionData {
    * total memory allocated for the contraction.
    * @param ordering std::list<ContractionOperation> listing operations to
    * perform.
-   * @param tensor_grid 2D vector<Tensor> holding the tensor grid. Consumes
+   * @param tensor_grid 2D vector<tensor_type> holding the tensor grid. Consumes
    * output from grid_of_tensors_3D_to_2D.
    * @param amplitudes vector of amplitudes for each final output requested.
    */
   static ContractionData Initialize(
       const std::list<ContractionOperation>& ordering,
-      std::vector<std::vector<Tensor>>* tensor_grid,
+      std::vector<std::vector<tensor_type>>* tensor_grid,
       std::vector<std::complex<double>>* amplitudes);
 
   // Keys for scratch-space tensors. Do not reuse outside this file.
@@ -154,7 +156,7 @@ class ContractionData {
   void ContractGrid(std::list<ContractionOperation> ordering, int output_index,
                     std::unordered_map<std::string, bool> active_patches);
 
-  Tensor& get_scratch(std::string id) { return scratch_[scratch_map_[id]]; }
+  tensor_type& get_scratch(std::string id) { return scratch_[scratch_map_[id]]; }
 
   /**
    * Assigns a name to a given cut-copy tensor for mapping into scratch space.
@@ -189,7 +191,7 @@ class ContractionData {
 
  private:
   // List of tensors used for scratch space or storage between recursive calls.
-  std::vector<Tensor> scratch_;
+  std::vector<tensor_type> scratch_;
 
   // Map of patch IDs/index names to scratch locations.
   std::unordered_map<std::string, int> scratch_map_;
@@ -198,7 +200,7 @@ class ContractionData {
   std::unordered_map<std::string, int> patch_rank_;
 
   // Contains the tensor grid produced by grid_of_tensors_3D_to_2D.
-  std::vector<std::vector<Tensor>>* tensor_grid_;
+  std::vector<std::vector<tensor_type>>* tensor_grid_;
 
   // Amplitudes for each final output requested.
   std::vector<std::complex<double>>* amplitudes_;
@@ -228,12 +230,12 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering);
  * allocated during cuts to preserve tensor_grid values.
  * @param ordering std::list<ContractionOperation> listing operations to
  * perform.
- * @param tensor_grid 2D vector<Tensor> holding the tensor grid. Consumes
+ * @param tensor_grid 2D vector<tensor_type> holding the tensor grid. Consumes
  * output from grid_of_tensors_3D_to_2D.
  * @param amplitudes vector of amplitudes for each final output requested.
  */
 void ContractGrid(const std::list<ContractionOperation>& ordering,
-                  std::vector<std::vector<Tensor>>* tensor_grid,
+                  std::vector<std::vector<tensor_type>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes);
 
 }  // namespace qflex

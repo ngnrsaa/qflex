@@ -135,15 +135,15 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   }
 
   // Declaring and then filling 2D grid of tensors.
-  std::vector<std::vector<Tensor>> tensor_grid(input->I);
+  std::vector<std::vector<tensor_type>> tensor_grid(input->I);
   for (int i = 0; i < input->I; ++i) {
-    tensor_grid[i] = std::vector<Tensor>(input->J);
+    tensor_grid[i] = std::vector<tensor_type>(input->J);
   }
   // Scope so that the 3D grid of tensors is destructed.
   {
     // Creating 3D grid of tensors from file.
     t0 = std::chrono::high_resolution_clock::now();
-    std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
+    std::vector<std::vector<std::vector<tensor_type>>> tensor_grid_3D;
     circuit_data_to_grid_of_tensors(input->circuit_data, input->I, input->J,
                                     input->K, input->initial_state,
                                     input->final_state_A, final_qubits,

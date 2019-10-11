@@ -34,6 +34,8 @@
 
 namespace qflex {
 
+using tensor_type = Tensor;
+
 // TODO: Use math library calls for these. Also use constexpr.
 const double _SQRT_2 = 1.41421356237309504880168872;
 const double _INV_SQRT_2 = 1. / _SQRT_2;
@@ -56,7 +58,7 @@ const int DIM = 2;
  * @param final_conf_B string with 0s and 1s with the output configuration on B.
  * @param A vector<vector<int>> with the coords. of the qubits in A.
  * @param off vector<vector<int>> with the coords. of the qubits turned off.
- * @param grid_of_tensors referenced to a vector<vector<vector<Tensor>>> with
+ * @param grid_of_tensors referenced to a vector<vector<vector<tensor_type>>> with
  * tensors at each position of the grid.
  * @param scratch pointer to s_type array with scratch space for all operations
  * performed in this function.
@@ -66,16 +68,16 @@ void circuit_data_to_grid_of_tensors(
     const std::string initial_conf, const std::string final_conf_B,
     const std::optional<std::vector<std::vector<int>>>& A,
     const std::optional<std::vector<std::vector<int>>>& off,
-    std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
+    std::vector<std::vector<std::vector<tensor_type>>>& grid_of_tensors,
     s_type* scratch);
 
 /**
  * Contracts a 3D grid of tensors onto a 2D grid of tensors, contracting
  * in the time (third) direction, and renaming the indices accordingly.
  * @param grid_of_tensors_3D reference to a
- * vector<vector<vector<Tensor>>> with the 3D grid of tensors. It must be a
+ * vector<vector<vector<tensor_type>>> with the 3D grid of tensors. It must be a
  * grid dimensionswise. The typical names for the indices in a grid is assumed.
- * @param grid_of_tensors_2D reference to a vector<vector<Tensor>> where the
+ * @param grid_of_tensors_2D reference to a vector<vector<tensor_type>> where the
  * 2D grid of tensors will be stored. The typical names for the indices will
  * be used.
  * @param A optional<vector<vector<int>>> with the coords. of the qubits in A.
@@ -87,8 +89,8 @@ void circuit_data_to_grid_of_tensors(
  * work.
  */
 void grid_of_tensors_3D_to_2D(
-    std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors_3D,
-    std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
+    std::vector<std::vector<std::vector<tensor_type>>>& grid_of_tensors_3D,
+    std::vector<std::vector<tensor_type>>& grid_of_tensors_2D,
     std::optional<std::vector<std::vector<int>>> A,
     std::optional<std::vector<std::vector<int>>> off,
     const std::list<ContractionOperation>& ordering, s_type* scratch);
@@ -99,7 +101,7 @@ void grid_of_tensors_3D_to_2D(
  * of the tensors.
  * @param filename string with the name of the circuit file.
  * @param I int with the number of qubits.
- * @param gates reference to a vector<Tensor> to be filled with the gates.
+ * @param gates reference to a vector<tensor_type> to be filled with the gates.
  * @param inputs reference to a vector<vector<string>> to be filled with the
  * input indexes of the gates.
  * @param outputs reference to a vector<vector<string>> to be filled with the
@@ -109,7 +111,7 @@ void grid_of_tensors_3D_to_2D(
  *
  */
 void read_wave_function_evolution(
-    std::string filename, int I, std::vector<Tensor>& gates,
+    std::string filename, int I, std::vector<tensor_type>& gates,
     std::vector<std::vector<std::string>>& inputs,
     std::vector<std::vector<std::string>>& outputs, s_type* scratch);
 
