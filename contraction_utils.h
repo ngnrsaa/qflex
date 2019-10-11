@@ -99,9 +99,8 @@ struct ContractionOperation {
  * @param J int with the second spatial dimension of the grid of qubits.
  * @param off vector<vector<int>> with the coords. of the qubits turned off.
  * @param ordering pointer to std::list<ContractionOperation> output object.
- * @return false if parsing failed at any point, true otherwise.
  **/
-bool ordering_data_to_contraction_ordering(
+void ordering_data_to_contraction_ordering(
     std::istream* ordering_data, const int I, const int J,
     const std::optional<std::vector<std::vector<int>>>& off,
     std::list<ContractionOperation>* ordering);

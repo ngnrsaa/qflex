@@ -297,7 +297,7 @@ TEST(OrderingParserTest, ParseSimpleOrdering) {
   std::vector<std::vector<int>> qubits_off = {{2, 0}};
   int I = 3;
   int J = 2;
-  ASSERT_TRUE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+  EXPECT_NO_FATAL_FAILURE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
                                                     qubits_off, &ordering));
 
   std::list<ContractionOperation> expected_ordering;
@@ -341,31 +341,31 @@ TEST(OrderingParserTest, ParserFailures) {
 
   // Invalid operations cause failures.
   ordering_data = std::stringstream("bad_op 1 2");
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering));
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering), "");
 
   // Qubit indices must be within the grid (3x2).
   ordering_data = std::stringstream("expand a 8");
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering));
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering), "");
   ordering_data = std::stringstream("expand a -2");
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering));
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering), "");
   ordering_data = std::stringstream("cut () 1 7");
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering));
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering), "");
   ordering_data = std::stringstream("cut () -1 4");
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering));
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering), "");
 
   // Cuts must receive a valid value list.
   ordering_data = std::stringstream("cut 2 3");
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering));
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering), "");
   // Spaces are not allowed in the value list.
   ordering_data = std::stringstream("cut (1, 2) 2 3");
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering));
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                     qubits_off, &ordering), "");
 }
 
 TEST(OrderingParserDeathTest, InvalidInput) {

@@ -259,7 +259,7 @@ void ContractionData::ContractGrid(
 
 // External methods
 
-bool ordering_data_to_contraction_ordering(
+void ordering_data_to_contraction_ordering(
     std::istream* ordering_data, const int I, const int J,
     const std::optional<std::vector<std::vector<int>>>& off,
     std::list<ContractionOperation>* ordering) {
@@ -369,10 +369,6 @@ bool ordering_data_to_contraction_ordering(
     std::cout << "Parsing failed on line: \"" << line
               << "\" with error: " << error_msg << std::endl;
     assert(error_msg.empty());
-    // do we still need this return false?
-    // it's probably better for the code to fail, and us check that this function
-    // returns true in evaluate_circuit.cpp line 88 where it is called right
-    return false;
   }
   // Ensure ordering generated is valid
   bool valid_ordering = IsOrderingValid(*ordering);
@@ -380,7 +376,6 @@ bool ordering_data_to_contraction_ordering(
     std::cout << "Generated ordering must be valid." << std::endl;
     assert(valid_ordering);
   }
-  return true;
 }
 
 std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
