@@ -4,3 +4,6 @@
 [submodule "docopt.cpp"]
 	path = docopt.cpp
 	url = https://github.com/docopt/docopt.cpp.git
+[submodule "TAL_SH"]
+	path = TAL_SH
+	url = https://github.com/DmitryLyakh/TAL_SH.git
