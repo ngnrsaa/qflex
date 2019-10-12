@@ -1,4 +1,5 @@
-TARGET1 = qflex
+TARGETS = $(shell find . -name '*_test.cpp')
+TARGETS := $(TARGETS:%.cpp=%.x)
 
 #Set these:
 CXX = g++
@@ -18,6 +19,9 @@ GTEST_DIR = $(ROOT_DIR)/googletest/googletest
 GMOCK_DIR = $(ROOT_DIR)/googletest/googlemock
 
 TESTFLAGS = -I$(GTEST_DIR)/include -L$(GTEST_DIR) -I$(GMOCK_DIR)/include -L$(GMOCK_DIR) -I$(ROOT_DIR)/src
+
+.PHONY: all
+all: $(TARGETS)
 
 %.o:
 	$(MAKE) -C $(ROOT_DIR) $@
