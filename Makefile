@@ -3,7 +3,7 @@ TARGET1 = qflex
 CXX = g++
 #CXX = icpc
 
-FLAGS =  -O3  -std=c++17  -march=native -Idocopt.cpp/
+FLAGS =  -O3  -std=c++17  -march=native -I$(CURDIR)/docopt.cpp/
 
 ifeq ($(CXX), icpc)
 	FLAGS += -mkl -qopenmp -DMKL_TENSOR
@@ -11,14 +11,23 @@ else
   FLAGS += -fopenmp -lgsl -lgslcblas
 endif
 
-OBJS1 = evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o docopt.cpp/docopt.o
+export CXX
+export FLAGS
 
-$(TARGET1): src/main.cpp $(OBJS1)
-	$(CXX) -o $(@).x $< $(OBJS1) $(FLAGS)
+$(TARGET1):
+	$(MAKE) -C src/
+	ln -s src/$(TARGET1).x .
 
-%.o: src/%.cpp src/%.h
-	$(CXX) -c $< $(FLAGS) -o $@
+.PHONY: tests
+tests:
+	$(MAKE) -C tests/
+
+.PHONY: run-tests
+run-tests:
+	$(MAKE) -C tests/ run-all
 
 .PHONY: clean
 clean:
-	rm -f ./*.x ./*.a ./*.so ./*.o ./*.mod docopt.cpp/docopt.o
+	rm -f $(TARGET1).x
+	$(MAKE) -C src/ clean
+	$(MAKE) -C tests/ clean
