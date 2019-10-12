@@ -8,19 +8,27 @@ from typing import Dict, Set, Tuple
 
 from python.circuits import generator
 
+def GetDevice(pattern_filename):
+    with open(pattern_filename, 'r') as f:
+        pattern = eval(f.read())
+    return generator.Device(pattern)
+
+TestDevice = GetDevice('patterns/test.txt')
+Rochester = GetDevice('patterns/ibm_rochester.txt')
+Aspen = GetDevice('patterns/rigetti_aspen.txt')
 
 def test_qubit_numbers():
     """Verify all devices have the correct number of qubits."""
-    assert generator.TestDevice().n_qubits == 3
-    assert generator.Aspen().n_qubits == 16
-    assert generator.Rochester().n_qubits == 53
+    assert TestDevice.n_qubits == 3
+    assert Aspen.n_qubits == 16
+    assert Rochester.n_qubits == 53
 
 
 def test_coupler_numbers():
     """Verify all devices have the correct number of couplers."""
-    assert generator.TestDevice().n_couplers == 2
-    assert generator.Aspen().n_couplers == 18
-    assert generator.Rochester().n_couplers == 58
+    assert TestDevice.n_couplers == 2
+    assert Aspen.n_couplers == 18
+    assert Rochester.n_couplers == 58
 
 
 def compute_edges(activation_patterns: Dict[str, Set[Tuple[int, int]]]
@@ -45,19 +53,19 @@ def degree(edges: Dict[int, Set[int]], vertex: int) -> int:
 
 def test_graphs():
     """Verify all devices have the correct number of qubits with each degree."""
-    test_edges = compute_edges(generator.TestDevice.ACTIVATION_PATTERNS)
+    test_edges = compute_edges(TestDevice._interaction_patterns)
     assert degree(test_edges, 0) == 1
     assert degree(test_edges, 1) == 2
     assert degree(test_edges, 2) == 1
 
-    aspen_edges = compute_edges(generator.Aspen.ACTIVATION_PATTERNS)
+    aspen_edges = compute_edges(Aspen._interaction_patterns)
     for qubit in range(16):
         if qubit in {1, 2, 13, 14}:
             assert degree(aspen_edges, qubit) == 3
         else:
             assert degree(aspen_edges, qubit) == 2
 
-    rochester_edges = compute_edges(generator.Rochester.ACTIVATION_PATTERNS)
+    rochester_edges = compute_edges(Rochester._interaction_patterns)
     for qubit in range(53):
         if qubit in {51, 52}:
             assert degree(rochester_edges, qubit) == 1

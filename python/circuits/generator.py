@@ -1,7 +1,7 @@
 """Generator for Random Quantum Circuits.
 
 Example usage:
-    $ python generator.py --device=rochester \
+    $ python generator.py --pattern-file=patterns/ibm_rochester.txt \
                           --single_qubit_gates=x_1_2,y_1_2,hz_1_2 \
                           --two_qubit_gate=cx \
                           --sequence=ABAC \
@@ -49,50 +49,6 @@ class Device:
     def pattern(self, name: str) -> Set[Tuple[int, int]]:
         """Returns coupler activation pattern of a given name."""
         return self._interaction_patterns[name]
-
-
-class TestDevice(Device):
-    """Device for testing with three qubits and two couplers."""
-    ACTIVATION_PATTERNS = {'A': {(0, 1)}, 'B': {(1, 2)}}
-
-    def __init__(self) -> None:
-        super().__init__(TestDevice.ACTIVATION_PATTERNS)
-
-
-class Aspen(Device):
-    """Rigetti's Aspen QPU with two octagonal rings of qubits."""
-    ACTIVATION_PATTERNS = {
-        'A': {(0, 7), (1, 14), (15, 8), (9, 10), (11, 12), (13, 2), (3, 4),
-              (5, 6)},
-        'B': {(0, 1), (14, 15), (8, 9), (10, 11), (12, 13), (2, 3), (4, 5),
-              (6, 7)},
-        'C': {(0, 7), (1, 2), (14, 13), (15, 8), (9, 10), (11, 12), (3, 4),
-              (5, 6)},
-    }
-
-    def __init__(self) -> None:
-        super().__init__(Aspen.ACTIVATION_PATTERNS)
-
-
-class Rochester(Device):
-    """IBM's 53-qubit Rochester device."""
-    ACTIVATION_PATTERNS = {
-        'A': {(0, 1), (2, 3), (4, 6), (5, 9), (7, 8), (10, 11), (12, 13),
-              (14, 15), (16, 19), (18, 27), (20, 21), (23, 24), (25, 26),
-              (28, 32), (30, 31), (33, 34), (36, 37), (38, 41), (39, 42),
-              (43, 44), (45, 46), (47, 48), (49, 50)},
-        'B': {(0, 5), (1, 2), (3, 4), (6, 13), (7, 16), (9, 10), (11, 12),
-              (15, 18), (17, 23), (19, 20), (21, 22), (24, 25), (26, 27),
-              (29, 36), (30, 39), (32, 33), (34, 35), (37, 38), (40, 46),
-              (41, 50), (42, 43), (44, 45), (48, 49)},
-        'C': {(0, 5), (1, 2), (3, 4), (7, 16), (8, 9), (11, 17), (13, 14),
-              (15, 18), (19, 20), (21, 28), (22, 23), (25, 29), (26, 27),
-              (30, 39), (31, 32), (34, 40), (35, 36), (37, 38), (41, 50),
-              (42, 43), (44, 51), (46, 47), (48, 52)},
-    }
-
-    def __init__(self) -> None:
-        super().__init__(Rochester.ACTIVATION_PATTERNS)
 
 
 Gate = NamedTuple('Gate', [('name', str), ('qubits', Tuple[int, ...])])
@@ -151,10 +107,14 @@ class Circuit:
 
     def save_as_qsim(self, filename: str):
         """Saves this circuit to file in qsim format."""
-        with open(filename, 'w') as output_file:
-            print(str(self.n_qubits), file=output_file)
+        if filename != None:
+            with open(filename, 'w') as output_file:
+                print(str(self.n_qubits), file=output_file)
+                for line in self.to_qsim_lines():
+                    print(line, file=output_file)
+        else:
             for line in self.to_qsim_lines():
-                print(line, file=output_file)
+                print(line)
 
 
 class PseudoRandomGateGenerator(Iterator[str]):
@@ -216,31 +176,49 @@ class PseudoRandomCircuitGenerator:
         return circuit
 
 
-DEVICES = {'test': TestDevice(), 'aspen': Aspen(), 'rochester': Rochester()}
-
-
 def main(args):
     """Generates an RQC and saves it to a file."""
-    device = DEVICES[args.device]
+
+    # Get pattern
+    with open(args.pattern_file, 'r') as f:
+        pattern = eval(f.read())
+
+    # Get sequence
+    sequence = args.sequence
+
+    # Check that sequence is valid
+    for s in set(sequence):
+        if not s in pattern.keys():
+            raise AssertionError('{} is not a valid pattern label.'.format(s))
+
+    # Get single qubit gates
     single_qubit_gates = args.single_qubit_gates.split(',')
+
+    # Get device
+    device = Device(pattern)
+
+    # Generate RQC
     prcg = PseudoRandomCircuitGenerator(device, single_qubit_gates,
                                         args.two_qubit_gate)
     rqc = prcg.generate(args.sequence, args.depth, args.seed)
+
+    # Save RQC
     rqc.save_as_qsim(args.output)
 
 
 if __name__ == '__main__':
-    AVAILABLE_DEVICES = ', '.join(DEVICES.keys())
-    AVAILABLE_PATTERNS = '; '.join(
-        str(d) + ': ' + ''.join(sorted(d.pattern_names()))
-        for d in DEVICES.values())
 
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument('--device',
+    arg_parser.add_argument('--pattern-file',
                             type=str,
                             required=True,
-                            choices=DEVICES.keys(),
-                            help=f'device name; one of: {AVAILABLE_DEVICES}')
+                            help=f'pattern filename')
+    arg_parser.add_argument(
+        '--sequence',
+        type=str,
+        required=True,
+        help=
+        f'sequence of device-specific coupler activation patterns')
     arg_parser.add_argument(
         '--single_qubit_gates',
         type=str,
@@ -253,13 +231,6 @@ if __name__ == '__main__':
         type=str,
         required=True,
         help='name of the two-qubit gate known to qsim, e.g. cz, fs')
-    arg_parser.add_argument(
-        '--sequence',
-        type=str,
-        required=True,
-        help=
-        f'sequence of device-specific coupler activation patterns; available '
-        f'patterns by device: {AVAILABLE_PATTERNS}')
     arg_parser.add_argument('--depth',
                             type=int,
                             required=True,
@@ -274,7 +245,7 @@ if __name__ == '__main__':
     arg_parser.add_argument(
         '--output',
         type=str,
-        required=True,
+        required=False,
         help='name of the file to write the generated RQC to in qsim format')
 
     main(arg_parser.parse_args())
