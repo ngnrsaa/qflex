@@ -13,29 +13,13 @@ endif
 
 TEST_DIR = tests
 
-OBJS1 = main.o evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o docopt.o
+OBJS1 = evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o docopt.cpp/docopt.o
 
-$(TARGET1): $(OBJS1)
-	$(CXX) -o $(TARGET1).x $(OBJS1) $(FLAGS)
+$(TARGET1): src/main.cpp $(OBJS1)
+	$(CXX) -o $(@).x $< $(OBJS1) $(FLAGS)
 
-main.o: main.cpp
-	$(CXX) -c main.cpp $(FLAGS)
-
-evaluate_circuit.o: evaluate_circuit.cpp
-	$(CXX) -c evaluate_circuit.cpp $(FLAGS)
-
-read_circuit.o: read_circuit.cpp
-	$(CXX) -c read_circuit.cpp $(FLAGS)
-
-contraction_utils.o: contraction_utils.cpp
-	$(CXX) -c contraction_utils.cpp $(FLAGS)
-
-tensor.o: tensor.cpp
-	$(CXX) -c tensor.cpp $(FLAGS)
-
-docopt.o:
-	$(CXX) -c docopt.cpp/docopt.cpp $(FLAGS)
-
+%.o: src/%.cpp src/%.h
+	$(CXX) -c $< $(FLAGS) -o $@
 
 .PHONY: clean
 clean:
