@@ -11,8 +11,6 @@ else
   FLAGS += -fopenmp -lgsl -lgslcblas
 endif
 
-TEST_DIR = tests
-
 OBJS1 = evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o docopt.cpp/docopt.o
 
 $(TARGET1): src/main.cpp $(OBJS1)
