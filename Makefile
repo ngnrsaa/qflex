@@ -3,7 +3,7 @@ TARGET1 = qflex
 CXX = g++
 #CXX = icpc
 
-FLAGS =  -O3  -std=c++17  -march=native -I$(CURDIR)/docopt.cpp/
+FLAGS =  -O3  -std=c++17  -march=native
 
 ifeq ($(CXX), icpc)
 	FLAGS += -mkl -qopenmp -DMKL_TENSOR
