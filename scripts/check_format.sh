@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ROOT_DIR="../"
+ROOT_DIR="$(realpath $(dirname $0))/../"
 
 function find_cmd() {
   # Get path
