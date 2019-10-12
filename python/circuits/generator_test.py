@@ -8,6 +8,7 @@ from typing import Dict, Set, Tuple
 
 from python.circuits import generator
 
+
 def test_qubit_numbers():
     """Verify all devices have the correct number of qubits."""
     assert generator.TestDevice().n_qubits == 3
@@ -69,11 +70,11 @@ def test_graphs():
 def test_qsim_output():
     """Verify qsim output."""
     circuit = generator.Circuit()
-    circuit.append(
-        generator.Cycle().append(generator.Gate(name='x_1_2', qubits=(
-            0,))).append(generator.Gate(name='y_1_2', qubits=(1,))))
-    circuit.append(
-        generator.Cycle().append(generator.Gate(name='fs', qubits=(0, 1))))
+    circuit.append(generator.Cycle().append(
+        generator.Gate(name='x_1_2', qubits=(0,))).append(
+            generator.Gate(name='y_1_2', qubits=(1,))))
+    circuit.append(generator.Cycle().append(
+        generator.Gate(name='fs', qubits=(0, 1))))
     assert circuit.n_qubits == 2
 
     qsim = circuit.to_qsim_lines()

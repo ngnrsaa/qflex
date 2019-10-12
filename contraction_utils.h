@@ -1,3 +1,18 @@
+/**
+ * @file contraction_utils.h
+ * @see https://github.com/benjaminvillalonga/optimized_parallel_QC_with_TN
+ *
+ * @author Benjamin Villalonga (main contributor), Bron Nelson, Sergio Boixo and
+ * Salvatore Mandra
+ * @date Created: August 2018
+ * @date Modified: August 2018
+ *
+ * @copyright: Copyright © 2019, United States Government, as represented
+ * by the Administrator of the National Aeronautics and Space Administration.
+ * All rights reserved.
+ * @licence: Apache License, Version 2.0
+ */
+
 #ifndef CONTRACTION_UTILS_
 #define CONTRACTION_UTILS_
 

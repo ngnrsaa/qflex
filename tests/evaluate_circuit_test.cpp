@@ -210,7 +210,6 @@ TEST(EvaluateCircuitDeathTest, InvalidInput) {
   EXPECT_DEATH(EvaluateCircuit(nullptr), "");
 }
 
-
 }  // namespace
 }  // namespace qflex
 
