@@ -24,4 +24,3 @@ $(TARGET1): src/main.cpp $(OBJS1)
 .PHONY: clean
 clean:
 	rm -f ./*.x ./*.a ./*.so ./*.o ./*.mod
-	$(MAKE) -C $(TEST_DIR) clean
