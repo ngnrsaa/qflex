@@ -23,4 +23,4 @@ $(TARGET1): src/main.cpp $(OBJS1)
 
 .PHONY: clean
 clean:
-	rm -f ./*.x ./*.a ./*.so ./*.o ./*.mod
+	rm -f ./*.x ./*.a ./*.so ./*.o ./*.mod docopt.cpp/docopt.o
