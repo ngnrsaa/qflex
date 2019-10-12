@@ -217,8 +217,7 @@ if __name__ == '__main__':
         '--sequence',
         type=str,
         required=True,
-        help=
-        f'sequence of device-specific coupler activation patterns')
+        help=f'sequence of device-specific coupler activation patterns')
     arg_parser.add_argument(
         '--single_qubit_gates',
         type=str,

@@ -8,14 +8,17 @@ from typing import Dict, Set, Tuple
 
 from python.circuits import generator
 
+
 def GetDevice(pattern_filename):
     with open(pattern_filename, 'r') as f:
         pattern = eval(f.read())
     return generator.Device(pattern)
 
+
 TestDevice = GetDevice('patterns/test.txt')
 Rochester = GetDevice('patterns/ibm_rochester.txt')
 Aspen = GetDevice('patterns/rigetti_aspen.txt')
+
 
 def test_qubit_numbers():
     """Verify all devices have the correct number of qubits."""
