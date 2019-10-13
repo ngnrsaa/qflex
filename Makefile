@@ -23,7 +23,7 @@ tests:
 	$(MAKE) -C tests/
 
 .PHONY: run-tests
-run-tests:
+run-tests: tests
 	$(MAKE) -C tests/ run-all
 
 .PHONY: clean
