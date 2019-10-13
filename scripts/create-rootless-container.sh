@@ -155,13 +155,16 @@ cat > $root/install_qflex.sh << EOF
 
 # Install dependencies
 /sbin/apk update
-/sbin/apk add g++ make gsl-dev git
+/sbin/apk add g++ make gsl-dev git autoconf
 
 # Change folder
 cd /qflex
 
-# Update submodules
-git submodule update --init --recursive
+# Run autoconf
+autoconf
+
+# Run configure
+./configure
 
 # Make qFlex
 make -j\$OMP_NUM_THREADS
