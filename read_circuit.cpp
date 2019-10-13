@@ -347,7 +347,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
   };
 }
 
-}  // namespace qflex
+}  // namespace
 
 void circuit_data_to_grid_of_tensors(
     std::istream* circuit_data, int I, int J, int K,
