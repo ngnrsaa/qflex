@@ -50,7 +50,12 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
      {"cz", std::vector<s_type>({1., 0., 0., 0.,
                                  0., 1., 0., 0.,
                                  0., 0., 1., 0.,
-                                 0., 0., 0., -1.})}});
+                                 0., 0., 0., -1.})},
+
+     {"cx", std::vector<s_type>({1., 0., 0., 0.,
+                                 0., 1., 0., 0.,
+                                 0., 0., 0., 1.,
+                                 0., 0., 1., 0.})}});
 // clang-format on
 
 std::vector<s_type> gate_array(const std::string& gate_name) {
@@ -342,7 +347,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
   };
 }
 
-}  // namespace
+}  // namespace qflex
 
 void circuit_data_to_grid_of_tensors(
     std::istream* circuit_data, int I, int J, int K,
