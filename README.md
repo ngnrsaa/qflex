@@ -19,6 +19,11 @@ For the technical documentations, see [qflex/docs](/docs).
 
 To run qFlex in a docker container, see [qflex/docs/docker.md](/docs/docker.md).
 
+## Build Using Rootless Containers
+
+To run qFlex in a rootless container, see
+[qflex/docs/rootless-container.md](/docs/rootless-container.md).
+
 ## Licence
 
 Copyright © 2019, United States Government as represented by the Administrator
