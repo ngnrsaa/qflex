@@ -24,6 +24,16 @@ To run qFlex in a docker container, see [qflex/docs/docker.md](/docs/docker.md).
 To run qFlex in a rootless container, see
 [qflex/docs/rootless-container.md](/docs/rootless-container.md).
 
+## Install
+
+To install qFlex, simply run:
+
+```
+$ autoconf && ./configure 
+$ make && make run-tests && make install
+```
+By default, qFlex is installed in `$HOME/local/`.
+
 ## Licence
 
 Copyright © 2019, United States Government as represented by the Administrator

@@ -1,0 +1,44 @@
+TARGET1 = qflex
+
+CXX = @CXX@
+CXXFLAGS = @CXXFLAGS@
+PREFIX = @prefix@
+
+ifeq ($(CXX), icpc)
+	CXXFLAGS += -mkl -qopenmp -DMKL_TENSOR
+else
+  CXXFLAGS += -fopenmp -lgsl -lgslcblas
+endif
+
+export CXX
+export CXXFLAGS
+export FLAGS
+
+$(TARGET1):
+	git submodule update --init --recursive src/docopt.cpp
+	$(MAKE) -C src/
+	ln -s src/$(TARGET1).x .
+
+.PHONY: tests
+tests:
+	git submodule update --init --recursive tests/googletest
+	$(MAKE) -C tests/
+
+.PHONY: run-tests
+run-tests: tests
+	$(MAKE) -C tests/ run-all
+
+.PHONY: install
+install:
+	@find share -type f -exec install -vD {} $(PREFIX)/{} \;
+	@install -vD src/qflex.x $(PREFIX)/bin/qflex
+
+.PHONY: clean
+clean:
+	-rm -f $(TARGET1).x
+	-$(MAKE) -C src/ clean
+	-$(MAKE) -C tests/ clean
+
+.PHONY: clean-all
+clean-all: clean
+	-git submodule deinit --all
