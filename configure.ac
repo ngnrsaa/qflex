@@ -17,6 +17,9 @@ AC_PROG_CPP
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
+AC_CHECK_PROG(GIT_CHECK,git,yes)
+AS_IF([test x"$GIT_CHECK" != x"yes"], [AC_MSG_ERROR([Please install git before configuring.])])
+
 # Checks for libraries.
 AC_CHECK_LIB([gsl], [cblas_cgemm])
 AC_CHECK_LIB([gslcblas], [cblas_cgemm])
