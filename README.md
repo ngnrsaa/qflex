@@ -14,7 +14,7 @@ verify and benchmark such experiments.
 
 qFlex scientific documentation and results can be found in 
 [[1]](https://arxiv.org/abs/1811.09599) and [[2]](https://arxiv.org/abs/1905.00444).
-For the technical documentations, see [qflex/docs](/docs).
+For technical documentation on how to use qFlex, see [qflex/docs](/docs).
 
 [[1]](https://arxiv.org/abs/1811.09599) B. Villalonga, *et al.*, **"A flexible 
 high-performance simulator for verifying and benchmarking quantum circuits 
