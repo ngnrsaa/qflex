@@ -206,8 +206,8 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
   ASSERT_EQ(amplitudes.size(), 2);
   EXPECT_EQ(amplitudes[0].first, "0000 0");
   EXPECT_EQ(amplitudes[1].first, "0000 1");
-  EXPECT_NEAR(amplitudes[0].second.real(),  0.10669, 1e-5);
-  EXPECT_NEAR(amplitudes[0].second.imag(),  0.22097, 1e-5);
+  EXPECT_NEAR(amplitudes[0].second.real(), 0.10669, 1e-5);
+  EXPECT_NEAR(amplitudes[0].second.imag(), 0.22097, 1e-5);
   EXPECT_NEAR(amplitudes[1].second.real(), -0.01831, 1e-5);
   EXPECT_NEAR(amplitudes[1].second.imag(), -0.08081, 1e-5);
 }
