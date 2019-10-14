@@ -38,7 +38,6 @@ namespace qflex {
 
 struct QflexInput {
   int I, J, K;
-  double fidelity;
   std::istream* circuit_data;
   std::istream* ordering_data;
   std::istream* grid_data;
