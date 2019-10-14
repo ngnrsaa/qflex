@@ -9,15 +9,13 @@ static const char USAGE[] =
 tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
-    qflex <num_rows> <num_cols> <depth> <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf>]
-    qflex -x <num_rows> -y <num_cols> -d <depth> -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf>]
+    qflex <depth> <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf>]
+    qflex -d <depth> -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf>]
     qflex (-h | --help)
     qflex --version
 
   Options:
     -h,--help                              Show this help.
-    -x <num_rows>                          Number of rows in grid.
-    -y <num_cols>                          NUmber of columns in grid.
     -d,--depth=<depth>                     Target circuit depth.
     -c,--circuit=<circuit_filename>        Circuit filename.
     -o,--ordering=<ordering_filename>      Ordering filename.
@@ -29,8 +27,9 @@ tensor network, CPU-based simulator of large quantum circuits.
 )";
 
 // Example:
-// $ ./qflex.x 11 12 2 ./circuits/bristlecone_48_1-40-1_0.txt \
-//       ./ordering/bristlecone_48.txt ./grid/bristlecone_48.txt
+// $ ./qflex.x 2 ./circuits/bristlecone_48_1-40-1_0.txt \
+//               ./ordering/bristlecone_48.txt \
+//               ./grid/bristlecone_48.txt
 //
 int main(int argc, char** argv) {
   std::map<std::string, docopt::value> args =
@@ -38,10 +37,6 @@ int main(int argc, char** argv) {
 
   // Reading input
   qflex::QflexInput input;
-  input.I = bool(args["-x"]) ? args["-x"].asLong() : args["<num_rows>"].asLong();
-  input.J = bool(args["-y"]) ? args["-y"].asLong() : args["<num_cols>"].asLong();
-  input.K = bool(args["--depth"]) ? args["--depth"].asLong()
-                                  : args["<depth>"].asLong();
 
   // Get initial/final configurations
   if (bool(args["--initial-conf"]))
@@ -64,6 +59,29 @@ int main(int argc, char** argv) {
   std::string grid_filename = bool(args["--grid"])
                                   ? args["--grid"].asString()
                                   : args["<grid_filename>"].asString();
+
+  if(auto in = std::ifstream(grid_filename); in.good()) {
+    std::string line;
+    input.I = 0;
+    input.J = 0;
+    while(std::getline(in, line)) {
+      // Get number of columns
+      line.erase(std::remove_if(std::begin(line), std::end(line), [](auto &&x){ return not (x == '0' or x == '1'); }), std::end(line));
+      const int __J = std::size(line);
+      if(input.J != 0 and input.J != __J) {
+        std::cout << "Grid size is inconsistent." << std::endl;
+        assert(-1);
+      } else input.J = __J;
+      // Increase number of rows
+      ++input.I;
+    }
+  } else {
+    std::cout << "Cannot open grid file: " << grid_filename << std::endl;
+    assert(in.good());
+  }
+
+  input.K = bool(args["--depth"]) ? args["--depth"].asLong()
+                                  : args["<depth>"].asLong();
 
   // Creating streams for input files.
   auto circuit_data = std::ifstream(circuit_filename);

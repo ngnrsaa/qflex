@@ -36,9 +36,9 @@ the simulation parameters):
 # docker run -ti --rm -v $PWD/circuits:/qflex/circuits:ro \
                       -v $PWD/ordering:/qflex/ordering:ro \
                       -v $PWD/grid:/qflex/grid:ro \
-                      qflex:latest 11 12 2 /qflex/circuits/bristlecone_48_1-40-1_0.txt \
-                                           /qflex/ordering/bristlecone_48.txt \
-                                           /qflex/grid/bristlecone_48.txt
+                      qflex:latest 2 /qflex/circuits/bristlecone_48_1-40-1_0.txt \
+                                     /qflex/ordering/bristlecone_48.txt \
+                                     /qflex/grid/bristlecone_48.txt
 ```
 
 The flag `-v [orig]:[dest]:[attr]` is required to allow qFlex image access to
@@ -48,7 +48,7 @@ changes are made after qFlex images are built). To run simulations using the
 default input files, `-v` flags may be dropped:
 
 ```
-# docker run -ti --rm qflex:latest 11 12 2 /qflex/circuits/bristlecone_48_1-40-1_0.txt \
-                                           /qflex/ordering/bristlecone_48.txt \
-                                           /qflex/grid/bristlecone_48.txt
+# docker run -ti --rm qflex:latest 2 /qflex/circuits/bristlecone_48_1-40-1_0.txt \
+                                     /qflex/ordering/bristlecone_48.txt \
+                                     /qflex/grid/bristlecone_48.txt
 ```
