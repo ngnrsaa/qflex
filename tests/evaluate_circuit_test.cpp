@@ -99,41 +99,34 @@ TEST(GetOutputStatesDeathTest, InvalidInput) {
 }
 
 // Grid layout with trailing whitespace.
-constexpr char kTestGrid[] = R"(0 1 1 0
-                                1 1 1 1
-                                0 1 0 0
-                                )";
+constexpr char kTestGrid_3x4[] = R"(0 1 1 0
+                                    1 1 1 1
+                                    0 1 0 0)";
 
-#warning UNCLEAR IF RELEVANT NOW
-//TEST(ReadGridTest, ValidGrid3x4) {
-//  std::stringstream stream(kTestGrid);
-//  std::vector<std::vector<int>> off_qubits =
-//      read_grid_layout_from_stream(&stream, 3, 4);
-//  std::vector<std::vector<int>> expected_off = {
-//      {0, 0}, {0, 3}, {2, 0}, {2, 2}, {2, 3}};
-//  EXPECT_EQ(off_qubits, expected_off);
-//}
-//
-//TEST(ReadGridTest, ValidGrid6x2) {
-//  std::stringstream stream(kTestGrid);
-//  std::vector<std::vector<int>> off_qubits =
-//      read_grid_layout_from_stream(&stream, 6, 2);
-//  std::vector<std::vector<int>> expected_off = {
-//      {0, 0}, {1, 1}, {4, 0}, {5, 0}, {5, 1}};
-//  EXPECT_EQ(off_qubits, expected_off);
-//}
-//
-//// Grid data is too large: 3 * 4 > 5 * 2
-//TEST(ReadGridDeathTest, InvalidGrid5x2) {
-//  std::stringstream stream(kTestGrid);
-//  EXPECT_DEATH(read_grid_layout_from_stream(&stream, 5, 2), "");
-//}
-//
-//// Grid data is too small: 3 * 4 < 5 * 3
-//TEST(ReadGridDeathTest, InvalidGrid5x3) {
-//  std::stringstream stream(kTestGrid);
-//  EXPECT_DEATH(read_grid_layout_from_stream(&stream, 5, 3), "");
-//}
+constexpr char kTestGrid_6x2[] = R"(0 1
+                                    1 0
+                                    1 1
+                                    1 1
+                                    0 1
+                                    0 0)";
+
+TEST(ReadGridTest, ValidGrid3x4) {
+  std::stringstream stream(kTestGrid_3x4);
+  QflexGrid grid;
+  grid.load(stream);
+  std::vector<std::vector<int>> expected_off = {
+      {0, 0}, {0, 3}, {2, 0}, {2, 2}, {2, 3}};
+  EXPECT_EQ(grid.qubits_off, expected_off);
+}
+
+TEST(ReadGridTest, ValidGrid6x2) {
+  std::stringstream stream(kTestGrid_6x2);
+  QflexGrid grid;
+  grid.load(stream);
+  std::vector<std::vector<int>> expected_off = {
+      {0, 0}, {1, 1}, {4, 0}, {5, 0}, {5, 1}};
+  EXPECT_EQ(grid.qubits_off, expected_off);
+}
 
 // Below are config strings for a simple grid with one "off" qubit and one cut:
 //   0 - 1
