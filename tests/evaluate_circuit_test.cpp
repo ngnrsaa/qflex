@@ -198,18 +198,18 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
   input.ordering_data = &ordering_data;
   input.grid_data = &grid_data;
   input.initial_state = "00000";
-  input.final_state_A = "1000";
+  input.final_state_A = "1100";
 
   std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
       EvaluateCircuit(&input);
 
   ASSERT_EQ(amplitudes.size(), 2);
-  EXPECT_EQ(amplitudes[0].first, "1000 0");
-  EXPECT_EQ(amplitudes[1].first, "1000 1");
-  EXPECT_NEAR(amplitudes[0].second.real(), 0.19508, 1e-5);
-  EXPECT_NEAR(amplitudes[0].second.imag(), -0.04419, 1e-5);
-  EXPECT_NEAR(amplitudes[1].second.real(), 0.14331, 1e-5);
-  EXPECT_NEAR(amplitudes[1].second.imag(), -0.16919, 1e-5);
+  EXPECT_EQ(amplitudes[0].first, "1100 0");
+  EXPECT_EQ(amplitudes[1].first, "1100 1");
+  EXPECT_NEAR(amplitudes[0].second.real(), 0.10669, 1e-5);
+  EXPECT_NEAR(amplitudes[0].second.imag(), 0.04419, 1e-5);
+  EXPECT_NEAR(amplitudes[1].second.real(), -0.01831, 1e-5);
+  EXPECT_NEAR(amplitudes[1].second.imag(), -0.25758, 1e-5);
 }
 
 // Nullptr input in EvaluateCircuit()
