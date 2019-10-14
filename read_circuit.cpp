@@ -52,6 +52,11 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
                                  0., 0., 1., 0.,
                                  0., 0., 0., -1.})},
 
+     // For cx, both q1 and q2 get indices in the order (input, virtual,
+     // output).
+     {"cx_q1", std::vector<s_type>({1.,0.,0.,0.,0.,0.,0.,1.})},
+     {"cx_q2", std::vector<s_type>({1.,0.,0.,1.,0.,1.,1.,0.})},
+     // For the non-decomposed cx, the convention is (in1, in2, out1, out2).
      {"cx", std::vector<s_type>({1., 0., 0., 0.,
                                  0., 1., 0., 0.,
                                  0., 0., 0., 1.,
@@ -199,6 +204,10 @@ gate_arrays(const std::string& gate_name, s_type* scratch) {
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
                       std::vector<size_t>>(gate_array("cz_q1"),
                                            gate_array("cz_q2"), {2, 2, 2});
+  } else if (gate_name == "cx") {
+    return std::tuple<std::vector<s_type>, std::vector<s_type>,
+                      std::vector<size_t>>(gate_array("cx_q1"),
+                                           gate_array("cx_q2"), {2, 2, 2});
   } else if (std::regex_match(gate_name, match, fsim_regex) &&
              match.size() > 2) {
     const double theta_rads = _PI * stod(match.str(1));
@@ -450,7 +459,7 @@ void circuit_data_to_grid_of_tensors(
       ss >> q1;
       // Get the second position in the case
       // TODO: Two-qubit gates should be encapsulated better.
-      if (gate == "cz" || gate.rfind("fsim", 0) == 0) {
+      if (gate == "cz" || gate == "cx" || gate.rfind("fsim", 0) == 0) {
         ss >> q2;
       } else {
         q2 = -1;
@@ -770,7 +779,7 @@ void read_wave_function_evolution(
       // Get the first position
       ss >> q1;
       // Get the second position in the case
-      if (gate == "cz")
+      if (gate == "cz" || gate == "cx" || gate.rfind("fsim", 0) == 0)
         ss >> q2;
       else
         q2 = -1;
