@@ -60,26 +60,6 @@ int main(int argc, char** argv) {
                                   ? args["--grid"].asString()
                                   : args["<grid_filename>"].asString();
 
-  if(auto in = std::ifstream(grid_filename); in.good()) {
-    std::string line;
-    input.I = 0;
-    input.J = 0;
-    while(std::getline(in, line)) {
-      // Get number of columns
-      line.erase(std::remove_if(std::begin(line), std::end(line), [](auto &&x){ return not (x == '0' or x == '1'); }), std::end(line));
-      const int __J = std::size(line);
-      if(input.J != 0 and input.J != __J) {
-        std::cout << "Grid size is inconsistent." << std::endl;
-        assert(-1);
-      } else input.J = __J;
-      // Increase number of rows
-      ++input.I;
-    }
-  } else {
-    std::cout << "Cannot open grid file: " << grid_filename << std::endl;
-    assert(in.good());
-  }
-
   input.K = bool(args["--depth"]) ? args["--depth"].asLong()
                                   : args["<depth>"].asLong();
 
@@ -98,12 +78,10 @@ int main(int argc, char** argv) {
     assert(ordering_data.good());
   }
   input.ordering_data = &ordering_data;
-  auto grid_data = std::ifstream(grid_filename);
-  if (!grid_data.good()) {
-    std::cout << "Cannot open grid data file: " << grid_filename << std::endl;
-    assert(grid_data.good());
-  }
-  input.grid_data = &grid_data;
+
+  // Load grid
+  input.grid.load(grid_filename);
+
 
   // Evaluating circuit.
   std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
