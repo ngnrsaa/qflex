@@ -29,7 +29,7 @@ tensor network, CPU-based simulator of large quantum circuits.
 )";
 
 // Example:
-// $ ./qflex.x 11 12 2 ./circuits/bristlecone_48_1-40-1_0.txt \
+// $ ./qflex.x 11 12 2 ./circuits/bristlecone_48_1-24-1_0.txt \
 //       ./ordering/bristlecone_48.txt ./grid/bristlecone_48.txt
 //
 int main(int argc, char** argv) {
