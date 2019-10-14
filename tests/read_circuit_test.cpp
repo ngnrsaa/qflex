@@ -50,6 +50,9 @@ constexpr char kBadTGate[] = R"(2
 constexpr char kBadCzGate[] = R"(2
 1 cz 0 1)";
 
+constexpr char kBadCxGate[] = R"(2
+1 cx 0 1)";
+
 TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
   std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
   std::vector<std::vector<int>> off_qubits = {{0, 0}};
@@ -64,6 +67,13 @@ TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
 
   // Two qubit gate must have active qubit as first qubit input.
   circuit_data = std::stringstream(kBadCzGate);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "0", "1", {},
+                                      off_qubits, grid_of_tensors, scratch),
+      "");
+
+  // Two qubit gate must have active qubit as first qubit input.
+  circuit_data = std::stringstream(kBadCxGate);
   EXPECT_DEATH(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "0", "1", {},
                                       off_qubits, grid_of_tensors, scratch),
@@ -128,15 +138,15 @@ constexpr char kSimpleCircuit[] = R"(5
 0 h 3
 0 h 5
 1 cz 0 1
-2 cz 0 2
-3 cz 1 3
+2 cx 0 2
+3 cx 1 3
 4 cz 2 3
 5 cz 3 5
 11 cz 0 1
-12 cz 0 2
-13 cz 1 3
+12 cx 0 2
+13 cx 1 3
 14 cz 2 3
-15 cz 3 5
+15 cx 3 5
 17 h 0
 17 h 1
 17 h 2
