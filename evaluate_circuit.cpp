@@ -20,10 +20,13 @@ namespace qflex {
 void QflexGrid::load(std::istream &istream) {
   I = J = 0;
   std::string line;
-  while(std::getline(istream, line)) {
+  while(std::getline(istream, line)) if(std::size(line) and line[0] != '#') {
 
     // String unnecessary chars
     line.erase(std::remove_if(std::begin(line), std::end(line), [](auto &&x){ return not (x == '0' || x == '1'); }), std::end(line));
+
+    // Continue if line is empty
+    if(std::empty(line)) continue;
 
     // Get number of columns
     if(J != 0 and J != std::size(line)) throw std::string("Grid size is inconsistent");
