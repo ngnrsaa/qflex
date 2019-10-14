@@ -40,6 +40,7 @@ These are defined as follows:
 
 - 'h': Hadamard gate
 - 'cz': Controlled-Z gate
+- 'cx': Controlled-X gate
 - 't': T gate (equivalent to Z^1/4)
 - 'x_1_2': X^1/2 gate
 - 'y_1_2': Y^1/2 gate
