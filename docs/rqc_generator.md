@@ -13,7 +13,7 @@ RQC generator.
 This RQC can be called in the following manner:
 ```
 Example usage:
-    $ python generator.py --device=rochester \
+    $ python generator.py --pattern-file=patterns/ibm_rochester.txt \
                           --single_qubit_gates=x_1_2,y_1_2,hz_1_2 \
                           --two_qubit_gate=cx \
                           --sequence=ABAC \
@@ -23,8 +23,8 @@ Example usage:
 ```
 
 ### Tags
-* --device
-    * Name of devics, must be in provided devices
+* --pattern_file
+    * Name of pattern file to be used, must be stored in [/patterns](/patterns)
 * --single_qubit_gates
     * Comma-separated list of single-qubit gates known to qsim
 * --two_qubit_gate
@@ -38,15 +38,13 @@ Example usage:
 * --output
     * Name of output file to write the generated RQC in qsim format
 
-## Devices
+## Patterns
 
-To generate a random quantum circuit, a device with activation patterns must be added.
-For example, here is the definition of a TestDevice:
+To generate a random quantum circuit, a file containing activation patterns for a device must be provided in [/patterns](/patterns).
+Activation patterns must be given in a specific format as shown below, taken from [test.txt](/patterns/test.txt)
 ```
-class TestDevice(Device):
-    """Device for testing with three qubits and two couplers."""
-    ACTIVATION_PATTERNS = {'A': {(0, 1)}, 'B': {(1, 2)}}
-
-    def __init__(self) -> None:
-        super().__init__(TestDevice.ACTIVATION_PATTERNS)
+{
+  'A': {(0, 1)}, 
+  'B': {(1, 2)} 
+}
 ```
