@@ -6,8 +6,8 @@ function get_path() {
 
 if [[ ! ($# == 0 || ($# == 1 && $1 == "-y")) ]]; then
   echo -e "\n\tUsage: $(get_path $0)/$(basename $0) [-y]\n" >&2
-  echo -e "\tOptions:"
-  echo -e "\t\t-y: Move ignored files if any\n\n" >&2
+  echo -e "\tOptions:"                                      >&2
+  echo -e "\t\t-y: Move ignored files if any\n\n"           >&2
   exit 1
 fi
 
@@ -23,9 +23,9 @@ IGNORED_FILES=$(git --work-tree=$ROOT_DIR status --ignored -s | grep ^'!!' | sed
 if [[ -z $IGNORED_FILES ]]; then exit 0; fi
 
 if [[ $1 != "-y" ]]; then
-  echo "The following files are ignored by git:" >&2
+  echo "The following files are ignored by git:"                  >&2
   echo $IGNORED_FILES | tr ' ' '\n' | xargs -I{} echo -e "\t* {}" >&2
-  echo -n "Move them to ($TMP_DIR)? (y/N) " >&2
+  echo -n "Move them to ($TMP_DIR)? (y/N) "                       >&2
   read ANSWER
 else
   ANSWER="Y"
