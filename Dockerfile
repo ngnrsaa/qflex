@@ -16,4 +16,4 @@ RUN autoconf && ./configure
 # Compile qflex
 RUN make -j${OMP_NUM_THREADS}
 
-ENTRYPOINT ["/qflex/qflex.x"]
+ENTRYPOINT ["/qflex/src/qflex.x"]
