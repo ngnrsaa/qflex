@@ -38,8 +38,10 @@ int main(int argc, char** argv) {
 
   // Reading input
   qflex::QflexInput input;
-  input.I = bool(args["-x"]) ? args["-x"].asLong() : args["<num_rows>"].asLong();
-  input.J = bool(args["-y"]) ? args["-y"].asLong() : args["<num_cols>"].asLong();
+  input.I =
+      bool(args["-x"]) ? args["-x"].asLong() : args["<num_rows>"].asLong();
+  input.J =
+      bool(args["-y"]) ? args["-y"].asLong() : args["<num_cols>"].asLong();
   input.K = bool(args["--depth"]) ? args["--depth"].asLong()
                                   : args["<depth>"].asLong();
 
