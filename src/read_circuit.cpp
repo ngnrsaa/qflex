@@ -54,8 +54,17 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
 
      // For cx, both q1 and q2 get indices in the order (input, virtual,
      // output).
-     {"cx_q1", std::vector<s_type>({1.,0.,0.,0.,0.,0.,0.,1.})},
-     {"cx_q2", std::vector<s_type>({1.,0.,0.,1.,0.,1.,1.,0.})},
+     //{"cx_q1", std::vector<s_type>({1.,0.,0.,0.,0.,0.,0.,1.})},
+     //{"cx_q2", std::vector<s_type>({1.,0.,0.,1.,0.,1.,1.,0.})},
+     // Use more "balanced" SVD. Otherwise tensors are very sparse.
+     {"cx_q1",
+      std::vector<s_type>({0.8408964152537143, 0., 0.8408964152537143, 0., 0.,
+                           -0.8408964152537143, 0., 0.8408964152537143})},
+     {"cx_q2",
+      std::vector<s_type>({0.5946035575013604, -0.5946035575013604,
+                           0.5946035575013604, 0.5946035575013604,
+                           -0.5946035575013604, 0.5946035575013604,
+                           0.5946035575013604, 0.5946035575013604})},
      // For the non-decomposed cx, the convention is (in1, in2, out1, out2).
      {"cx", std::vector<s_type>({1., 0., 0., 0.,
                                  0., 1., 0., 0.,
