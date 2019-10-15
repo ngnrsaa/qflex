@@ -50,7 +50,7 @@ constexpr char kBadTGate[] = R"(2
 constexpr char kBadCzGate[] = R"(2
 1 cz 0 1)";
 
-TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
+TEST(ReadCircuitDeathTest, CircuitReferencingInactiveQubitsHELLO) {
   std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
   std::vector<std::vector<int>> off_qubits = {{0, 0}};
   s_type scratch[256];
@@ -73,6 +73,38 @@ TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
   off_qubits = {{1, 0}};
   EXPECT_DEATH(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "0", "1", {},
+                                      off_qubits, grid_of_tensors, scratch),
+      "");
+}
+
+constexpr char kBadCycle1[] = R"(2
+1 t 1
+1 t 1)";
+
+constexpr char kBadCycle2[] = R"(2
+1 t 1
+1 cz 1 2)";
+
+constexpr char kBadCycle3[] = R"(2
+1 t 2
+1 cz 1 2)";
+
+constexpr char kBadCycle4[] = R"(2
+1 cz 1 2
+1 cz 1 3)";
+
+constexpr char kBadCycle5[] = R"(2
+1 cz 1 3
+1 cz 2 3)";
+std::cout << "HELLO WE HERE" << std::endl;
+TEST(ReadCircuitDeathTest, MultipleGatesPerQubitPerCycle) {
+  std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
+  std::vector<std::vector<int>> off_qubits = {{0, 0}};
+  s_type scratch[256];
+  std::cout << "HELLO WE HERE" << std::endl;
+  auto circuit_data = std::stringstream(kBadCycle1);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "0", "1", {},
                                       off_qubits, grid_of_tensors, scratch),
       "");
 }

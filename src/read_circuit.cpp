@@ -432,8 +432,6 @@ void circuit_data_to_grid_of_tensors(
   std::string line;
   int cycle_holder = -1;
   std::vector<int> used_qubits;
-  q1 = 0;
-  q2 = 0;
   // Read one line at a time from the circuit, skipping comments.
   while (getline(*circuit_data, line)) {
     if (line.size() && line[0] != '#') {
@@ -462,7 +460,7 @@ void circuit_data_to_grid_of_tensors(
       } else {
         used_qubits.push_back(q1);
       }
-      // // Get the second position in the case
+      // Get the second position if needed
       // TODO: Two-qubit gates should be encapsulated better.
       if (gate == "cz" || gate.rfind("fsim", 0) == 0) {
         ss >> q2;
