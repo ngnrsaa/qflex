@@ -39,8 +39,9 @@ Example usage:
 
 ## Patterns
 
-To generate a random quantum circuit, a file containing activation patterns for a device must be provided in [/patterns](/patterns).
-Activation patterns must be given in a dictionaty like format (see for instance [test.txt](/patterns/test.txt)):
+To generate a random quantum circuit, a file containing the activation pattern must be provided 
+(see [/patterns](/patterns) for examples). Activation patterns must be given in a dictionaty like format
+(see for instance [test.txt](/patterns/test.txt)):
 ```
 {
   'A': {(0, 2), (1, 3)}, 
