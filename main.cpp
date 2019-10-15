@@ -9,8 +9,8 @@ static const char USAGE[] =
 tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
-    qflex <num_rows> <num_cols> <depth> <fidelity> <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf>]
-    qflex -x <num_rows> -y <num_cols> -d <depth> -f <fidelity> -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf>]
+    qflex <num_rows> <num_cols> <depth> <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf>]
+    qflex -x <num_rows> -y <num_cols> -d <depth> -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf>]
     qflex (-h | --help)
     qflex --version
 
@@ -19,7 +19,6 @@ tensor network, CPU-based simulator of large quantum circuits.
     -x <num_rows>                          Number of rows in grid.
     -y <num_cols>                          NUmber of columns in grid.
     -d,--depth=<depth>                     Target circuit depth.
-    -f,--fidelity=<fidelity>               Target circuit fidelity.
     -c,--circuit=<circuit_filename>        Circuit filename.
     -o,--ordering=<ordering_filename>      Ordering filename.
     -g,--grid=<grid_filename>              Grid filename.
@@ -30,7 +29,7 @@ tensor network, CPU-based simulator of large quantum circuits.
 )";
 
 // Example:
-// $ ./qflex.x 11 12 2 0.005 ./circuits/bristlecone_48_1-40-1_0.txt \
+// $ ./qflex.x 11 12 2 ./circuits/bristlecone_48_1-24-1_0.txt \
 //       ./ordering/bristlecone_48.txt ./grid/bristlecone_48.txt
 //
 int main(int argc, char** argv) {
@@ -43,9 +42,6 @@ int main(int argc, char** argv) {
   input.J = bool(args["-y"]) ? args["-y"].asLong() : args["<num_cols>"].asLong();
   input.K = bool(args["--depth"]) ? args["--depth"].asLong()
                                   : args["<depth>"].asLong();
-  input.fidelity =
-      std::stof(bool(args["--fidelity"]) ? args["--fidelity"].asString()
-                                         : args["<fidelity>"].asString());
 
   // Get initial/final configurations
   if (bool(args["--initial-conf"]))
