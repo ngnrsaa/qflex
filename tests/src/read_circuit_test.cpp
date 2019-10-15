@@ -87,34 +87,58 @@ TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
       "");
 }
 
-constexpr char kBadCycle1[] = R"(2
+constexpr char kBadCycle1[] = R"(4
 1 t 1
 1 t 1)";
 
-constexpr char kBadCycle2[] = R"(2
+constexpr char kBadCycle2[] = R"(4
 1 t 1
 1 cz 1 2)";
 
-constexpr char kBadCycle3[] = R"(2
+constexpr char kBadCycle3[] = R"(4
 1 t 2
 1 cz 1 2)";
 
-constexpr char kBadCycle4[] = R"(2
+constexpr char kBadCycle4[] = R"(4
 1 cz 1 2
 1 cz 1 3)";
 
-constexpr char kBadCycle5[] = R"(2
+constexpr char kBadCycle5[] = R"(4
 1 cz 1 3
 1 cz 2 3)";
-std::cout << "HELLO WE HERE" << std::endl;
+
 TEST(ReadCircuitDeathTest, MultipleGatesPerQubitPerCycle) {
   std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
   std::vector<std::vector<int>> off_qubits = {{0, 0}};
   s_type scratch[256];
-  std::cout << "HELLO WE HERE" << std::endl;
+
   auto circuit_data = std::stringstream(kBadCycle1);
   EXPECT_DEATH(
-      circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "0", "1", {},
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
+                                      off_qubits, grid_of_tensors, scratch),
+      "");
+  
+  circuit_data = std::stringstream(kBadCycle2);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
+                                      off_qubits, grid_of_tensors, scratch),
+      "");
+  
+  circuit_data = std::stringstream(kBadCycle3);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
+                                      off_qubits, grid_of_tensors, scratch),
+      "");
+
+  circuit_data = std::stringstream(kBadCycle4);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
+                                      off_qubits, grid_of_tensors, scratch),
+      "");
+
+  circuit_data = std::stringstream(kBadCycle5);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
                                       off_qubits, grid_of_tensors, scratch),
       "");
 }

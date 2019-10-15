@@ -463,7 +463,6 @@ void circuit_data_to_grid_of_tensors(
       ss >> cycle;
       if (cycle != cycle_holder) {
         cycle_holder = cycle;
-        std::cout << "CYCLE: " << cycle << std::endl;
         used_qubits.clear();
       }
       // The second element is the gate
