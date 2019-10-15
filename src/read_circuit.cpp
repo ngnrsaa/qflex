@@ -430,12 +430,19 @@ void circuit_data_to_grid_of_tensors(
   }
 
   std::string line;
+  int cycle_holder = -1;
+  std::vector<int> used_qubits;
   // Read one line at a time from the circuit, skipping comments.
   while (getline(*circuit_data, line)) {
     if (line.size() && line[0] != '#') {
       std::stringstream ss(line);
       // The first element is the cycle
       ss >> cycle;
+      if (cycle != cycle_holder) {
+        cycle_holder = cycle;
+        std::cout << "CYCLE: " << cycle << std::endl;
+        used_qubits.clear();
+      }
       // The second element is the gate
       ss >> gate;
       // Get the first position
@@ -443,10 +450,19 @@ void circuit_data_to_grid_of_tensors(
       // can be read as one token without spaces. This is (mostly) fine for
       // "rz(0.5)", but will fail for, e.g., "fsim(0.25, -0.5)".
       ss >> q1;
+      // Check that q1 hasn't already been used in this cycle
+      std::vector<int>::iterator q1_used = std::find (used_qubits.begin(), used_qubits.end(), q1);
+      if (q1_used == used_qubits.end()) {
+        used_qubits.push_back(q1);
+        std::cout << q1 << std::endl;
+      } else {
+        std::cout << "we NOOOOOOOOT good: " << q1 << std::endl;
+      }
       // Get the second position in the case
       // TODO: Two-qubit gates should be encapsulated better.
       if (gate == "cz" || gate.rfind("fsim", 0) == 0) {
         ss >> q2;
+        used_qubits.push_back(q2);
       } else {
         q2 = -1;
       }
