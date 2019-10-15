@@ -486,7 +486,11 @@ void circuit_data_to_grid_of_tensors(
       // TODO: Two-qubit gates should be encapsulated better.
       if (gate == "cz" || gate == "cx" || gate.rfind("fsim", 0) == 0) {
         ss >> q2;
-        // Check that q2 hasn't already been used in this cycle.
+      } else {
+        q2 = -1;
+      }
+      // Check that q2 hasn't already been used in this cycle when applicable.
+      if (q2 != -1) {
         std::vector<int>::iterator q2_used = std::find (used_qubits.begin(), used_qubits.end(), q2);
         if (q2_used != used_qubits.end()) {
           std::cout << "The qubit " << q2 << " in '" 
@@ -496,8 +500,6 @@ void circuit_data_to_grid_of_tensors(
         } else {
           used_qubits.push_back(q2);
         }
-      } else {
-        q2 = -1;
       }
 
       // Get i, j and super_cycle
