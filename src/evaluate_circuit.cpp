@@ -17,34 +17,40 @@
 
 namespace qflex {
 
-void QflexGrid::load(std::istream &istream) {
+void QflexGrid::load(std::istream& istream) {
   I = J = 0;
   std::string line;
-  while(std::getline(istream, line)) if(std::size(line) and line[0] != '#') {
+  while (std::getline(istream, line))
+    if (std::size(line) and line[0] != '#') {
+      // String unnecessary chars
+      line.erase(
+          std::remove_if(std::begin(line), std::end(line),
+                         [](auto&& x) { return not(x == '0' || x == '1'); }),
+          std::end(line));
 
-    // String unnecessary chars
-    line.erase(std::remove_if(std::begin(line), std::end(line), [](auto &&x){ return not (x == '0' || x == '1'); }), std::end(line));
+      // Continue if line is empty
+      if (std::empty(line)) continue;
 
-    // Continue if line is empty
-    if(std::empty(line)) continue;
+      // Get number of columns
+      if (J != 0 and J != std::size(line))
+        throw std::string("Grid size is inconsistent");
+      else
+        J = std::size(line);
 
-    // Get number of columns
-    if(J != 0 and J != std::size(line)) throw std::string("Grid size is inconsistent");
-    else J = std::size(line);
+      // Get off qubits
+      for (int q = 0; q < J; ++q)
+        if (line[q] == '0') qubits_off.push_back({I, q});
 
-    // Get off qubits
-    for(int q = 0; q < J; ++q)
-      if(line[q] == '0')
-        qubits_off.push_back({I, q});
-
-    // Update number of rows
-    ++I;
-  }
+      // Update number of rows
+      ++I;
+    }
 };
 
-void QflexGrid::load(const std::string &filename) {
-  if(auto in = std::ifstream(filename); in.good()) this->load(in);
-  else throw std::string("Cannot open grid file: ") + filename;
+void QflexGrid::load(const std::string& filename) {
+  if (auto in = std::ifstream(filename); in.good())
+    this->load(in);
+  else
+    throw std::string("Cannot open grid file: ") + filename;
 };
 
 void get_output_states(const std::list<ContractionOperation>& ordering,
@@ -97,7 +103,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   t0 = std::chrono::high_resolution_clock::now();
   std::list<ContractionOperation> ordering;
   ordering_data_to_contraction_ordering(input->ordering_data, input->grid.I,
-                                        input->grid.J, input->grid.qubits_off, &ordering);
+                                        input->grid.J, input->grid.qubits_off,
+                                        &ordering);
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
@@ -111,7 +118,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   std::vector<std::string> output_states;
   get_output_states(ordering, &final_qubits, &output_states);
 
-  int init_length = input->grid.I * input->grid.J - input->grid.qubits_off.size();
+  int init_length =
+      input->grid.I * input->grid.J - input->grid.qubits_off.size();
   if (input->initial_state.empty()) {
     input->initial_state = std::string(init_length, '0');
   }
@@ -140,10 +148,10 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     // Creating 3D grid of tensors from file.
     t0 = std::chrono::high_resolution_clock::now();
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
-    circuit_data_to_grid_of_tensors(input->circuit_data, input->grid.I, input->grid.J,
-                                    input->K, input->initial_state,
-                                    input->final_state_A, final_qubits,
-                                    input->grid.qubits_off, tensor_grid_3D, scratch);
+    circuit_data_to_grid_of_tensors(
+        input->circuit_data, input->grid.I, input->grid.J, input->K,
+        input->initial_state, input->final_state_A, final_qubits,
+        input->grid.qubits_off, tensor_grid_3D, scratch);
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
