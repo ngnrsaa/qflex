@@ -12,7 +12,7 @@ RQC generator.
 This RQC can be called in the following manner:
 ```
 Example usage:
-    $ python generator.py --pattern-file=patterns/ibm_rochester.txt \
+    $ python generator.py --pattern-file=config/patterns/ibm_rochester.txt \
                           --single_qubit_gates=x_1_2,y_1_2,hz_1_2 \
                           --two_qubit_gate=cx \
                           --sequence=ABAC \
