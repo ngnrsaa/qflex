@@ -17,4 +17,3 @@ RUN git submodule update --init --recursive
 RUN make -j${OMP_NUM_THREADS}
 
 ENTRYPOINT ["/qflex/qflex.x"]
-CMD []
