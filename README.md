@@ -40,7 +40,8 @@ To install qFlex, simply run:
 $ autoconf && ./configure 
 $ make && make run-tests && make install
 ```
-By default, qFlex is installed in `$HOME/local/`.
+By default, qFlex is installed in `$HOME/local/`. For more information:
+[qflex/docs/install.md](/docs/install.md)
 
 ## Licence
 
