@@ -1,4 +1,4 @@
-#include "../evaluate_circuit.h"
+#include "evaluate_circuit.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
