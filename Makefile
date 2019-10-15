@@ -20,14 +20,14 @@ $(TARGET1):
 
 .PHONY: tests
 tests:
-	$(MAKE) -C tests/
+	$(MAKE) -C tests/src/
 
 .PHONY: run-tests
 run-tests: tests
-	$(MAKE) -C tests/ run-all
+	$(MAKE) -C tests/src/ run-all
 
 .PHONY: clean
 clean:
 	rm -f $(TARGET1).x
 	$(MAKE) -C src/ clean
-	$(MAKE) -C tests/ clean
+	$(MAKE) -C tests/src/ clean
