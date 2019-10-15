@@ -28,6 +28,6 @@ run-tests: tests
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET1).x
-	$(MAKE) -C src/ clean
-	$(MAKE) -C tests/src/ clean
+	-rm -f $(TARGET1).x
+	-$(MAKE) -C src/ clean
+	-$(MAKE) -C tests/src/ clean

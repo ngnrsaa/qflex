@@ -30,6 +30,6 @@ gmock-all.o:
 
 .PHONY: clean
 clean:
-	rm -f ./*.x ./*.a ./*.so ./*.mod $(OBJS1)
-	$(MAKE) -C $(GMOCK_DIR)/make clean
-	$(MAKE) -C $(GTEST_DIR)/make clean
+	-rm -f ../*.x ./*.a ./*.so ./*.mod $(OBJS1)
+	-$(MAKE) -C $(GMOCK_DIR)/make clean
+	-$(MAKE) -C $(GTEST_DIR)/make clean
