@@ -12,4 +12,4 @@ $(TARGET1): main.cpp $(OBJS1)
 
 .PHONY: clean
 clean:
-	rm -f ./*.x ./*.a ./*.so ./*.mod $(OBJS1)
+	-rm -f ./*.x ./*.a ./*.so ./*.mod $(OBJS1)
