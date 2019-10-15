@@ -22,6 +22,7 @@ malformed_py_files=()
 
 # For all files in this directory and all subdirectories...
 for filename in $(find_cmd ${ROOT_DIR}/ -type f -iname "*.h" -or -iname "*.cpp"); do
+  filename=$(realpath $(dirname $filename))/$(basename $filename)
   echo "Checking: $filename" >&2
   # ...check if there are any changes required.
   if clang-format --style=Google --output-replacements-xml "$filename" | grep -q "<replacement "; then
@@ -31,6 +32,7 @@ for filename in $(find_cmd ${ROOT_DIR}/ -type f -iname "*.h" -or -iname "*.cpp")
 done
 
 for filename in $(find_cmd ${ROOT_DIR}/ -type f -iname "*.py"); do
+  filename=$(realpath $(dirname $filename))/$(basename $filename)
   echo "Checking: $filename" >&2
   # ...check if there are any changes required.
   if [[ $(yapf3 --style=Google -d "$filename" | wc -l) > 0 ]]; then
@@ -42,29 +44,29 @@ done
 # If any files require formatting, list them and return an error.
 status=0
 
-echo
+echo >&2
 if ! [ ${#malformed_files[@]} -eq 0 ]; then
-  echo "C++ files require formatting: ${malformed_files[@]}"
-  echo
-  echo "Run the following command to auto-format these files:"
-  echo "clang-format --style=Google -i ${malformed_files[@]}"
-  echo
+  echo "C++ files require formatting: ${malformed_files[@]}"    >&2
+  echo                                                          >&2
+  echo "Run the following command to auto-format these files:"  >&2
+  echo "clang-format --style=Google -i ${malformed_files[@]}"   >&2
+  echo                                                          >&2
   status=1
 else
-  echo "All C++ files are formatted correctly."
-  echo
+  echo "All C++ files are formatted correctly."                 >&2
+  echo                                                          >&2
 fi
 
 if ! [ ${#malformed_py_files[@]} -eq 0 ]; then
-  echo "Python files require formatting: ${malformed_py_files[@]}"
-  echo
-  echo "Run the following command to auto-format these files:"
-  echo "yapf3 --style=Google -i ${malformed_py_files[@]}"
-  echo
+  echo "Python files require formatting: ${malformed_py_files[@]}"  >&2
+  echo                                                              >&2
+  echo "Run the following command to auto-format these files:"      >&2
+  echo "yapf3 --style=Google -i ${malformed_py_files[@]}"           >&2
+  echo                                                              >&2
   status=1
 else
-  echo "All Python files are formatted correctly."
-  echo
+  echo "All Python files are formatted correctly."                  >&2
+  echo                                                              >&2
 fi
 
 exit $status

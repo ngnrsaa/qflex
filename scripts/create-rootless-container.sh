@@ -117,7 +117,7 @@ if [[ $? != 0 ]]; then
   exit -1
 fi
 
-alpine_url="http://dl-cdn.alpinelinux.org/alpine/v3.10/releases/$(uname -m)/"
+alpine_url="http://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/$(uname -m)/"
 latest_miniroot=$($curl - $alpine_url/latest-releases.yaml 2>/dev/null | grep 'file:' | grep miniroot | sed 's/ *file: *//g')
 
 # Create temporary folder if the user does not provide a target folder
@@ -155,13 +155,13 @@ cat > $root/install_qflex.sh << EOF
 
 # Install dependencies
 /sbin/apk update
-/sbin/apk add g++ make gsl-dev git
+/sbin/apk add g++ make gsl-dev git autoconf
 
 # Change folder
 cd /qflex
 
-# Update submodules
-git submodule update --init --recursive
+# Run autoconf
+autoconf && ./configure
 
 # Make qFlex
 make -j\$OMP_NUM_THREADS
