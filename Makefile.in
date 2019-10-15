@@ -41,3 +41,4 @@ clean:
 .PHONY: clean-all
 clean-all: clean
 	-git submodule deinit --all
+	-bash scripts/clean-git.sh -y
