@@ -17,7 +17,8 @@ __indices__ denoting which qubits the gate affects.
 ### File format
 
 __Requirement:__ First line of the file MUST be an integer containing the number of active
-qubits in the circuit.
+qubits in the circuit.  
+
 Each line after that contains a gate in the following format:
 ```
 <cycle> <opcode> <indices>
