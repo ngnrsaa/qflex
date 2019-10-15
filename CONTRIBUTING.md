@@ -7,7 +7,7 @@ Create a pull request and we'll nudge you in the right direction.
 ## Contributor License Agreement
 
 Contributions to this project must be accompanied by a [NASA Contributor License
-Agreement](nasa-cla/).
+Agreement](/share/nasa-cla/).
 
 ## Pull Request Process and Code Review
 
