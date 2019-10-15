@@ -33,7 +33,7 @@ Example usage:
 * --depth
     * Number of layers of two-qubit gates
 * --seed
-    * Random seed to initialize P
+    * Random seed to initialize PRNG
 * --output
     * Name of output file to write the generated RQC in qsim format
 
