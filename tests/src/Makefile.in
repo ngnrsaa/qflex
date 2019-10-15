@@ -14,7 +14,7 @@ all: $(TARGETS)
 
 .PHONE: run-all
 run-all: all
-	for exe in $(TARGETS); do ../$$exe; done
+	for exe in $(TARGETS); do ./$$exe; done
 
 %.o:
 	$(MAKE) -C $(SRC_DIR) $@
@@ -26,10 +26,10 @@ gmock-all.o:
 	$(MAKE) -C $(GMOCK_DIR)/make gmock-all.o
 
 %.x: %.cpp $(OBJS1) gtest-all.o gmock-all.o 
-	$(CXX) -o ../$@ $< $(OBJS1:%=$(SRC_DIR)/%) $(TESTFLAGS) $(CXXFLAGS) $(GMOCK_DIR)/make/gmock-all.o $(GTEST_DIR)/make/gtest-all.o
+	$(CXX) -o ./$@ $< $(OBJS1:%=$(SRC_DIR)/%) $(TESTFLAGS) $(CXXFLAGS) $(GMOCK_DIR)/make/gmock-all.o $(GTEST_DIR)/make/gtest-all.o
 
 .PHONY: clean
 clean:
-	-rm -f ../*.x ./*.a ./*.so ./*.mod $(OBJS1)
+	-rm -f ./*.x ./*.a ./*.so ./*.mod $(OBJS1)
 	-$(MAKE) -C $(GMOCK_DIR)/make clean
 	-$(MAKE) -C $(GTEST_DIR)/make clean

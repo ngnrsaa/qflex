@@ -17,7 +17,6 @@ export FLAGS
 $(TARGET1):
 	git submodule update --init --recursive src/docopt
 	$(MAKE) -C src/
-	ln -s src/$(TARGET1).x .
 
 .PHONY: tests
 tests:
