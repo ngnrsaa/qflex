@@ -237,7 +237,7 @@ if __name__ == '__main__':
     arg_parser.add_argument(
         '--seed',
         type=int,
-        required=True,
+        required=False,
         help=
         'random seed to initialize PRNG used in selection of single-qubit gates'
     )
