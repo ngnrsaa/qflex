@@ -432,6 +432,8 @@ void circuit_data_to_grid_of_tensors(
   std::string line;
   int cycle_holder = -1;
   std::vector<int> used_qubits;
+  q1 = 0;
+  q2 = 0;
   // Read one line at a time from the circuit, skipping comments.
   while (getline(*circuit_data, line)) {
     if (line.size() && line[0] != '#') {
@@ -450,19 +452,30 @@ void circuit_data_to_grid_of_tensors(
       // can be read as one token without spaces. This is (mostly) fine for
       // "rz(0.5)", but will fail for, e.g., "fsim(0.25, -0.5)".
       ss >> q1;
-      // Check that q1 hasn't already been used in this cycle
+      // Check that q1 hasn't already been used in this cycle.
       std::vector<int>::iterator q1_used = std::find (used_qubits.begin(), used_qubits.end(), q1);
-      if (q1_used == used_qubits.end()) {
-        used_qubits.push_back(q1);
-        std::cout << q1 << std::endl;
+      if (q1_used != used_qubits.end()) {
+        std::cout << "The qubit " << q1 << " in '" 
+                  << line << "' has already been used in this cycle."
+                  << std::endl; 
+        assert(q1_used == used_qubits.end());
       } else {
-        std::cout << "we NOOOOOOOOT good: " << q1 << std::endl;
+        used_qubits.push_back(q1);
       }
-      // Get the second position in the case
+      // // Get the second position in the case
       // TODO: Two-qubit gates should be encapsulated better.
       if (gate == "cz" || gate.rfind("fsim", 0) == 0) {
         ss >> q2;
-        used_qubits.push_back(q2);
+        // Check that q2 hasn't already been used in this cycle.
+        std::vector<int>::iterator q2_used = std::find (used_qubits.begin(), used_qubits.end(), q2);
+        if (q2_used != used_qubits.end()) {
+          std::cout << "The qubit " << q2 << " in '" 
+                    << line << "' has already been used in this cycle. "
+                    << std::endl; 
+          assert(q2_used == used_qubits.end());
+        } else {
+          used_qubits.push_back(q2);
+        }
       } else {
         q2 = -1;
       }
