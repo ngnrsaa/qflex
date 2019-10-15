@@ -1,14 +1,16 @@
 #!/bin/bash
 
+ROOT_DIR="$(realpath $(dirname $0))/../"
+
 function find_cmd() {
   # Get path
   path=$1
   shift
   # Get modules
-  modules=$(cat ./.gitmodules 2>/dev/null | grep path | sed 's/[[:space:]]*//g' | awk -F "=" '{ print "./"$2"/" }' | tr '\n' '|')
+  modules=$(cat ${ROOT_DIR}/.gitmodules 2>/dev/null | grep path | sed 's/[[:space:]]*//g' | awk -F "=" -v root_dir=${ROOT_DIR} '{ print root_dir"/"$2 }' | tr '\n' '|')
   if [[ ! -z $modules ]]; then
     modules=${modules::-1}
-    find "$path" "$@" | grep -Ev ^"$modules"
+    find "$path" "$@" | grep -Ev ^"$modules|${ROOT_DIR}/.git"
   else
     find "$path" "$@" 
   fi
@@ -19,7 +21,8 @@ malformed_files=()
 malformed_py_files=()
 
 # For all files in this directory and all subdirectories...
-for filename in $(find_cmd . -type f -iname "*.h" -or -iname "*.cpp"); do
+for filename in $(find_cmd ${ROOT_DIR}/ -type f -iname "*.h" -or -iname "*.cpp"); do
+  echo "Checking: $filename" >&2
   # ...check if there are any changes required.
   if clang-format --style=Google --output-replacements-xml "$filename" | grep -q "<replacement "; then
     # This file requires changes, add it to the list.
@@ -27,7 +30,8 @@ for filename in $(find_cmd . -type f -iname "*.h" -or -iname "*.cpp"); do
   fi
 done
 
-for filename in $(find_cmd . -type f -iname "*.py"); do
+for filename in $(find_cmd ${ROOT_DIR}/ -type f -iname "*.py"); do
+  echo "Checking: $filename" >&2
   # ...check if there are any changes required.
   if [[ $(yapf3 --style=Google -d "$filename" | wc -l) > 0 ]]; then
     # This file requires changes, add it to the list.
@@ -38,6 +42,7 @@ done
 # If any files require formatting, list them and return an error.
 status=0
 
+echo
 if ! [ ${#malformed_files[@]} -eq 0 ]; then
   echo "C++ files require formatting: ${malformed_files[@]}"
   echo

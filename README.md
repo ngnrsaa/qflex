@@ -27,6 +27,11 @@ the Quantum Supremacy Frontier with a 281 Pflop/s Simulation"**, arXiv:1905.0044
 
 To run qFlex in a docker container, see [qflex/docs/docker.md](/docs/docker.md).
 
+## Build Using Rootless Containers
+
+To run qFlex in a rootless container, see
+[qflex/docs/rootless-container.md](/docs/rootless-container.md).
+
 ## Licence
 
 Copyright © 2019, United States Government as represented by the Administrator
