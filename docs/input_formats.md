@@ -16,12 +16,13 @@ __indices__ denoting which qubits the gate affects.
 
 ### File format
 
-First line of the file should contain the number of qubits in the circuit.
+__Requirement:__ First line of the file MUST be an integer containing the number of active
+qubits in the circuit.
 Each line after that contains a gate in the following format:
 ```
 <cycle> <opcode> <indices>
 
-cycle:      The integer value of the timestep in which the gate is performed.
+cycle:      The integer value of the timestep in which the gate is performed, starting at 0.
 opcode:     The type of gate to perform from the following list:
             Gates without arguments:
                 - 'h': Hadamard gate
