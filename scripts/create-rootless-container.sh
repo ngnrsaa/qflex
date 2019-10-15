@@ -166,28 +166,8 @@ git submodule update --init --recursive
 # Make qFlex
 make -j\$OMP_NUM_THREADS
 
-# Change folder
-cd tests
-
-# Make tests
-make -j\$OMP_NUM_THREADS
-
-# Create script to run tests
-echo "#!/bin/sh" > /qflex/tests/run_all.sh
-COUNT=\$(ls -1 /qflex/tests/*.x | wc -l)
-IDX=1
-for file in /qflex/tests/*.x; do
-  if [[ \$IDX -lt \$COUNT ]]; then
-    if [[ \$IDX -gt 1 ]]; then
-      echo -ne "\t"
-    fi
-    echo "\$file && \\ " 
-  else
-    echo -e "\t\$file"
-  fi
-  IDX=\$(echo \$IDX+1 | bc -l)
-done >> /qflex/tests/run_all.sh
-chmod 755 /qflex/tests/run_all.sh
+# Make and run tests
+make run-tests -j\$OMP_NUM_THREADS
 EOF
 chmod 755 $root/install_qflex.sh
 
@@ -216,9 +196,6 @@ chmod 755 $root/install_cirq.sh
 if [[ -z $no_inst || $no_inst != "1" ]]; then
   echo "[CHROOT] Install qFlex." >&2
   $unshare $chroot /install_qflex.sh
-
-  echo "[CHROOT] Run tests." >&2
-  $unshare $chroot /qflex/tests/run_all.sh
 else
   echo "[CHROOT] To install qFlex, run /install_qflex.sh in the container." >&2
 fi
