@@ -148,16 +148,21 @@ constexpr char kSimpleCircuit[] = R"(5
 0 h 2
 0 h 3
 0 h 5
+1 t 0
+1 t 1
+1 t 2
+1 t 3
+1 t 5
 1 cz 0 1
-2 cz 0 2
-3 cz 1 3
+2 cx 0 2
+3 cx 1 3
 4 cz 2 3
 5 cz 3 5
 11 cz 0 1
-12 cz 0 2
-13 cz 1 3
+12 cx 0 2
+13 cx 1 3
 14 cz 2 3
-15 cz 3 5
+15 cx 3 5
 17 h 0
 17 h 1
 17 h 2
@@ -193,15 +198,18 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
   input.ordering_data = &ordering_data;
   input.grid_data = &grid_data;
   input.initial_state = "00000";
-  input.final_state_A = "0000";
+  input.final_state_A = "1100";
 
   std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
       EvaluateCircuit(&input);
+
   ASSERT_EQ(amplitudes.size(), 2);
-  EXPECT_EQ(amplitudes[0].first, "0000 0");
-  EXPECT_NEAR(amplitudes[0].second.real(), 1.0, 1e-5);
-  EXPECT_EQ(amplitudes[1].first, "0000 1");
-  EXPECT_NEAR(amplitudes[1].second.real(), 0.0, 1e-5);
+  EXPECT_EQ(amplitudes[0].first, "1100 0");
+  EXPECT_EQ(amplitudes[1].first, "1100 1");
+  EXPECT_NEAR(amplitudes[0].second.real(), 0.10669, 1e-5);
+  EXPECT_NEAR(amplitudes[0].second.imag(), 0.04419, 1e-5);
+  EXPECT_NEAR(amplitudes[1].second.real(), -0.01831, 1e-5);
+  EXPECT_NEAR(amplitudes[1].second.imag(), -0.25758, 1e-5);
 }
 
 // Nullptr input in EvaluateCircuit()

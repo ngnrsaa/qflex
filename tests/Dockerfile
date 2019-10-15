@@ -4,4 +4,4 @@ FROM qflex
 # Compile tests
 WORKDIR /qflex/
 
-ENTRYPOINT ["make", "run-tests"]
+ENTRYPOINT make -j${OMP_NUM_THREADS} run-tests
