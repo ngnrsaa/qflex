@@ -389,8 +389,12 @@ void circuit_data_to_grid_of_tensors(
   std::vector<int> i_j_1, i_j_2;
   int super_cycle;
 
-  // The first element should be the number of qubits
+  // The first element is required to be the number of qubits
   *(circuit_data) >> num_qubits;
+  if (num_qubits == 0) {
+    std::cout << "First line in circuit file must be the number of active qubits." << std::endl;
+    assert(num_qubits != 0);
+  } 
   // TODO: Decide whether to determine number of qubits from file or from I*J
   if (num_qubits != I * J) {
     std::cout << "The number of qubits read from the file: " << num_qubits
