@@ -36,11 +36,18 @@
 
 namespace qflex {
 
+struct QflexGrid {
+  int I{0}, J{0};
+  std::vector<std::vector<int>> qubits_off;
+  void load(std::istream& istream);
+  void load(const std::string& filename);
+};
+
 struct QflexInput {
-  int I, J, K;
+  int K;
   std::istream* circuit_data;
   std::istream* ordering_data;
-  std::istream* grid_data;
+  QflexGrid grid;
   std::string initial_state;
   std::string final_state_A;
   bool enable_timing_logs = false;
