@@ -15,18 +15,18 @@ export CXXFLAGS
 export FLAGS
 
 $(TARGET1):
-	git submodule update --init --recursive src/docopt.cpp
+	git submodule update --init --recursive src/docopt
 	$(MAKE) -C src/
 	ln -s src/$(TARGET1).x .
 
 .PHONY: tests
 tests:
-	git submodule update --init --recursive tests/googletest
-	$(MAKE) -C tests/
+	git submodule update --init --recursive tests/src/googletest
+	$(MAKE) -C tests/src/
 
 .PHONY: run-tests
 run-tests: tests
-	$(MAKE) -C tests/ run-all
+	$(MAKE) -C tests/src/ run-all
 
 .PHONY: install
 install:
@@ -37,7 +37,7 @@ install:
 clean:
 	-rm -f $(TARGET1).x
 	-$(MAKE) -C src/ clean
-	-$(MAKE) -C tests/ clean
+	-$(MAKE) -C tests/src/ clean
 
 .PHONY: clean-all
 clean-all: clean
