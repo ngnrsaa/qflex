@@ -1,7 +1,6 @@
-# Random Quantum Circuit Generator
+# Random Quantum Circuit (RQC) Generator
 
-As part of input to qFlex, a random quantum circuit (RQC) file must be generated. 
-To help with this RQC generation, a python RQC generator has been provided and can be found in here: [generator.py](/python/generator.py).
+A Python RQC generator has been provided and can be found in here: [generator.py](/python/circuits/generator.py).
 
 The purpose of this document is to provide information on how to use the provided
 RQC generator.
@@ -24,7 +23,7 @@ Example usage:
 
 ### Tags
 * --pattern_file
-    * Name of pattern file to be used, must be stored in [/patterns](/patterns)
+    * Name of pattern file to be used. See examples in [/patterns](/patterns)
 * --single_qubit_gates
     * Comma-separated list of single-qubit gates known to qsim
 * --two_qubit_gate
@@ -41,10 +40,11 @@ Example usage:
 ## Patterns
 
 To generate a random quantum circuit, a file containing activation patterns for a device must be provided in [/patterns](/patterns).
-Activation patterns must be given in a specific format as shown below, taken from [test.txt](/patterns/test.txt)
+Activation patterns must be given in a dictionaty like format (see for instance [test.txt](/patterns/test.txt)):
 ```
 {
-  'A': {(0, 1)}, 
-  'B': {(1, 2)} 
+  'A': {(0, 2), (1, 3)}, 
+  'B': {(0, 1), (2, 3)} 
 }
 ```
+with `A` and `B` being tags for the patterns. Each pattern must be a list of pairs of qubits where two-qubit gates will be applied. The RQC is created by applying a layer of single-qubit gates, followed by two-qubit gates accordingly to the sequence given in `--sequence`. 
