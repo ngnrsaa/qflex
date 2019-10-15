@@ -161,10 +161,7 @@ cat > $root/install_qflex.sh << EOF
 cd /qflex
 
 # Run autoconf
-autoconf
-
-# Run configure
-./configure
+autoconf && ./configure
 
 # Make qFlex
 make -j\$OMP_NUM_THREADS
