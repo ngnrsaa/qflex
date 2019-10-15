@@ -29,7 +29,8 @@ run-tests: tests
 
 .PHONY: install
 install:
-	@find share -type f -exec install -vD {} $(PREFIX)/{} \;
+	@find config -type f -exec install -vD {} $(PREFIX)/share/qflex/{} \;
+	@find docs -type f -exec install -vD {} $(PREFIX)/share/qflex/{} \;
 	@install -vD src/qflex.x $(PREFIX)/bin/qflex
 
 .PHONY: clean
