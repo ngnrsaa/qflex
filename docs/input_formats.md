@@ -14,6 +14,8 @@ files, each gate is represented by a __cycle__ (the timestep in which the gate
 is performed), an __opcode__ (the type of gate to perform), and a list of
 __indices__ denoting which qubits the gate affects.
 
+Sample circuit files can be found under [qflex/config/circuits](/config/circuits).
+
 ### File format
 
 __Requirement:__ First line of the file MUST be an integer containing the number of active
@@ -66,6 +68,7 @@ These are defined as follows:
 
 - 'h': Hadamard gate
 - 'cz': Controlled-Z gate
+- 'cx': Controlled-X gate
 - 't': T gate (equivalent to Z^1/4)
 - 'x_1_2': X^1/2 gate
 - 'y_1_2': Y^1/2 gate
@@ -89,6 +92,8 @@ with contraction of all qubit worldlines to a 2D grid; the steps taken after
 are defined in this file. Each simulation step is either a __patch-expansion__, a __patch-merge__, or a __cut__.
 In this notation, a "patch" refers to a section of the tensor grid that has been contracted into a single tensor. 
 Multiple patches are used to improve parallelism and reduce the maximum required tensor rank.
+
+Sample ordering files can be found under [qflex/config/ordering](/config/ordering).
 
 ### File format
 
@@ -129,7 +134,7 @@ Example:
 cut (0,1) 24 42 -> This performs a cut betwen tensors 24 and 42 and projects the values 1 and 0 on the cut.
 ```
 
-Sample ordering files can be found under [qflex/ordering](/ordering).
+Sample ordering files can be found under [qflex/config/ordering](/config/ordering).
 
 ### Formal grammar
 
@@ -160,6 +165,8 @@ cut:           {cut} {values} {index} | {cut} {values} {index} {index}
 Grid files are a simple list of 1s and 0s indicating the positions of active
 qubits in a 2D lattice. These files are whitespace-agnostic, so it is
 recommended to arrange them in a format matching the chip they represent.
+
+Sample grid files can be found under [qflex/config/grid](/config/grid).
 
 ### File format
 

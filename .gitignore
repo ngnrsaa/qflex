@@ -13,4 +13,16 @@
 *.so
 *.x
 .*swp
+
+# TODO
 todo.txt
+
+# Python cache
+__pycache__
+
+# Autotools
+Makefile
+autom4te*
+config.status
+config.log
+configure
