@@ -56,7 +56,7 @@ Finally, qFlex can be installed as:
 make install
 ```
 By default, qFlex is installed in `$HOME/local`. See
-["Check Pre-Requisites "](Check-Pre-Requisites) to change the default folder.
+["Check Pre-Requisites "](#check-pre-requisites) to change the default folder.
 
 ## Clean-up
 
