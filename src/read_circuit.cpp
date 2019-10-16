@@ -453,10 +453,11 @@ void circuit_data_to_grid_of_tensors(
   }
 
   std::string line;
+  int line_counter = 0;
   int cycle_holder = 0;
   std::unordered_set<int> used_qubits;
   // Read one line at a time from the circuit, skipping comments.
-  while (getline(*circuit_data, line)) {
+  while ((++line_counter, getline(*circuit_data, line))) {
     if (line.size() && line[0] != '#') {
       std::stringstream ss(line);
       // The first element is the cycle
@@ -484,7 +485,7 @@ void circuit_data_to_grid_of_tensors(
       std::unordered_set<int>::const_iterator q1_used = used_qubits.find(q1);
       if (q1_used != used_qubits.end()) {
         std::cout << "The qubit " << q1 << " in '" 
-                  << line << "' has already been used in this cycle."
+                  << line_counter << ": " << line << "' has already been used in this cycle."
                   << std::endl; 
         assert(q1_used == used_qubits.end());
       } else {
@@ -495,7 +496,7 @@ void circuit_data_to_grid_of_tensors(
         std::unordered_set<int>::const_iterator q2_used = used_qubits.find(q2);
         if (q2_used != used_qubits.end()) {
           std::cout << "The qubit " << q2 << " in '" 
-                    << line << "' has already been used in this cycle. "
+                    << line_counter << ": " << line << "' has already been used in this cycle. "
                     << std::endl; 
           assert(q2_used == used_qubits.end());
         } else {
