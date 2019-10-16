@@ -453,7 +453,7 @@ void circuit_data_to_grid_of_tensors(
   }
 
   std::string line;
-  int cycle_holder = -1;
+  int cycle_holder = 0;
   std::unordered_set<int> used_qubits;
   // Read one line at a time from the circuit, skipping comments.
   while (getline(*circuit_data, line)) {
