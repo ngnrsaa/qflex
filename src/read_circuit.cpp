@@ -383,36 +383,47 @@ void circuit_data_to_grid_of_tensors(
     assert(scratch != nullptr);
   }
   // Gotten from the file.
-  int num_qubits, cycle, q1, q2;
+  int circuit_data_num_qubits, cycle, q1, q2;
   std::string gate;
   // Useful for plugging into the tensor network:
   std::vector<int> i_j_1, i_j_2;
   int super_cycle;
+  // Calculated from input.
+  int num_qubits_from_grid;
+  int off_size;
 
-  // The first element should be the number of qubits
-  *(circuit_data) >> num_qubits;
-  // TODO: Decide whether to determine number of qubits from file or from I*J
-  if (num_qubits != I * J) {
-    std::cout << "The number of qubits read from the file: " << num_qubits
-              << ", does not match I*J: " << I * J << "." << std::endl;
-    num_qubits = I * J;
+  // The first element is required to be the number of active qubits.
+  *(circuit_data) >> circuit_data_num_qubits;
+  if (circuit_data_num_qubits == 0) {
+    std::cout << "First line in circuit file must be the number of active qubits." << std::endl;
+    assert(circuit_data_num_qubits != 0);
+  }
+  off_size = off.has_value() ? off.value().size() : 0;
+  num_qubits_from_grid = I * J - off_size;
+  if (circuit_data_num_qubits != num_qubits_from_grid) {
+    std::cout << "The number of active qubits read from the file: " << circuit_data_num_qubits
+              << ", does not match the number of active qubits read from the grid: " << num_qubits_from_grid << "." << std::endl;
+    assert(circuit_data_num_qubits == num_qubits_from_grid);
   }
 
   // Assert for the length of initial_conf and final_conf_B.
+  int grid_size = I * J;
+  // std::cout << "num_qubits: " << num_qubits << std::endl;
+  // std::cout << "grid_size: " << grid_size << std::endl;
   {
-    size_t off_size = off.has_value() ? off.value().size() : 0;
+    // size_t off_size = off.has_value() ? off.value().size() : 0;
     size_t A_size = A.has_value() ? A.value().size() : 0;
-    if (initial_conf.size() != num_qubits - off_size) {
+    if (initial_conf.size() != grid_size - off_size) {
       std::cout << "Size of initial_conf: " << initial_conf.size()
                 << ", must be equal to the number of qubits: "
-                << num_qubits - off_size << "." << std::endl;
-      assert(initial_conf.size() == num_qubits - off_size);
+                << grid_size - off_size << "." << std::endl;
+      assert(initial_conf.size() == grid_size - off_size);
     }
-    if (final_conf_B.size() != num_qubits - off_size - A_size) {
+    if (final_conf_B.size() != grid_size - off_size - A_size) {
       std::cout << "Size of final_conf_B: " << final_conf_B.size()
                 << ", must be equal to the number of qubits: "
-                << num_qubits - off_size - A_size << "." << std::endl;
-      assert(final_conf_B.size() == num_qubits - off_size - A_size);
+                << grid_size - off_size - A_size << "." << std::endl;
+      assert(final_conf_B.size() == grid_size - off_size - A_size);
     }
   }
 
@@ -438,7 +449,7 @@ void circuit_data_to_grid_of_tensors(
 
   // Insert deltas and Hadamards to first layer.
   int idx = 0;
-  for (int q = 0; q < num_qubits; ++q) {
+  for (int q = 0; q < grid_size; ++q) {
     std::vector<int> i_j = get_qubit_coords(q, J);
     int i = i_j[0], j = i_j[1];
     if (find_grid_coord_in_list(off, i, j)) {
@@ -554,7 +565,7 @@ void circuit_data_to_grid_of_tensors(
   }
   // Insert Hadamards and deltas to last layer.
   idx = 0;
-  for (int q = 0; q < num_qubits; ++q) {
+  for (int q = 0; q < grid_size; ++q) {
     std::vector<int> i_j = get_qubit_coords(q, J);
     int i = i_j[0], j = i_j[1];
     int k = K - 1;
