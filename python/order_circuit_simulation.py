@@ -174,11 +174,13 @@ class Graph:
 
 def create_ordering_data(
     contraction_steps: Iterable[cirq.ops.raw_types.Operation],
-    qubit_order: Tuple[cirq.ops.raw_types.Qid, ...]):
+    qubit_names: Iterable[int], qubit_order: Tuple[cirq.ops.raw_types.Qid,
+                                                   ...]):
   """Converts a sequence of Cirq operations to a qFlex contraction ordering.
 
   Args:
     contraction_steps: a list of cirq.raw_type.Operation(s).
+    qubit_names: a list of integer IDs for each Qid in qubit_order.
     qubit_order: a tuple of qubits (cirq.ops.raw_types.Qid) in canonical order.
 
   Returns:
@@ -213,7 +215,7 @@ def create_ordering_data(
       for q in expand_qubits:
         patches[q] = current_patch_1
         output.append('expand {} {}'.format(current_patch_1,
-                                            qubit_order.index(q)))
+                                            qubit_names[qubit_order.index(q)]))
     else:
       if current_patch_1 > current_patch_2:
         current_patch_1, current_patch_2 = current_patch_2, current_patch_1
@@ -256,17 +258,20 @@ def get_steps_for_graph(g: Graph):
 
 def circuit_to_ordering(
     circuit: cirq.circuits.Circuit,
+    qubit_names: Iterable[int] = None,
     qubit_order_method: cirq.ops.QubitOrderOrList = cirq.ops.QubitOrder.DEFAULT,
     max_cuts: int = 2):
   """Generates a qFlex circuit ordering (with cuts) from a Cirq circuit.
 
   Args:
     circuit: a cirq.circuits.Circuit to be simulated.
+    qubit_names: a list of integer IDs for each Qid in qubit_order. If left
+      empty, qubits are assumed to have IDs {0, 1, ..., N}.
     qubit_order_method: an ops.QubitOrderOrList, which can call its order_for()
-    method to get a canonical ordering of the qubits in the circuit.
+      method to get a canonical ordering of the qubits in the circuit.
     max_cuts: Maximum number of cuts attempted. Cuts are made using a greedy
-    algorithm; making one or more cuts multiplies the time cost of this method
-    by O(# of edges in circuit).
+      algorithm; making one or more cuts multiplies the time cost of this method
+      by O(# of edges in circuit).
 
   Returns:
     A list of string-formatted qFlex contraction commands (e.g. 'expand 1 2')
@@ -278,6 +283,9 @@ def circuit_to_ordering(
   """
   if max_cuts < 0:
     raise ValueError('max_cuts must be positive!')
+
+  if qubit_names is None:
+    qubit_names = range(len(circuit.all_qubits()))
 
   qubit_order = qubit_order_method.order_for(circuit.all_qubits())
 
@@ -310,6 +318,7 @@ def circuit_to_ordering(
       break
   order_data = []
   for cut in cut_indices:
-    order_data.append('cut () %d %d' % tuple(qubit_order.index(c) for c in cut))
-  order_data += create_ordering_data(min_steps, qubit_order)
+    order_data.append('cut () %d %d' %
+                      tuple(qubit_names[qubit_order.index(c)] for c in cut))
+  order_data += create_ordering_data(min_steps, qubit_names, qubit_order)
   return order_data
