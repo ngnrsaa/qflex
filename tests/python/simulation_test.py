@@ -224,6 +224,32 @@ expand B 15
 merge A B
 """
 
+ordering_with_cuts_test = """
+cut () 4 8
+cut () 5 9
+cut () 6 10
+
+expand A 0
+expand A 1
+expand A 2
+expand A 3
+expand A 4
+expand A 5
+expand A 6
+expand A 7
+
+expand B 8
+expand B 9
+expand B 10
+expand B 11
+expand B 12
+expand B 13
+expand B 14
+expand B 15
+
+merge A B
+"""
+
 # Simulate circuit
 qubits = simulator.GetGridQubit(StringIO(grid_test))
 circuit = simulator.GetCircuit(StringIO(circuit_test), qubits)
@@ -231,26 +257,40 @@ results = cirq.Simulator().simulate(circuit, qubit_order=qubits)
 
 # Save circuit and grid on temporary files
 circuit_filename = mkstemp()
-ordering_filename = mkstemp()
 grid_filename = mkstemp()
+ordering_filename = mkstemp()
+ordering_with_cuts_filename = mkstemp()
 
 with open(circuit_filename[1], 'w') as f: print(circuit_test, file=f)
-with open(ordering_filename[1], 'w') as f: print(ordering_test, file=f)
 with open(grid_filename[1], 'w') as f: print(grid_test, file=f)
+with open(ordering_filename[1], 'w') as f: print(ordering_test, file=f)
+with open(ordering_with_cuts_filename[1], 'w') as f: print(ordering_with_cuts_test, file=f)
 
 @pytest.mark.parametrize('x', [np.random.randint(0, 2**len(qubits)) for _ in range(100)])
 def test_simulation(x):
 
-  # Compare the results with qFlex
-  #for index,x in enumerate():
-
   # Get configuration as a string
-  warn(UserWarning("The string configuration should be reversed."))
   final_conf = bin(x)[2:].zfill(len(qubits))
 
   # Get output from qFlex
   output, error = Popen("./src/qflex.x -d 2 -c {} -o {} -g {} --final-conf {}".format(circuit_filename[1], 
     ordering_filename[1], grid_filename[1], final_conf).split(), stdout=PIPE).communicate()
+
+  # Compare the amplitudes
+  amplitude = np.complex(*[float(x) for x in output.decode().strip().split()[-2:]]) 
+
+  # Check that the amplitudes are the same
+  assert(np.abs(results.final_state[x] - amplitude) < 1.e-6)
+
+@pytest.mark.parametrize('x', [np.random.randint(0, 2**len(qubits)) for _ in range(100)])
+def test_simulation_with_cuts(x):
+
+  # Get configuration as a string
+  final_conf = bin(x)[2:].zfill(len(qubits))
+
+  # Get output from qFlex
+  output, error = Popen("./src/qflex.x -d 2 -c {} -o {} -g {} --final-conf {}".format(circuit_filename[1], 
+    ordering_with_cuts_filename[1], grid_filename[1], final_conf).split(), stdout=PIPE).communicate()
 
   # Compare the amplitudes
   amplitude = np.complex(*[float(x) for x in output.decode().strip().split()[-2:]]) 
