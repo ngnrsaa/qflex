@@ -368,7 +368,13 @@ void ordering_data_to_contraction_ordering(
           error_msg = "Index 2 must specify an active qubit.";
           break;
         }
-        ordering->emplace_back(CutIndex({position_1, position_2}, values));
+        // If indices are listed in reverse order, swap them to prevent issues
+        // in tensor contraction.
+        if (index_1 < index_2) {
+          ordering->emplace_back(CutIndex({position_1, position_2}, values));
+        } else {
+          ordering->emplace_back(CutIndex({position_2, position_1}, values));
+        }
       }
     } else if (operation == "merge") {
       std::string patch_1, patch_2;

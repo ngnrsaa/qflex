@@ -147,11 +147,11 @@ constexpr char kSimpleCircuit[] = R"(5
 1 t 2
 1 t 3
 1 t 5
-1 cz 0 1
-2 cx 0 2
-3 cx 1 3
-4 cz 2 3
-5 cz 3 5
+2 cz 0 1
+3 cx 0 2
+4 cx 1 3
+5 cz 2 3
+6 cz 3 5
 11 cz 0 1
 12 cx 0 2
 13 cx 1 3
