@@ -9,11 +9,12 @@ addons:
     - clang-format
 
 before_script:
-  - bash check-format.sh
+  - bash scripts/check-format.sh
   - docker-compose build
 
 script:
   - docker run -ti --rm qflex-tests:latest
-  - docker run -ti --rm qflex:latest 11 12 2 0.005 \
-    /qflex/circuits/ben_11_16_0.txt /qflex/ordering/bristlecone_48.txt \
-    /qflex/grid/bristlecone_48.txt
+  - docker run -ti --rm qflex:latest 11 12 2 \
+          /qflex/config/circuits/bristlecone_48_1-24-1_0.txt \
+          /qflex/config/ordering/bristlecone_48.txt \
+          /qflex/config/grid/bristlecone_48.txt

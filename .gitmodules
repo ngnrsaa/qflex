@@ -1,5 +1,5 @@
 [submodule "googletest"]
-	path = googletest
+	path = tests/src/googletest
 	url = https://github.com/google/googletest.git
 
 [submodule "pybind11"]
@@ -7,5 +7,5 @@
 	url = https://github.com/pybind/pybind11.git
 
 [submodule "docopt.cpp"]
-	path = docopt.cpp
+	path = src/docopt
 	url = https://github.com/docopt/docopt.cpp.git

@@ -12,12 +12,36 @@ verify and benchmark such experiments.
 
 ## Documentation
 
-qFlex scientific documentation and results can be found [here](tbd) and [here](tbd).
-For the technical documentations, see [qflex/docs](/docs).
+qFlex scientific documentation and results can be found in 
+[[1]](https://arxiv.org/abs/1811.09599) and [[2]](https://arxiv.org/abs/1905.00444).
+For technical documentation on how to use qFlex, see [qflex/docs](/docs).
+
+[[1]](https://arxiv.org/abs/1811.09599) B. Villalonga, *et al.*, **"A flexible 
+high-performance simulator for verifying and benchmarking quantum circuits 
+implemented on real hardware"**, NPJ Quantum Information 5, 86 (2019)
+
+[[2]](https://arxiv.org/abs/1905.00444) B. Villalonga, *et al.*, **"Establishing
+the Quantum Supremacy Frontier with a 281 Pflop/s Simulation"**, arXiv:1905.00444 (2019)
 
 ## Build Using Docker
 
 To run qFlex in a docker container, see [qflex/docs/docker.md](/docs/docker.md).
+
+## Build Using Rootless Containers
+
+To run qFlex in a rootless container, see
+[qflex/docs/rootless-container.md](/docs/rootless-container.md).
+
+## Install
+
+To install qFlex, simply run:
+
+```
+$ autoconf && ./configure 
+$ make && make run-tests && make install
+```
+By default, qFlex is installed in `$HOME/local/`. For more information:
+[qflex/docs/install.md](/docs/install.md)
 
 ## Licence
 

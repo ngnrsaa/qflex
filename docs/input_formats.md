@@ -14,7 +14,7 @@ files, each gate is represented by a __cycle__ (the timestep in which the gate
 is performed), an __opcode__ (the type of gate to perform), and a list of
 __indices__ denoting which qubits the gate affects.
 
-Sample circuit files can be found under [qflex/circuits](/circuits) with the
+Sample circuit files can be found under [qflex/config/circuits](/config/circuits) with the
 following format: `[circuit_type]_[circuit_size]_[circuit_depth]_[idx].txt`.
 
 ### Formal grammar
@@ -40,6 +40,7 @@ These are defined as follows:
 
 - 'h': Hadamard gate
 - 'cz': Controlled-Z gate
+- 'cx': Controlled-X gate
 - 't': T gate (equivalent to Z^1/4)
 - 'x_1_2': X^1/2 gate
 - 'y_1_2': Y^1/2 gate
@@ -64,7 +65,7 @@ that are defined in this file. Each simulation step has an __operation__
 (either a patch-expansion, a patch-merge, or a cut) and some combination of
 __indices__ or __patch names__ to which the operation applies.
 
-Sample ordering files can be found under [qflex/ordering](/ordering).
+Sample ordering files can be found under [qflex/config/ordering](/config/ordering).
 
 ### Formal grammar
 
@@ -96,7 +97,7 @@ Grid files are a simple list of 1s and 0s indicating the positions of active
 qubits in a 2D lattice. These files are whitespace-agnostic, so it is
 recommended to arrange them in a format matching the chip they represent.
 
-Sample grid files can be found under [qflex/grid](/grid).
+Sample grid files can be found under [qflex/config/grid](/config/grid).
 
 ### Formal grammar
 
