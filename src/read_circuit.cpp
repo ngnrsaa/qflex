@@ -463,12 +463,19 @@ void circuit_data_to_grid_of_tensors(
   }
 
   std::string line;
+  int line_counter = 0;
+  int cycle_holder = 0;
+  std::unordered_set<int> used_qubits;
   // Read one line at a time from the circuit, skipping comments.
-  while (getline(*circuit_data, line)) {
+  while ((++line_counter, getline(*circuit_data, line))) {
     if (line.size() && line[0] != '#') {
       std::stringstream ss(line);
       // The first element is the cycle
       ss >> cycle;
+      if (cycle != cycle_holder) {
+        cycle_holder = cycle;
+        used_qubits.clear();
+      }
       // The second element is the gate
       ss >> gate;
       // Get the first position
@@ -476,12 +483,35 @@ void circuit_data_to_grid_of_tensors(
       // can be read as one token without spaces. This is (mostly) fine for
       // "rz(0.5)", but will fail for, e.g., "fsim(0.25, -0.5)".
       ss >> q1;
-      // Get the second position in the case
+      // Get the second position if needed
       // TODO: Two-qubit gates should be encapsulated better.
       if (gate == "cz" || gate == "cx" || gate.rfind("fsim", 0) == 0) {
         ss >> q2;
       } else {
         q2 = -1;
+      }
+
+      // Check that q1 hasn't already been used in this cycle.
+      std::unordered_set<int>::const_iterator q1_used = used_qubits.find(q1);
+      if (q1_used != used_qubits.end()) {
+        std::cout << "The qubit " << q1 << " in '" << line_counter << ": "
+                  << line << "' has already been used in this cycle."
+                  << std::endl;
+        assert(q1_used == used_qubits.end());
+      } else {
+        used_qubits.insert(q1);
+      }
+      // Check that q2 hasn't already been used in this cycle when applicable.
+      if (q2 != -1) {
+        std::unordered_set<int>::const_iterator q2_used = used_qubits.find(q2);
+        if (q2_used != used_qubits.end()) {
+          std::cout << "The qubit " << q2 << " in '" << line_counter << ": "
+                    << line << "' has already been used in this cycle. "
+                    << std::endl;
+          assert(q2_used == used_qubits.end());
+        } else {
+          used_qubits.insert(q2);
+        }
       }
 
       // Get i, j and super_cycle
