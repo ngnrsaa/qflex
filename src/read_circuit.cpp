@@ -484,9 +484,9 @@ void circuit_data_to_grid_of_tensors(
       // Check that q1 hasn't already been used in this cycle.
       std::unordered_set<int>::const_iterator q1_used = used_qubits.find(q1);
       if (q1_used != used_qubits.end()) {
-        std::cout << "The qubit " << q1 << " in '" 
-                  << line_counter << ": " << line << "' has already been used in this cycle."
-                  << std::endl; 
+        std::cout << "The qubit " << q1 << " in '" << line_counter << ": "
+                  << line << "' has already been used in this cycle."
+                  << std::endl;
         assert(q1_used == used_qubits.end());
       } else {
         used_qubits.insert(q1);
@@ -495,9 +495,9 @@ void circuit_data_to_grid_of_tensors(
       if (q2 != -1) {
         std::unordered_set<int>::const_iterator q2_used = used_qubits.find(q2);
         if (q2_used != used_qubits.end()) {
-          std::cout << "The qubit " << q2 << " in '" 
-                    << line_counter << ": " << line << "' has already been used in this cycle. "
-                    << std::endl; 
+          std::cout << "The qubit " << q2 << " in '" << line_counter << ": "
+                    << line << "' has already been used in this cycle. "
+                    << std::endl;
           assert(q2_used == used_qubits.end());
         } else {
           used_qubits.insert(q2);

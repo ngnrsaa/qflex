@@ -117,13 +117,13 @@ TEST(ReadCircuitDeathTest, MultipleGatesPerQubitPerCycle) {
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
                                       off_qubits, grid_of_tensors, scratch),
       "");
-  
+
   circuit_data = std::stringstream(kBadCycle2);
   EXPECT_DEATH(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
                                       off_qubits, grid_of_tensors, scratch),
       "");
-  
+
   circuit_data = std::stringstream(kBadCycle3);
   EXPECT_DEATH(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
