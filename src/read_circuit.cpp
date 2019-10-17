@@ -389,9 +389,9 @@ void circuit_data_to_grid_of_tensors(
   std::vector<int> i_j_1, i_j_2;
   int super_cycle;
   // Calculated from input.
-  int num_active_qubits_from_grid;
-  int grid_size;
-  int off_size;
+  const int grid_size = I * J;
+  const int off_size = off.has_value() ? off.value().size() : 0;
+  const int num_active_qubits_from_grid = grid_size - off_size;
 
   // The first element is required to be the number of active qubits.
   *(circuit_data) >> circuit_data_num_qubits;
@@ -401,9 +401,6 @@ void circuit_data_to_grid_of_tensors(
         << std::endl;
     assert(circuit_data_num_qubits != 0);
   }
-  off_size = off.has_value() ? off.value().size() : 0;
-  grid_size = I * J;
-  num_active_qubits_from_grid = grid_size - off_size;
   if (circuit_data_num_qubits != num_active_qubits_from_grid) {
     std::cout
         << "The number of active qubits read from the file: "
