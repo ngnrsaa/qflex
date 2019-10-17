@@ -389,7 +389,8 @@ void circuit_data_to_grid_of_tensors(
   std::vector<int> i_j_1, i_j_2;
   int super_cycle;
   // Calculated from input.
-  int num_qubits_from_grid;
+  int num_active_qubits_from_grid;
+  int grid_size;
   int off_size;
 
   // The first element is required to be the number of active qubits.
@@ -399,31 +400,29 @@ void circuit_data_to_grid_of_tensors(
     assert(circuit_data_num_qubits != 0);
   }
   off_size = off.has_value() ? off.value().size() : 0;
-  num_qubits_from_grid = I * J - off_size;
-  if (circuit_data_num_qubits != num_qubits_from_grid) {
+  grid_size = I * J;
+  num_active_qubits_from_grid = grid_size - off_size;
+  if (circuit_data_num_qubits != num_active_qubits_from_grid) {
     std::cout << "The number of active qubits read from the file: " << circuit_data_num_qubits
-              << ", does not match the number of active qubits read from the grid: " << num_qubits_from_grid << "." << std::endl;
-    assert(circuit_data_num_qubits == num_qubits_from_grid);
+              << ", does not match the number of active qubits read from the grid: " << num_active_qubits_from_grid << "." << std::endl;
+    assert(circuit_data_num_qubits == num_active_qubits_from_grid);
   }
 
   // Assert for the length of initial_conf and final_conf_B.
-  int grid_size = I * J;
-  // std::cout << "num_qubits: " << num_qubits << std::endl;
-  // std::cout << "grid_size: " << grid_size << std::endl;
   {
     // size_t off_size = off.has_value() ? off.value().size() : 0;
     size_t A_size = A.has_value() ? A.value().size() : 0;
-    if (initial_conf.size() != grid_size - off_size) {
+    if (initial_conf.size() != num_active_qubits_from_grid) {
       std::cout << "Size of initial_conf: " << initial_conf.size()
                 << ", must be equal to the number of qubits: "
-                << grid_size - off_size << "." << std::endl;
-      assert(initial_conf.size() == grid_size - off_size);
+                << num_active_qubits_from_grid << "." << std::endl;
+      assert(initial_conf.size() == num_active_qubits_from_grid);
     }
-    if (final_conf_B.size() != grid_size - off_size - A_size) {
+    if (final_conf_B.size() != num_active_qubits_from_grid - A_size) {
       std::cout << "Size of final_conf_B: " << final_conf_B.size()
                 << ", must be equal to the number of qubits: "
-                << grid_size - off_size - A_size << "." << std::endl;
-      assert(final_conf_B.size() == grid_size - off_size - A_size);
+                << num_active_qubits_from_grid - A_size << "." << std::endl;
+      assert(final_conf_B.size() == num_active_qubits_from_grid - A_size);
     }
   }
 
