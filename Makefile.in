@@ -16,6 +16,7 @@ export FLAGS
 
 $(TARGET1):
 	git submodule update --init --recursive src/docopt
+	git submodule update --init --recursive src/pybind11
 	$(MAKE) -C src/
 
 .PHONY: tests

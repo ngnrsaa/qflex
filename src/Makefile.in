@@ -1,11 +1,19 @@
 TARGET1 = qflex
+CIRQ_IF_DIR = ../python/cirqinterface/
+QFLEX_LIB = $(TARGET1)`python3-config --extension-suffix`
 
-OBJS1 = evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o docopt/docopt.o
+OBJS1 = evaluate_circuit.o tensor.o contraction_utils.o \
+    read_circuit.o docopt/docopt.o
 
-CXXFLAGS += -Idocopt/
+CXXFLAGS += -Idocopt/ -Ipybind11/include -fPIC `python3 -m pybind11 --includes`
 
-$(TARGET1): main.cpp $(OBJS1)
+$(TARGET1): main.cpp pybind_main.o $(OBJS1)
 	$(CXX) -o $(@).x $< $(OBJS1) $(CXXFLAGS)
+
+	$(CXX) -shared -o $(CIRQ_IF_DIR)/$(QFLEX_LIB) pybind_main.o $(OBJS1) $(FLAGS) $(CXXFLAGS)
+
+pybind_main.o: pybind_main.cpp
+	$(CXX) -c pybind_main.cpp $(CXXFLAGS)
 
 %.o: %.cpp %.h
 	$(CXX) -c $< $(CXXFLAGS) -o $@
@@ -13,3 +21,4 @@ $(TARGET1): main.cpp $(OBJS1)
 .PHONY: clean
 clean:
 	-rm -f ./*.x ./*.a ./*.so ./*.mod $(OBJS1)
+	-rm -f $(CIRQ_IF_DIR)/$(QFLEX_LIB)
