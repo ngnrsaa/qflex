@@ -32,53 +32,48 @@ gates_map['h_1_2'] = cirq.H**(0.5)
 gates_map['cz'] = cirq.CZ 
 gates_map['cx'] = cirq.CNOT
 
-def GetGridQubit(grid_filename):
+def GetGridQubit(grid_stream):
 
-  # Open file
-  with open(grid_filename) as f:
-      grid = [[y for y in x.strip() if y == '0' or y == '1'] for x in f.readlines() if len(x) and x[0] != '#']
+  grid = [[y for y in x.strip() if y == '0' or y == '1'] for x in grid_stream.readlines() if len(x) and x[0] != '#']
+  
+  # Get the number of rows
+  grid_I = len(grid);
+  
+  # Check that the number of columns is consistent
+  if len(set(len(x) for x in grid)) != 1:
+      raise AssertionError("Number of columns in grid are not consistent.")
+  
+  # Get the number of columns
+  grid_J = len(grid[0])
+  
+  # Return cirq.GridQubit
+  return [cirq.GridQubit(I, J) for I in range(grid_I) for J in range(grid_J) if grid[I][J] == '1']
 
-      # Get the number of rows
-      grid_I = len(grid);
-
-      # Check that the number of columns is consistent
-      if len(set(len(x) for x in grid)) != 1:
-          raise AssertionError("Number of columns in grid are not consistent.")
-
-      # Get the number of columns
-      grid_J = len(grid[0])
-
-      # Return cirq.GridQubit
-      return [cirq.GridQubit(I, J) for I in range(grid_I) for J in range(grid_J) if grid[I][J] == '1']
-
-def GetCircuit(circuit_filename, qubits):
+def GetCircuit(circuit_stream, qubits):
 
   # Create cirq.Circuit
   circuit = cirq.Circuit()
 
-  # Open circuit file
-  with open(circuit_filename) as f:
+  # The first line must be the number of active qubits
+  if len(qubits) != int(circuit_stream.readline()):
+      raise AssertionError("Number of active qubits is incosistent.")
 
-      # The first line must be the number of active qubits
-      if len(qubits) != int(f.readline()):
-          raise AssertionError("Number of active qubits is incosistent.")
+  # Read circuit
+  for line in circuit_stream.readlines():
+      if len(line) and line[0] != '#':
 
-      # Read circuit
-      for line in f.readlines():
-          if len(line) and line[0] != '#':
+          line = line.strip().split()[1:]
+          gate = line[0]
 
-              line = line.strip().split()[1:]
-              gate = line[0]
-
-              if gate in single_qubit_gates:
-                  q1 = int(line[1])
-                  circuit.append([gates_map[gate](qubits[q1])])
-              elif gate in two_qubit_gates:
-                  q1 = int(line[1])
-                  q2 = int(line[2])
-                  circuit.append([gates_map[gate](qubits[q1], qubits[q2])])
-              else:
-                  raise AssertionError('Gate \'{}\' not recognized.'.format(gate))
+          if gate in single_qubit_gates:
+              q1 = int(line[1])
+              circuit.append([gates_map[gate](qubits[q1])])
+          elif gate in two_qubit_gates:
+              q1 = int(line[1])
+              q2 = int(line[2])
+              circuit.append([gates_map[gate](qubits[q1], qubits[q2])])
+          else:
+              raise AssertionError('Gate \'{}\' not recognized.'.format(gate))
 
   return circuit
 
@@ -93,10 +88,12 @@ if __name__ == "__main__":
   verbose = args['--verbose']
 
   # Get grid from file
-  qubits = GetGridQubit(grid_filename)
+  with open(grid_filename) as grid_stream:
+    qubits = GetGridQubit(grid_stream)
 
   # Get circuit from file
-  circuit = GetCircuit(circuit_filename, qubits)
+  with open(circuit_filename) as circuit_stream:
+    circuit = GetCircuit(circuit_stream, qubits)
 
   # Print quantum circuit
   if verbose: print(circuit, file=stderr)
