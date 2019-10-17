@@ -23,25 +23,19 @@
 #include <cmath>
 #include <complex>
 #include <ctime>
-#include <fstream>
+#include <unordered_map>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "contraction_utils.h"
 #include "read_circuit.h"
 #include "tensor.h"
+#include "grid.h"
 
 namespace qflex {
-
-struct QflexGrid {
-  int I{0}, J{0};
-  std::vector<std::vector<int>> qubits_off;
-  void load(std::istream& istream);
-  void load(const std::string& filename);
-};
 
 struct QflexInput {
   int K;
