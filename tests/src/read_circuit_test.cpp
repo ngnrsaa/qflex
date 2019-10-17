@@ -9,6 +9,32 @@ namespace {
 using ::testing::Eq;
 using ::testing::Pointwise;
 
+// This circuit is missing the number of active qubits as its first line.
+constexpr char kMissingNumQubitsCircuit[] = R"(
+0 h 0
+0 h 1)";
+
+constexpr char kWrongNumQubitsCircuit[] = R"(3
+0 h 0
+0 h 1)";
+
+TEST(ReadCircuitDeathTest, InvalidNumberOfQubits) {
+  std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
+  s_type scratch[256];
+
+  auto circuit_data = std::stringstream(kMissingNumQubitsCircuit);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "01", {},
+                                      {}, grid_of_tensors, scratch),
+      "");
+
+  circuit_data = std::stringstream(kWrongNumQubitsCircuit);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "01", {},
+                                      {}, grid_of_tensors, scratch),
+      "");
+}
+
 // This circuit has an invalid one-qubit gate.
 constexpr char kBadCircuit[] = R"(2
 0 h 0
