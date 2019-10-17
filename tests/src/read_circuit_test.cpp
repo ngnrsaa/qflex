@@ -9,6 +9,32 @@ namespace {
 using ::testing::Eq;
 using ::testing::Pointwise;
 
+// This circuit is missing the number of active qubits as its first line.
+constexpr char kMissingNumQubitsCircuit[] = R"(
+0 h 0
+0 h 1)";
+
+constexpr char kWrongNumQubitsCircuit[] = R"(3
+0 h 0
+0 h 1)";
+
+TEST(ReadCircuitDeathTest, InvalidNumberOfQubits) {
+  std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
+  s_type scratch[256];
+
+  auto circuit_data = std::stringstream(kMissingNumQubitsCircuit);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "01", {},
+                                      {}, grid_of_tensors, scratch),
+      "");
+
+  circuit_data = std::stringstream(kWrongNumQubitsCircuit);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "01", {},
+                                      {}, grid_of_tensors, scratch),
+      "");
+}
+
 // This circuit has an invalid one-qubit gate.
 constexpr char kBadCircuit[] = R"(2
 0 h 0
@@ -83,6 +109,62 @@ TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
   off_qubits = {{1, 0}};
   EXPECT_DEATH(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "0", "1", {},
+                                      off_qubits, grid_of_tensors, scratch),
+      "");
+}
+
+constexpr char kBadCycle1[] = R"(4
+1 t 1
+1 t 1)";
+
+constexpr char kBadCycle2[] = R"(4
+1 t 1
+1 cz 1 2)";
+
+constexpr char kBadCycle3[] = R"(4
+1 t 2
+1 cz 1 2)";
+
+constexpr char kBadCycle4[] = R"(4
+1 cz 1 2
+1 cz 1 3)";
+
+constexpr char kBadCycle5[] = R"(4
+1 cz 1 3
+1 cz 2 3)";
+
+TEST(ReadCircuitDeathTest, MultipleGatesPerQubitPerCycle) {
+  std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
+  std::vector<std::vector<int>> off_qubits = {{0, 0}};
+  s_type scratch[256];
+
+  auto circuit_data = std::stringstream(kBadCycle1);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
+                                      off_qubits, grid_of_tensors, scratch),
+      "");
+
+  circuit_data = std::stringstream(kBadCycle2);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
+                                      off_qubits, grid_of_tensors, scratch),
+      "");
+
+  circuit_data = std::stringstream(kBadCycle3);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
+                                      off_qubits, grid_of_tensors, scratch),
+      "");
+
+  circuit_data = std::stringstream(kBadCycle4);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
+                                      off_qubits, grid_of_tensors, scratch),
+      "");
+
+  circuit_data = std::stringstream(kBadCycle5);
+  EXPECT_DEATH(
+      circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
                                       off_qubits, grid_of_tensors, scratch),
       "");
 }
