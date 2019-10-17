@@ -1,6 +1,6 @@
 TARGET1 = qflex
 
-OBJS1 = grid.o evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o docopt/docopt.o
+OBJS1 = circuit.o grid.o evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o docopt/docopt.o
 
 CXXFLAGS += -Idocopt/
 
