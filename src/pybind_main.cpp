@@ -1,13 +1,4 @@
-#include <pybind11/complex.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-namespace py = pybind11;
-
-#include <omp.h>
-
-#include <vector>
-
-#include "evaluate_circuit.h"
+#include "pybind_main.h"
 
 // Input: ./qflex.x I J K fidelity circuit_filename ordering_filename \
 //            grid_filename [initial_conf] [final_conf]
@@ -28,12 +19,13 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
 
   qflex::QflexInput input;
 
-  input.I = grid_height;
-  input.J = grid_width;
+  input.grid.I = grid_height;
+  input.grid.J = grid_width;
+
   input.K = super_cycles;
 
   //is deprecated. to be removed.
-  input.fidelity = 0.005;
+//  input.fidelity = 0.005;
 
   // Creating streams for input files.
   std::stringstream circuit_stream;
@@ -55,7 +47,8 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
        i++) {
     grid_stream << grid_content[i];
   }
-  input.grid_data = &grid_stream;
+    //mod
+  input.grid.load(grid_stream);
 
    // Setting initial and final circuit states.
    input.initial_state = initial_state;
@@ -79,8 +72,3 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
   return amplitudes;
 }
 
-PYBIND11_MODULE(qflex, m) {
-  m.doc() = "pybind11 example plugin";  // optional module docstring
-
-  m.def("simulate", &simulate, "Call the simulator with the normal parameters");
-}
