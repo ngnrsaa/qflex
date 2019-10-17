@@ -332,6 +332,27 @@ TEST(OrderingParserTest, ParseSimpleOrdering) {
   }
 }
 
+constexpr char kInvertedCutOrdering[] = R"(# test comment
+cut (1,2) 1 0
+)";
+
+TEST(OrderingParserTest, ParseCutReordering) {
+  auto ordering_data = std::stringstream(kInvertedCutOrdering);
+  std::list<ContractionOperation> ordering;
+  std::vector<std::vector<int>> qubits_off = {{2, 0}};
+  int I = 1;
+  int J = 2;
+  ASSERT_TRUE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+                                                    qubits_off, &ordering));
+
+  ContractionOperation expected_op(CutIndex({{0, 0}, {0, 1}}, {1, 2}));
+
+  ASSERT_EQ(ordering.size(), 1);
+  const auto& op = ordering.front();
+  EXPECT_EQ(op.cut.tensors, expected_op.cut.tensors);
+  EXPECT_EQ(op.cut.values, expected_op.cut.values);
+}
+
 TEST(OrderingParserTest, ParserFailures) {
   std::list<ContractionOperation> ordering;
   std::vector<std::vector<int>> qubits_off = {{2, 0}};
