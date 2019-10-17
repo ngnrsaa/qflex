@@ -1,12 +1,14 @@
 import cirq
 import cirq.ops as ops
 
+from cirqinterface.qflex_grids import QFlexGrid
+
 class QFlexVirtualDevice(cirq.Device):
 
     def __init__(self, arrangement = None):
 
         # default value
-        self._arrangement = _BRISTLECONE48
+        self._arrangement = QFlexGrid.BRISTLECONE48
 
         if arrangement is not None:
             self._arrangement = arrangement
@@ -85,12 +87,7 @@ class QFlexVirtualDevice(cirq.Device):
 
     @property
     def grid_data(self):
-        gdata = self._arrangement.replace("0", "0 ")\
-                        .replace("1", "1 ")
-
-        grid_data = [x.strip()+"\n" for x in gdata.split("\n")]
-
-        return grid_data
+        return QFlexGrid.get_qflex_file_contents(self._arrangement)
 
     @property
     def ordering_data(self):
@@ -100,13 +97,13 @@ class QFlexVirtualDevice(cirq.Device):
         """
         file_name = "no_file"
 
-        if self._arrangement == _BRISTLECONE48:
+        if self._arrangement == QFlexGrid.BRISTLECONE48:
             file_name = "ordering/bristlecone_48.txt"
-        elif self._arrangement == _BRISTLECONE70:
+        elif self._arrangement == QFlexGrid.BRISTLECONE70:
             file_name = "ordering/bristlecone_70.txt"
 
 
-        # Create the graph and check isomorphism with
+        # Create the graph and check isomorphism
         # Take supremacy 48 circuit, generate graph with Orion PR
         # Compare graph with the graph from the users circuit
         # If isomorphic use ordering/....
@@ -209,7 +206,8 @@ class QFlexVirtualDevice(cirq.Device):
 
     def validate_circuit(self, circuit):
         #
-        # TODO: Force to operate only on grids 48 and 70
+        # TODO: Force to operate only on grids 48 and 70?
+        #
         # Circuit and grid should have same number of qubits
         # Otherwise -> Problem
         #
@@ -220,31 +218,3 @@ class QFlexVirtualDevice(cirq.Device):
     def validate_schedule(self, schedule):
         for scheduled_operation in schedule.scheduled_operations:
             self.validate_scheduled_operation(schedule, scheduled_operation)
-
-
-"""
-Rely only on grid
-"""
-_BRISTLECONE48 = """000001100000
-                    000011110000
-                    000111111000
-                    001111111100
-                    001111111100
-                    001111111100
-                    000111111000
-                    000011110000
-                    000001100000
-                    000000000000
-                    000000000000"""#11 lines of 12 cols
-
-_BRISTLECONE70 = """000001100000
-                    000011110000
-                    000111111000
-                    001111111100
-                    011111111110
-                    011111111110
-                    011111111110
-                    001111111100
-                    000111111000
-                    000011110000
-                    000001100000"""#11 lines of 12 cols

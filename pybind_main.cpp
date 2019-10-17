@@ -82,5 +82,5 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
 PYBIND11_MODULE(qflex, m) {
   m.doc() = "pybind11 example plugin";  // optional module docstring
 
-  m.def("simulate", &simulate, "A function which adds two numbers");
+  m.def("simulate", &simulate, "Call the simulator with the normal parameters");
 }

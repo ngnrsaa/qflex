@@ -43,14 +43,17 @@ class QFlexSimulator(SimulatesAmplitudes):
             # Not sure what these params could look like...for the moment
             for bitstring in bitstrings:
 
+                # simulate the state obtained by applying the circuit
+                # all zero input state
                 amplitudes = qflex.simulate(
                     program.device.compute_circuit_data(solved_circuit),
                     program.device.ordering_data,
                     program.device.grid_data,
                     program.device.sizex,
                     program.device.sizey,
-                    "0" * 70,
-                    "1" * 62,
+                    "0" * 70, # the input is all zero
+                    # bitstrings are char-strings and not ints
+                    bitstring, # receiving only 62bit long bitstrings?
                     2)
 
                 # hard coded

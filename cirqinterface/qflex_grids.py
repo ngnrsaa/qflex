@@ -58,3 +58,14 @@ class QFlexGrid():
         grid_data = [x.strip() + "\n" for x in gdata.split("\n")]
 
         return grid_data
+
+    @staticmethod
+    def get_qubits_off(grid_string):
+        qubits_off = []
+
+        for i, x in enumerate(grid_string.split("\n")):
+            for j, y in enumerate(x.strip()):
+                if y == "0":
+                    qubits_off.append((i, j))
+
+        return qubits_off
