@@ -395,12 +395,9 @@ void circuit_data_to_grid_of_tensors(
 
   // The first element is required to be the number of active qubits.
   *(circuit_data) >> circuit_data_num_qubits;
-  if (circuit_data_num_qubits == 0) {
-    std::cout
-        << "First line in circuit file must be the number of active qubits."
-        << std::endl;
-    assert(circuit_data_num_qubits != 0);
-  }
+  if (circuit_data_num_qubits == 0)
+    throw ERROR_MSG("First line in circuit file must be the number of active qubits.");
+
   if (circuit_data_num_qubits != num_active_qubits_from_grid) {
     std::cout
         << "The number of active qubits read from the file: "

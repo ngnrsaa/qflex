@@ -32,6 +32,7 @@
 
 #include "contraction_utils.h"
 #include "tensor.h"
+#include "errors.h"
 
 namespace qflex {
 

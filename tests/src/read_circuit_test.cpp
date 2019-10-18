@@ -23,10 +23,9 @@ TEST(ReadCircuitDeathTest, InvalidNumberOfQubits) {
   s_type scratch[256];
 
   auto circuit_data = std::stringstream(kMissingNumQubitsCircuit);
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "01", {},
-                                      {}, grid_of_tensors, scratch),
-      "");
+                                      {}, grid_of_tensors, scratch));
 
   circuit_data = std::stringstream(kWrongNumQubitsCircuit);
   EXPECT_DEATH(
