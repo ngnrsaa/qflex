@@ -1,7 +1,7 @@
 TARGETS = $(shell find . -name '*_test.cpp')
 TARGETS := $(TARGETS:%.cpp=%.x)
 
-OBJS1 = evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o
+OBJS1 = circuit.o grid.o evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o
 
 SRC_DIR = ../../src
 GTEST_DIR = $(CURDIR)/googletest/googletest
