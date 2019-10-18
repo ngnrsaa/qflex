@@ -92,10 +92,10 @@ TEST(GetOutputStatesDeathTest, InvalidInput) {
   std::vector<std::string> output_states;
 
   // Final qubits cannot be null pointer.
-  EXPECT_DEATH(get_output_states(ordering, nullptr, &output_states), "");
+  EXPECT_ANY_THROW(get_output_states(ordering, nullptr, &output_states), "");
 
   // Output states cannot be null pointer.
-  EXPECT_DEATH(get_output_states(ordering, &final_qubits, nullptr), "");
+  EXPECT_ANY_THROW(get_output_states(ordering, &final_qubits, nullptr), "");
 }
 
 // Grid layout with trailing whitespace.
@@ -209,7 +209,7 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
 // Nullptr input in EvaluateCircuit()
 TEST(EvaluateCircuitDeathTest, InvalidInput) {
   // Input cannot be null pointer.
-  EXPECT_DEATH(EvaluateCircuit(nullptr), "");
+  EXPECT_ANY_THROW(EvaluateCircuit(nullptr), "");
 }
 
 }  // namespace

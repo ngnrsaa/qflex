@@ -57,9 +57,13 @@ void get_output_states(const std::list<ContractionOperation>& ordering,
                        std::vector<std::vector<int>>* final_qubits,
                        std::vector<std::string>* output_states) {
   if (final_qubits == nullptr) {
-    std::cout << "Final qubits must be non-null." << std::endl;
-    assert(final_qubits != nullptr);
+    throw ERROR_MSG("Final qubits must be non-null.");
+    
   }
+  if (output_states == nullptr) {
+      throw ERROR_MSG("Output states must be non-null.")
+  }
+  
   output_states->push_back("");
   std::vector<std::string> temp_output_states;
   for (const auto& op : ordering) {
@@ -84,8 +88,7 @@ void get_output_states(const std::list<ContractionOperation>& ordering,
 std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     QflexInput* input) {
   if (input == nullptr) {
-    std::cout << "Input must be non-null." << std::endl;
-    assert(input != nullptr);
+    throw ERROR_MSG("Input must be non-null.")
   }
   // Set precision for the printed floats.
   std::cout.precision(12);
