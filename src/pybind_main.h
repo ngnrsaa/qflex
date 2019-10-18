@@ -15,13 +15,8 @@ namespace py = pybind11;
 std::vector<std::pair<std::string, std::complex<double>>> simulate(
     std::vector<std::string> circuit_content,
     std::vector<std::string> ordering_content,
-    std::vector<std::string> grid_content,
-    int grid_height,
-    int grid_width,
-    std::string initial_state,
-    std::string final_state,
-    int super_cycles);
-
+    std::vector<std::string> grid_content, int grid_height, int grid_width,
+    std::string initial_state, std::string final_state, int super_cycles);
 
 PYBIND11_MODULE(qflex, m) {
   m.doc() = "pybind11 plugin";  // optional module docstring
