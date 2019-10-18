@@ -14,7 +14,7 @@ all: $(TARGETS)
 
 .PHONE: run-all
 run-all: all
-	for exe in $(TARGETS); do ./$$exe; done
+	for exe in $(TARGETS); do if ! ./$$exe; then exit 1; fi; done
 
 %.o:
 	$(MAKE) -C $(SRC_DIR) $@
