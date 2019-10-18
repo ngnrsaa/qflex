@@ -1,5 +1,13 @@
 #include "circuit.h"
 
+namespace std {
+template <typename T, typename U> struct hash<std::pair<T, U>> {
+  std::size_t operator()(const std::pair<T, U>& p) const {
+    return std::hash<T>()(p.first) ^ (std::hash<U>()(p.second) << 1);
+  }
+};
+}
+
 namespace qflex {
 
 std::ostream &QflexGate::operator<<(std::ostream &out) const { 
@@ -61,6 +69,7 @@ void QflexCircuit::load(std::istream& istream) {
   };
 
   std::size_t line_counter{0}, last_cycle_number{0};
+  std::unordered_set<std::size_t> used_qubits;
   std::string line;
 
   auto error_msg = [&line, &line_counter](const std::string &msg) {
@@ -89,8 +98,19 @@ void QflexCircuit::load(std::istream& istream) {
         auto &gate = gates.back();
 
         // Check the first token is actually a number
-        if(not is_integer(tokens[0])) throw error_msg("First token must be a valid cycle number.");
+        if(not is_integer(tokens[0]))
+          throw error_msg("First token must be a valid cycle number.");
         gate.cycle = std::stol(tokens[0]);
+
+        // Check that cycle number is monotonically increasing
+        if(gate.cycle < last_cycle_number)
+          throw error_msg("Cycle number can only increase.");
+
+        // If cycle number change, reset used qubits
+        if(gate.cycle != last_cycle_number) {
+          used_qubits.clear();
+          last_cycle_number = gate.cycle;
+        }
 
         // Get gate name and params
         if(std::size_t beg = tokens[1].find_first_of('('); beg != std::string::npos) {
@@ -103,6 +123,11 @@ void QflexCircuit::load(std::istream& istream) {
         } else {
           gate.name = tokens[1];
         }
+
+        // Check that qubits are not already used in the same cycle
+        for(const auto &qubit: gate.qubits)
+          if(used_qubits.find(qubit) != std::end(used_qubits))
+            throw error_msg("Qubits can only used one for each cycle");
 
         // Add all the qubits
         for(std::size_t i = 2; i < std::size(tokens); ++i) {
@@ -117,6 +142,23 @@ void QflexCircuit::load(std::istream& istream) {
 
   }
 
+  // Compute circuit depth
+  {
+    std::unordered_map<std::pair<std::size_t, std::size_t>, std::size_t> layers;
+    for(const auto &gate: this->gates) {
+      if(std::size(gate.qubits) > 2) 
+        throw error_msg("Depth calculation does not handle k-qubit gates with k > 2.");
+
+      if(std::size(gate.qubits) == 2) {
+        auto q1 = gate.qubits[0];
+        auto q2 = gate.qubits[1];
+        if(q2 > q1) std::swap(q1, q2);
+
+        if(auto new_depth = ++layers[{q1,q2}]; new_depth > depth)
+          this->depth = new_depth;
+      }
+    }
+  }
 }
 
 void QflexCircuit::load(const std::string& filename) {

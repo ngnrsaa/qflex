@@ -1,6 +1,8 @@
 #ifndef CIRCUIT__H
 #define CIRCUIT__H
 
+#include <unordered_map>
+#include <unordered_set>
 #include <iostream>
 #include <fstream>
 #include <regex>
@@ -21,6 +23,7 @@ struct QflexGate {
 
 struct QflexCircuit {
   std::size_t num_active_qubits{0};
+  std::size_t depth{0};
   std::vector<QflexGate> gates;
 
   void load(std::istream &istream);

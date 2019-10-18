@@ -72,6 +72,7 @@ int main(int argc, char** argv) {
     input.circuit.load(circuit_filename);
     for(const auto &gate: input.circuit.gates)
       std::cout << gate << std::endl;
+    std::cout << input.circuit.depth << std::endl;
 
     return 0;
 
