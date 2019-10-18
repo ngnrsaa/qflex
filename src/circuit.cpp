@@ -54,7 +54,7 @@ void QflexCircuit::load(std::istream& istream) {
     // Remove any space before '('
     line = std::regex_replace(line, std::regex("[\\s]+[(]"), "(");
 
-    //line = std::regex_replace(line, std::regex("\((?=\))"), "[$&]");
+    // Remove spaces between parentheses
     line = std::regex_replace(line, std::regex("\\s+(?=[^()]*\\))"), "");
 
     return line;
@@ -79,6 +79,11 @@ void QflexCircuit::load(std::istream& istream) {
   while(std::getline(istream, line)) {
     
     if(std::size(line = strip_line(line))) {
+
+      // Check that there are only one '(' and one ')'
+      if(std::count(std::begin(line), std::end(line), '(') > 1 or \
+         std::count(std::begin(line), std::end(line), ')') > 1)
+            throw error_msg("Wrong format.");
 
       // Tokenize the line
       auto tokens = tokenize(line);
