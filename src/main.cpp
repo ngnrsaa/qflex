@@ -11,14 +11,13 @@ static const char USAGE[] =
 tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
-    qflex <depth> <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf>]
-    qflex -d <depth> -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf>]
+    qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf>]
+    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf>]
     qflex (-h | --help)
     qflex --version
 
   Options:
     -h,--help                              Show this help.
-    -d,--depth=<depth>                     Target circuit depth.
     -c,--circuit=<circuit_filename>        Circuit filename.
     -o,--ordering=<ordering_filename>      Ordering filename.
     -g,--grid=<grid_filename>              Grid filename.
@@ -29,9 +28,9 @@ tensor network, CPU-based simulator of large quantum circuits.
 )";
 
 // Example:
-// $ ./qflex.x 2 ./circuits/bristlecone_48_1-24-1_0.txt \
-//               ./ordering/bristlecone_48.txt \
-//               ./grid/bristlecone_48.txt
+// $ ./qflex.x ./circuits/bristlecone_48_1-24-1_0.txt \
+//             ./ordering/bristlecone_48.txt \
+//             ./grid/bristlecone_48.txt
 //
 int main(int argc, char** argv) {
 
@@ -65,16 +64,9 @@ int main(int argc, char** argv) {
       ? args["--grid"].asString()
       : args["<grid_filename>"].asString();
 
-    input.K = bool(args["--depth"]) ? args["--depth"].asLong()
-      : args["<depth>"].asLong();
-
     // Load circuit
     input.circuit.load(circuit_filename);
-    for(const auto &gate: input.circuit.gates)
-      std::cout << gate << std::endl;
-    std::cout << input.circuit.depth << std::endl;
-
-    return 0;
+    input.K = input.circuit.depth;
 
     // Creating streams for input files.
     auto circuit_data = std::ifstream(circuit_filename);
