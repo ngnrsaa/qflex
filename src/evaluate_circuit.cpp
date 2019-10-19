@@ -91,7 +91,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     throw ERROR_MSG("Input must be non-null.");
   }
   // Set precision for the printed floats.
-  std::cout.precision(12);
+  std::cerr.precision(12);
 
   // Timing variables.
   std::chrono::high_resolution_clock::time_point t_output_0, t_output_1;
@@ -112,7 +112,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
   if (input->enable_timing_logs) {
-    std::cout << "Time spent making contraction ordering: " << time_span.count()
+    std::cerr << "Time spent making contraction ordering: " << time_span.count()
               << "s" << std::endl;
   }
 
@@ -137,7 +137,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
   if (input->enable_timing_logs) {
-    std::cout << "Time spent reading allocating scratch space: "
+    std::cerr << "Time spent reading allocating scratch space: "
               << time_span.count() << "s" << std::endl;
   }
 
@@ -159,7 +159,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
     if (input->enable_timing_logs) {
-      std::cout << "Time spent creating 3D grid of tensors from file: "
+      std::cerr << "Time spent creating 3D grid of tensors from file: "
                 << time_span.count() << "s" << std::endl;
     }
 
@@ -171,7 +171,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
     if (input->enable_timing_logs) {
-      std::cout << "Time spent creating 2D grid of tensors from 3D one: "
+      std::cerr << "Time spent creating 2D grid of tensors from 3D one: "
                 << time_span.count() << "s" << std::endl;
     }
 
@@ -193,7 +193,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   t_output_1 = std::chrono::high_resolution_clock::now();
   time_span = std::chrono::duration_cast<std::chrono::duration<double>>(
       t_output_1 - t_output_0);
-  std::cout << "Total time: " << time_span.count() << "s" << std::endl;
+  std::cerr << "Total time: " << time_span.count() << "s" << std::endl;
 
   return result;
 }

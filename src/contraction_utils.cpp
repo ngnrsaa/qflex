@@ -157,10 +157,10 @@ ContractionData ContractionData::Initialize(
     ++scale;
     alloc_size /= (1 << 10);
   }
-  int old_precision = std::cout.precision(6);
+  int old_precision = std::cerr.precision(6);
   std::string suffix[] = {"B", "kB", "MB", "GB"};
-  std::cout << alloc_size << suffix[scale] << " allocated." << std::endl;
-  std::cout.precision(old_precision);
+  std::cerr << alloc_size << suffix[scale] << " allocated." << std::endl;
+  std::cerr.precision(old_precision);
   return data;
 }
 
