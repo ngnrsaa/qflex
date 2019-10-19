@@ -2,7 +2,6 @@
 
 #include "docopt.h"
 #include "evaluate_circuit.h"
-#include "utils.h"
 
 static const char VERSION[] = "qFlex v1.0";
 static const char USAGE[] =
