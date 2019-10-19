@@ -21,14 +21,16 @@ constexpr char kWrongNumQubitsCircuit[] = R"(3
 TEST(ReadCircuitDeathTest, InvalidNumberOfQubits) {
   std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
   s_type scratch[256];
-
+ 
+  // Missing number of qubits.
   auto circuit_data = std::stringstream(kMissingNumQubitsCircuit);
   EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "01", {},
                                       {}, grid_of_tensors, scratch));
 
+  // Incorrect number of qubits.
   circuit_data = std::stringstream(kWrongNumQubitsCircuit);
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "01", {},
                                       {}, grid_of_tensors, scratch),
       "");
@@ -45,7 +47,7 @@ TEST(ReadCircuitDeathTest, BadOneQubitGate) {
   s_type scratch[256];
 
   auto circuit_data = std::stringstream(kBadCircuit);
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "01", {},
                                       {}, grid_of_tensors, scratch),
       "");
@@ -62,7 +64,7 @@ TEST(ReadCircuitDeathTest, BadFsimGate) {
   s_type scratch[256];
 
   auto circuit_data = std::stringstream(kBadFsimCircuit);
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "01", {},
                                       {}, grid_of_tensors, scratch),
       "");
@@ -85,28 +87,28 @@ TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
 
   // One qubit gate must be on active qubit.
   auto circuit_data = std::stringstream(kBadTGate);
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "0", "1", {},
                                       off_qubits, grid_of_tensors, scratch),
       "");
 
   // Two qubit gate must have active qubit as first qubit input.
   circuit_data = std::stringstream(kBadCzGate);
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "0", "1", {},
                                       off_qubits, grid_of_tensors, scratch),
       "");
 
   // Two qubit gate must have active qubit as first qubit input.
   circuit_data = std::stringstream(kBadCxGate);
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "0", "1", {},
                                       off_qubits, grid_of_tensors, scratch),
       "");
 
   // Two qubit gate must have active qubit as second qubit input.
   off_qubits = {{1, 0}};
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "0", "1", {},
                                       off_qubits, grid_of_tensors, scratch),
       "");
@@ -138,31 +140,31 @@ TEST(ReadCircuitDeathTest, MultipleGatesPerQubitPerCycle) {
   s_type scratch[256];
 
   auto circuit_data = std::stringstream(kBadCycle1);
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
                                       off_qubits, grid_of_tensors, scratch),
       "");
 
   circuit_data = std::stringstream(kBadCycle2);
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
                                       off_qubits, grid_of_tensors, scratch),
       "");
 
   circuit_data = std::stringstream(kBadCycle3);
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
                                       off_qubits, grid_of_tensors, scratch),
       "");
 
   circuit_data = std::stringstream(kBadCycle4);
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
                                       off_qubits, grid_of_tensors, scratch),
       "");
 
   circuit_data = std::stringstream(kBadCycle5);
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 2, 1, "000", "111", {},
                                       off_qubits, grid_of_tensors, scratch),
       "");
@@ -305,24 +307,24 @@ TEST(ReadCircuitDeathTest, CircuitDataToGridOfTensorsInvalidInput) {
   auto circuit_data = std::stringstream(kNullCircuit);
 
   // Circuit data cannot be null pointer.
-  EXPECT_DEATH(circuit_data_to_grid_of_tensors(nullptr, 2, 1, 1, "01", "01", {},
+  EXPECT_ANY_THROW(circuit_data_to_grid_of_tensors(nullptr, 2, 1, 1, "01", "01", {},
                                                {}, grid_of_tensors, scratch),
                "");
 
   // Scratch cannot be null pointer.
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "01", "01", {},
                                       {}, grid_of_tensors, nullptr),
       "");
 
   // Input configuration length must be equal to the number of qubits.
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "001", "01", {},
                                       {}, grid_of_tensors, scratch),
       "");
 
   // Output configuration length must be equal to the number of qubits.
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
       circuit_data_to_grid_of_tensors(&circuit_data, 2, 1, 1, "00", "011", {},
                                       {}, grid_of_tensors, scratch),
       "");
@@ -336,7 +338,7 @@ TEST(ReadCircuitDeathTest, GridOfTensors3DTo2DInvalidInput) {
   std::list<ContractionOperation> ordering;
 
   // Scratch cannot be null pointer.
-  EXPECT_DEATH(grid_of_tensors_3D_to_2D(grid_of_tensors_3D, grid_of_tensors_2D,
+  EXPECT_ANY_THROW(grid_of_tensors_3D_to_2D(grid_of_tensors_3D, grid_of_tensors_2D,
                                         A, off, ordering, nullptr),
                "");
 }

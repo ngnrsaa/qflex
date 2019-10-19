@@ -83,8 +83,7 @@ std::vector<s_type> gate_array(const std::string& gate_name) {
 
   bool valid_gate = _GATES_DATA.find(gate_name) != _GATES_DATA.end();
   if (!valid_gate) {
-    std::cout << "Invalid gate name provided: " << gate_name << std::endl;
-    assert(false);
+    throw ERROR_MSG("Invalid gate name provided: " + gate_name);
   }
   return _GATES_DATA.at(gate_name);
 }
@@ -104,8 +103,7 @@ std::vector<s_type> gate_array(const std::string& gate_name) {
 std::vector<std::vector<s_type>> fSim(s_type::value_type theta,
                                       s_type::value_type phi, s_type* scratch) {
   if (scratch == nullptr) {
-    std::cout << "Scratch must be non-null." << std::endl;
-    assert(scratch != nullptr);
+    throw ERROR_MSG("Scratch must be non-null.");
   }
 
   static_assert(std::is_floating_point<typename s_type::value_type>::value);
@@ -204,8 +202,7 @@ std::vector<std::vector<s_type>> fSim(s_type::value_type theta,
 std::tuple<std::vector<s_type>, std::vector<s_type>, std::vector<size_t>>
 gate_arrays(const std::string& gate_name, s_type* scratch) {
   if (scratch == nullptr) {
-    std::cout << "Scratch must be non-null." << std::endl;
-    assert(scratch != nullptr);
+    throw ERROR_MSG("Scratch must be non-null.");
   }
   static const std::regex fsim_regex("fsim\\((.*),(.*)\\)");
   std::smatch match;
@@ -226,8 +223,7 @@ gate_arrays(const std::string& gate_name, s_type* scratch) {
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
                       std::vector<size_t>>(ret_val[0], ret_val[1], {4, 2, 2});
   }
-  std::cout << "Invalid gate name provided: " << gate_name << std::endl;
-  assert(false);
+  throw ERROR_MSG("Invalid gate name provided: " + gate_name);
 }
 
 /**
@@ -295,9 +291,8 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       snprintf(error, sizeof(error),
                "Left hand side of pair not found: (%d,%d),(%d,%d)", local[0],
                local[1], lhs[0], lhs[1]);
-      std::cout << error << std::endl;
       std::cout << "Halting reordering." << std::endl;
-      assert(false);
+      throw ERROR_MSG(error);
     }
 
     op_num = 0;
@@ -315,9 +310,8 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       snprintf(error, sizeof(error),
                "Right hand side of pair not found: (%d,%d),(%d,%d)", local[0],
                local[1], rhs[0], rhs[1]);
-      std::cout << error << std::endl;
       std::cout << "Halting reordering." << std::endl;
-      assert(false);
+      throw ERROR_MSG(error);
     }
     if (lpatch == rpatch) {
       // lhs and rhs are in the same patch.
@@ -359,9 +353,8 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     snprintf(error, sizeof(error),
              "Failed to compare (%d,%d) and (%d,%d) for local (%d,%d).", lhs[0],
              lhs[1], rhs[0], rhs[1], local[0], local[1]);
-    std::cout << error << std::endl;
     std::cout << "Halting reordering." << std::endl;
-    assert(false);
+    throw ERROR_MSG(error);
   };
 }
 
@@ -375,12 +368,10 @@ void circuit_data_to_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch) {
   if (circuit_data == nullptr) {
-    std::cout << "Circuit data stream must be non-null." << std::endl;
-    assert(circuit_data != nullptr);
+    throw ERROR_MSG("Circuit data stream must be non-null.");
   }
   if (scratch == nullptr) {
-    std::cout << "Scratch must be non-null." << std::endl;
-    assert(scratch != nullptr);
+    throw ERROR_MSG("Scratch must be non-null.");
   }
   // Gotten from the file.
   int circuit_data_num_qubits, cycle, q1, q2;
@@ -399,12 +390,11 @@ void circuit_data_to_grid_of_tensors(
     throw ERROR_MSG("First line in circuit file must be the number of active qubits.");
 
   if (circuit_data_num_qubits != num_active_qubits_from_grid) {
-    std::cout
-        << "The number of active qubits read from the file: "
-        << circuit_data_num_qubits
-        << ", does not match the number of active qubits read from the grid: "
-        << num_active_qubits_from_grid << "." << std::endl;
-    assert(circuit_data_num_qubits == num_active_qubits_from_grid);
+    throw ERROR_MSG(
+        + "The number of active qubits read from the file: "
+        + circuit_data_num_qubits
+        + ", does not match the number of active qubits read from the grid: "
+        + num_active_qubits_from_grid + ".");
   }
 
   // Assert for the length of initial_conf and final_conf_B.
@@ -412,16 +402,16 @@ void circuit_data_to_grid_of_tensors(
     // size_t off_size = off.has_value() ? off.value().size() : 0;
     size_t A_size = A.has_value() ? A.value().size() : 0;
     if (initial_conf.size() != num_active_qubits_from_grid) {
-      std::cout << "Size of initial_conf: " << initial_conf.size()
-                << ", must be equal to the number of qubits: "
-                << num_active_qubits_from_grid << "." << std::endl;
-      assert(initial_conf.size() == num_active_qubits_from_grid);
+      throw ERROR_MSG(
+                "Size of initial_conf: " + initial_conf.size()
+                + ", must be equal to the number of qubits: "
+                + num_active_qubits_from_grid + ".");
     }
     if (final_conf_B.size() != num_active_qubits_from_grid - A_size) {
-      std::cout << "Size of final_conf_B: " << final_conf_B.size()
-                << ", must be equal to the number of qubits: "
-                << num_active_qubits_from_grid - A_size << "." << std::endl;
-      assert(final_conf_B.size() == num_active_qubits_from_grid - A_size);
+      throw ERROR_MSG(
+                 "Size of final_conf_B: " + final_conf_B.size()
+                + ", must be equal to the number of qubits: "
+                + num_active_qubits_from_grid - A_size + ".");
     }
   }
 
@@ -493,10 +483,9 @@ void circuit_data_to_grid_of_tensors(
       // Check that q1 hasn't already been used in this cycle.
       std::unordered_set<int>::const_iterator q1_used = used_qubits.find(q1);
       if (q1_used != used_qubits.end()) {
-        std::cout << "The qubit " << q1 << " in '" << line_counter << ": "
-                  << line << "' has already been used in this cycle."
-                  << std::endl;
-        assert(q1_used == used_qubits.end());
+        throw ERROR_MSG(
+                "The qubit " + q1 + " in '" + line_counter + ": "
+                + line + "' has already been used in this cycle.");
       } else {
         used_qubits.insert(q1);
       }
@@ -504,10 +493,8 @@ void circuit_data_to_grid_of_tensors(
       if (q2 != -1) {
         std::unordered_set<int>::const_iterator q2_used = used_qubits.find(q2);
         if (q2_used != used_qubits.end()) {
-          std::cout << "The qubit " << q2 << " in '" << line_counter << ": "
-                    << line << "' has already been used in this cycle. "
-                    << std::endl;
-          assert(q2_used == used_qubits.end());
+          throw ERROR_MSG("The qubit " + q2 + " in '" + line_counter + ": "
+                    + line + "' has already been used in this cycle.");
         } else {
           used_qubits.insert(q2);
         }
@@ -525,11 +512,10 @@ void circuit_data_to_grid_of_tensors(
         // Check that position is an active qubit
         bool qubit_off = find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]);
         if (qubit_off) {
-          std::cout << "The qubit in '" << line << "' references (" << i_j_1[0]
-                    << ", " << i_j_1[1]
-                    << ") which must be coordinates of an active qubit."
-                    << std::endl;
-          assert(!qubit_off);
+          throw ERROR_MSG("The qubit in '" + line + "' references (" + i_j_1[0]
+                    + ", " + i_j_1[1]
+                    + ") which must be coordinates of an active qubit.");
+
         }
         std::string input_index =
             "t" +
@@ -548,18 +534,14 @@ void circuit_data_to_grid_of_tensors(
         bool second_qubit_off =
             find_grid_coord_in_list(off, i_j_2[0], i_j_2[1]);
         if (first_qubit_off) {
-          std::cout << "The first qubit of '" << line << "' references ("
-                    << i_j_1[0] << ", " << i_j_1[1]
-                    << ") which must be coordinates of an active qubit."
-                    << std::endl;
-          assert(!first_qubit_off);
+          throw ERROR_MSG("The first qubit of '" + line + "' references ("
+                    + i_j_1[0] + ", " + i_j_1[1]
+                    + ") which must be coordinates of an active qubit.");
         }
         if (second_qubit_off) {
-          std::cout << "The second qubit of '" << line << "' references ("
-                    << i_j_2[0] << ", " << i_j_2[1]
-                    << ") which must be coordinates of an active qubit."
-                    << std::endl;
-          assert(!second_qubit_off);
+          throw ERROR_MSG("The second qubit of '" + line + "' references ("
+                    + i_j_2[0] + ", " + i_j_2[1]
+                    + ") which must be coordinates of an active qubit.");
         }
         std::vector<s_type> gate_q1;
         std::vector<s_type> gate_q2;
@@ -667,8 +649,7 @@ void grid_of_tensors_3D_to_2D(
     std::optional<std::vector<std::vector<int>>> off,
     const std::list<ContractionOperation>& ordering, s_type* scratch) {
   if (scratch == nullptr) {
-    std::cout << "Scratch must be non-null." << std::endl;
-    assert(scratch != nullptr);
+    throw ERROR_MSG("Scratch must be non-null.");
   }
   // Get dimensions and super_dim = DIM^k.
   const int I = grid_of_tensors_3D.size();
@@ -788,14 +769,12 @@ void read_wave_function_evolution(
     std::vector<std::vector<std::string>>& inputs,
     std::vector<std::vector<std::string>>& outputs, s_type* scratch) {
   if (scratch == nullptr) {
-    std::cout << "Scratch must be non-null." << std::endl;
-    assert(scratch != nullptr);
+    throw ERROR_MSG("Scratch must be non-null.");
   }
   // Open file.
   auto io = std::ifstream(filename);
   if (io.bad()) {
-    std::cout << "Cannot open file: " << filename << std::endl;
-    assert(io.good());
+    throw ERROR_MSG("Cannot open file: " + filename);
   }
 
   // Gotten from the file.
@@ -810,10 +789,8 @@ void read_wave_function_evolution(
 
   // Assert for the number of qubits.
   if (num_qubits != I) {
-    std::cout << "I: " << I
-              << " must be equal to the number of qubits: " << num_qubits
-              << std::endl;
-    assert(num_qubits == I);
+    throw ERROR_MSG("I: " + I
+              + " must be equal to the number of qubits: " + num_qubits + ".");
   }
 
   std::string line;
