@@ -20,7 +20,7 @@ Contains the core behavior of qFlex, written in C++.
   multiple sections of qFlex.
 - **pybind_main** uses [pybind](https://github.com/pybind/pybind11) to
   provide a Python wrapper for qFlex. The resulting module is stored under
-  [qflex/python/cirq_interface](python/cirq_interface).
+  [qflex/python/cirq_interface](/python/cirq_interface).
 
 ## config
 
