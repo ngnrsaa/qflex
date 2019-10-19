@@ -32,6 +32,7 @@
 
 #include "contraction_utils.h"
 #include "tensor.h"
+#include "input.h"
 
 namespace qflex {
 
@@ -48,25 +49,15 @@ const int DIM = 2;
  * I*J must be equal to the number of qubits; K must be equal to
  * (depth_of_circuit-2)/8; initial_conf and final_conf must have the length
  * equal to the number of qubits.
- * @param circuit_data std::istream containing circuit as a string.
- * @param I int with the first spatial dimension of the grid of qubits.
- * @param J int with the second spatial dimension of the grid of qubits.
- * @param K int with depth of the grid of tensors (depth_of_circuit-2)/8.
- * @param initial_conf string with 0s and 1s with the input configuration of
- * the circuit.
- * @param final_conf_B string with 0s and 1s with the output configuration on B.
+ * @param QflexInput type with all simulation parameters
  * @param A vector<vector<int>> with the coords. of the qubits in A.
  * @param off vector<vector<int>> with the coords. of the qubits turned off.
- * @param grid_of_tensors referenced to a vector<vector<vector<Tensor>>> with
  * tensors at each position of the grid.
  * @param scratch pointer to s_type array with scratch space for all operations
  * performed in this function.
  */
-void circuit_data_to_grid_of_tensors(
-    std::istream* circuit_data, int I, int J, int K,
-    const std::string initial_conf, const std::string final_conf_B,
+void circuit_data_to_grid_of_tensors(QflexInput *input,
     const std::optional<std::vector<std::vector<int>>>& A,
-    const std::optional<std::vector<std::vector<int>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch);
 

@@ -49,9 +49,9 @@ int main(int argc, char** argv) {
       input.initial_state = args["<initial_conf>"].asString();
 
     if (bool(args["--final-conf"]))
-      input.final_state_A = args["--final-conf"].asString();
+      input.final_state = args["--final-conf"].asString();
     else if (bool(args["<final_conf>"]))
-      input.final_state_A = args["<final_conf>"].asString();
+      input.final_state = args["<final_conf>"].asString();
 
     // Getting filenames
     std::string circuit_filename = bool(args["--circuit"])
