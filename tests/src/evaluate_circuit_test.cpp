@@ -81,7 +81,7 @@ TEST_F(GetOutputStatesTest, BlankCutValuesEvaluateBothStates) {
 TEST_F(GetOutputStatesTest, OnlyUseTerminalCuts) {
   input_.grid.I = 3;
   input_.grid.J = 2;
-  input_.grid.qubits_off.push_back({2,0});
+  input_.grid.qubits_off.push_back({2, 0});
   input_.final_state = "0000x";
   ordering_.emplace_back(CutIndex({{0, 1}, {1, 1}}, {1, 2}));
   ordering_.emplace_back(ExpandPatch("a", {0, 1}));
@@ -109,6 +109,27 @@ TEST(GetOutputStatesDeathTest, InvalidInput) {
 
   // Output states cannot be null pointer.
   EXPECT_DEATH(get_output_states(&input, ordering, &final_qubits, nullptr), "");
+}
+
+// Terminal cuts are listed in index order, inline with other qubits.
+TEST(GetOutputStatesDeathTest, TerminalCutsRequireStateX) {
+  QflexInput input;
+  input.grid.I = 1;
+  input.grid.J = 2;
+  std::list<ContractionOperation> ordering;
+  std::vector<std::vector<int>> final_qubits;
+  std::vector<std::string> output_states;
+
+  // Qubits with terminal cuts must have an "x" for their state.
+  input.final_state = "00";
+  ordering.emplace_back(CutIndex({{0, 1}}, {0}));
+  EXPECT_DEATH(
+      get_output_states(&input, ordering, &final_qubits, &output_states), "");
+
+  // Qubits without terminal cuts cannot have "x" for their state.
+  input.final_state = "xx";
+  EXPECT_DEATH(
+      get_output_states(&input, ordering, &final_qubits, &output_states), "");
 }
 
 // Grid layout with trailing whitespace.

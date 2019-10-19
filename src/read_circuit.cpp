@@ -367,7 +367,8 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
 
 }  // namespace
 
-// DO NOT SUBMIT: fix argument naming
+// TODO(martinop): remove "final_qubit_region" argument?
+// This can be derived from the 'x' states in final_conf.
 void circuit_data_to_grid_of_tensors(
     std::istream* circuit_data, int I, int J, int K,
     const std::string initial_conf, const std::string final_conf,
@@ -595,7 +596,7 @@ void circuit_data_to_grid_of_tensors(
     }
   }
   // Insert Hadamards and deltas to last layer.
-  idx = 0;
+  idx = -1;
   for (int q = 0; q < grid_size; ++q) {
     std::vector<int> i_j = get_qubit_coords(q, J);
     int i = i_j[0], j = i_j[1];
@@ -603,6 +604,7 @@ void circuit_data_to_grid_of_tensors(
     if (find_grid_coord_in_list(off, i, j)) {
       continue;
     }
+    idx += 1;
     std::string last_index = "t" + std::to_string(counter_group[i][j][k]);
     grid_of_groups_of_tensors[i][j][k].push_back(
         Tensor({"th", last_index}, {2, 2}, gate_array("h")));
@@ -612,7 +614,6 @@ void circuit_data_to_grid_of_tensors(
     std::string delta_gate = (final_conf[idx] == '0') ? "delta_0" : "delta_1";
     grid_of_groups_of_tensors[i][j][k].push_back(
         Tensor({"th"}, {2}, gate_array(delta_gate)));
-    idx += 1;  // Move in B only.
   }
 
   // Contracting each group of gates into a single tensor.

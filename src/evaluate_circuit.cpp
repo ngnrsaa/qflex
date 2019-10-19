@@ -66,10 +66,10 @@ int find_output_pos(const QflexInput* input, std::vector<int> tensor_pos) {
   return pos;
 }
 
-void get_output_states(const QflexInput* input,
-                       const std::list<ContractionOperation>& ordering,
-                       std::vector<std::vector<int>>* final_qubits,
-                       std::vector<std::string>* output_states) {
+std::string get_output_states(const QflexInput* input,
+                              const std::list<ContractionOperation>& ordering,
+                              std::vector<std::vector<int>>* final_qubits,
+                              std::vector<std::string>* output_states) {
   if (final_qubits == nullptr) {
     std::cout << "Final qubits must be non-null." << std::endl;
     assert(final_qubits != nullptr);
@@ -77,6 +77,13 @@ void get_output_states(const QflexInput* input,
   std::vector<int> output_pos_map;
   std::vector<std::vector<int>> output_values_map;
   std::string base_state = input->final_state;
+  // If the final state isn't provided, it should be all zeroes except for
+  // qubits with terminal cuts (which should have 'x').
+  bool final_state_unspecified = false;
+  if (input->final_state.empty()) {
+    final_state_unspecified = true;
+    base_state = std::string(input->initial_state.length(), '0');
+  }
   for (const auto& op : ordering) {
     // TODO(martinop): update to use the new operation.
     if (op.op_type != ContractionOperation::CUT) continue;
@@ -84,15 +91,16 @@ void get_output_states(const QflexInput* input,
     if (op.cut.tensors.size() != 1) continue;
     const int pos = find_output_pos(input, op.cut.tensors[0]);
     const auto tensor_pos = op.cut.tensors[0];
-    // DO NOT SUBMIT: require "X" on cuts?
-    // if (base_state.at(pos) != 'x') {
-    //   const int id = tensor_pos[0] * input->grid.I + tensor_pos[1];
-    //   std::cout << "Terminal cut on qubit " << id
-    //             << " does not have a matching 'x' in final_state at position "
-    //             << pos << "; found '" << base_state.at(pos)
-    //             << "' instead." << std::endl;
-    //   assert(base_state.at(pos) == 'x');
-    // }
+    if (final_state_unspecified) {
+      base_state[pos] = 'x';
+    }
+    if (base_state.at(pos) != 'x') {
+      std::cout << "Terminal cut on qubit (" << tensor_pos[0] << ", "
+                << tensor_pos[1] << " does not have a matching 'x' "
+                << "in final_state at position " << pos << "; found '"
+                << base_state.at(pos) << "' instead." << std::endl;
+      assert(base_state.at(pos) == 'x');
+    }
     output_pos_map.push_back(pos);
     if (op.cut.values.empty()) {
       output_values_map.push_back({0, 1});
@@ -116,6 +124,16 @@ void get_output_states(const QflexInput* input,
     *output_states = temp_output_states;
     temp_output_states.clear();
   }
+  // Verify that output states have no leftover "x" after replacement.
+  for (int i = 0; i < output_states->at(0).length(); ++i) {
+    char c = output_states->at(0)[i];
+    if (c != '0' && c != '1') {
+      std::cout << "Final state has non-binary character " << c << " at index "
+                << i << "despite having no terminal cut there.";
+      assert(c == '0' || c == '1');
+    }
+  }
+  return base_state;
 }
 
 std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
@@ -155,14 +173,13 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   if (input->initial_state.empty()) {
     input->initial_state = std::string(init_length, '0');
   }
-  if (input->final_state.empty()) {
-    input->final_state = std::string(init_length, '0');
-  }
 
-  // Get a list of qubits and output states for the final region.
+  // Get a list of qubits and output states for the final region, and set the
+  // final_state if one wasn't provided.
   std::vector<std::vector<int>> final_qubits;
   std::vector<std::string> output_states;
-  get_output_states(input, ordering, &final_qubits, &output_states);
+  input->final_state =
+      get_output_states(input, ordering, &final_qubits, &output_states);
 
   // Scratch space to be reused for operations.
   t0 = std::chrono::high_resolution_clock::now();
