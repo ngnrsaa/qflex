@@ -37,7 +37,7 @@ To run qFlex in a rootless container, see
 To install qFlex, simply run:
 
 ```
-$ autoconf && ./configure 
+$ autoreconf -i && autoconf && ./configure 
 $ make && make run-tests && make install
 ```
 By default, qFlex is installed in `$HOME/local/`. For more information:
