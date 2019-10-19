@@ -155,13 +155,14 @@ cat > $root/install_qflex.sh << EOF
 
 # Install dependencies
 /sbin/apk update
-/sbin/apk add g++ make gsl-dev git autoconf
+/sbin/apk add g++ make gsl-dev git autoconf automake
+/sbin/apk add python3-dev py3-pybind11
 
 # Change folder
 cd /qflex
 
 # Run autoconf
-autoconf && ./configure
+autoreconf -i && autoconf && ./configure --disable-cirq
 
 # Make qFlex
 make -j\$OMP_NUM_THREADS
