@@ -17,6 +17,7 @@ AC_PROG_CPP
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
+# Check for GIT
 AC_CHECK_PROG(GIT_CHECK,git,yes)
 AS_IF([test x"$GIT_CHECK" != x"yes"], [AC_MSG_ERROR([Please install git before configuring.])])
 
@@ -31,5 +32,30 @@ AC_TYPE_SIZE_T
 AC_CONFIG_FILES([Makefile
                  src/Makefile
                  tests/src/Makefile])
+
+# Add extra param for cirq
+AC_ARG_ENABLE([cirq], 
+  AS_HELP_STRING([--disable-cirq],[Disable cirq dependant features.]), 
+  [case "${enableval}" in
+      yes) cirq=true  ;;
+       no) cirq=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-cirq])
+   esac], [cirq=true]
+)
+
+# Check for Python version
+REQ_PYTHON_VERSION=3.0
+AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],, 
+  AS_IF([test ${cirq} == "true"], AC_MSG_RESULT([Please install Python >= ${REQ_PYTHON_VERSION} before configuring.]))
+)
+
+# Check that cirq is installed
+AS_IF([test ${cirq} == "true"],
+  AC_MSG_CHECKING([for cirq])
+  AS_IF([${PYTHON} -c "import cirq" 2>/dev/null],
+    AC_MSG_RESULT([yes]), 
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([Please install cirq before configuring.]))
+)
 
 AC_OUTPUT
