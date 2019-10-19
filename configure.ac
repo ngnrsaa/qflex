@@ -43,6 +43,16 @@ AC_ARG_ENABLE([cirq],
    esac], [cirq=true]
 )
 
+# Add extra param for pybind11
+AC_ARG_ENABLE([pybind11], 
+  AS_HELP_STRING([--disable-pybind11],[Disable pybind11 extension of qFlex.]), 
+  [case "${enableval}" in
+      yes) pybind11=true  ;;
+       no) pybind11=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-cirq])
+   esac], [pybind11=true]
+)
+
 # Check for Python version
 REQ_PYTHON_VERSION=3.0
 AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],, 
