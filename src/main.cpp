@@ -2,6 +2,7 @@
 
 #include "docopt.h"
 #include "evaluate_circuit.h"
+#include "utils.h"
 
 static const char VERSION[] = "qFlex v1.0";
 static const char USAGE[] =
@@ -9,14 +10,13 @@ static const char USAGE[] =
 tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
-    qflex <depth> <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf>]
-    qflex -d <depth> -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf>]
+    qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf>]
+    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf>]
     qflex (-h | --help)
     qflex --version
 
   Options:
     -h,--help                              Show this help.
-    -d,--depth=<depth>                     Target circuit depth.
     -c,--circuit=<circuit_filename>        Circuit filename.
     -o,--ordering=<ordering_filename>      Ordering filename.
     -g,--grid=<grid_filename>              Grid filename.
@@ -27,9 +27,9 @@ tensor network, CPU-based simulator of large quantum circuits.
 )";
 
 // Example:
-// $ ./qflex.x 2 ./circuits/bristlecone_48_1-24-1_0.txt \
-//               ./ordering/bristlecone_48.txt \
-//               ./grid/bristlecone_48.txt
+// $ src/qflex.x config/circuits/bristlecone_48_1-24-1_0.txt \
+//               config/ordering/bristlecone_48.txt \
+//               config/grid/bristlecone_48.txt
 //
 int main(int argc, char** argv) {
   std::map<std::string, docopt::value> args =
@@ -60,8 +60,8 @@ int main(int argc, char** argv) {
                                   ? args["--grid"].asString()
                                   : args["<grid_filename>"].asString();
 
-  input.K = bool(args["--depth"]) ? args["--depth"].asLong()
-                                  : args["<depth>"].asLong();
+  // Compute depth of the circuit
+  input.K = qflex::compute_depth(std::ifstream(circuit_filename));
 
   // Creating streams for input files.
   auto circuit_data = std::ifstream(circuit_filename);
