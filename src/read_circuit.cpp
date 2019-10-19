@@ -367,10 +367,11 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
 
 }  // namespace
 
+// DO NOT SUBMIT: fix argument naming
 void circuit_data_to_grid_of_tensors(
     std::istream* circuit_data, int I, int J, int K,
-    const std::string initial_conf, const std::string final_conf_B,
-    const std::optional<std::vector<std::vector<int>>>& A,
+    const std::string initial_conf, const std::string final_conf,
+    const std::optional<std::vector<std::vector<int>>>& final_qubit_region,
     const std::optional<std::vector<std::vector<int>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch) {
@@ -410,21 +411,20 @@ void circuit_data_to_grid_of_tensors(
     assert(circuit_data_num_qubits == num_active_qubits_from_grid);
   }
 
-  // Assert for the length of initial_conf and final_conf_B.
+  // Assert for the length of initial_conf and final_conf.
   {
     // size_t off_size = off.has_value() ? off.value().size() : 0;
-    size_t A_size = A.has_value() ? A.value().size() : 0;
     if (initial_conf.size() != num_active_qubits_from_grid) {
       std::cout << "Size of initial_conf: " << initial_conf.size()
                 << ", must be equal to the number of qubits: "
                 << num_active_qubits_from_grid << "." << std::endl;
       assert(initial_conf.size() == num_active_qubits_from_grid);
     }
-    if (final_conf_B.size() != num_active_qubits_from_grid - A_size) {
-      std::cout << "Size of final_conf_B: " << final_conf_B.size()
-                << ", must be equal to the number of qubits: "
-                << num_active_qubits_from_grid - A_size << "." << std::endl;
-      assert(final_conf_B.size() == num_active_qubits_from_grid - A_size);
+    if (final_conf.size() != initial_conf.size()) {
+      std::cout << "Size of final_conf: " << final_conf.size()
+                << ", must be equal to size of initial_conf: "
+                << initial_conf.size() << "." << std::endl;
+      assert(final_conf.size() == initial_conf.size());
     }
   }
 
@@ -606,10 +606,10 @@ void circuit_data_to_grid_of_tensors(
     std::string last_index = "t" + std::to_string(counter_group[i][j][k]);
     grid_of_groups_of_tensors[i][j][k].push_back(
         Tensor({"th", last_index}, {2, 2}, gate_array("h")));
-    if (find_grid_coord_in_list(A, i, j)) {
+    if (find_grid_coord_in_list(final_qubit_region, i, j)) {
       continue;
     }
-    std::string delta_gate = (final_conf_B[idx] == '0') ? "delta_0" : "delta_1";
+    std::string delta_gate = (final_conf[idx] == '0') ? "delta_0" : "delta_1";
     grid_of_groups_of_tensors[i][j][k].push_back(
         Tensor({"th"}, {2}, gate_array(delta_gate)));
     idx += 1;  // Move in B only.
@@ -652,7 +652,7 @@ void circuit_data_to_grid_of_tensors(
           std::string new_last_index = index_name({i, j, k}, {i, j, k + 1});
           grid_of_tensors[i][j][k].rename_index(last_index, new_last_index);
         }
-        if (k == K - 1 && find_grid_coord_in_list(A, i, j)) {
+        if (k == K - 1 && find_grid_coord_in_list(final_qubit_region, i, j)) {
           std::string last_index = "th";
           std::string new_last_index = index_name({i, j}, {});
           grid_of_tensors[i][j][k].rename_index(last_index, new_last_index);
@@ -666,7 +666,7 @@ void circuit_data_to_grid_of_tensors(
 void grid_of_tensors_3D_to_2D(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors_3D,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
-    std::optional<std::vector<std::vector<int>>> A,
+    std::optional<std::vector<std::vector<int>>> final_qubit_region,
     std::optional<std::vector<std::vector<int>>> off,
     const std::list<ContractionOperation>& ordering, s_type* scratch) {
   if (scratch == nullptr) {
@@ -687,7 +687,7 @@ void grid_of_tensors_3D_to_2D(
       }
 
       size_t container_dim = (int)pow(super_dim, 4);
-      if (find_grid_coord_in_list(A, i, j)) {
+      if (find_grid_coord_in_list(final_qubit_region, i, j)) {
         container_dim *= DIM;
       }
       std::vector<Tensor> group_containers =
@@ -740,7 +740,7 @@ void grid_of_tensors_3D_to_2D(
 
       // If this qubit is in the final region, bundling must be adjusted.
       int fr_buffer = 0;
-      if (find_grid_coord_in_list(A, i, j)) {
+      if (find_grid_coord_in_list(final_qubit_region, i, j)) {
         ordered_indices_3D.push_back(index_name({i, j}, {}));
         fr_buffer = 1;
       }
