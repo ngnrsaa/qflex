@@ -33,6 +33,11 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  tests/src/Makefile])
 
+# Check GCC version
+REQ_CXX_VERSION="7"
+AS_IF(
+  [test $(${CXX} -dumpversion) -gt ${REQ_CXX_VERSION} ],, AC_MSG_ERROR("Please install g++ >= ${REQ_CXX_VERSION} before configuring.")
+)
 
 # Add extra param for cirq
 AC_ARG_ENABLE([cirq], 
@@ -67,7 +72,7 @@ AS_IF([test ${cirq} == "true"],
   AS_IF([${PYTHON} -c "import cirq; import sys; from packaging import version; sys.exit(not version.parse(cirq.__version__) >= version.parse('${REQ_CIRQ_VERSION}'))" 2>/dev/null],
     AC_MSG_RESULT([yes]), 
     AC_MSG_RESULT([no])
-    AC_MSG_ERROR([Please install cirq >= '${REQ_CIRQ_VERSION}' before configuring.]))
+    AC_MSG_ERROR([Please install cirq >= '${REQ_CIRQ_VERSION}' before configuring (or --disable-cirq).]))
 )
 
 AC_SUBST(cirq, ${cirq})
@@ -79,7 +84,7 @@ AS_IF([test ${pybind11} == "true"],
   AS_IF([${PYTHON} -c "import pybind11; import sys; from packaging import version; sys.exit(not version.parse(pybind11.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))" 2>/dev/null],
     AC_MSG_RESULT([yes]), 
     AC_MSG_RESULT([no])
-    AC_MSG_ERROR([Please install pybind11 >= '${REQ_PYBIND11_VERSION}' before configuring.]))
+    AC_MSG_ERROR([Please install pybind11 >= '${REQ_PYBIND11_VERSION}' before configuring (or --disable-pybind).]))
 )
 
 AC_SUBST(pybind11, ${pybind11})
