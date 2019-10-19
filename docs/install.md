@@ -33,10 +33,10 @@ error if not available. For further info:
 $ autoreconf -i && autoconf && ./configure --help
 ```
 
-Some of the qFlex tests require the installation of 
-[Cirq](https://github.com/quantumlib/Cirq). Such test can be disabled as:
+The following options for `configure` are also available:
 ```
-$ autoreconf -i && autoconf && ./configure --disable-cirq
+--disable-pybind11    Disable installation of Python porting of qFlex
+--disable-cirq        Disable tests/features which depends on cirq
 ```
 
 ## Compile qFlex
