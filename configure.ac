@@ -73,7 +73,7 @@ AS_IF([test ${cirq} == "true"],
 AC_SUBST(cirq, ${cirq})
 
 # Check that pybind11 is installed
-REQ_PYBIND11_VERSION="2.4"
+REQ_PYBIND11_VERSION="2.2.4"
 AS_IF([test ${pybind11} == "true"],
   AC_MSG_CHECKING([for pybind11])
   AS_IF([${PYTHON} -c "import pybind11; import sys; from packaging import version; sys.exit(not version.parse(pybind11.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))" 2>/dev/null],
