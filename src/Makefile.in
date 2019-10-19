@@ -20,7 +20,7 @@ $(TARGET1): main.cpp $(OBJS1)
 
 pybind: $(OBJS1)
 	$(CXX) -c pybind_main.cpp $(CXXFLAGS) $(PYBINDFLAGS)
-	$(CXX) -shared -o $(CIRQ_IF_DIR)/$(QFLEXLIB) $(OBJS1) $(FLAGS)
+	$(CXX) -shared -o $(CIRQ_IF_DIR)/$(QFLEXLIB) $(OBJS1) $(CXXFLAGS)
 
 
 %.o: %.cpp %.h
