@@ -3867,7 +3867,7 @@ fi
 
 
 # Check for Python version
-REQ_PYTHON_VERSION=3.0
+REQ_PYTHON_VERSION="3.5"
 
 
 

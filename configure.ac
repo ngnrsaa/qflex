@@ -55,7 +55,7 @@ AC_ARG_ENABLE([pybind11],
 )
 
 # Check for Python version
-REQ_PYTHON_VERSION=3.0
+REQ_PYTHON_VERSION="3.5"
 AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],, 
   AS_IF([test ${cirq} == "true" || ${pybind11} == "true"], AC_MSG_ERROR([Please install Python >= ${REQ_PYTHON_VERSION} before configuring.]))
 )
