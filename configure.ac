@@ -33,6 +33,7 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  tests/src/Makefile])
 
+
 # Add extra param for cirq
 AC_ARG_ENABLE([cirq], 
   AS_HELP_STRING([--disable-cirq],[Disable cirq dependant features.]), 
@@ -56,7 +57,7 @@ AC_ARG_ENABLE([pybind11],
 # Check for Python version
 REQ_PYTHON_VERSION=3.0
 AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],, 
-  AS_IF([test ${cirq} == "true"], AC_MSG_RESULT([Please install Python >= ${REQ_PYTHON_VERSION} before configuring.]))
+  AS_IF([test ${cirq} == "true" || ${pybind11} == "true"], AC_MSG_ERROR([Please install Python >= ${REQ_PYTHON_VERSION} before configuring.]))
 )
 
 # Check that cirq is installed
@@ -68,7 +69,17 @@ AS_IF([test ${cirq} == "true"],
     AC_MSG_ERROR([Please install cirq before configuring.]))
 )
 
-AC_SUBST(pybind11, ${pybind11})
 AC_SUBST(cirq, ${cirq})
+
+# Check that pybind11 is installed
+AS_IF([test ${pybind11} == "true"],
+  AC_MSG_CHECKING([for pybind11])
+  AS_IF([${PYTHON} -c "import pybind11" 2>/dev/null],
+    AC_MSG_RESULT([yes]), 
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([Please install pybind11 before configuring.]))
+)
+
+AC_SUBST(pybind11, ${pybind11})
 
 AC_OUTPUT
