@@ -23,23 +23,23 @@ TEST(ContractionTest, IndexNaming) {
 TEST(ContractionDeathTest, IndexNamingFailures) {
   // Empty input.
   std::vector<std::vector<int>> index = {};
-  EXPECT_DEATH(index_name(index), "");
+  EXPECT_ANY_THROW(index_name(index), "");
 
   // Size mismatch.
   index = {{1, 2}, {3, 4, 5}};
-  EXPECT_DEATH(index_name(index), "");
+  EXPECT_ANY_THROW(index_name(index), "");
 
   // Invalid size.
   index = {{1, 2, 3, 4}, {5, 6, 7, 8}};
-  EXPECT_DEATH(index_name(index), "");
+  EXPECT_ANY_THROW(index_name(index), "");
 
   // Wrong number of tensor positions.
   index = {{1, 2}, {3, 4}, {5, 6}};
-  EXPECT_DEATH(index_name(index), "");
+  EXPECT_ANY_THROW(index_name(index), "");
 
   // Wrong-size terminal index.
   index = {{1, 2, 3}};
-  EXPECT_DEATH(index_name(index), "");
+  EXPECT_ANY_THROW(index_name(index), "");
 }
 
 TEST(ContractionTest, OperationHandling) {
@@ -397,12 +397,12 @@ TEST(OrderingParserDeathTest, InvalidInput) {
   int J = 2;
 
   // Ordering data cannot be null pointer.
-  EXPECT_DEATH(ordering_data_to_contraction_ordering(nullptr, I, J, qubits_off,
+  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(nullptr, I, J, qubits_off,
                                                      &ordering),
                "");
 
   // Ordering cannot be null pointer.
-  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(&ordering_data, I, J,
                                                      qubits_off, nullptr),
                "");
 }
@@ -417,7 +417,7 @@ TEST(OrderingParserDeathTest, InvalidOrderingGenerated) {
   std::vector<std::vector<int>> qubits_off = {{2, 0}};
   int I = 3;
   int J = 2;
-  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
+  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(&ordering_data, I, J,
                                                      qubits_off, &ordering),
                "");
 }
@@ -428,10 +428,10 @@ TEST(ContractionDeathTest, ContractGridInvalidInput) {
   std::vector<std::complex<double>> amplitudes;
 
   // Tensor grid cannot be null pointer.
-  EXPECT_DEATH(ContractGrid(ordering, nullptr, &amplitudes), "");
+  EXPECT_ANY_THROW(ContractGrid(ordering, nullptr, &amplitudes), "");
 
   // Amplitudes cannot be null pointer.
-  EXPECT_DEATH(ContractGrid(ordering, &tensor_grid, nullptr), "");
+  EXPECT_ANY_THROW(ContractGrid(ordering, &tensor_grid, nullptr), "");
 }
 
 TEST(ContractionDeathTest, InitializeInvalidInput) {
@@ -440,10 +440,10 @@ TEST(ContractionDeathTest, InitializeInvalidInput) {
   std::vector<std::complex<double>> amplitudes;
 
   // Tensor grid cannot be null pointer.
-  EXPECT_DEATH(ContractionData::Initialize(ordering, nullptr, &amplitudes), "");
+  EXPECT_ANY_THROW(ContractionData::Initialize(ordering, nullptr, &amplitudes), "");
 
   // Amplitudes cannot be null pointer.
-  EXPECT_DEATH(ContractionData::Initialize(ordering, &tensor_grid, nullptr),
+  EXPECT_ANY_THROW(ContractionData::Initialize(ordering, &tensor_grid, nullptr),
                "");
 }
 

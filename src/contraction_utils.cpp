@@ -32,12 +32,10 @@ ContractionData ContractionData::Initialize(
     std::vector<std::vector<Tensor>>* tensor_grid,
     std::vector<std::complex<double>>* amplitudes) {
   if (tensor_grid == nullptr) {
-    std::cout << "Tensor grid must be non-null." << std::endl;
-    assert(tensor_grid != nullptr);
+    throw ERROR_MSG("Tensor grid must be non-null.");
   }
   if (amplitudes == nullptr) {
-    std::cout << "Amplitude return vector must be non-null." << std::endl;
-    assert(amplitudes != nullptr);
+    throw ERROR_MSG("Amplitude return vector must be non-null.");
   }
   ContractionData data;
   data.tensor_grid_ = tensor_grid;
@@ -263,6 +261,7 @@ void ContractionData::ContractGrid(
     }
   }
   // Check for an output of size larger than 1
+  // need to print output along with error message.
   if (output->size() != 1) {
     std::cout << "Contraction did not complete; final tensor is ";
     output->print();
@@ -279,12 +278,10 @@ bool ordering_data_to_contraction_ordering(
     const std::optional<std::vector<std::vector<int>>>& off,
     std::list<ContractionOperation>* ordering) {
   if (ordering_data == nullptr) {
-    std::cout << "Ordering data stream must be non-null." << std::endl;
-    assert(ordering_data != nullptr);
+    throw ERROR_MSG("Ordering data stream must be non-null.");
   }
   if (ordering == nullptr) {
-    std::cout << "Ordering must be non-null." << std::endl;
-    assert(ordering != nullptr);
+    throw ERROR_MSG("Ordering must be non-null.");
   }
   static const std::regex cut_value_regex("\\([0-9,]*\\)");
   std::string line;
@@ -394,8 +391,7 @@ bool ordering_data_to_contraction_ordering(
   // Ensure ordering generated is valid
   bool valid_ordering = IsOrderingValid(*ordering);
   if (!valid_ordering) {
-    std::cout << "Generated ordering must be valid." << std::endl;
-    assert(valid_ordering);
+    throw ERROR_MSG("Generated ordering must be valid.");
   }
   return true;
 }
@@ -419,11 +415,10 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
     int len = snprintf(buffer, sizeof(buffer), "(%d,%d),(o)", p1[0], p1[1]);
     return std::string(buffer, len);
   }
-  std::cout
-      << "Failed to construct tensor name with the following vectors: p1 = "
-      << _int_vector_to_string(p1) << ", p2 = " << _int_vector_to_string(p2)
-      << "." << std::endl;
-  assert(false);
+  throw ERROR_MSG(
+    "Failed to construct tensor name with the following vectors: p1 = "
+      + _int_vector_to_string(p1) + ", p2 = " + _int_vector_to_string(p2)
+      + ".");
   return "";
 }
 
@@ -434,9 +429,8 @@ std::string index_name(const std::vector<std::vector<int>>& tensors) {
   if (tensors.size() == 1) {
     return index_name(tensors.at(0), {});
   }
-  std::cout << "Failed to construct tensor name with input tensors size: "
-            << tensors.size() << std::endl;
-  assert(false);
+  throw ERROR_MSG("Failed to construct tensor name with input tensors size: "
+            + tensors.size());
   return "";
 }
 
@@ -547,12 +541,10 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
                   std::vector<std::vector<Tensor>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes) {
   if (tensor_grid == nullptr) {
-    std::cout << "Tensor grid must be non-null." << std::endl;
-    assert(tensor_grid != nullptr);
+    throw ERROR_MSG("Tensor grid must be non-null.");
   }
   if (amplitudes == nullptr) {
-    std::cout << "Amplitude return vector must be non-null." << std::endl;
-    assert(amplitudes != nullptr);
+    throw ERROR_MSG("Amplitude return vector must be non-null.");
   }
 
   // Populate ContractionData and perform grid contraction.
