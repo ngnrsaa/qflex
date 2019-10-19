@@ -3839,7 +3839,7 @@ ac_config_files="$ac_config_files Makefile src/Makefile tests/src/Makefile"
 
 # Check GCC version
 REQ_CXX_VERSION="7"
-if test $(${CXX} -dumpversion) -gt ${REQ_CXX_VERSION} ; then :
+if test $(${CXX} -dumpversion | cut -d '.' -f 1) -gt ${REQ_CXX_VERSION} ; then :
 
 else
   as_fn_error $? "\"Please install g++ >= ${REQ_CXX_VERSION} before configuring.\"" "$LINENO" 5

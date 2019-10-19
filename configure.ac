@@ -36,7 +36,7 @@ AC_CONFIG_FILES([Makefile
 # Check GCC version
 REQ_CXX_VERSION="7"
 AS_IF(
-  [test $(${CXX} -dumpversion) -gt ${REQ_CXX_VERSION} ],, AC_MSG_ERROR("Please install g++ >= ${REQ_CXX_VERSION} before configuring.")
+  [test $(${CXX} -dumpversion | cut -d '.' -f 1) -gt ${REQ_CXX_VERSION} ],, AC_MSG_ERROR("Please install g++ >= ${REQ_CXX_VERSION} before configuring.")
 )
 
 # Add extra param for cirq
