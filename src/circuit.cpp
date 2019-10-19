@@ -51,11 +51,14 @@ void QflexCircuit::load(std::istream& istream) {
     // Remove last space
     line = std::regex_replace(line, std::regex("\\s+$"), "");
 
-    // Remove any space before '('
+    // Remove any space between a non-space char and '('
     line = std::regex_replace(line, std::regex("[\\s]+[(]"), "(");
 
     // Remove spaces between parentheses
     line = std::regex_replace(line, std::regex("\\s+(?=[^()]*\\))"), "");
+
+    // After stripping, line should follow the format
+    // 0 gate(p1,p2,...) q1 q2 ...
 
     return line;
   };
@@ -129,16 +132,19 @@ void QflexCircuit::load(std::istream& istream) {
           gate.name = tokens[1];
         }
 
-        // Check that qubits are not already used in the same cycle
-        for(const auto &qubit: gate.qubits)
-          if(used_qubits.find(qubit) != std::end(used_qubits))
-            throw error_msg("Qubits can only used one for each cycle");
-
         // Add all the qubits
         for(std::size_t i = 2; i < std::size(tokens); ++i) {
           if(not is_integer(tokens[i])) throw error_msg("Qubit must be a valid number.");
           gate.qubits.push_back(std::stol(tokens[i]));  
         }
+
+        // Check that qubits are not already used in the same cycle
+        for(const auto &qubit: gate.qubits)
+          if(used_qubits.find(qubit) != std::end(used_qubits))
+            throw error_msg("Qubits can only used one for each cycle");
+          else
+            used_qubits.insert(qubit);
+
       }
     }
 
