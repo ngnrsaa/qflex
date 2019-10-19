@@ -68,4 +68,7 @@ AS_IF([test ${cirq} == "true"],
     AC_MSG_ERROR([Please install cirq before configuring.]))
 )
 
+AC_SUBST(pybind11, ${pybind11})
+AC_SUBST(cirq, ${cirq})
+
 AC_OUTPUT

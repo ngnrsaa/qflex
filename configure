@@ -625,6 +625,8 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+cirq
+pybind11
 pkgpyexecdir
 pyexecdir
 pkgpythondir
@@ -4145,6 +4147,11 @@ $as_echo "no" >&6; }
 fi
 
 fi
+
+pybind11=${pybind11}
+
+cirq=${cirq}
+
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure

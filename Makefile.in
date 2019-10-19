@@ -1,8 +1,10 @@
-TARGET1 = qflex
+TARGETS = qflex
 
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@
 PREFIX = @prefix@
+PYBIND11 = @pybind11@
+CIRQ = @cirq@
 
 ifeq ($(CXX), icpc)
 	CXXFLAGS += -mkl -qopenmp -DMKL_TENSOR
@@ -10,11 +12,19 @@ else
   CXXFLAGS += -fopenmp -lgsl -lgslcblas
 endif
 
+ifeq ($(PYBIND11), true)
+  TARGETS += pybind
+endif
+
 export CXX
 export CXXFLAGS
 export FLAGS
 
-$(TARGET1):
+.PHONY: all
+all: $(TARGETS)
+
+.PHONY: qflex
+qflex:
 	git submodule update --init --recursive src/docopt
 	$(MAKE) -C src/
 
@@ -40,7 +50,6 @@ install:
 
 .PHONY: clean
 clean:
-	-rm -f $(TARGET1).x
 	-$(MAKE) -C src/ clean
 	-$(MAKE) -C tests/src/ clean
 
