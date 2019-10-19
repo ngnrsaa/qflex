@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "tensor.h"
+#include "errors.h"
 
 namespace qflex {
 

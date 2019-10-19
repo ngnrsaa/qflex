@@ -415,11 +415,13 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
     int len = snprintf(buffer, sizeof(buffer), "(%d,%d),(o)", p1[0], p1[1]);
     return std::string(buffer, len);
   }
-  throw ERROR_MSG(
-    "Failed to construct tensor name with the following vectors: p1 = "
-      + _int_vector_to_string(p1) + ", p2 = " + _int_vector_to_string(p2)
-      + ".");
-  return "";
+  std::stringstream ss;
+  ss << "Failed to construct tensor name with the following vectors: p1 = [";
+  for(const auto &p: p1) ss << std::to_string(p) << ',';
+  ss << "] and p2 = [";
+  for(const auto &p: p2) ss << std::to_string(p) << ',';
+  ss << "].";
+  throw ERROR_MSG(ss.str());
 }
 
 std::string index_name(const std::vector<std::vector<int>>& tensors) {
@@ -429,9 +431,7 @@ std::string index_name(const std::vector<std::vector<int>>& tensors) {
   if (tensors.size() == 1) {
     return index_name(tensors.at(0), {});
   }
-  throw ERROR_MSG("Failed to construct tensor name with input tensors size: "
-            + tensors.size());
-  return "";
+  throw ERROR_MSG("Failed to construct tensor name with input tensors size: ", tensors.size());
 }
 
 std::vector<int> get_qubit_coords(int q, int J) {

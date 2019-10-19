@@ -30,6 +30,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "errors.h"
+
 namespace qflex {
 
 /**

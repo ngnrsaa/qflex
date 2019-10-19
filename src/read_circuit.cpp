@@ -287,12 +287,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       op_num++;
     }
     if (lpos == -1) {
-      char error[200];
-      snprintf(error, sizeof(error),
-               "Left hand side of pair not found: (%d,%d),(%d,%d)", local[0],
-               local[1], lhs[0], lhs[1]);
-      std::cout << "Halting reordering." << std::endl;
-      throw ERROR_MSG(error);
+      throw ERROR_MSG("Left hand side of pair not found: (", local[0], ',', local[1], "),(", lhs[0], ',', lhs[1], ").");
     }
 
     op_num = 0;
@@ -306,12 +301,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       op_num++;
     }
     if (rpos == -1) {
-      char error[200];
-      snprintf(error, sizeof(error),
-               "Right hand side of pair not found: (%d,%d),(%d,%d)", local[0],
-               local[1], rhs[0], rhs[1]);
-      std::cout << "Halting reordering." << std::endl;
-      throw ERROR_MSG(error);
+      throw ERROR_MSG("Right hand side of pair not found: (", local[0], ',', local[1], "),(", rhs[0], ',', rhs[1], ").");
     }
     if (lpatch == rpatch) {
       // lhs and rhs are in the same patch.
@@ -349,12 +339,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       }
     }
     // Error in comparison - likely issue in contraction ordering.
-    char error[200];
-    snprintf(error, sizeof(error),
-             "Failed to compare (%d,%d) and (%d,%d) for local (%d,%d).", lhs[0],
-             lhs[1], rhs[0], rhs[1], local[0], local[1]);
-    std::cout << "Halting reordering." << std::endl;
-    throw ERROR_MSG(error);
+    throw ERROR_MSG("Failed to compare (", lhs[0], ',', lhs[1], ") and (", rhs[0], ',', rhs[1], ") for local (", local[0], ',', local[1], ").");
   };
 }
 
@@ -391,10 +376,10 @@ void circuit_data_to_grid_of_tensors(
 
   if (circuit_data_num_qubits != num_active_qubits_from_grid) {
     throw ERROR_MSG(
-        + "The number of active qubits read from the file: "
-        + circuit_data_num_qubits
-        + ", does not match the number of active qubits read from the grid: "
-        + num_active_qubits_from_grid + ".");
+        "The number of active qubits read from the file: ",
+        circuit_data_num_qubits,
+        ", does not match the number of active qubits read from the grid: ",
+        num_active_qubits_from_grid, ".");
   }
 
   // Assert for the length of initial_conf and final_conf_B.
@@ -403,15 +388,15 @@ void circuit_data_to_grid_of_tensors(
     size_t A_size = A.has_value() ? A.value().size() : 0;
     if (initial_conf.size() != num_active_qubits_from_grid) {
       throw ERROR_MSG(
-                "Size of initial_conf: " + initial_conf.size()
-                + ", must be equal to the number of qubits: "
-                + num_active_qubits_from_grid + ".");
+                "Size of initial_conf: ", initial_conf.size(),
+                ", must be equal to the number of qubits: ", 
+                num_active_qubits_from_grid, ".");
     }
     if (final_conf_B.size() != num_active_qubits_from_grid - A_size) {
       throw ERROR_MSG(
-                 "Size of final_conf_B: " + final_conf_B.size()
-                + ", must be equal to the number of qubits: "
-                + num_active_qubits_from_grid - A_size + ".");
+                 "Size of final_conf_B: ", final_conf_B.size(),
+                 ", must be equal to the number of qubits: ",
+                 num_active_qubits_from_grid - A_size, ".");
     }
   }
 
@@ -484,8 +469,8 @@ void circuit_data_to_grid_of_tensors(
       std::unordered_set<int>::const_iterator q1_used = used_qubits.find(q1);
       if (q1_used != used_qubits.end()) {
         throw ERROR_MSG(
-                "The qubit " + q1 + " in '" + line_counter + ": "
-                + line + "' has already been used in this cycle.");
+                "The qubit ", q1, " in '", line_counter, ": ", line, 
+                "' has already been used in this cycle.");
       } else {
         used_qubits.insert(q1);
       }
@@ -493,8 +478,8 @@ void circuit_data_to_grid_of_tensors(
       if (q2 != -1) {
         std::unordered_set<int>::const_iterator q2_used = used_qubits.find(q2);
         if (q2_used != used_qubits.end()) {
-          throw ERROR_MSG("The qubit " + q2 + " in '" + line_counter + ": "
-                    + line + "' has already been used in this cycle.");
+          throw ERROR_MSG("The qubit ", q2, " in '", line_counter, ": ", line,
+                    "' has already been used in this cycle.");
         } else {
           used_qubits.insert(q2);
         }
@@ -512,9 +497,9 @@ void circuit_data_to_grid_of_tensors(
         // Check that position is an active qubit
         bool qubit_off = find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]);
         if (qubit_off) {
-          throw ERROR_MSG("The qubit in '" + line + "' references (" + i_j_1[0]
-                    + ", " + i_j_1[1]
-                    + ") which must be coordinates of an active qubit.");
+          throw ERROR_MSG("The qubit in '", line, "' references (", i_j_1[0],
+                    ", ", i_j_1[1],
+                    ") which must be coordinates of an active qubit.");
 
         }
         std::string input_index =
@@ -534,14 +519,14 @@ void circuit_data_to_grid_of_tensors(
         bool second_qubit_off =
             find_grid_coord_in_list(off, i_j_2[0], i_j_2[1]);
         if (first_qubit_off) {
-          throw ERROR_MSG("The first qubit of '" + line + "' references ("
-                    + i_j_1[0] + ", " + i_j_1[1]
-                    + ") which must be coordinates of an active qubit.");
+          throw ERROR_MSG("The first qubit of '", line, "' references (",
+                    i_j_1[0], ", ", i_j_1[1],
+                    ") which must be coordinates of an active qubit.");
         }
         if (second_qubit_off) {
-          throw ERROR_MSG("The second qubit of '" + line + "' references ("
-                    + i_j_2[0] + ", " + i_j_2[1]
-                    + ") which must be coordinates of an active qubit.");
+          throw ERROR_MSG("The second qubit of '", line, "' references (",
+                    i_j_2[0], ", ", i_j_2[1],
+                    ") which must be coordinates of an active qubit.");
         }
         std::vector<s_type> gate_q1;
         std::vector<s_type> gate_q2;
@@ -789,8 +774,7 @@ void read_wave_function_evolution(
 
   // Assert for the number of qubits.
   if (num_qubits != I) {
-    throw ERROR_MSG("I: " + I
-              + " must be equal to the number of qubits: " + num_qubits + ".");
+    throw ERROR_MSG("I: ", I, " must be equal to the number of qubits: ", num_qubits, ".");
   }
 
   std::string line;
