@@ -60,6 +60,9 @@ Sample ordering files can be found under [qflex/config/ordering](/config/orderin
 ### File format
 
 __patch-expansion:__ contracting an index onto a given patch.
+
+Performing this operation expands the section of the grid represented by the
+target patch - thus the name.
 ```
 expand <patch_name> <index>
 
@@ -71,7 +74,12 @@ Example:
 expand A 24 -> This contracts the tensor with the index 24 onto the A patch.
 ```
 
-__patch-merge:__ contracting two fully expanded (contracted) patches.
+__patch-merge:__ contracting a source patch into a target patch. The resulting
+                 patch takes the name of the target patch.
+
+Merging a patch into a previously-unused patch can be used to copy or rename
+patches; note however that the memory cost of a simulation scales with the
+number of distinct patches in the ordering file.
 ```
 merge <patch_name> <patch_name>
 
@@ -79,11 +87,23 @@ patch_name: A text string representing a tensor-contraction patch.
 ```
 Example:
 ```
-merge A B -> This contracts the patches A and B, which are both single tensors.
+merge A B -> This contracts the patches A and B; the resulting patch is named B.
 ```
 
 __cut:__ projection of all indices shared by two tensors onto a single value
          OR projection of final state of a single tensor onto an index
+
+__Restriction:__ Any patches that are modified prior to a cut must not be
+modified after that cut. (Note that a patch can act as the source of a
+patch-merge without being modified.) To work around this restriction, merge the
+old patch onto a previously-unused patch after the cut. See the
+`ExampleOrdering` test in [contraction_utils_test](/tests/src/contraction_utils_test.cpp)
+for an example of this.
+
+*This restriction is due to a memory-saving feature of qFlex: tensors are not
+copied during a cut operation, but are reused for each projected value of the
+cut index. Merging with an empty patch explicitly indicates to qFlex that the
+tensor should be copied.*
 ```
 cut <values> <indices>
 
