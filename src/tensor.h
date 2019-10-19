@@ -409,6 +409,8 @@ void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
  */
 void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy);
 
+size_t result_size(Tensor& A, Tensor& B);
+
 /**
  * Creates a reordering map for the data of a tensor with binary indices
  * between old_ordering and new_ordering.

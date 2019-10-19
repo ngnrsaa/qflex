@@ -993,6 +993,22 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   // std::cout << "Time updating C's variables: " << time_span.count() << "s\n";
 }
 
+size_t result_size(Tensor& A, Tensor& B) {
+  std::vector<std::string> left_indices =
+      _vector_subtraction(A.get_indices(), B.get_indices());
+  std::vector<std::string> right_indices =
+      _vector_subtraction(B.get_indices(), A.get_indices());
+  size_t left_dim = 1, right_dim = 1, result_dim;
+  for (int i = 0; i < left_indices.size(); ++i) {
+    left_dim *= A.get_index_to_dimension().at(left_indices[i]);
+  }
+  for (int i = 0; i < right_indices.size(); ++i) {
+    right_dim *= B.get_index_to_dimension().at(right_indices[i]);
+  }
+  result_dim = left_dim * right_dim;
+  return result_dim;
+}
+
 // Split it in parts, as before? Nah, it was all about generating small maps.
 // Here I am generating THE map. This is done only once per map anyway.
 void _generate_binary_reordering_map(

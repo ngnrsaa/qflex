@@ -70,6 +70,16 @@ void circuit_data_to_grid_of_tensors(
     s_type* scratch);
 
 /**
+ */
+void circuit_data_to_tensor_network(
+    std::istream* circuit_data, int I, int J,
+    const std::string initial_conf, const std::string final_conf_B,
+    const std::optional<std::vector<std::vector<int>>>& A,
+    const std::optional<std::vector<std::vector<int>>>& off,
+    std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
+    s_type* scratch);
+
+/**
  * Contracts a 3D grid of tensors onto a 2D grid of tensors, contracting
  * in the time (third) direction, and renaming the indices accordingly.
  * @param grid_of_tensors_3D reference to a

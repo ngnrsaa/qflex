@@ -621,8 +621,7 @@ void circuit_data_to_grid_of_tensors(
   scratch = NULL;
 }
 
-void grid_of_tensors_3D_to_2D(
-    std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors_3D,
+void grid_of_tensors_3D_to_2D( std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors_3D,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
     std::optional<std::vector<std::vector<int>>> A,
     std::optional<std::vector<std::vector<int>>> off,
@@ -741,6 +740,228 @@ void grid_of_tensors_3D_to_2D(
   // Be proper about pointers.
   scratch = NULL;
 }
+
+void circuit_data_to_tensor_network(
+    std::istream* circuit_data, int I, int J,
+    const std::string initial_conf, const std::string final_conf_B,
+    const std::optional<std::vector<std::vector<int>>>& A,
+    const std::optional<std::vector<std::vector<int>>>& off,
+    std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
+    s_type* scratch) {
+  if (circuit_data == nullptr) {
+    std::cout << "Circuit data stream must be non-null." << std::endl;
+    assert(circuit_data != nullptr);
+  }
+  if (scratch == nullptr) {
+    std::cout << "Scratch must be non-null." << std::endl;
+    assert(scratch != nullptr);
+  }
+  // Gotten from the file.
+  int num_qubits, cycle, q1, q2;
+  std::string gate;
+  // Useful for plugging into the tensor network:
+  std::vector<int> i_j_1, i_j_2;
+
+  // The first element should be the number of qubits
+  *(circuit_data) >> num_qubits;
+  // TODO: Decide whether to determine number of qubits from file or from I*J
+  if (num_qubits != I * J) {
+    std::cout << "The number of qubits read from the file: " << num_qubits
+              << ", does not match I*J: " << I * J << "." << std::endl;
+    num_qubits = I * J;
+  }
+
+  // Assert for the length of initial_conf and final_conf_B.
+  {
+    size_t off_size = off.has_value() ? off.value().size() : 0;
+    size_t A_size = A.has_value() ? A.value().size() : 0;
+    if (initial_conf.size() != num_qubits - off_size) {
+      std::cout << "Size of initial_conf: " << initial_conf.size()
+                << ", must be equal to the number of qubits: "
+                << num_qubits - off_size << "." << std::endl;
+      assert(initial_conf.size() == num_qubits - off_size);
+    }
+    if (final_conf_B.size() != num_qubits - off_size - A_size) {
+      std::cout << "Size of final_conf_B: " << final_conf_B.size()
+                << ", must be equal to the number of qubits: "
+                << num_qubits - off_size - A_size << "." << std::endl;
+      assert(final_conf_B.size() == num_qubits - off_size - A_size);
+    }
+  }
+
+  // Creating grid variables.
+  
+  std::vector<std::vector<std::vector<Tensor>>> grid_of_gates(I);
+  std::vector<std::vector<int>> grid_of_counters(I);
+  std::unordered_map<std::string, int> link_counters;
+  for (int i = 0; i < I; ++i) {
+    grid_of_gates[i] = std::vector<std::vector<Tensor>>(J);
+    grid_of_counters[i] = std::vector<int>(J);
+    for (int j = 0; j < J; ++j) {
+      grid_of_gates[i][j] = std::vector<Tensor>();
+      grid_of_counters[i][j] = 0;
+    }
+  }
+
+  // Insert deltas to first layer.
+  int idx = 0;
+  for (int q = 0; q < num_qubits; ++q) {
+    std::vector<int> i_j = get_qubit_coords(q, J);
+    int i = i_j[0], j = i_j[1];
+    if (find_grid_coord_in_list(off, i, j)) {
+      continue;
+    }
+    std::string delta_gate = (initial_conf[idx] == '0') ? "delta_0" : "delta_1";
+    std::string output_name = "(" + std::to_string(i_j[0]) + ","
+        + std::to_string(i_j[1]) + "),("
+        + std::to_string(grid_of_counters[i][j]) + ")";
+    grid_of_gates[i][j].push_back(
+        Tensor({output_name}, {2}, gate_array(delta_gate)));
+    idx += 1;
+  }
+
+  std::string line;
+  // Read one line at a time from the circuit, skipping comments.
+  while (getline(*circuit_data, line)) {
+    if (line.size() && line[0] != '#') {
+      std::stringstream ss(line);
+      // The first element is the cycle
+      ss >> cycle;
+      // The second element is the gate
+      ss >> gate;
+      // Get the first position
+      // TODO: Stop relying on the assumption that the gate and its parameters
+      // can be read as one token without spaces. This is (mostly) fine for
+      // "rz(0.5)", but will fail for, e.g., "fsim(0.25, -0.5)".
+      ss >> q1;
+      // Get the second position in the case
+      // TODO: Two-qubit gates should be encapsulated better.
+      if (gate == "cz" || gate == "cx" || gate.rfind("fsim", 0) == 0) {
+        ss >> q2;
+      } else {
+        q2 = -1;
+      }
+
+      // Get i, j and super_cycle
+      i_j_1 = get_qubit_coords(q1, J);
+      if (q2 >= 0) {
+        i_j_2 = get_qubit_coords(q2, J);
+      }
+
+      // Fill in one-qubit gates.
+      if (q2 < 0) {
+        // Check that position is an active qubit
+        bool qubit_off = find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]);
+        if (qubit_off) {
+          std::cout << "The qubit in '" << line << "' references (" << i_j_1[0]
+                    << ", " << i_j_1[1]
+                    << ") which must be coordinates of an active qubit."
+                    << std::endl;
+          assert(!qubit_off);
+        }
+        std::string input_name = "(" + std::to_string(i_j_1[0]) + ","
+            + std::to_string(i_j_1[1]) + "),("
+            + std::to_string(grid_of_counters[i_j_1[0]][i_j_1[1]]) + ")";
+        ++grid_of_counters[i_j_1[0]][i_j_1[1]];
+        std::string output_name = "(" + std::to_string(i_j_1[0]) + ","
+            + std::to_string(i_j_1[1]) + "),("
+            + std::to_string(grid_of_counters[i_j_1[0]][i_j_1[1]]) + ")";
+        grid_of_gates[i_j_1[0]][i_j_1[1]].push_back(
+            Tensor({input_name, output_name}, {2, 2}, gate_array(gate)));
+      }
+      // Fill in two-qubit gates.
+      if (q2 >= 0) {
+        // Check that positions are active qubits
+        bool first_qubit_off = find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]);
+        bool second_qubit_off =
+            find_grid_coord_in_list(off, i_j_2[0], i_j_2[1]);
+        if (first_qubit_off) {
+          std::cout << "The first qubit of '" << line << "' references ("
+                    << i_j_1[0] << ", " << i_j_1[1]
+                    << ") which must be coordinates of an active qubit."
+                    << std::endl;
+          assert(!first_qubit_off);
+        }
+        if (second_qubit_off) {
+          std::cout << "The second qubit of '" << line << "' references ("
+                    << i_j_2[0] << ", " << i_j_2[1]
+                    << ") which must be coordinates of an active qubit."
+                    << std::endl;
+          assert(!second_qubit_off);
+        }
+        std::vector<s_type> gate_q1;
+        std::vector<s_type> gate_q2;
+        std::vector<size_t> dimensions;
+        tie(gate_q1, gate_q2, dimensions) = gate_arrays(gate, scratch);
+        std::string link_name = index_name(i_j_1, i_j_2);
+        auto it = link_counters.find(link_name);
+        if (it == link_counters.end()) {
+          link_counters[link_name] = 0;
+          it = link_counters.find(link_name);
+        }
+        it = link_counters.find(link_name);
+        ++(it->second);
+        std::string virtual_name = "("
+            + std::to_string(std::min(i_j_1[0], i_j_2[0])) + ","
+            + std::to_string(std::min(i_j_1[1], i_j_2[1])) + ","
+            + std::to_string(it->second) + "),("
+            + std::to_string(std::max(i_j_1[0], i_j_2[0])) + ","
+            + std::to_string(std::max(i_j_1[1], i_j_2[1])) + ","
+            + std::to_string(it->second) + ")";
+        std::string input_name_1 = "(" + std::to_string(i_j_1[0]) + ","
+            + std::to_string(i_j_1[1]) + "),("
+            + std::to_string(grid_of_counters[i_j_1[0]][i_j_1[1]]) + ")";
+        std::string input_name_2 = "(" + std::to_string(i_j_2[0]) + ","
+            + std::to_string(i_j_2[1]) + "),("
+            + std::to_string(grid_of_counters[i_j_2[0]][i_j_2[1]]) + ")";
+        ++grid_of_counters[i_j_1[0]][i_j_1[1]];
+        ++grid_of_counters[i_j_2[0]][i_j_2[1]];
+        std::string output_name_1 = "(" + std::to_string(i_j_1[0]) + ","
+            + std::to_string(i_j_1[1]) + "),("
+            + std::to_string(grid_of_counters[i_j_1[0]][i_j_1[1]]) + ")";
+        std::string output_name_2 = "(" + std::to_string(i_j_2[0]) + ","
+            + std::to_string(i_j_2[1]) + "),("
+            + std::to_string(grid_of_counters[i_j_2[0]][i_j_2[1]]) + ")";
+        grid_of_gates[i_j_1[0]][i_j_1[1]].push_back(
+            Tensor({input_name_1, virtual_name, output_name_1}, dimensions,
+                   gate_q1));
+        grid_of_gates[i_j_2[0]][i_j_2[1]].push_back(
+            Tensor({input_name_2, virtual_name, output_name_2}, dimensions,
+                   gate_q2));
+      }
+    }
+  }
+
+  // Insert deltas to last layer on qubits that are in B.
+  // Rename last index when in A to "(i,j),(o)".
+  idx = 0;
+  for (int q = 0; q < num_qubits; ++q) {
+    std::vector<int> i_j = get_qubit_coords(q, J);
+    int i = i_j[0], j = i_j[1];
+    if (find_grid_coord_in_list(off, i, j)) {
+      continue;
+    }
+    std::string last_name = "(" + std::to_string(i_j[0]) + ","
+        + std::to_string(i_j[1]) + "),("
+        + std::to_string(grid_of_counters[i][j]) + ")";
+    if (find_grid_coord_in_list(A, i, j)) {
+      std::string output_name = "(" + std::to_string(i_j[0]) + ","
+          + std::to_string(i_j[1]) + "),(o)";
+      grid_of_gates[i][j].back().rename_index(last_name, output_name);
+    } else {
+      std::string delta_gate = (final_conf_B[idx] == '0') ? "delta_0"
+          : "delta_1";
+      grid_of_gates[i][j].push_back(
+          Tensor({last_name}, {2}, gate_array(delta_gate)));
+      idx += 1;  // Move in B only.
+    }
+
+    std::cout << "i = " << i << ", j = " << j << std::endl;
+    for (auto v : grid_of_gates[i][j])
+      v.print();
+  }
+}
+
 
 // This function is currently not being called.
 // TODO: Decide whether or not to deprecate function, also needs to be tested.
