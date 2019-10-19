@@ -4134,16 +4134,17 @@ $as_echo "$am_cv_python_pyexecdir" >&6; }
 
 
 # Check that cirq is installed
+REQ_CIRQ_VERSION="0.6"
 if test ${cirq} == "true"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cirq" >&5
 $as_echo_n "checking for cirq... " >&6; }
-  if ${PYTHON} -c "import cirq" 2>/dev/null; then :
+  if ${PYTHON} -c "import cirq; import sys; from packaging import version; sys.exit(not version.parse(cirq.__version__) >= version.parse('${REQ_CIRQ_VERSION}'))" 2>/dev/null; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-    as_fn_error $? "Please install cirq before configuring." "$LINENO" 5
+    as_fn_error $? "Please install cirq >= '${REQ_CIRQ_VERSION}' before configuring." "$LINENO" 5
 fi
 
 fi
@@ -4152,16 +4153,17 @@ cirq=${cirq}
 
 
 # Check that pybind11 is installed
+REQ_PYBIND11_VERSION="2.4"
 if test ${pybind11} == "true"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pybind11" >&5
 $as_echo_n "checking for pybind11... " >&6; }
-  if ${PYTHON} -c "import pybind11" 2>/dev/null; then :
+  if ${PYTHON} -c "import pybind11; import sys; from packaging import version; sys.exit(not version.parse(pybind11.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))" 2>/dev/null; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-    as_fn_error $? "Please install pybind11 before configuring." "$LINENO" 5
+    as_fn_error $? "Please install pybind11 >= '${REQ_PYBIND11_VERSION}' before configuring." "$LINENO" 5
 fi
 
 fi

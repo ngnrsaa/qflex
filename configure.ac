@@ -61,23 +61,25 @@ AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],,
 )
 
 # Check that cirq is installed
+REQ_CIRQ_VERSION="0.6"
 AS_IF([test ${cirq} == "true"],
   AC_MSG_CHECKING([for cirq])
-  AS_IF([${PYTHON} -c "import cirq" 2>/dev/null],
+  AS_IF([${PYTHON} -c "import cirq; import sys; from packaging import version; sys.exit(not version.parse(cirq.__version__) >= version.parse('${REQ_CIRQ_VERSION}'))" 2>/dev/null],
     AC_MSG_RESULT([yes]), 
     AC_MSG_RESULT([no])
-    AC_MSG_ERROR([Please install cirq before configuring.]))
+    AC_MSG_ERROR([Please install cirq >= '${REQ_CIRQ_VERSION}' before configuring.]))
 )
 
 AC_SUBST(cirq, ${cirq})
 
 # Check that pybind11 is installed
+REQ_PYBIND11_VERSION="2.4"
 AS_IF([test ${pybind11} == "true"],
   AC_MSG_CHECKING([for pybind11])
-  AS_IF([${PYTHON} -c "import pybind11" 2>/dev/null],
+  AS_IF([${PYTHON} -c "import pybind11; import sys; from packaging import version; sys.exit(not version.parse(pybind11.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))" 2>/dev/null],
     AC_MSG_RESULT([yes]), 
     AC_MSG_RESULT([no])
-    AC_MSG_ERROR([Please install pybind11 before configuring.]))
+    AC_MSG_ERROR([Please install pybind11 >= '${REQ_PYBIND11_VERSION}' before configuring.]))
 )
 
 AC_SUBST(pybind11, ${pybind11})
