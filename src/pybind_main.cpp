@@ -37,7 +37,7 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
 
   // Setting initial and final circuit states.
   input.initial_state = initial_state;
-  input.final_state_A = final_state;
+  input.final_state = final_state;
 
   // Evaluating circuit.
   std::vector<std::pair<std::string, std::complex<double>>> amplitudes =

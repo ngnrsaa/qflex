@@ -243,7 +243,7 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   std::vector<std::vector<int>> qubits_off = {{2, 0}};
   s_type* scratch = new s_type[256];
   auto circuit_data = std::stringstream(kSimpleCircuit);
-  circuit_data_to_grid_of_tensors(&circuit_data, 3, 2, 2, "00000", "0000",
+  circuit_data_to_grid_of_tensors(&circuit_data, 3, 2, 2, "00000", "0000x",
                                   qubits_A, qubits_off, tensor_grid_3D,
                                   scratch);
   ASSERT_EQ(tensor_grid_3D.size(), 3);
