@@ -63,10 +63,13 @@ int main(int argc, char** argv) {
     auto auto_depth = qflex::compute_depth(std::ifstream(circuit_filename));
     if (bool(args["--depth"])) {
       input.K = args["--depth"].asLong();
-      if(input.K != auto_depth) {
-        std::cerr << "WARNING: user-provided depth (" << input.K << ") differs from the auto-computed depth (" << auto_depth << ")." << std::endl;
+      if (input.K != auto_depth) {
+        std::cerr << "WARNING: user-provided depth (" << input.K
+                  << ") differs from the auto-computed depth (" << auto_depth
+                  << ")." << std::endl;
       }
-    } else input.K = auto_depth;
+    } else
+      input.K = auto_depth;
   }
 
   // Creating streams for input files.

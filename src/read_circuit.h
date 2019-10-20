@@ -42,7 +42,7 @@ struct hash<std::pair<T, U>> {
   }
 };
 
-}
+}  // namespace std
 
 namespace qflex {
 
