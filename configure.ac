@@ -91,7 +91,7 @@ AS_IF([test ${pybind11} == "true"],
 AC_SUBST(pybind11, ${pybind11})
 
 # Check that pytest is installed
-REQ_PYTEST_VERSION="5.0"
+REQ_PYTEST_VERSION="4.5"
 AC_MSG_CHECKING([for pytest])
 AS_IF([${PYTHON} -c "import pytest; import sys; from packaging import version; sys.exit(not version.parse(pytest.__version__) >= version.parse('${REQ_PYTEST_VERSION}'))" 2>/dev/null],
   AC_MSG_RESULT([yes])
