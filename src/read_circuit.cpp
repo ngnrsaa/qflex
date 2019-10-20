@@ -18,8 +18,8 @@
 
 namespace qflex {
 
-std::size_t compute_depth(std::istream &&istream) {
-  auto is_number = [](const std::string &token) {
+std::size_t compute_depth(std::istream&& istream) {
+  auto is_number = [](const std::string& token) {
     try {
       std::stol(token);
     } catch (...) {
@@ -28,7 +28,7 @@ std::size_t compute_depth(std::istream &&istream) {
     return true;
   };
 
-  auto is_integer = [&is_number](const std::string &token) {
+  auto is_integer = [&is_number](const std::string& token) {
     return is_number(token) and std::stol(token) == std::stod(token);
   };
 
@@ -57,8 +57,8 @@ std::size_t compute_depth(std::istream &&istream) {
     return line;
   };
 
-  auto tokenize = [](const std::string &line,
-                     const std::string &regex_expr = "[^\\s]+") {
+  auto tokenize = [](const std::string& line,
+                     const std::string& regex_expr = "[^\\s]+") {
     std::vector<std::string> tokens;
     auto word_regex = std::regex(regex_expr);
     for (auto w =
@@ -71,7 +71,7 @@ std::size_t compute_depth(std::istream &&istream) {
   std::size_t line_counter{0}, last_cycle_number{0};
   std::string line;
 
-  auto error_msg = [&line, &line_counter](const std::string &msg) {
+  auto error_msg = [&line, &line_counter](const std::string& msg) {
     std::string err_msg =
         "[" + std::to_string(line_counter + 1) + ": " + line + "] " + msg;
     std::cerr << err_msg << std::endl;
@@ -140,16 +140,16 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
      {"delta_0", std::vector<s_type>({1.0, 0.0})},
      {"delta_1", std::vector<s_type>({0.0, 1.0})},
      // For one-qubit gates, the first index is input an second is output.
-     {"h", std::vector<s_type>({_INV_SQRT_2, _INV_SQRT_2,
-                                _INV_SQRT_2, -_INV_SQRT_2})},
-     {"hz_1_2", std::vector<s_type>({{0.5, 0.5}, {_INV_SQRT_2, 0},
-                                     {0., -_INV_SQRT_2}, {0.5, 0.5}})},
-     {"t", std::vector<s_type>({1.0, 0.,
-                                0., {_INV_SQRT_2, _INV_SQRT_2}})},
-     {"x_1_2", std::vector<s_type>({{0.5, 0.5}, {0.5, -0.5},
-                                    {0.5, -0.5}, {0.5, 0.5}})},
-     {"y_1_2", std::vector<s_type>({{0.5, 0.5}, {0.5, 0.5},
-                                    {-0.5, -0.5}, {0.5, 0.5}})},
+     {"h", std::vector<s_type>({_INV_SQRT_2, _INV_SQRT_2, _INV_SQRT_2,
+                                -_INV_SQRT_2})},
+     {"hz_1_2",
+      std::vector<s_type>(
+          {{0.5, 0.5}, {_INV_SQRT_2, 0}, {0., -_INV_SQRT_2}, {0.5, 0.5}})},
+     {"t", std::vector<s_type>({1.0, 0., 0., {_INV_SQRT_2, _INV_SQRT_2}})},
+     {"x_1_2",
+      std::vector<s_type>({{0.5, 0.5}, {0.5, -0.5}, {0.5, -0.5}, {0.5, 0.5}})},
+     {"y_1_2",
+      std::vector<s_type>({{0.5, 0.5}, {0.5, 0.5}, {-0.5, -0.5}, {0.5, 0.5}})},
      // For cz, both q1 and q2 get indices in the order (input, virtual,
      // output).
      // {"cz_q1", vector<s_type>({1.,0.,0.,0.,0.,0.,0.,1.})},
@@ -162,9 +162,7 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
       std::vector<s_type>({-1.0484937059720079, 0., 0.5611368023131075, 0., 0.,
                            0.5611368023131075, 0., 1.0484937059720079})},
      // For the non-decomposed cz, the convention is (in1, in2, out1, out2).
-     {"cz", std::vector<s_type>({1., 0., 0., 0.,
-                                 0., 1., 0., 0.,
-                                 0., 0., 1., 0.,
+     {"cz", std::vector<s_type>({1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0.,
                                  0., 0., 0., -1.})},
 
      // For cx, both q1 and q2 get indices in the order (input, virtual,
@@ -175,15 +173,12 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
      {"cx_q1",
       std::vector<s_type>({0.8408964152537143, 0., 0.8408964152537143, 0., 0.,
                            -0.8408964152537143, 0., 0.8408964152537143})},
-     {"cx_q2",
-      std::vector<s_type>({0.5946035575013604, -0.5946035575013604,
-                           0.5946035575013604, 0.5946035575013604,
-                           -0.5946035575013604, 0.5946035575013604,
-                           0.5946035575013604, 0.5946035575013604})},
+     {"cx_q2", std::vector<s_type>({0.5946035575013604, -0.5946035575013604,
+                                    0.5946035575013604, 0.5946035575013604,
+                                    -0.5946035575013604, 0.5946035575013604,
+                                    0.5946035575013604, 0.5946035575013604})},
      // For the non-decomposed cx, the convention is (in1, in2, out1, out2).
-     {"cx", std::vector<s_type>({1., 0., 0., 0.,
-                                 0., 1., 0., 0.,
-                                 0., 0., 0., 1.,
+     {"cx", std::vector<s_type>({1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 1.,
                                  0., 0., 1., 0.})}});
 
 std::vector<s_type> gate_array(const std::string& gate_name) {
