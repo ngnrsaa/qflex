@@ -18,7 +18,7 @@ Contains the core behavior of qFlex, written in C++.
   operations performed in qFlex.
 - **pybind_main** uses [pybind](https://github.com/pybind/pybind11) to
   provide a Python wrapper for qFlex. The resulting module is stored under
-  [qflex/python/cirq_interface](/python/cirq_interface).
+  [qflex/python](/python).
 
 ## config
 
@@ -41,8 +41,7 @@ Contains documentation for building and running qFlex.
 Contains useful Python scripts and integration with other Python-based tools.
 
 - **cirq_interface** contains the qFlex-[Cirq](https://github.com/quantumlib/cirq)
-  integration layer. This is also where the Python wrapper module for qFlex
-  is stored.
+  integration layer.
 - **circuits** contains utility scripts for generating qFlex circuits.
 
 ## scripts
