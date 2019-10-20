@@ -305,7 +305,7 @@ def circuit_to_ordering(circuit: cirq.circuits.Circuit,
       ValueError: The gate can't be applied to the qubits.
   """
 
-    # Chech that there are no k-qubit gates with k > 2
+    # Check that there are no k-qubit gates with k > 2
     if sum(len(g.qubits) > 2 for g in circuit.all_operations()):
         raise AssertionError(
             "Auto-ordering now working for k-qubit gates with k > 2.")
@@ -318,12 +318,13 @@ def circuit_to_ordering(circuit: cirq.circuits.Circuit,
           if len(g.qubits) > 1
       ])
 
-    if max_cuts < 0:
-        raise ValueError('max_cuts must be positive!')
-
+    # Check Schmidt decomposition
     if sum(utils.ComputeSchmidtRank(g) != 2 for g in circuit.all_operations()):
         raise AssertionError(
             "Auto-ordering with Schmidt-rank > 2 gates not yet supported.")
+
+    if max_cuts < 0:
+        raise ValueError('max_cuts must be positive!')
 
     if qubit_names is None:
         qubit_names = range(len(circuit.all_qubits()))
