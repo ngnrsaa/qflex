@@ -354,7 +354,7 @@ def circuit_to_ordering(circuit: cirq.circuits.Circuit,
 if __name__ == "__main__":
 
     from docopt import docopt
-    from sys import stderr
+    from sys import stdout, stderr
 
     args = docopt(__doc__)
 
@@ -365,12 +365,12 @@ if __name__ == "__main__":
     output_filename = args['--output-file']
     verbose = args['--verbose']
 
-    if (verbose):
+    if verbose:
         print('Get grid.', file=stderr)
     with open(grid_filename) as f:
         qubits = utils.GetGridQubits(f)
 
-    if (verbose):
+    if verbose:
         print('Get circuit.', file=stderr)
     with open(circuit_filename) as f:
         circuit = utils.GetCircuit(f, qubits)
@@ -387,13 +387,9 @@ if __name__ == "__main__":
             if len(g.qubits) > 1
         ])
 
-    if (verbose):
+    if verbose:
         print('Compute ordering.', file=stderr)
 
-    if output_filename != None:
-        with open(output_filename, 'w') as f:
-            for line in circuit_to_ordering(circuit):
-                print(line, file=f)
-    else:
-        for line in circuit_to_ordering(circuit):
-            print(line)
+    ordering = circuit_to_ordering(circuit, qubit_names=sorted(qubits))
+    with (stdout if output_filename == None else open(output_filename, 'w')) as f:
+      print('\n'.join(ordering), file=f)
