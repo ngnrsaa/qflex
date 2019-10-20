@@ -1,7 +1,21 @@
 # Lint as: python3
-"""Provides a method for converting Cirq circuits to qFlex simulation order."""
+"""
+Provides a method for converting Cirq circuits to qFlex simulation order.
+
+Usage:
+  order_circuit_simulation.py (-h | --help)
+  order_circuit_simulation.py <grid_filename> <circuit_filename>
+  order_circuit_simulation.py -g <grid_filename> -c <circuit_filename> [-v]
+
+Options:
+  -h, --help                           Show this help
+  -g, --grid=<grid_filename>           Grid filename
+  -c, --circuit=<circuit_filename>     Circuit filename
+  -v, --verbose                        Verbose output
+"""
 
 import itertools
+import docopt
 import math
 import re
 
@@ -418,14 +432,23 @@ def GetCircuit(circuit_stream, qubits):
 
 if __name__ == "__main__":
 
-  circuit_filename = "../config/circuits/rectangular_2x2_1-2-1_0.txt"
-  grid_filename = "../config/grid/rectangular_2x2.txt"
+  from docopt import docopt
+  from sys import stderr
+
+  args = docopt(__doc__)
+
+  grid_filename = args['--grid'] if args['--grid'] != None else args['<grid_filename>']
+  circuit_filename = args['--circuit'] if args['--circuit'] != None else args['<circuit_filename>']
+  verbose = args['--verbose']
 
   with open(grid_filename) as f:
     qubits = GetGridQubits(f)
 
   with open(circuit_filename) as f:
     circuit = GetCircuit(f, qubits)
+
+  if(verbose):
+    print(circuit, file=stderr)
 
   for line in circuit_to_ordering(circuit):
     print(line)
