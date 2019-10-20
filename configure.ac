@@ -15,8 +15,13 @@ AC_PROG_AWK
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_CPP
-AC_PROG_LN_S
 AC_PROG_MAKE_SET
+
+# Check for functions.
+AC_CHECK_FUNCS([pow], [], [AC_MSG_ERROR([Function 'pow' is missing.])])
+
+# Check for inline.
+AC_C_INLINE
 
 # Check for GIT.
 AC_CHECK_PROG(GIT_CHECK,git,yes)
