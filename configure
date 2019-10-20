@@ -4172,7 +4172,7 @@ $as_echo "yes" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-    as_fn_error $? "Please install pybind11 >= '${REQ_PYBIND11_VERSION}' before configuring (or --disable-pybind)." "$LINENO" 5
+    as_fn_error $? "Please install pybind11 >= '${REQ_PYBIND11_VERSION}' before configuring (or --disable-pybind11)." "$LINENO" 5
 fi
 
 fi
@@ -4181,19 +4181,29 @@ pybind11=${pybind11}
 
 
 # Check that pytest is installed
-REQ_PYTEST_VERSION="5.0"
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for pytest" >&5
+REQ_PYTEST_VERSION="4.5"
+if test ${pybind11} == "true"; then :
+  if test ${cirq} == "true"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pytest" >&5
 $as_echo_n "checking for pytest... " >&6; }
-if ${PYTHON} -c "import pytest; import sys; from packaging import version; sys.exit(not version.parse(pytest.__version__) >= version.parse('${REQ_PYTEST_VERSION}'))" 2>/dev/null; then :
+    if ${PYTHON} -c "import pytest; import sys; from packaging import version; sys.exit(not version.parse(pytest.__version__) >= version.parse('${REQ_PYTEST_VERSION}'))" 2>/dev/null; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-  pytest=true
+      pytest=true
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-  pytest=false
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Please install pytest >= '${REQ_PYTEST_VERSION}' to run python tests." >&5
+      pytest=false
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Please install pytest >= '${REQ_PYTEST_VERSION}' to run python tests." >&5
 $as_echo "$as_me: WARNING: Please install pytest >= '${REQ_PYTEST_VERSION}' to run python tests." >&2;}
+fi
+else
+  pytest=false
+
+fi
+else
+  pytest=false
+
 fi
 
 pytest=${pytest}
