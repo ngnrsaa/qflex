@@ -31,7 +31,8 @@ AC_TYPE_SIZE_T
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
-                 tests/src/Makefile])
+                 tests/src/Makefile
+                 tests/python/Makefile])
 
 # Check GCC version
 REQ_CXX_VERSION="7"
@@ -88,5 +89,17 @@ AS_IF([test ${pybind11} == "true"],
 )
 
 AC_SUBST(pybind11, ${pybind11})
+
+# Check that pytest is installed
+REQ_PYTEST_VERSION="5.0"
+AC_MSG_CHECKING([for pytest])
+AS_IF([${PYTHON} -c "import pytest; import sys; from packaging import version; sys.exit(not version.parse(pytest.__version__) >= version.parse('${REQ_PYTEST_VERSION}'))" 2>/dev/null],
+  AC_MSG_RESULT([yes])
+  pytest=true, 
+  AC_MSG_RESULT([no])
+  pytest=false
+  AC_MSG_WARN([Please install pytest >= '${REQ_PYTEST_VERSION}' to run python tests.]))
+
+AC_SUBST(pytest, ${pytest})
 
 AC_OUTPUT

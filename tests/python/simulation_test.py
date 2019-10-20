@@ -9,6 +9,7 @@ import pytest
 import cirq
 import sys
 
+sys.path.insert(1, '../../')
 from tests.python import simulator
 from python import qflex
 
