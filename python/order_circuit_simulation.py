@@ -343,6 +343,7 @@ def GetGridQubits(grid_stream):
 def GetGate(line, qubits):
 
   # Get map from gate name to cirq
+  # Ordering NOT SUPPORT two-qubit gates with Schmidt decomposition != 2
   gates_map = {}
   gates_map['h'] = cirq.H
   gates_map['x'] = cirq.X
@@ -412,7 +413,7 @@ def GetGate(line, qubits):
 def GetCircuit(circuit_stream, qubits):
 
     circuit = cirq.Circuit()
-    circuit.append([GetGate(line, qubits) for line in circuit_stream if len(line) and len(line.strip().split()) > 1])
+    circuit.append(gate for gate in (GetGate(line, qubits) for line in circuit_stream if len(line) and len(line.strip().split()) > 1) if len(gate.qubits) == 2)
     return circuit
 
 if __name__ == "__main__":
@@ -426,6 +427,6 @@ if __name__ == "__main__":
   with open(circuit_filename) as f:
     circuit = GetCircuit(f, qubits)
 
-  print(circuit)
+  for line in circuit_to_ordering(circuit):
+    print(line)
 
-  order = circuit_to_ordering(circuit)
