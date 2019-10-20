@@ -11,6 +11,7 @@ print_help() {
   echo -e "\tOptions:"                                                    >&2
   echo -e "\t\t-h   : Print this help."                                   >&2
   echo -e "\t\t-x   : Do not install qFlex (just create container)."      >&2
+  echo -e "\t\t-r   : Run rootless container immediately after creation." >&2
   echo -e "\t\t-c   : Install Cirq."                                      >&2
   echo                                                                    >&2
 }
@@ -27,6 +28,7 @@ get_location() {
 
 user_root=""
 no_inst=""
+run_immediately=""
 cirq=""
 num_args=$#
 
@@ -56,6 +58,9 @@ for((idx=1; idx<=$num_args; ++idx)); do
           ;;
         -x)
           no_inst=1
+          ;;
+        -r)
+          run_immediately=1
           ;;
         *)
           print_help
@@ -155,13 +160,14 @@ cat > $root/install_qflex.sh << EOF
 
 # Install dependencies
 /sbin/apk update
-/sbin/apk add g++ make gsl-dev git autoconf
+/sbin/apk add g++ make gsl-dev git autoconf automake
+/sbin/apk add python3-dev py3-pybind11 py3-packaging
 
 # Change folder
 cd /qflex
 
 # Run autoconf
-autoconf && ./configure
+autoreconf -i && autoconf && ./configure --disable-cirq
 
 # Make qFlex
 make -j\$OMP_NUM_THREADS
@@ -208,3 +214,8 @@ else
 fi
 
 echo "[CHROOT] Container in: $(realpath $root)" >&2
+
+if [[ -n $run_immediately && $run_immediately == "1" ]]; then
+  echo "[CHROOT] Run container." >&2
+  bash ${SCRIPTPATH}/run-rootless-container.sh $root
+fi
