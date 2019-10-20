@@ -31,7 +31,8 @@ AC_TYPE_SIZE_T
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
-                 tests/src/Makefile])
+                 tests/src/Makefile
+                 tests/python/Makefile])
 
 # Check GCC version
 REQ_CXX_VERSION="7"
@@ -66,7 +67,7 @@ AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],,
 )
 
 # Check that cirq is installed
-REQ_CIRQ_VERSION="0.6"
+REQ_CIRQ_VERSION="0.5"
 AS_IF([test ${cirq} == "true"],
   AC_MSG_CHECKING([for cirq])
   AS_IF([${PYTHON} -c "import cirq; import sys; from packaging import version; sys.exit(not version.parse(cirq.__version__) >= version.parse('${REQ_CIRQ_VERSION}'))" 2>/dev/null],
@@ -84,9 +85,27 @@ AS_IF([test ${pybind11} == "true"],
   AS_IF([${PYTHON} -c "import pybind11; import sys; from packaging import version; sys.exit(not version.parse(pybind11.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))" 2>/dev/null],
     AC_MSG_RESULT([yes]), 
     AC_MSG_RESULT([no])
-    AC_MSG_ERROR([Please install pybind11 >= '${REQ_PYBIND11_VERSION}' before configuring (or --disable-pybind).]))
+    AC_MSG_ERROR([Please install pybind11 >= '${REQ_PYBIND11_VERSION}' before configuring (or --disable-pybind11).]))
 )
 
 AC_SUBST(pybind11, ${pybind11})
+
+# Check that pytest is installed
+REQ_PYTEST_VERSION="4.5"
+AS_IF([test ${pybind11} == "true"],
+  AS_IF([test ${cirq} == "true"],
+    AC_MSG_CHECKING([for pytest])
+    AS_IF([${PYTHON} -c "import pytest; import sys; from packaging import version; sys.exit(not version.parse(pytest.__version__) >= version.parse('${REQ_PYTEST_VERSION}'))" 2>/dev/null],
+      AC_MSG_RESULT([yes])
+      pytest=true, 
+      AC_MSG_RESULT([no])
+      pytest=false
+      AC_MSG_WARN([Please install pytest >= '${REQ_PYTEST_VERSION}' to run python tests.])),
+    pytest=false
+  ),
+  pytest=false
+)
+
+AC_SUBST(pytest, ${pytest})
 
 AC_OUTPUT
