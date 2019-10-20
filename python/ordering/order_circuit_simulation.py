@@ -5,12 +5,13 @@ Provides a method for converting Cirq circuits to qFlex simulation order.
 Usage:
   order_circuit_simulation.py (-h | --help)
   order_circuit_simulation.py <grid_filename> <circuit_filename>
-  order_circuit_simulation.py -g <grid_filename> -c <circuit_filename> [-v]
+  order_circuit_simulation.py -g <grid_filename> -c <circuit_filename> [-v -o <output_file>]
 
 Options:
   -h, --help                           Show this help
   -g, --grid=<grid_filename>           Grid filename
   -c, --circuit=<circuit_filename>     Circuit filename
+  -o, --output-file=<output_file>      Print on <output_file> instead of stdout
   -v, --verbose                        Verbose output
 """
 
@@ -359,12 +360,10 @@ def GetGridQubits(grid_stream):
     grid_J = len(grid[0])
 
     # Return cirq.GridQubit
-    return [
-        cirq.GridQubit(I, J)
-        for I in range(grid_I)
-        for J in range(grid_J)
-        if grid[I][J] == '1'
-    ]
+    return {
+        I * grid_J + J: cirq.GridQubit(I, J)
+        for I in range(grid_I) for J in range(grid_J) if grid[I][J] == '1'
+    }
 
 
 def GetGate(line, qubits):
@@ -461,16 +460,26 @@ if __name__ == "__main__":
         '<grid_filename>']
     circuit_filename = args['--circuit'] if args['--circuit'] != None else args[
         '<circuit_filename>']
+    output_filename = args['--output-file']
     verbose = args['--verbose']
 
+    if (verbose):
+        print('Get grid.', file=stderr)
     with open(grid_filename) as f:
         qubits = GetGridQubits(f)
 
+    if (verbose):
+        print('Get circuit.', file=stderr)
     with open(circuit_filename) as f:
         circuit = GetCircuit(f, qubits)
 
     if (verbose):
-        print(circuit, file=stderr)
+        print('Compute ordering.', file=stderr)
 
-    for line in circuit_to_ordering(circuit):
-        print(line)
+    if output_filename != None:
+        with open(output_filename, 'w') as f:
+            for line in circuit_to_ordering(circuit):
+                print(line, file=f)
+    else:
+        for line in circuit_to_ordering(circuit):
+            print(line)
