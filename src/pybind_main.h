@@ -11,7 +11,8 @@ namespace py = pybind11;
 #include "evaluate_circuit.h"
 #include "read_circuit.h"
 
-std::vector<std::pair<std::string, std::complex<double>>> simulate(const py::dict &options);
+std::vector<std::pair<std::string, std::complex<double>>> simulate(
+    const py::dict &options);
 
 PYBIND11_MODULE(qflex, m) {
   m.doc() = "pybind11 plugin";  // optional module docstring
