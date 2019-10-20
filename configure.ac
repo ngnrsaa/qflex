@@ -10,20 +10,50 @@ AC_PREFIX_DEFAULT([$HOME/local])
 : ${CXXFLAGS="-O3  -std=c++17  -march=native"}
 
 # Checks for programs.
+AC_LANG(C++)
 AC_PROG_AWK
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_CPP
-AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
-# Check for GIT
+# Check for functions.
+AC_CHECK_FUNCS([pow], [], [AC_MSG_ERROR([Function 'pow' is missing.])])
+
+# Check for inline.
+AC_C_INLINE
+
+# Check for GIT.
 AC_CHECK_PROG(GIT_CHECK,git,yes)
 AS_IF([test x"$GIT_CHECK" != x"yes"], [AC_MSG_ERROR([Please install git before configuring.])])
 
+# Checks for headers.
+AC_CHECK_HEADER([algorithm], [], [AC_MSG_ERROR([Please install algorithm before configuring.])])
+AC_CHECK_HEADER([cassert], [], [AC_MSG_ERROR([Please install cassert before configuring.])])
+AC_CHECK_HEADER([chrono], [], [AC_MSG_ERROR([Please install chrono before configuring.])])
+AC_CHECK_HEADER([cmath], [], [AC_MSG_ERROR([Please install cmath before configuring.])])
+AC_CHECK_HEADER([complex], [], [AC_MSG_ERROR([Please install complex before configuring.])])
+AC_CHECK_HEADER([ctime], [], [AC_MSG_ERROR([Please install ctime before configuring.])])
+AC_CHECK_HEADER([fstream], [], [AC_MSG_ERROR([Please install fstream before configuring.])])
+AC_CHECK_HEADER([iostream], [], [AC_MSG_ERROR([Please install iostream before configuring.])])
+AC_CHECK_HEADER([iterator], [], [AC_MSG_ERROR([Please install iterator before configuring.])])
+AC_CHECK_HEADER([list], [], [AC_MSG_ERROR([Please install list before configuring.])])
+AC_CHECK_HEADER([memory], [], [AC_MSG_ERROR([Please install memory before configuring.])])
+AC_CHECK_HEADER([omp.h], [], [AC_MSG_ERROR([Please install omp.h before configuring.])])
+AC_CHECK_HEADER([regex], [], [AC_MSG_ERROR([Please install regex before configuring.])])
+AC_CHECK_HEADER([sstream], [], [AC_MSG_ERROR([Please install sstream before configuring.])])
+AC_CHECK_HEADER([string], [], [AC_MSG_ERROR([Please install string before configuring.])])
+AC_CHECK_HEADER([unordered_map], [], [AC_MSG_ERROR([Please install unordered_map before configuring.])])
+AC_CHECK_HEADER([unordered_set], [], [AC_MSG_ERROR([Please install unordered_set before configuring.])])
+AC_CHECK_HEADER([vector], [], [AC_MSG_ERROR([Please install vector before configuring.])])
+
 # Checks for libraries.
-AC_CHECK_LIB([gsl], [cblas_cgemm])
-AC_CHECK_LIB([gslcblas], [cblas_cgemm])
+AS_IF([test x${CXX} == x"icpc"],
+  AC_CHECK_HEADER([mkl.h], [], [AC_MSG_ERROR([Please install mkl.h before configuring.])])
+  ,
+  AC_CHECK_HEADER([gsl/gsl_cblas.h], [], [AC_MSG_ERROR([Please install gsl/gsl_cblas.h before configuring.])])
+  AC_CHECK_LIB([gslcblas], [cblas_cgemm], [], [AC_MSG_ERROR([Please install gslcblas before configuring.])])
+)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
@@ -33,12 +63,6 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  tests/src/Makefile
                  tests/python/Makefile])
-
-# Check GCC version
-REQ_CXX_VERSION="7"
-AS_IF(
-  [test $(${CXX} -dumpversion | cut -d '.' -f 1) -gt ${REQ_CXX_VERSION} ],, AC_MSG_ERROR("Please install g++ >= ${REQ_CXX_VERSION} before configuring.")
-)
 
 # Add extra param for cirq
 AC_ARG_ENABLE([cirq], 

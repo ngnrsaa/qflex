@@ -17,7 +17,7 @@ PYBINDFLAGS = -shared `python3 -m pybind11 --includes` -Ipybind11/include
 $(TARGET1): main.cpp $(OBJS1)
 	$(CXX) -o $(@).x $< $(OBJS1) $(CXXFLAGS)
 
-pybind: $(OBJS1)
+pybind: $(OBJS1) pybind_main.h
 	$(CXX) pybind_main.cpp -o $(QFLEXLIB) $^ $(CXXFLAGS) $(PYBINDFLAGS)
 
 %.o: %.cpp %.h
