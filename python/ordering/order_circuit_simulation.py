@@ -304,12 +304,27 @@ def circuit_to_ordering(circuit: cirq.circuits.Circuit,
   Throws:
       ValueError: The gate can't be applied to the qubits.
   """
-    if max_cuts < 0:
-        raise ValueError('max_cuts must be positive!')
 
+    # Check that there are no k-qubit gates with k > 2
+    if sum(len(g.qubits) > 2 for g in circuit.all_operations()):
+        raise AssertionError(
+            "Auto-ordering now working for k-qubit gates with k > 2.")
+
+    # Strip single qubit gates
+    if sum(len(g.qubits) == 1 for g in circuit.all_operations()):
+      circuit = cirq.Circuit([
+          cirq.Moment([g])
+          for g in circuit.all_operations()
+          if len(g.qubits) > 1
+      ])
+
+    # Check Schmidt decomposition
     if sum(utils.ComputeSchmidtRank(g) != 2 for g in circuit.all_operations()):
         raise AssertionError(
             "Auto-ordering with Schmidt-rank > 2 gates not yet supported.")
+
+    if max_cuts < 0:
+        raise ValueError('max_cuts must be positive!')
 
     if qubit_names is None:
         qubit_names = range(len(circuit.all_qubits()))
@@ -374,18 +389,6 @@ if __name__ == "__main__":
         print('Get circuit.', file=stderr)
     with open(circuit_filename) as f:
         circuit = utils.GetCircuit(f, qubits)
-
-        # Chech that there are no k-qubit gates with k > 2
-        if sum(len(g.qubits) > 2 for g in circuit.all_operations()):
-            raise AssertionError(
-                "Auto-ordering now working for k-qubit gates with k > 2.")
-
-        # Strip single qubit gates
-        circuit = cirq.Circuit([
-            cirq.Moment([g])
-            for g in circuit.all_operations()
-            if len(g.qubits) > 1
-        ])
 
     if verbose:
         print('Compute ordering.', file=stderr)
