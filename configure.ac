@@ -10,6 +10,7 @@ AC_PREFIX_DEFAULT([$HOME/local])
 : ${CXXFLAGS="-O3  -std=c++17  -march=native"}
 
 # Checks for programs.
+AC_LANG(C++)
 AC_PROG_AWK
 AC_PROG_CXX
 AC_PROG_CC
@@ -33,12 +34,6 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  tests/src/Makefile
                  tests/python/Makefile])
-
-# Check GCC version
-REQ_CXX_VERSION="7"
-AS_IF(
-  [test $(${CXX} -dumpversion | cut -d '.' -f 1) -gt ${REQ_CXX_VERSION} ],, AC_MSG_ERROR("Please install g++ >= ${REQ_CXX_VERSION} before configuring.")
-)
 
 # Add extra param for cirq
 AC_ARG_ENABLE([cirq], 
