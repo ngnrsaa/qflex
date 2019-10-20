@@ -161,7 +161,7 @@ cat > $root/install_qflex.sh << EOF
 # Install dependencies
 /sbin/apk update
 /sbin/apk add g++ make gsl-dev git autoconf automake
-/sbin/apk add python3-dev py3-pybind11 py3-packaging
+/sbin/apk add python3-dev py3-pybind11 py3-packaging py3-pytest
 
 # Change folder
 cd /qflex
