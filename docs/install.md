@@ -12,25 +12,31 @@ To install qFlex, `autoconf` must be installed in the system.
 
 Pre-requisites can be checked by running:
 ```
-$ autoconf && ./configure
+$ autoreconf -i && autoconf && ./configure
 ```
-`autoconf` generates a suitable `configure` file for the system and `configure`
+`autoreconf` and `autoconf` generate a suitable `configure` file for the system and `configure`
 will check for pre-requisites. If pre-requisites are satisfied, a `Makefile` is
 created to compile and install qFlex. The default installation folder is
 `$HOME/local`. If a different folder is desired, `--prefix` can be passed as an
 argument to `configure`:
 ```
-$ autoconf && ./configure --prefix=/new/installation/folder/
+$ autoreconf -i && autoconf && ./configure --prefix=/new/installation/folder/
 ```
 By default, `g++` is used to compile qFlex. To use a different compiler (as
 Intel `icpc`), the user may provide the bash variable `CXX`:
 ```
-$ autoconf && CXX=icpc ./configure
+$ autoreconf -i && autoconf && CXX=icpc ./configure
 ```
 When `CXX=icpc` is used, qFlex will try to use the MKL library and return an
 error if not available. For further info:
 ```
-$ autoconf && ./configure --help
+$ autoreconf -i && autoconf && ./configure --help
+```
+
+The following options for `configure` are also available:
+```
+--disable-pybind11    Disable installation of Python porting of qFlex
+--disable-cirq        Disable tests/features which depends on cirq
 ```
 
 ## Compile qFlex
