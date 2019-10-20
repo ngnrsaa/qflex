@@ -1,0 +1,8 @@
+TARGETS = $(shell find . -name '*_test.py')
+
+.PHONE: run-all
+run-all:
+	for exe in $(TARGETS); do if ! python3 -m pytest $$exe; then exit 1; fi; done
+
+.PHONY: clean
+clean:

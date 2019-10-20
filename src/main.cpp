@@ -9,14 +9,14 @@ static const char USAGE[] =
 tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
-    qflex <depth> <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf>]
-    qflex -d <depth> -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf>]
+    qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf>]
+    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [-d <depth> --initial-conf <initial_conf> --final-conf <final_conf>]
     qflex (-h | --help)
     qflex --version
 
   Options:
     -h,--help                              Show this help.
-    -d,--depth=<depth>                     Target circuit depth.
+    -d,--depth=<circuit_depth>             Depth of the circuit (optional)
     -c,--circuit=<circuit_filename>        Circuit filename.
     -o,--ordering=<ordering_filename>      Ordering filename.
     -g,--grid=<grid_filename>              Grid filename.
@@ -27,9 +27,9 @@ tensor network, CPU-based simulator of large quantum circuits.
 )";
 
 // Example:
-// $ ./qflex.x 2 ./circuits/bristlecone_48_1-24-1_0.txt \
-//               ./ordering/bristlecone_48.txt \
-//               ./grid/bristlecone_48.txt
+// $ src/qflex.x config/circuits/bristlecone_48_1-24-1_0.txt \
+//               config/ordering/bristlecone_48.txt \
+//               config/grid/bristlecone_48.txt
 //
 int main(int argc, char** argv) {
   std::map<std::string, docopt::value> args =
@@ -45,9 +45,9 @@ int main(int argc, char** argv) {
     input.initial_state = args["<initial_conf>"].asString();
 
   if (bool(args["--final-conf"]))
-    input.final_state_A = args["--final-conf"].asString();
+    input.final_state = args["--final-conf"].asString();
   else if (bool(args["<final_conf>"]))
-    input.final_state_A = args["<final_conf>"].asString();
+    input.final_state = args["<final_conf>"].asString();
 
   // Getting filenames
   std::string circuit_filename = bool(args["--circuit"])
@@ -60,8 +60,16 @@ int main(int argc, char** argv) {
                                   ? args["--grid"].asString()
                                   : args["<grid_filename>"].asString();
 
-  input.K = bool(args["--depth"]) ? args["--depth"].asLong()
-                                  : args["<depth>"].asLong();
+  // Get depth of the circuit
+  {
+    auto auto_depth = qflex::compute_depth(std::ifstream(circuit_filename));
+    if (bool(args["--depth"])) {
+      input.K = args["--depth"].asLong();
+      if(input.K != auto_depth) {
+        std::cerr << "WARNING: user-provided depth (" << input.K << ") differs from the auto-computed depth (" << auto_depth << ")." << std::endl;
+      }
+    } else input.K = auto_depth;
+  }
 
   // Creating streams for input files.
   auto circuit_data = std::ifstream(circuit_filename);
