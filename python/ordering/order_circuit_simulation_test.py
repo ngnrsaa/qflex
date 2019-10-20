@@ -5,7 +5,7 @@ import random
 import cirq
 import pytest
 
-from python import order_circuit_simulation as order_lib
+from python.ordering import order_circuit_simulation as order_lib
 
 
 def test_circuit_to_ordering():
