@@ -89,7 +89,7 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(const py::dic
     input.initial_state = options["initial_state"].cast<std::string>();
 
   if(options.contains("final_state"))
-    input.initial_state = options["final_state"].cast<std::string>();
+    input.final_state = options["final_state"].cast<std::string>();
 
   // Evaluating circuit.
   std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
