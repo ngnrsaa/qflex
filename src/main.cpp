@@ -1,5 +1,3 @@
-#include <omp.h>
-
 #include "docopt.h"
 #include "evaluate_circuit.h"
 

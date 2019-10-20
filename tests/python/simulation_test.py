@@ -7,10 +7,11 @@ from warnings import warn
 import numpy as np
 import pytest
 import cirq
-import sys
 
-sys.path.insert(1, '../../')
-from tests.python import simulator
+import sys, os
+sys.path.insert(
+    1, os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../../'))
+from python import utils
 from python import qflex
 
 circuit_test = """16
@@ -255,9 +256,9 @@ merge A B
 """
 
 # Simulate circuit
-qubits = simulator.GetGridQubit(StringIO(grid_test))
-circuit = simulator.GetCircuit(StringIO(circuit_test), qubits)
-results = cirq.Simulator().simulate(circuit, qubit_order=qubits)
+qubits = utils.GetGridQubits(StringIO(grid_test))
+circuit = utils.GetCircuit(StringIO(circuit_test), qubits)
+results = cirq.Simulator().simulate(circuit)
 
 # Save circuit and grid on temporary files
 circuit_filename = mkstemp()

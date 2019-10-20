@@ -10,7 +10,7 @@ PYTEST = @pytest@
 ifeq ($(CXX), icpc)
 	CXXFLAGS += -mkl -qopenmp -DMKL_TENSOR
 else
-  CXXFLAGS += -fopenmp -lgsl -lgslcblas
+  CXXFLAGS += -fopenmp -lgslcblas
 endif
 
 ifeq ($(PYBIND11), true)
