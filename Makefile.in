@@ -5,6 +5,7 @@ CXXFLAGS = @CXXFLAGS@
 PREFIX = @prefix@
 PYBIND11 = @pybind11@
 CIRQ = @cirq@
+PYTEST = @pytest@
 
 ifeq ($(CXX), icpc)
 	CXXFLAGS += -mkl -qopenmp -DMKL_TENSOR
@@ -38,9 +39,21 @@ tests:
 	git submodule update --init --recursive tests/src/googletest
 	$(MAKE) -C tests/src/
 
-.PHONY: run-tests
-run-tests: tests
+.PHONY: run-py-tests
+run-py-tests: pybind
+	$(MAKE) -C tests/python/ run-all
+
+.PHONY: run-cxx-tests
+run-cxx-tests: tests
 	$(MAKE) -C tests/src/ run-all
+
+TESTS = run-cxx-tests
+ifeq ($(PYTEST), true)
+  TESTS += run-py-tests
+endif
+
+.PHONY: run-tests
+run-tests: $(TESTS)
 
 .PHONY: install
 install:
