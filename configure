@@ -4646,7 +4646,16 @@ REQ_CIRQ_VERSION="0.5"
 if test ${cirq_tests} == "true"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cirq" >&5
 $as_echo_n "checking for cirq... " >&6; }
-  if ${PYTHON} -c "import cirq; import sys; from packaging import version; sys.exit(not version.parse(cirq.__version__) >= version.parse('${REQ_CIRQ_VERSION}'))" 2>/dev/null; then :
+  if ${PYTHON} - << EOF
+import cirq
+try:
+    import sys
+    from packaging import version
+    sys.exit(not version.parse(cirq.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))
+except:
+    pass
+EOF
+2>/dev/null; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -4665,7 +4674,16 @@ REQ_PYBIND11_VERSION="2.2.4"
 if test ${pybind11} == "true"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pybind11" >&5
 $as_echo_n "checking for pybind11... " >&6; }
-  if ${PYTHON} -c "import pybind11; import sys; from packaging import version; sys.exit(not version.parse(pybind11.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))" 2>/dev/null; then :
+  if ${PYTHON} - << EOF
+import pybind11
+try:
+    import sys
+    from packaging import version
+    sys.exit(not version.parse(pybind11.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))
+except:
+    pass
+EOF
+2>/dev/null; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -4685,7 +4703,16 @@ if test ${pybind11} == "true"; then :
   if test ${cirq_tests} == "true"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pytest" >&5
 $as_echo_n "checking for pytest... " >&6; }
-    if ${PYTHON} -c "import pytest; import sys; from packaging import version; sys.exit(not version.parse(pytest.__version__) >= version.parse('${REQ_PYTEST_VERSION}'))" 2>/dev/null; then :
+    if ${PYTHON} - << EOF
+import pytest
+try:
+    import sys
+    from packaging import version
+    sys.exit(not version.parse(pytest.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))
+except:
+    pass
+EOF
+    2>/dev/null; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
       pytest=true

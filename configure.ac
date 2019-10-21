@@ -94,7 +94,16 @@ AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],,
 REQ_CIRQ_VERSION="0.5"
 AS_IF([test ${cirq_tests} == "true"],
   AC_MSG_CHECKING([for cirq])
-  AS_IF([${PYTHON} -c "import cirq; import sys; from packaging import version; sys.exit(not version.parse(cirq.__version__) >= version.parse('${REQ_CIRQ_VERSION}'))" 2>/dev/null],
+  AS_IF([${PYTHON} - << EOF
+import cirq
+try:
+    import sys
+    from packaging import version
+    sys.exit(not version.parse(cirq.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))
+except:
+    pass
+EOF
+2>/dev/null],
     AC_MSG_RESULT([yes]), 
     AC_MSG_RESULT([no])
     AC_MSG_ERROR([Some tests require cirq. Please install cirq >= '${REQ_CIRQ_VERSION}' before configuring (or --disable-cirq_tests).]))
@@ -106,7 +115,16 @@ AC_SUBST(cirq_tests, ${cirq_tests})
 REQ_PYBIND11_VERSION="2.2.4"
 AS_IF([test ${pybind11} == "true"],
   AC_MSG_CHECKING([for pybind11])
-  AS_IF([${PYTHON} -c "import pybind11; import sys; from packaging import version; sys.exit(not version.parse(pybind11.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))" 2>/dev/null],
+  AS_IF([${PYTHON} - << EOF
+import pybind11
+try:
+    import sys
+    from packaging import version
+    sys.exit(not version.parse(pybind11.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))
+except:
+    pass
+EOF 
+2>/dev/null],
     AC_MSG_RESULT([yes]), 
     AC_MSG_RESULT([no])
     AC_MSG_ERROR([Please install pybind11 >= '${REQ_PYBIND11_VERSION}' before configuring (or --disable-pybind11).]))
@@ -119,7 +137,16 @@ REQ_PYTEST_VERSION="4.5"
 AS_IF([test ${pybind11} == "true"],
   AS_IF([test ${cirq_tests} == "true"],
     AC_MSG_CHECKING([for pytest])
-    AS_IF([${PYTHON} -c "import pytest; import sys; from packaging import version; sys.exit(not version.parse(pytest.__version__) >= version.parse('${REQ_PYTEST_VERSION}'))" 2>/dev/null],
+    AS_IF([${PYTHON} - << EOF
+import pytest
+try:
+    import sys
+    from packaging import version
+    sys.exit(not version.parse(pytest.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))
+except:
+    pass
+EOF
+    2>/dev/null],
       AC_MSG_RESULT([yes])
       pytest=true, 
       AC_MSG_RESULT([no])
