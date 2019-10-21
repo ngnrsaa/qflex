@@ -18,6 +18,10 @@
 
 namespace qflex {
 
+std::size_t compute_depth(std::istream& istream) {
+  return compute_depth(std::move(istream));
+}
+
 std::size_t compute_depth(std::istream&& istream) {
   auto is_number = [](const std::string& token) {
     try {

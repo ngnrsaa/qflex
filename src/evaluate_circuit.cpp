@@ -17,7 +17,8 @@
 
 namespace qflex {
 
-void QflexGrid::load(std::istream& istream) {
+void QflexGrid::load(std::istream& istream) { this->load(std::move(istream)); }
+void QflexGrid::load(std::istream&& istream) {
   I = J = 0;
   std::string line;
   while (std::getline(istream, line))

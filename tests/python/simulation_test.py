@@ -10,7 +10,8 @@ import cirq
 
 import sys, os
 sys.path.insert(
-    1, os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../../'))
+    1,
+    os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../../'))
 from python.ordering import order_circuit_simulation as auto_order
 from python import utils
 from python import qflex
@@ -261,7 +262,8 @@ merge A B
 # Simulate circuit
 qubits = utils.GetGridQubits(StringIO(grid_test))
 circuit = utils.GetCircuit(StringIO(circuit_test), qubits)
-auto_ordering = auto_order.circuit_to_ordering(circuit, qubit_names=sorted(qubits))
+auto_ordering = auto_order.circuit_to_ordering(circuit,
+                                               qubit_names=sorted(qubits))
 results = cirq.Simulator().simulate(circuit)
 
 # Save circuit and grid on temporary files
@@ -323,6 +325,7 @@ def test_simulation_with_cuts(x):
 
     # Compare the amplitudes
     assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
+
 
 @pytest.mark.parametrize(
     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])

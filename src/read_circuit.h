@@ -57,6 +57,7 @@ const int DIM = 2;
  * Read circuit from stream and compute depth.
  * @param circuit_data std::istream containing circuit as a string.
  */
+std::size_t compute_depth(std::istream& istream);
 std::size_t compute_depth(std::istream&& istream);
 
 /**

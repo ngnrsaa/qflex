@@ -312,11 +312,11 @@ def circuit_to_ordering(circuit: cirq.circuits.Circuit,
 
     # Strip single qubit gates
     if sum(len(g.qubits) == 1 for g in circuit.all_operations()):
-      circuit = cirq.Circuit([
-          cirq.Moment([g])
-          for g in circuit.all_operations()
-          if len(g.qubits) > 1
-      ])
+        circuit = cirq.Circuit([
+            cirq.Moment([g])
+            for g in circuit.all_operations()
+            if len(g.qubits) > 1
+        ])
 
     # Check Schmidt decomposition
     if sum(utils.ComputeSchmidtRank(g) != 2 for g in circuit.all_operations()):
@@ -394,5 +394,6 @@ if __name__ == "__main__":
         print('Compute ordering.', file=stderr)
 
     ordering = circuit_to_ordering(circuit, qubit_names=sorted(qubits))
-    with (stdout if output_filename == None else open(output_filename, 'w')) as f:
-      print('\n'.join(ordering), file=f)
+    with (stdout
+          if output_filename == None else open(output_filename, 'w')) as f:
+        print('\n'.join(ordering), file=f)

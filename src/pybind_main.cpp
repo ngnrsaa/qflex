@@ -4,41 +4,21 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     const py::dict &options) {
   qflex::QflexInput input;
 
-  // Check options for circuit
-  switch (options.contains("circuit_filename") + options.contains("circuit")) {
-    case 0:
-    case 2:
-      std::cerr
-          << "ERROR: either 'circuit_filename' or 'circuit' must be specified"
-          << std::endl;
-      return {};
-  }
-
-  // Check options for ordering
-  switch (options.contains("ordering_filename") +
-          options.contains("ordering")) {
-    case 0:
-    case 2:
-      std::cerr
-          << "ERROR: either 'ordering_filename' or 'ordering' must be specified"
-          << std::endl;
-      return {};
-  }
-
-  // Check options for grid
-  switch (options.contains("grid_filename") + options.contains("grid")) {
-    case 0:
-    case 2:
-      std::cerr << "ERROR: either 'grid_filename' or 'grid' must be specified"
-                << std::endl;
-      return {};
-  }
-
   // Temporary streams
   std::ifstream fs_circuit_data;
   std::ifstream fs_ordering_data;
 
+  std::stringstream ss_circuit_data;
+  std::stringstream ss_ordering_data;
+
+  auto get_stream_from_vector = [](const auto &vector) {
+    std::stringstream stream;
+    for (const auto &v : vector) stream << v << std::endl;
+    return stream;
+  };
+
   // Get circuit
+  std::size_t auto_depth;
   if (options.contains("circuit_filename")) {
     fs_circuit_data.open(options["circuit_filename"].cast<std::string>());
     if (not fs_circuit_data.good()) {
@@ -48,8 +28,25 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
       return {};
     }
     input.circuit_data = &fs_circuit_data;
+
+    // Get auto-depth
+    auto_depth = qflex::compute_depth(
+        std::ifstream(options["circuit_filename"].cast<std::string>()));
+
+  } else if (options.contains("circuit")) {
+    // Get auto-depth
+    auto_depth = qflex::compute_depth(get_stream_from_vector(
+        options["circuit"].cast<std::vector<std::string>>()));
+
+    // Get stream
+    input.circuit_data =
+        &(ss_circuit_data = get_stream_from_vector(
+              options["circuit"].cast<std::vector<std::string>>()));
+
   } else {
-    std::cerr << "ERROR: not yet implemented." << std::endl;
+    std::cerr
+        << "ERROR: Either --circuit_filename or --circuit must be specified."
+        << std::endl;
     return {};
   }
 
@@ -63,26 +60,30 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
       return {};
     }
     input.ordering_data = &fs_ordering_data;
+
+  } else if (options.contains("ordering")) {
+    input.ordering_data =
+        &(ss_ordering_data = get_stream_from_vector(
+              options["ordering"].cast<std::vector<std::string>>()));
+
   } else {
-    std::cerr << "ERROR: not yet implemented." << std::endl;
+    std::cerr
+        << "ERROR: Either --ordering_filename or --ordering must be specified."
+        << std::endl;
     return {};
   }
 
   // Get grid
   if (options.contains("grid_filename")) {
     input.grid.load(options["grid_filename"].cast<std::string>());
-  } else {
-    std::cerr << "ERROR: not yet implemented." << std::endl;
-    return {};
-  }
 
-  // Get auto_depth
-  std::size_t auto_depth;
-  if (options.contains("circuit_filename")) {
-    auto_depth = qflex::compute_depth(
-        std::ifstream(options["circuit_filename"].cast<std::string>()));
+  } else if (options.contains("grid")) {
+    input.grid.load(get_stream_from_vector(
+        options["grid"].cast<std::vector<std::string>>()));
+
   } else {
-    std::cerr << "ERROR: not yet implemented." << std::endl;
+    std::cerr << "ERROR: Either --grid_filename or --grid must be specified."
+              << std::endl;
     return {};
   }
 
