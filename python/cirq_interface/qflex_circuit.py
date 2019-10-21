@@ -1,27 +1,66 @@
 import tempfile
+import os
 
 import cirq
 
-from python.cirq_interface.qflex_virtual_device import  QFlexVirtualDevice
+import python.cirq_interface.qflex_virtual_device as qdevice
+import python.cirq_interface.qflex_order as qorder
 
 import python.utils as qflexutils
 
-class QFlexCircuit():
+class QFlexCircuit(cirq.Circuit):
 
-    def __init__(self, cirq_circuit):
+    def __init__(self,
+                 cirq_circuit,
+                 device,
+                 qflex_order = None):
+
+        if device is None or not isinstance(device, qdevice.QFlexVirtualDevice):
+            raise ValueError("QFlexVirtualDevice necessary for constructor!")
+
+        if qflex_order is None:
+            # No order was specified. Construct and order from a circuit
+            qubits = device.get_indexed_grid_qubits()
+            self._own_order = qorder.QFlexOrder(cirq_circuit = cirq_circuit,
+                                                qubits = qubits)
+        elif isinstance(qflex_order, qorder.QFlexOrder):
+            self._own_order = qflex_order
+        else:
+            raise ValueError("{!r} is not of a QFlexOrder!")
+
+        # The super constructor
+        super().__init__(cirq_circuit, device)
+
         # Behind the scene, this class creates a temporary file for each object
         self._file_handle = tempfile.mkstemp()
 
-        with open(self._file_handle[0], "w") as f:
+        with open(self._file_handle[1], "w") as f:
             # I do have the file handle anyway...
-            print(self.translate_cirq_to_qflex(cirq_circuit), file = f)
+            print(self.translate_cirq_to_qflex(self), file = f)
+
+
+    @property
+    def circuit_data(self):
+        return self._file_handle[1]
+
+
+    @property
+    def ordering_data(self):
+        return self._own_order._file_handle[1]
+
+
+    def _resolve_parameters_(self,
+                             param_resolver: cirq.study.ParamResolver):
+
+        qflex_circuit = super()._resolve_parameters_(param_resolver)
+
+        qflex_circuit.device = self.device
+        qflex_circuit._own_order = self._own_order
+
 
     def __del__(self):
         # The destructor removes the temporary file
 
-        import os
-
-        # if open, close the file handle
         try:
             os.close(self._file_handle[0])
         except OSError as e:
@@ -40,15 +79,6 @@ class QFlexCircuit():
         return self._file_handle[1]
 
 
-    def is_qflex_compatible(self):
-
-        if not isinstance(self.device, QFlexVirtualDevice):
-            # The circuit was not validated against the device
-            # TODO: Make it compatible? Validate, but for which grid?
-            raise ValueError('{!r} is not a QFlexVirtualDevice'.format(self.device))
-
-        return True
-
     def translate_cirq_to_qflex(self, cirq_circuit):
 
         number_qubits = qflexutils.GetNumberOfQubits(cirq_circuit)
@@ -58,12 +88,11 @@ class QFlexCircuit():
 
 
         # Assume that the cirq_circuit has QFlexVirtualDevice
-        assert(isinstance(cirq_circuit.device, QFlexVirtualDevice))
+        assert(isinstance(cirq_circuit.device, qdevice.QFlexVirtualDevice))
 
         grid_qubits = cirq_circuit.device.get_grid_qubits_as_keys()
 
-        # Access moments which are private
-        for mi, moment in enumerate(cirq_circuit._moments):
+        for mi, moment in enumerate(cirq_circuit):
             for op in moment:
 
                 qub_str = ""

@@ -2,13 +2,13 @@ from typing import Union, Sequence
 
 from cirq import study, schedules, ops, circuits
 
-import qflex
+from python import qflex
 
-from cirq_amplitudes_sim import SimulatesAmplitudes
-from qflex_virtual_device import QFlexVirtualDevice
+from python.cirq_interface.cirq_amplitudes_sim import SimulatesAmplitudes
 
-from ... import utils
 
+import python.cirq_interface.qflex_virtual_device as qdevice
+import python.cirq_interface.qflex_circuit as qcirc
 
 class QFlexSimulator(SimulatesAmplitudes):
 
@@ -23,43 +23,35 @@ class QFlexSimulator(SimulatesAmplitudes):
             qubit_order: ops.QubitOrderOrList = ops.QubitOrder.DEFAULT,
     ) -> Sequence[Sequence[complex]]:
 
-        if not isinstance(program, circuits.Circuit):
-            raise ValueError('{!r} is not a Circuit'.format(program))
+        if not isinstance(program, qcirc.QFlexCircuit):
+            raise ValueError('{!r} is not a QFlexCircuit'.format(program))
 
-        # circuit = (program if isinstance(program, circuits.Circuit)
-        #            else program.to_circuit())
-
-        if not isinstance(program.device, QFlexVirtualDevice):
+        if not isinstance(program.device, qdevice.QFlexVirtualDevice):
+            # The circuit was not validated against the device
+            # TODO: Make it compatible? Validate, but for which grid?
             raise ValueError('{!r} is not a QFlexVirtualDevice'.format(program.device))
-        else:
-            print("The circuits's device is a QFlexVirtualDevice...OK")
 
         param_resolvers = study.to_resolvers(params)
-
-        nr_qubits = utils.GetNrQubits(program)
 
         trials_results = []
         for prs in param_resolvers:
 
             from cirq import protocols
+            # The QFlexVirtualDevice device is "inherited" from the original program
             solved_circuit = protocols.resolve_parameters(program, prs)
 
             sweep_return = []
             # Not sure what these params could look like...for the moment
             for bitstring in bitstrings:
 
-                # simulate the state obtained by applying the circuit
-                # all zero input state
-                amplitudes = qflex.simulate(
-                    program.device.compute_circuit_data(solved_circuit),
-                    program.device.ordering_data,
-                    program.device.grid_data,
-                    program.device.sizex,
-                    program.device.sizey,
-                    "0" * nr_qubits, # the input is all zero
-                    # bitstrings are char-strings and not ints
-                    bitstring, # receiving only 62bit long bitstrings?
-                    2)
+                options = {
+                    'circuit_filename': solved_circuit.circuit_data,
+                    'ordering_filename': solved_circuit.ordering_data,
+                    'grid_filename': program.device.grid_data,
+                    'final_state': bitstring
+                }
+
+                amplitudes = qflex.simulate(options)
 
                 # hard coded
                 # input_initial_state = "0" * 70

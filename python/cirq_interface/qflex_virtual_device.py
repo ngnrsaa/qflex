@@ -1,121 +1,35 @@
+from io import StringIO
+
 import cirq
 import cirq.ops as ops
 
-from qflex_grids import QFlexGrid
+from python.cirq_interface.qflex_grid import QFlexGrid
+
+from python import utils as qflexutils
+
 
 class QFlexVirtualDevice(cirq.Device):
 
-    def __init__(self, arrangement = None, ordering_folder="../ordering"):
+    def __init__(self, qflex_grid_string = QFlexGrid.BRISTLECONE70):
 
-        # default value
-        self._arrangement = QFlexGrid.BRISTLECONE48
+        self._qflex_grid = QFlexGrid(qflex_grid_strings = qflex_grid_string)
 
-        if arrangement is not None:
-            self._arrangement = arrangement
+        self._qubits = qflexutils.GetGridQubits(StringIO(qflex_grid_string))
 
-        self._ordering_folder = ordering_folder
-
-        lines = self._arrangement.split("\n")
-
-        self._sizex = len(lines)
-        self._sizey = len(lines[0].strip())
-
-        self._qubits = []
-
-        for row, line in enumerate(lines):
-            for col, c in enumerate(line.strip()):
-                if c == "1":
-                    self._qubits.append(cirq.GridQubit(row, col))
-
-        self._circuit_data = []
+    @property
+    def grid_data(self):
+        return self._qflex_grid._file_handle[1]
 
     def duration_of(self, operation: 'cirq.Operation'):
         # No duration
         return 0
 
-    @property
-    def sizex(self):
-        return self._sizex
+    def get_indexed_grid_qubits(self):
+        return self._qubits
 
-    @property
-    def sizey(self):
-        return self._sizey
-
-    def compute_index(self, row, col):
-        return row * self.sizey + col
-
-
-    def compute_circuit_data(self, program):
-        """
-        Decomposition in the device worked fine and no errors were raised
-        Perform translation into QFlex instructions
-
-        :param program: Decomposed circuit
-        :return: Lists of strings to be sent to the C++ QFlex Simulator
-        """
-        # TODO: Circuit assumed to be operating on all virt. device qubits
-        first_line = str(len(self._qubits)) + "\n"
-        circuit_data = [first_line]
-
-        # Access moment in unorthodox manner?
-        for mi, moment in enumerate(program._moments):
-            for op in moment:
-
-                qub_str = ""
-                for qub in op.qubits:
-                    qub_str += "{} ".format(self.compute_index(qub.row, qub.col))
-
-                qflex_gate = ""
-                if isinstance(op.gate, ops.CZPowGate):
-                    qflex_gate = "cz"
-                elif isinstance(op.gate, ops.HPowGate):
-                    qflex_gate = "h"
-                elif isinstance(op.gate, ops.XPowGate):
-                    qflex_gate = "x_1_2"
-                elif isinstance(op.gate, ops.YPowGate):
-                    qflex_gate = "y_1_2"
-                elif isinstance(op.gate, ops.ZPowGate):
-                    qflex_gate = "t"
-
-                # The moment is missing
-                qflex_gate = "{} {} {}\n".format(mi, qflex_gate, qub_str.strip())
-                circuit_data.append(qflex_gate)
-
-        return circuit_data
-
-    @property
-    def grid_data(self):
-        return QFlexGrid.get_qflex_file_contents(self._arrangement)
-
-    @property
-    def ordering_data(self):
-        """
-            For the moment we have hardcoded ordering if the device is a grid
-            with 48 or 70 qubits
-        """
-        file_name = "no_file"
-
-        if self._arrangement == QFlexGrid.BRISTLECONE48:
-            file_name = self._ordering_folder + "/bristlecone_48.txt"
-        elif self._arrangement == QFlexGrid.BRISTLECONE70:
-            file_name = self._ordering_folder + "/bristlecone_70.txt"
-
-
-        # Create the graph and check isomorphism
-        # Take supremacy 48 circuit, generate graph with Orion PR
-        # Compare graph with the graph from the users circuit
-        # If isomorphic use ordering/....
-        # Otherwise heuristic
-
-        lines = []
-        if file_name != "no_file":
-            with open(file_name, "r") as file:
-                lines = file.readlines()
-        else:
-            # TODO: Use Python lib for ordering heuristic
-            lines = ["TODO: heuristic based list"]
-
-        return lines
+    def get_grid_qubits_as_keys(self):
+        return {self._qubits[y] : y
+                    for y in self._qubits}
 
     def decompose_operation(self, operation):
 
@@ -204,8 +118,8 @@ class QFlexVirtualDevice(cirq.Device):
 
     def validate_circuit(self, circuit):
         #
-        # Circuit and grid should have same number of qubits
-        # Otherwise -> Problem
+        # Circuit and grid should have same number of qubits?
+        # Otherwise -> Problem?
         #
         for moment in circuit:
             for operation in moment.operations:

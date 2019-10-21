@@ -42,7 +42,7 @@ class QFlexGrid():
         # Behind the scene, this class creates a temporary file for each object
         self._file_handle = tempfile.mkstemp()
 
-        with open(self._file_handle[0], "w") as f:
+        with open(self._file_handle[1], "w") as f:
             # I do have the file handle anyway...
             print(qflex_grid_strings, file = f)
 
