@@ -31,8 +31,10 @@ To install qFlex, simply run:
 $ autoreconf -i && autoconf && ./configure 
 $ make && make run-tests && make install
 ```
-By default, qFlex is installed in `$HOME/local/`. For more information:
-[qflex/docs/install.md](/docs/install.md)
+To disable tests based on `cirq`, use `./configure --disable-cirq_tests`
+instead. By default, qFlex is installed in `$HOME/local/`. To change the
+installation folder, use `./configure --prefix=/new/installation/folder/`. For more information:
+[qflex/docs/install.md](/docs/install.md).
 
 ## Build Using Docker
 
