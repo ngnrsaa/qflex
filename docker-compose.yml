@@ -18,3 +18,13 @@ services:
       - OMP_NUM_THREADS=4
     depends_on:
     - qflex
+  qflex-py-tests:
+    image: qflex-py-tests
+    container_name: qflex-py-tests
+    build:
+      context: ./
+      dockerfile: python/Dockerfile
+    environment:
+      - OMP_NUM_THREADS=4
+    depends_on:
+    - qflex
