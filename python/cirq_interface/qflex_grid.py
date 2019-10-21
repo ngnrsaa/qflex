@@ -1,3 +1,5 @@
+import tempfile
+
 class QFlexGrid():
     BRISTLECONE48 = """000001100000
                     000011110000
@@ -34,6 +36,25 @@ class QFlexGrid():
                     000111111000
                     000011110000
                     000001100000"""#11 lines of 12 cols
+
+    def __init__(self, grid_string = BRISTLECONE70):
+        # Behind the scene, this class creates a temporary file for each object
+        self._file_handle = tempfile.mkstemp()
+
+        with open(self._file_handle[0], "w") as f:
+            # I do have the file handle anyway...
+            print(grid_string, file = f)
+
+    def __del__(self):
+        # The destructor removes the temporary file
+
+        import os
+
+        # if open, close the file handle
+        os.close(self._file_handle[0])
+
+        # remove the temporary file from disk
+        os.remove(self._file_handle[1])
 
     @staticmethod
     def create_rectangular(sizex, sizey):
