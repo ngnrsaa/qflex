@@ -127,3 +127,21 @@ def GetCircuit(circuit_stream, qubits):
                           for line in circuit_stream
                           if len(line) and len(line.strip().split()) > 1))
     return circuit
+
+def GetNrQubits(cirq_circuit):
+    """
+    Determine the number of qubits from an unknown Cirq circuit
+    :param cirq_circuit:
+    :return:
+    """
+    known_qubits = {}
+    size = 0
+    for operation in cirq_circuit:
+        for qub in operation.qubits:
+            if not qub in known_qubits:
+                size += 1
+                known_qubits[qub] = size
+    return size
+
+
+

@@ -4,8 +4,11 @@ from cirq import study, schedules, ops, circuits
 
 import qflex
 
-from cirqinterface.cirq_amplitudes_sim import SimulatesAmplitudes
-from cirqinterface.qflex_virtual_device import QFlexVirtualDevice
+from cirq_amplitudes_sim import SimulatesAmplitudes
+from qflex_virtual_device import QFlexVirtualDevice
+
+from ... import utils
+
 
 class QFlexSimulator(SimulatesAmplitudes):
 
@@ -33,6 +36,8 @@ class QFlexSimulator(SimulatesAmplitudes):
 
         param_resolvers = study.to_resolvers(params)
 
+        nr_qubits = utils.GetNrQubits(program)
+
         trials_results = []
         for prs in param_resolvers:
 
@@ -51,7 +56,7 @@ class QFlexSimulator(SimulatesAmplitudes):
                     program.device.grid_data,
                     program.device.sizex,
                     program.device.sizey,
-                    "0" * 70, # the input is all zero
+                    "0" * nr_qubits, # the input is all zero
                     # bitstrings are char-strings and not ints
                     bitstring, # receiving only 62bit long bitstrings?
                     2)
