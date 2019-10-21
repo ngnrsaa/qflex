@@ -22,10 +22,22 @@ class QFlexCircuit():
         import os
 
         # if open, close the file handle
-        os.close(self._file_handle[0])
+        try:
+            os.close(self._file_handle[0])
+        except OSError as e:
+            if e.errno == 9:
+                # if it was closed before
+                pass
+            else:
+                raise e
 
         # remove the temporary file from disk
         os.remove(self._file_handle[1])
+
+
+    @property
+    def circuit_data(self):
+        return self._file_handle[1]
 
 
     def is_qflex_compatible(self):
