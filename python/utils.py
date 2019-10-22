@@ -155,6 +155,9 @@ def GetCircuitOfMoments(file_name, qubits):
 
             current_moment.append(parts[1])
 
+        if len(current_moment) > 0:
+            moments.append(cirq.Moment(current_moment))
+
         return cirq.Circuit(moments = moments)
 
 
