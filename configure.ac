@@ -65,13 +65,13 @@ AC_CONFIG_FILES([Makefile
                  tests/python/Makefile])
 
 # Add extra param for cirq
-AC_ARG_ENABLE([cirq], 
-  AS_HELP_STRING([--disable-cirq],[Disable cirq dependant features.]), 
+AC_ARG_ENABLE([cirq_tests], 
+  AS_HELP_STRING([--disable-cirq_tests],[Disable cirq tests.]), 
   [case "${enableval}" in
-      yes) cirq=true  ;;
-       no) cirq=false ;; 
-        *) AC_MSG_ERROR([bad value ${enableval} for --disable-cirq])
-   esac], [cirq=true]
+      yes) cirq_tests=true  ;;
+       no) cirq_tests=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-cirq_tests])
+   esac], [cirq_tests=true]
 )
 
 # Add extra param for pybind11
@@ -80,33 +80,51 @@ AC_ARG_ENABLE([pybind11],
   [case "${enableval}" in
       yes) pybind11=true  ;;
        no) pybind11=false ;; 
-        *) AC_MSG_ERROR([bad value ${enableval} for --disable-cirq])
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-cirq_tests])
    esac], [pybind11=true]
 )
 
 # Check for Python version
 REQ_PYTHON_VERSION="3.5"
 AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],, 
-  AS_IF([test ${cirq} == "true" || ${pybind11} == "true"], AC_MSG_ERROR([Please install Python >= ${REQ_PYTHON_VERSION} before configuring.]))
+  AS_IF([test ${cirq_tests} == "true" || ${pybind11} == "true"], AC_MSG_ERROR([Please install Python >= ${REQ_PYTHON_VERSION} before configuring.]))
 )
 
 # Check that cirq is installed
 REQ_CIRQ_VERSION="0.5"
-AS_IF([test ${cirq} == "true"],
+AS_IF([test ${cirq_tests} == "true"],
   AC_MSG_CHECKING([for cirq])
-  AS_IF([${PYTHON} -c "import cirq; import sys; from packaging import version; sys.exit(not version.parse(cirq.__version__) >= version.parse('${REQ_CIRQ_VERSION}'))" 2>/dev/null],
+  AS_IF([${PYTHON} - << EOF
+import cirq
+try:
+    import sys
+    from packaging import version
+    sys.exit(not version.parse(cirq.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))
+except:
+    pass
+EOF
+2>/dev/null],
     AC_MSG_RESULT([yes]), 
     AC_MSG_RESULT([no])
-    AC_MSG_ERROR([Please install cirq >= '${REQ_CIRQ_VERSION}' before configuring (or --disable-cirq).]))
+    AC_MSG_ERROR([Some tests require cirq. Please install cirq >= '${REQ_CIRQ_VERSION}' before configuring (or --disable-cirq_tests).]))
 )
 
-AC_SUBST(cirq, ${cirq})
+AC_SUBST(cirq_tests, ${cirq_tests})
 
 # Check that pybind11 is installed
 REQ_PYBIND11_VERSION="2.2.4"
 AS_IF([test ${pybind11} == "true"],
   AC_MSG_CHECKING([for pybind11])
-  AS_IF([${PYTHON} -c "import pybind11; import sys; from packaging import version; sys.exit(not version.parse(pybind11.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))" 2>/dev/null],
+  AS_IF([${PYTHON} - << EOF
+import pybind11
+try:
+    import sys
+    from packaging import version
+    sys.exit(not version.parse(pybind11.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))
+except:
+    pass
+EOF 
+2>/dev/null],
     AC_MSG_RESULT([yes]), 
     AC_MSG_RESULT([no])
     AC_MSG_ERROR([Please install pybind11 >= '${REQ_PYBIND11_VERSION}' before configuring (or --disable-pybind11).]))
@@ -117,9 +135,18 @@ AC_SUBST(pybind11, ${pybind11})
 # Check that pytest is installed
 REQ_PYTEST_VERSION="4.5"
 AS_IF([test ${pybind11} == "true"],
-  AS_IF([test ${cirq} == "true"],
+  AS_IF([test ${cirq_tests} == "true"],
     AC_MSG_CHECKING([for pytest])
-    AS_IF([${PYTHON} -c "import pytest; import sys; from packaging import version; sys.exit(not version.parse(pytest.__version__) >= version.parse('${REQ_PYTEST_VERSION}'))" 2>/dev/null],
+    AS_IF([${PYTHON} - << EOF
+import pytest
+try:
+    import sys
+    from packaging import version
+    sys.exit(not version.parse(pytest.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))
+except:
+    pass
+EOF
+    2>/dev/null],
       AC_MSG_RESULT([yes])
       pytest=true, 
       AC_MSG_RESULT([no])
