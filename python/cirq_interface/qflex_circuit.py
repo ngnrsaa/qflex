@@ -13,7 +13,8 @@ class QFlexCircuit(cirq.Circuit):
     def __init__(self,
                  cirq_circuit,
                  device,
-                 qflex_order = None):
+                 qflex_order = None,
+                 allow_decomposition = False):
 
         if device is None or not isinstance(device, qdevice.QFlexVirtualDevice):
             raise ValueError("QFlexVirtualDevice necessary for constructor!")
@@ -28,8 +29,15 @@ class QFlexCircuit(cirq.Circuit):
         else:
             raise ValueError("{!r} is not of a QFlexOrder!")
 
-        # The super constructor
-        super().__init__(cirq_circuit, device)
+        # The super constructor does not call decompose
+        if not allow_decomposition:
+            super().__init__(cirq_circuit, device)
+        else:
+            super().__init__([], device)
+            for moment in cirq_circuit:
+                # This should call decompose
+                for op in moment:
+                    self.append(op)
 
         # Behind the scene, this class creates a temporary file for each object
         self._file_handle = tempfile.mkstemp()
@@ -103,6 +111,9 @@ class QFlexCircuit(cirq.Circuit):
                 if isinstance(op.gate, cirq.ops.CZPowGate)\
                         and op.gate.exponent == 1.0:
                     qflex_gate = "cz"
+                if isinstance(op.gate, cirq.ops.CXPowGate) \
+                        and op.gate.exponent == 1.0:
+                    qflex_gate = "cx"
                 elif isinstance(op.gate, cirq.ops.HPowGate) \
                         and op.gate.exponent == 1.0:
                     qflex_gate = "h"
