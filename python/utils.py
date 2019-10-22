@@ -147,10 +147,18 @@ def GetCircuitOfMoments(file_name, qubits):
 
             parts = GetMomentAndGate(line, qubits)
 
-            if moment_index != int(parts[0]):
+            moment_idx_dif = int(parts[0]) - moment_index
+
+            if moment_idx_dif != 0:
+
                 moment_index = int(parts[0])
                 if len(current_moment) > 0:
                     moments.append(cirq.Moment(current_moment))
+
+                for mi in range(moment_idx_dif - 1):
+                    # add empty moments
+                    moments.append(cirq.Moment([]))
+
                 current_moment = []
 
             current_moment.append(parts[1])
