@@ -28,5 +28,6 @@ autom4te*
 config.status
 config.log
 
-#
-configure
+.venv/
+.idea/
+.vscode/
