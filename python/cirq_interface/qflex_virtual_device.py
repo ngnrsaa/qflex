@@ -62,7 +62,7 @@ class QFlexVirtualDevice(cirq.Device):
 
     def is_qflex_virt_dev_op(self, op):
         """
-            For the moment allow only CZ, sqrt(X), sqrt(Y), T, H
+            For the moment allow only CZ, CX, sqrt(X), sqrt(Y), T, H
         """
         if not isinstance(op, ops.GateOperation):
             return False

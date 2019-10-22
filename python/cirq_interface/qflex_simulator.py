@@ -5,8 +5,6 @@ from cirq import study, schedules, ops, circuits
 from python import qflex
 
 from python.cirq_interface.cirq_amplitudes_sim import SimulatesAmplitudes
-
-
 import python.cirq_interface.qflex_virtual_device as qdevice
 import python.cirq_interface.qflex_circuit as qcirc
 
@@ -53,16 +51,15 @@ class QFlexSimulator(SimulatesAmplitudes):
 
                 amplitudes = qflex.simulate(options)
 
-                # hard coded
-                # input_initial_state = "0" * 70
                 for amp in amplitudes:
                     state = amp[0]
                     amplitude = complex(amp[1])
 
+                    # For debugging purposes commented the following
                     # print(input_initial_state + " --> " + state + ": " + \
                     #       str(amplitude.real) + " " + str(amplitude.imag))
 
-                    # the amplitude for bitstring
+                    # the amplitude for bitstring is stored
                     sweep_return.append(amplitude)
 
             trials_results.append(sweep_return)
