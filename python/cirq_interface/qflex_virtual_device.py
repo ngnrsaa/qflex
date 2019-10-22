@@ -10,11 +10,17 @@ from python import utils as qflexutils
 
 class QFlexVirtualDevice(cirq.Device):
 
-    def __init__(self, qflex_grid_string = QFlexGrid.BRISTLECONE70):
+    def __init__(self, qflex_grid = QFlexGrid.BRISTLECONE70):
 
-        self._qflex_grid = QFlexGrid(qflex_grid_strings = qflex_grid_string)
+        if isinstance(qflex_grid, str):
+            self._qflex_grid = QFlexGrid(qflex_grid_strings = qflex_grid)
+        elif isinstance(qflex_grid, QFlexGrid):
+            self._qflex_grid = qflex_grid
+        else:
+            raise TypeError("{!r} is not a valid QFlexGrid".format(qflex_grid))
 
-        self._qubits = qflexutils.GetGridQubits(StringIO(qflex_grid_string))
+
+        # self._qubits = qflexutils.GetGridQubits(StringIO(qflex_grid_string))
 
     @property
     def grid_data(self):
@@ -25,11 +31,12 @@ class QFlexVirtualDevice(cirq.Device):
         return 0
 
     def get_indexed_grid_qubits(self):
-        return self._qubits
+        return self._qflex_grid.get_grid_qubits()
 
     def get_grid_qubits_as_keys(self):
-        return {self._qubits[y] : y
-                    for y in self._qubits}
+        original_dict = self.get_indexed_grid_qubits()
+        return {original_dict[y] : y
+                    for y in original_dict}
 
     def decompose_operation(self, operation):
 

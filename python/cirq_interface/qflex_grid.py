@@ -39,15 +39,17 @@ class QFlexGrid():
                     000001100000"""#11 lines of 12 cols
 
     def __init__(self, qflex_grid_strings = BRISTLECONE70):
+        # TODO: Check if already in correct format
         gdata = qflex_grid_strings.replace("0", "0 ").replace("1", "1 ")
-        grid_data = [x.strip() + "\n" for x in gdata.split("\n")]
+
+        self._grid_data = [x.strip() for x in gdata.split("\n")]
 
         # Behind the scene, this class creates a temporary file for each object
         self._file_handle = tempfile.mkstemp()
 
         with open(self._file_handle[1], "w") as f:
             # I do have the file handle anyway...
-            for line in grid_data :
+            for line in self._grid_data :
                 print(line.strip(), file = f)
 
     def __del__(self):
@@ -66,6 +68,12 @@ class QFlexGrid():
 
         # remove the temporary file from disk
         os.remove(self._file_handle[1])
+
+
+    def get_grid_qubits(self):
+        import python.utils as qflexutils
+        from io import StringIO
+        return qflexutils.GetGridQubits(StringIO("\n".join(self._grid_data)))
 
     @staticmethod
     def create_rectangular(sizex, sizey):
@@ -96,4 +104,4 @@ class QFlexGrid():
     def from_existing_file(file_path):
         with open(file_path, "r") as f:
             lines = f.readlines()
-            return QFlexGrid(qflex_grid_strings="\n".join(lines))
+            return QFlexGrid(qflex_grid_strings="".join(lines))
