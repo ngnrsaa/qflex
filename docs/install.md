@@ -36,7 +36,7 @@ $ autoreconf -i && autoconf && ./configure --help
 The following options for `configure` are also available:
 ```
 --disable-pybind11    Disable installation of Python porting of qFlex
---disable-cirq        Disable tests/features which depends on cirq
+--disable-cirq_tests  Disable tests which depends on cirq
 ```
 
 ## Compile qFlex
