@@ -30,7 +30,7 @@ class QFlexOrder():
             print("... Done!")
 
         # Long string of ordering commands
-        _local_order_string = '\n'.join(ord_list)
+        _local_order_string = '\n'.join([x.strip() for x in ord_list])
 
 
         # Behind the scene, this class creates a temporary file for each object
