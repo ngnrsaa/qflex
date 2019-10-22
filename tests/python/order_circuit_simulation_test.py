@@ -24,8 +24,8 @@ def test_circuit_to_ordering():
 
     random.seed(0)
 
-    # Build moments with CZs on each adjacent pair of qubits.
-    # Each bond has a pseudorandom rank between 2 and 5:
+    # Build moments with SWAPs and CZs on each adjacent pair of qubits.
+    # Each bond has a pseudorandom dimension between 2 and 5:
     # (Dots represent qubits, numbers are bond dimension, and Xs are cuts)
     #
     #  .3.4.5.         Canonical qubit numbering goes in row-major order:
@@ -36,17 +36,30 @@ def test_circuit_to_ordering():
     #  4 3 3 4
     #  .3.X.5.
     #
+    # SWAPs add 2 to the bond dimension, and CZs add 1.
     moments = ()
     for x in range(size - 1):
         for y in range(size):
-            for _ in range(random.randint(2, 5)):
+            r = random.randint(2, 5)
+            while r > 1:
+                moments += (cirq.Moment(
+                    [cirq.SWAP(qubits[x][y], qubits[x + 1][y])]),)
+                r -= 2
+            while r > 0:
                 moments += (cirq.Moment(
                     [cirq.CZ(qubits[x][y], qubits[x + 1][y])]),)
+                r -= 1
     for y in range(size - 1):
         for x in range(size):
-            for _ in range(random.randint(2, 5)):
+            r = random.randint(2, 5)
+            while r > 1:
+                moments += (cirq.Moment(
+                    [cirq.SWAP(qubits[x][y], qubits[x][y + 1])]),)
+                r -= 2
+            while r > 0:
                 moments += (cirq.Moment(
                     [cirq.CZ(qubits[x][y], qubits[x][y + 1])]),)
+                r -= 1
 
     circuit = cirq.Circuit(moments)
     order = order_lib.circuit_to_ordering(circuit)
