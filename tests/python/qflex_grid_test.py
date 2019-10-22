@@ -1,11 +1,9 @@
-import cirq
-
 # Due to the directory structure of QFlex
 # go up in hierarchy twice
 import sys
 sys.path.insert(1, '../../')
 
-from python.cirq_interface.qflex_grids import QFlexGrid
+from python.cirq_interface.qflex_grid import QFlexGrid
 
 def test_create_rectangular():
     sgrid = QFlexGrid.create_rectangular(2, 3)
@@ -14,9 +12,11 @@ def test_create_rectangular():
 def test_get_qflex_file_contents():
     sgrid = "  101   \n   110  "
 
-    fcont = QFlexGrid.get_qflex_file_contents(sgrid)
+    qgrid = QFlexGrid(qflex_grid_strings = sgrid)
+    with open(qgrid._file_handle[1], "r") as file:
+        fcont = "".join(file.readlines()).strip()
 
-    assert (fcont == ["1 0 1\n", "1 1 0\n"])
+    assert (fcont == "".join(["1 0 1\n", "1 1 0\n"]).strip())
 
 def test_get_qubits_off():
     qub_off = QFlexGrid.get_qubits_off("010\n   101")
