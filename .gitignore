@@ -31,3 +31,4 @@ config.log
 .venv/
 .idea/
 .vscode/
+configure
