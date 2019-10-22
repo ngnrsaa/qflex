@@ -129,7 +129,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
   // Scratch space to be reused for operations.
   t0 = std::chrono::high_resolution_clock::now();
-  s_type* scratch = new s_type[(int)pow(super_dim, 7)];
+  s_type* scratch = new s_type[(int)pow(super_dim, 4) * 2];
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);

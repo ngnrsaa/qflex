@@ -748,6 +748,7 @@ void grid_of_tensors_3D_to_2D( std::vector<std::vector<std::vector<Tensor>>>& gr
 
 // TODO: add tests for this function. Compactify code. Use index_name()
 // function for all index names used here. Use smart pointers where possible.
+// Add depth functionality to read a circuit up to a certain cycle.
 void circuit_data_to_tensor_network(
     std::istream* circuit_data, int I, int J,
     const std::string initial_conf, const std::string final_conf_B,

@@ -117,9 +117,9 @@ void circuit_data_to_tensor_network(
     s_type* scratch);
 
 /**
- * Contracts a 2D grid of vectors of tensors onto a 2D grid of tensors, contracting
- * in the time (third) direction (i.e. flattening the tensor network), and renaming
- * the indices accordingly.
+ * Contracts a 2D grid of vectors of tensors onto a 2D grid of tensors,
+ * contracting in the time (third) direction (i.e. flattening the tensor
+ * network), and renaming the indices accordingly.
  * @param grid_of_tensors reference to a vector<vector<vector<Tensor>>> with the 2D
  * grid of vectors of tensors. The typical names for the indices in a grid are
  * assumed.
