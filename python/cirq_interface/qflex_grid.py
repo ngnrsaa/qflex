@@ -39,12 +39,16 @@ class QFlexGrid():
                     000001100000"""#11 lines of 12 cols
 
     def __init__(self, qflex_grid_strings = BRISTLECONE70):
+        gdata = qflex_grid_strings.replace("0", "0 ").replace("1", "1 ")
+        grid_data = [x.strip() + "\n" for x in gdata.split("\n")]
+
         # Behind the scene, this class creates a temporary file for each object
         self._file_handle = tempfile.mkstemp()
 
         with open(self._file_handle[1], "w") as f:
             # I do have the file handle anyway...
-            print(qflex_grid_strings, file = f)
+            for line in grid_data :
+                print(line.strip(), file = f)
 
     def __del__(self):
         # The destructor removes the temporary file
@@ -76,15 +80,6 @@ class QFlexGrid():
             regular += line
 
         return regular
-
-    # @staticmethod
-    # def get_qflex_file_contents(qflex_grid_string):
-    #     gdata = qflex_grid_string.replace("0", "0 ") \
-    #         .replace("1", "1 ")
-    #
-    #     grid_data = [x.strip() + "\n" for x in gdata.split("\n")]
-    #
-    #     return grid_data
 
     @staticmethod
     def get_qubits_off(qflex_grid_string):

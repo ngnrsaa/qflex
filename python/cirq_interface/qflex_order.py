@@ -21,6 +21,10 @@ class QFlexOrder():
 
         ord_list = qflex_order_strings
         if cirq_circuit is not None:
+
+            if qubits is None:
+                raise ValueError("Qubits have to be specified!")
+
             # The device has to be QFlex
             # qubits = qflex_circuit.device.get_indexed_grid_qubits()
             # List of ordering commands
