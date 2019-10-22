@@ -57,6 +57,10 @@ class QFlexCircuit(cirq.Circuit):
     def circuit_data(self):
         return self._file_handle[1]
 
+    @property
+    def ordering_data(self):
+        return self._own_order._file_handle[1]
+
 
     def _resolve_parameters_(self, param_resolver: cirq.study.ParamResolver):
 
