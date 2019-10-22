@@ -1,12 +1,16 @@
-# The Cirq Python interface
+# The Cirq Interface
 
 
-Google Cirq can be used with QFlex. The currently supported version is 
-Cirq 0.5.0 and new stable versions will be supported, once they are available.
+QFlex can be used from Google Cirq. This is the HOWTO.
+* Note: For the moment, this the Cirq-QFlex is experimental code.
 
-Prerequisites are:
+The currently supported version of Cirq is 0.5.0, and newer stable 
+versions will be supported, once they are available. Therefore, the 
+prerequisites are:
 - Cirq 0.5.0
-- QFlex
+- QFlex C++ code (the code from this repo)
+
+
 
 This file is an example of how to use the QFlex Python interface with Cirq.
 
