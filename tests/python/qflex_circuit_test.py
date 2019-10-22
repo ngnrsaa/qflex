@@ -7,9 +7,40 @@ sys.path.insert(1, '../../')
 
 from python.cirq_interface.qflex_circuit import QFlexCircuit
 
+
 def test_resolve_parameters():
     # After a circuit with symbols was resolved
     # Does the resulting circuit still have the same device and grid?
+    # In general, resolving parameters will result in a strange circuit
+    # But in this test I am placing a single gate and setting its exponent
+
+    circuit = cirq.Circuit()
+
+    import sympy
+    s = sympy.Symbol("symbol")
+    operation = cirq.X.on(cirq.GridQubit(0,0)) ** s
+    circuit.append(operation)
+
+    from python.cirq_interface.qflex_virtual_device import QFlexVirtualDevice
+    dummy_device = QFlexVirtualDevice()
+
+    # Override the function to accept anything
+    dummy_device.is_qflex_virt_dev_op = lambda x : True
+    # Return a single pair gridqubit : index
+    dummy_device.get_grid_qubits_as_keys = lambda : {cirq.GridQubit(0,0) : 99}
+
+    from python.cirq_interface.qflex_order import QFlexOrder
+    dummy_order = QFlexOrder("This is a dummy order")
+
+    # Create a QFlexCircuit
+    qcircuit = QFlexCircuit(circuit, dummy_device, dummy_order)
+
+    param_solver = {"symbol" : 0.5}
+    solved_circuit = cirq.protocols.resolve_parameters(qcircuit, param_solver)
+
+    assert (solved_circuit[0].operations[0].gate.exponent == 0.5)
+    assert (solved_circuit.device is dummy_device)
+    assert (solved_circuit._own_order is dummy_order)
 
 
 def test_translate_cirq_to_qflex():
@@ -40,6 +71,3 @@ def test_translate_cirq_to_qflex():
                                                        qubit_to_index_dict = qubits_to_index_dict)
 
     assert(translation.strip() == "\n".join(file_lines))
-
-
-
