@@ -91,3 +91,9 @@ class QFlexGrid():
                     qubits_off.append((i, j))
 
         return qubits_off
+
+    @staticmethod
+    def from_existing_file(file_path):
+        with open(file_path, "r") as f:
+            lines = f.readlines()
+            return QFlexGrid(qflex_grid_strings="\n".join(lines))
