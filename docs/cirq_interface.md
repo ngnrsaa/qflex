@@ -1,7 +1,7 @@
 # The Cirq Interface
 
 
-QFlex can be used from Google Cirq. This is the HOWTO.
+HOWTO use QFlex from Google Cirq.
 * Note: For the moment, this the Cirq-QFlex is experimental code.
 
 The currently supported version of Cirq is 0.5.0, and newer stable 
@@ -10,9 +10,18 @@ prerequisites are:
 - Cirq 0.5.0
 - QFlex C++ code (the code from this repo)
 
-
-
 This file is an example of how to use the QFlex Python interface with Cirq.
+
+The goal is to simulate circuits, and there are two major options:
+* loading QFlex text files into Cirq objects
+* native Cirq objects
+
+The above options can be hybridized. This means that, for example, one can load
+a circuit from a file, but map the circuit to a grid of qubits which is
+generated in the code (and not read from a file).
+
+
+
 
 A simulator and a device are necessary:
 
