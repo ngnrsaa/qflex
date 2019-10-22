@@ -111,7 +111,7 @@ class QFlexCircuit(cirq.Circuit):
                 if isinstance(op.gate, cirq.ops.CZPowGate)\
                         and op.gate.exponent == 1.0:
                     qflex_gate = "cz"
-                if isinstance(op.gate, cirq.ops.CXPowGate) \
+                if isinstance(op.gate, cirq.ops.CNotPowGate) \
                         and op.gate.exponent == 1.0:
                     qflex_gate = "cx"
                 elif isinstance(op.gate, cirq.ops.HPowGate) \

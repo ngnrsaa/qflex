@@ -67,9 +67,13 @@ class QFlexVirtualDevice(cirq.Device):
         if not isinstance(op, ops.GateOperation):
             return False
 
-        keep = True
+        keep = False
 
         keep = keep or (isinstance(op.gate, ops.CZPowGate)
+                        and
+                        (op.gate.exponent == 1))
+
+        keep = keep or (isinstance(op.gate, ops.CNotPowGate)
                         and
                         (op.gate.exponent == 1))
 
