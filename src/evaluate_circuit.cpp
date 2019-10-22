@@ -149,7 +149,6 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     t0 = std::chrono::high_resolution_clock::now();
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
 
-    // Uncomment when ready
     circuit_data_to_tensor_network(
         input->circuit_data, input->grid.I, input->grid.J,
         input->initial_state, input->final_state_A, final_qubits,
