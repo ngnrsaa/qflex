@@ -27,4 +27,6 @@ will be available as module to Python
 2. If Cirq is not installed globally on the machine, create a virtual environment
 and install Cirq by calling `./scripts/construct_cirq_environment.sh`
 
-3. Run the example from `./python/qflex_cirq_example.py`
+3. Run the example (Note: set PYTHONPATH before)
+
+`export PYTHONPATH=. && python python/qflex_cirq_example.py`
