@@ -993,6 +993,7 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   // std::cout << "Time updating C's variables: " << time_span.count() << "s\n";
 }
 
+// TODO: write tests for this function.
 size_t result_size(Tensor& A, Tensor& B) {
   std::vector<std::string> left_indices =
       _vector_subtraction(A.get_indices(), B.get_indices());
@@ -1009,6 +1010,7 @@ size_t result_size(Tensor& A, Tensor& B) {
   return result_dim;
 }
 
+// TODO: write tests for this function.
 void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
                     s_type* scratch_copy) {
   std::vector<std::string> left_indices =
