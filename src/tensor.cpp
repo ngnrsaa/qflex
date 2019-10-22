@@ -1009,6 +1009,24 @@ size_t result_size(Tensor& A, Tensor& B) {
   return result_dim;
 }
 
+void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
+                    s_type* scratch_copy) {
+  std::vector<std::string> left_indices =
+      _vector_subtraction(A.get_indices(), B.get_indices());
+  std::vector<std::string> right_indices =
+      _vector_subtraction(B.get_indices(), A.get_indices());
+  std::vector<std::string> common_indices =
+      _vector_intersection(A.get_indices(), B.get_indices());
+  std::vector<std::string> A_new_ordering =
+      _vector_union(left_indices, common_indices);
+  std::vector<std::string> B_new_ordering =
+      _vector_union(common_indices, right_indices);
+  A.reorder(A_new_ordering, scratch_copy);
+  B.reorder(B_new_ordering, scratch_copy);
+  A.bundle(common_indices, bundled_index);
+  B.bundle(common_indices, bundled_index);
+}
+
 // Split it in parts, as before? Nah, it was all about generating small maps.
 // Here I am generating THE map. This is done only once per map anyway.
 void _generate_binary_reordering_map(

@@ -70,16 +70,6 @@ void circuit_data_to_grid_of_tensors(
     s_type* scratch);
 
 /**
- */
-void circuit_data_to_tensor_network(
-    std::istream* circuit_data, int I, int J,
-    const std::string initial_conf, const std::string final_conf_B,
-    const std::optional<std::vector<std::vector<int>>>& A,
-    const std::optional<std::vector<std::vector<int>>>& off,
-    std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
-    s_type* scratch);
-
-/**
  * Contracts a 3D grid of tensors onto a 2D grid of tensors, contracting
  * in the time (third) direction, and renaming the indices accordingly.
  * @param grid_of_tensors_3D reference to a
@@ -98,6 +88,25 @@ void circuit_data_to_tensor_network(
  */
 void grid_of_tensors_3D_to_2D(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors_3D,
+    std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
+    std::optional<std::vector<std::vector<int>>> A,
+    std::optional<std::vector<std::vector<int>>> off,
+    const std::list<ContractionOperation>& ordering, s_type* scratch);
+
+/**
+ */
+void circuit_data_to_tensor_network(
+    std::istream* circuit_data, int I, int J,
+    const std::string initial_conf, const std::string final_conf_B,
+    const std::optional<std::vector<std::vector<int>>>& A,
+    const std::optional<std::vector<std::vector<int>>>& off,
+    std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
+    s_type* scratch);
+
+/**
+*/
+void flatten_grid_of_tensors(
+    std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
     std::optional<std::vector<std::vector<int>>> A,
     std::optional<std::vector<std::vector<int>>> off,

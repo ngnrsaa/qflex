@@ -14,6 +14,7 @@
  * @licence: Apache License, Version 2.0
  */
 
+#include <memory>
 #include "read_circuit.h"
 
 namespace qflex {
@@ -791,14 +792,14 @@ void circuit_data_to_tensor_network(
 
   // Creating grid variables.
   
-  std::vector<std::vector<std::vector<Tensor>>> grid_of_gates(I);
+  grid_of_tensors = std::vector<std::vector<std::vector<Tensor>>>(I);
   std::vector<std::vector<int>> grid_of_counters(I);
   std::unordered_map<std::string, int> link_counters;
   for (int i = 0; i < I; ++i) {
-    grid_of_gates[i] = std::vector<std::vector<Tensor>>(J);
+    grid_of_tensors[i] = std::vector<std::vector<Tensor>>(J);
     grid_of_counters[i] = std::vector<int>(J);
     for (int j = 0; j < J; ++j) {
-      grid_of_gates[i][j] = std::vector<Tensor>();
+      grid_of_tensors[i][j] = std::vector<Tensor>();
       grid_of_counters[i][j] = 0;
     }
   }
@@ -815,7 +816,7 @@ void circuit_data_to_tensor_network(
     std::string output_name = "(" + std::to_string(i_j[0]) + ","
         + std::to_string(i_j[1]) + "),("
         + std::to_string(grid_of_counters[i][j]) + ")";
-    grid_of_gates[i][j].push_back(
+    grid_of_tensors[i][j].push_back(
         Tensor({output_name}, {2}, gate_array(delta_gate)));
     idx += 1;
   }
@@ -866,7 +867,7 @@ void circuit_data_to_tensor_network(
         std::string output_name = "(" + std::to_string(i_j_1[0]) + ","
             + std::to_string(i_j_1[1]) + "),("
             + std::to_string(grid_of_counters[i_j_1[0]][i_j_1[1]]) + ")";
-        grid_of_gates[i_j_1[0]][i_j_1[1]].push_back(
+        grid_of_tensors[i_j_1[0]][i_j_1[1]].push_back(
             Tensor({input_name, output_name}, {2, 2}, gate_array(gate)));
       }
       // Fill in two-qubit gates.
@@ -922,10 +923,10 @@ void circuit_data_to_tensor_network(
         std::string output_name_2 = "(" + std::to_string(i_j_2[0]) + ","
             + std::to_string(i_j_2[1]) + "),("
             + std::to_string(grid_of_counters[i_j_2[0]][i_j_2[1]]) + ")";
-        grid_of_gates[i_j_1[0]][i_j_1[1]].push_back(
+        grid_of_tensors[i_j_1[0]][i_j_1[1]].push_back(
             Tensor({input_name_1, virtual_name, output_name_1}, dimensions,
                    gate_q1));
-        grid_of_gates[i_j_2[0]][i_j_2[1]].push_back(
+        grid_of_tensors[i_j_2[0]][i_j_2[1]].push_back(
             Tensor({input_name_2, virtual_name, output_name_2}, dimensions,
                    gate_q2));
       }
@@ -947,21 +948,135 @@ void circuit_data_to_tensor_network(
     if (find_grid_coord_in_list(A, i, j)) {
       std::string output_name = "(" + std::to_string(i_j[0]) + ","
           + std::to_string(i_j[1]) + "),(o)";
-      grid_of_gates[i][j].back().rename_index(last_name, output_name);
+      grid_of_tensors[i][j].back().rename_index(last_name, output_name);
     } else {
       std::string delta_gate = (final_conf_B[idx] == '0') ? "delta_0"
           : "delta_1";
-      grid_of_gates[i][j].push_back(
+      grid_of_tensors[i][j].push_back(
           Tensor({last_name}, {2}, gate_array(delta_gate)));
       idx += 1;  // Move in B only.
     }
-
-    std::cout << "i = " << i << ", j = " << j << std::endl;
-    for (auto v : grid_of_gates[i][j])
-      v.print();
   }
+
+  // Be proper about pointers.
+  scratch = NULL; 
 }
 
+void flatten_grid_of_tensors(
+    std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
+    std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
+    std::optional<std::vector<std::vector<int>>> A,
+    std::optional<std::vector<std::vector<int>>> off,
+    const std::list<ContractionOperation>& ordering, s_type* scratch) {
+
+  if (scratch == nullptr) {
+    std::cout << "Scratch must be non-null." << std::endl;
+    assert(scratch != nullptr);
+  }
+
+  // Contract vertically and fill grid_of_tensors_2D.
+  int I = grid_of_tensors.size();
+  for (int i = 0; i < I; ++i) {
+    int J = grid_of_tensors[i].size();
+    for (int j = 0; j < J; ++j) {
+      if (find_grid_coord_in_list(off, i, j))
+        continue;
+      int K = grid_of_tensors[i][j].size();
+      std::vector<Tensor> column_of_tensors(K);
+      column_of_tensors[0] = Tensor(grid_of_tensors[i][j][0]);
+      for (int k = 0; k < K-1; ++k) {
+        Tensor A(column_of_tensors[k]);
+        Tensor B(grid_of_tensors[i][j][k + 1]);
+        size_t result_dimension = result_size(A, B);
+        Tensor C({""}, {result_dimension});
+        multiply(A, B, C, scratch);
+        column_of_tensors[k + 1] = Tensor(C);
+      }
+      grid_of_tensors_2D[i][j] = Tensor(column_of_tensors.back());
+    }
+  }
+
+  for (int i = 0; i < I; ++i) {
+    int J = grid_of_tensors[i].size();
+    for (int j = 0; j < J; ++j) {
+      if (find_grid_coord_in_list(off, i, j)) {
+        continue;
+      }
+
+      // Positions of connected active qubits.
+      std::vector<int> local({i, j});
+      std::vector<std::vector<int>> pairs;
+
+      if (i < I - 1 && !find_grid_coord_in_list(off, i + 1, j)) {
+        pairs.push_back({i + 1, j});
+      }
+      if (j < J - 1 && !find_grid_coord_in_list(off, i, j + 1)) {
+        pairs.push_back({i, j + 1});
+      }
+
+      for (const auto& pair : pairs) {
+        std::string between_name = index_name(local, pair);
+        bundle_between(grid_of_tensors_2D[i][j],
+            grid_of_tensors_2D[pair[0]][pair[1]], between_name, scratch);
+      }
+    }
+  }
+
+  // Reorder.
+  for (int i = 0; i < I; ++i) {
+    int J = grid_of_tensors[i].size();
+    for (int j = 0; j < J; ++j) {
+      if (find_grid_coord_in_list(off, i, j)) {
+        continue;
+      }
+
+      std::vector<std::string> ordered_indices_2D;
+
+      // Positions of connected active qubits.
+      std::vector<std::vector<int>> pairs;
+
+      if (i > 0 && !find_grid_coord_in_list(off, i - 1, j)) {
+        pairs.push_back({i - 1, j});
+      }
+      if (j > 0 && !find_grid_coord_in_list(off, i, j - 1)) {
+        pairs.push_back({i, j - 1});
+      }
+      if (i < I - 1 && !find_grid_coord_in_list(off, i + 1, j)) {
+        pairs.push_back({i + 1, j});
+      }
+      if (j < J - 1 && !find_grid_coord_in_list(off, i, j + 1)) {
+        pairs.push_back({i, j + 1});
+      }
+
+      // If this qubit is in the final region, bundling must be adjusted.
+      int fr_buffer = 0;
+      if (find_grid_coord_in_list(A, i, j)) {
+        ordered_indices_2D.push_back(index_name({i, j}, {}));
+        fr_buffer = 1;
+      }
+
+      std::vector<int> local = {i, j};
+      auto order_fn = order_func(ordering, local);
+      std::sort(pairs.begin(), pairs.end(), order_fn);
+
+      for (const auto& pair : pairs) {
+        std::vector<int> q1, q2;
+        if (pair[0] < i || pair[1] < j) {
+          q1 = pair;
+          q2 = local;
+        } else {
+          q1 = local;
+          q2 = pair;
+        }
+        ordered_indices_2D.push_back(
+            index_name({q1[0], q1[1]}, {q2[0], q2[1]}));
+      }
+
+      // Reorder.
+      grid_of_tensors_2D[i][j].reorder(ordered_indices_2D, scratch);
+    }
+  }
+}
 
 // This function is currently not being called.
 // TODO: Decide whether or not to deprecate function, also needs to be tested.

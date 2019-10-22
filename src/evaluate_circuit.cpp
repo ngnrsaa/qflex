@@ -149,18 +149,18 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     t0 = std::chrono::high_resolution_clock::now();
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
 
-    /*
     // Uncomment when ready
     circuit_data_to_tensor_network(
         input->circuit_data, input->grid.I, input->grid.J,
         input->initial_state, input->final_state_A, final_qubits,
         input->grid.qubits_off, tensor_grid_3D, scratch);
-    */
 
+    /*
     circuit_data_to_grid_of_tensors(
         input->circuit_data, input->grid.I, input->grid.J, input->K,
         input->initial_state, input->final_state_A, final_qubits,
         input->grid.qubits_off, tensor_grid_3D, scratch);
+    */
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
@@ -171,8 +171,12 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
     // Contract 3D grid onto 2D grid of tensors, as usual.
     t0 = std::chrono::high_resolution_clock::now();
+    flatten_grid_of_tensors(tensor_grid_3D, tensor_grid, final_qubits,
+                            input->grid.qubits_off, ordering, scratch);
+    /*
     grid_of_tensors_3D_to_2D(tensor_grid_3D, tensor_grid, final_qubits,
                              input->grid.qubits_off, ordering, scratch);
+    */
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
