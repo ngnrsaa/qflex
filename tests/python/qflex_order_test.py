@@ -13,7 +13,7 @@ from python.ordering import order_circuit_simulation as order_lib
 
 def test_qorder_from_file():
 
-    test_file_contents = "Hello Test\nTwo Lines"
+    test_file_contents = "expand A 0\nmerge A B"
 
     import tempfile
     fd = tempfile.mkstemp()
