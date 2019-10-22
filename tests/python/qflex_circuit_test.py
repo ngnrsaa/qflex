@@ -1,3 +1,4 @@
+import pytest
 import cirq
 
 # Due to the directory structure of QFlex
@@ -6,6 +7,38 @@ import sys
 sys.path.insert(1, '../../')
 
 from python.cirq_interface.qflex_circuit import QFlexCircuit
+
+
+def test_constructor_decomposition():
+
+    qubit_1 = cirq.GridQubit(0, 0)
+    qubit_2 = cirq.GridQubit(0, 1)
+
+    circuit = cirq.Circuit()
+    circuit.append(cirq.Moment([cirq.ops.SWAP.on(qubit_1, qubit_2)]))
+
+    from python.cirq_interface.qflex_virtual_device import QFlexVirtualDevice
+    dummy_device_1 = QFlexVirtualDevice()
+    # Override the function to accept anything
+    dummy_device_1.get_grid_qubits_as_keys = lambda: {qubit_1: 1, qubit_2: 2}
+
+    from python.cirq_interface.qflex_order import QFlexOrder
+    dummy_order = QFlexOrder("This is dummy order")
+
+    qcircuit1 = QFlexCircuit(circuit,
+                            dummy_device_1,
+                            dummy_order,
+                            allow_decomposition=True)
+    # There are three CNOTs
+    assert(len(list(qcircuit1.all_operations())) == 3)
+
+    # This should crash because SWAP is not supported by the device
+    with pytest.raises(ValueError):
+        qcircuit2 = QFlexCircuit(circuit,
+                                 dummy_device_1,
+                                 dummy_order,
+                                 allow_decomposition=False)
+
 
 
 def test_resolve_parameters():
