@@ -368,6 +368,8 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
 
 }  // namespace
 
+// This function is currently not being called.
+// TODO: Decide whether or not to deprecate function, also needs to be tested.
 void circuit_data_to_grid_of_tensors(
     std::istream* circuit_data, int I, int J, int K,
     const std::string initial_conf, const std::string final_conf_B,
@@ -622,6 +624,8 @@ void circuit_data_to_grid_of_tensors(
   scratch = NULL;
 }
 
+// This function is currently not being called.
+// TODO: Decide whether or not to deprecate function, also needs to be tested.
 void grid_of_tensors_3D_to_2D( std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors_3D,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
     std::optional<std::vector<std::vector<int>>> A,
@@ -742,6 +746,7 @@ void grid_of_tensors_3D_to_2D( std::vector<std::vector<std::vector<Tensor>>>& gr
   scratch = NULL;
 }
 
+//TODO: use index_name() function for all index names used here.
 void circuit_data_to_tensor_network(
     std::istream* circuit_data, int I, int J,
     const std::string initial_conf, const std::string final_conf_B,

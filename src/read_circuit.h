@@ -94,6 +94,19 @@ void grid_of_tensors_3D_to_2D(
     const std::list<ContractionOperation>& ordering, s_type* scratch);
 
 /**
+ * Read circuit from stream and fill in a 2D grid of vectors of tensors.
+ * @param circuit_data std::istream containing circuit as a string.
+ * @param I int with the first spatial dimension of the grid of qubits.
+ * @param J int with the second spatial dimension of the grid of qubits.
+ * @param initial_conf string with 0s and 1s with the input configuration of
+ * the circuit.
+ * @param final_conf_B string with 0s and 1s with the output configuration on B.
+ * @param A vector<vector<int>> with the coords. of the qubits in A.
+ * @param off vector<vector<int>> with the coords. of the qubits turned off.
+ * @param grid_of_tensors referenced to a vector<vector<vector<Tensor>>> with
+ * tensors (gates) at each position of the grid.
+ * @param scratch pointer to s_type array with scratch space for all operations
+ * performed in this function.
  */
 void circuit_data_to_tensor_network(
     std::istream* circuit_data, int I, int J,
@@ -104,6 +117,22 @@ void circuit_data_to_tensor_network(
     s_type* scratch);
 
 /**
+ * Contracts a 2D grid of vectors of tensors onto a 2D grid of tensors, contracting
+ * in the time (third) direction (i.e. flattening the tensor network), and renaming
+ * the indices accordingly.
+ * @param grid_of_tensors reference to a vector<vector<vector<Tensor>>> with the 2D
+ * grid of vectors of tensors. The typical names for the indices in a grid are
+ * assumed.
+ * @param grid_of_tensors_2D reference to a vector<vector<Tensor>> where the
+ * 2D grid of tensors will be stored. The typical names for the indices will
+ * be used.
+ * @param A optional<vector<vector<int>>> with the coords. of the qubits in A.
+ * @param off optional<vector<vector<int>>> with the coords. of the qubits
+ * turned off.
+ * @param ordering std::list<ContractionOperation> providing the steps required
+ * to contract the tensor grid.
+ * @param scratch pointer to s_type array with enough space for all scratch
+ * work.
 */
 void flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,

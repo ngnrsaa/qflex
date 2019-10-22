@@ -409,8 +409,23 @@ void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
  */
 void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy);
 
+/**
+ * Returns the size of the tensor product of A and B.
+ * @param A Reference to Tensor A.
+ * @param B Reference to Tensor B.
+ * @return size_t with the size of the tensor resulting from the multiplication
+ * of A and B.
+ */
 size_t result_size(Tensor& A, Tensor& B);
 
+/**
+ * Bundle indices shared by tensors A and B.
+ * @param A Reference to Tensor A. A can be reordered, and therfore modified.
+ * @param B Reference to Tensor B. B can be reordered, and therfore modified.
+ * @param scratch_copy Pointer to s_type array for scratch work while
+ * reordering. It has to allocate at least as much max(A.size(), B.size())
+ * memory.
+ */
 void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
                     s_type* scratch_copy);
 
