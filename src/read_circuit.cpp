@@ -1093,25 +1093,27 @@ void circuit_data_to_tensor_network(
                     << std::endl;
           assert(!second_qubit_off);
         }
+        bool nearest_neighbors = (std::abs(i_j_1[0] - i_j_2[0])
+            + std::abs(i_j_1[1] - i_j_2[1])) == 1;
+        if (!nearest_neighbors) {
+          std::cout << "Qubits in '" << line << "' are not nearest neighbors."
+                    << std::endl;
+          assert(nearest_neighbors);
+        }
         std::vector<s_type> gate_q1;
         std::vector<s_type> gate_q2;
         std::vector<size_t> dimensions;
         tie(gate_q1, gate_q2, dimensions) = gate_arrays(gate, scratch);
         std::string link_name = index_name(i_j_1, i_j_2);
-        auto it = link_counters.find(link_name);
-        if (it == link_counters.end()) {
-          link_counters[link_name] = 0;
-          it = link_counters.find(link_name);
-        }
-        it = link_counters.find(link_name);
-        ++(it->second);
+        link_counters[link_name]++;
+        int counter = link_counters[link_name];
         std::string virtual_name = "("
             + std::to_string(std::min(i_j_1[0], i_j_2[0])) + ","
             + std::to_string(std::min(i_j_1[1], i_j_2[1])) + ","
-            + std::to_string(it->second) + "),("
+            + std::to_string(counter) + "),("
             + std::to_string(std::max(i_j_1[0], i_j_2[0])) + ","
             + std::to_string(std::max(i_j_1[1], i_j_2[1])) + ","
-            + std::to_string(it->second) + ")";
+            + std::to_string(counter) + ")";
         std::string input_name_1 = "(" + std::to_string(i_j_1[0]) + ","
             + std::to_string(i_j_1[1]) + "),("
             + std::to_string(grid_of_counters[i_j_1[0]][i_j_1[1]]) + ")";
@@ -1161,32 +1163,6 @@ void circuit_data_to_tensor_network(
           Tensor({last_name}, {2}, gate_array(delta_gate)));
     }
   }
-
-
-  /*
-  // Insert Hadamards and deltas to last layer.
-  idx = -1;
-  for (int q = 0; q < grid_size; ++q) {
-    std::vector<int> i_j = get_qubit_coords(q, J);
-    int i = i_j[0], j = i_j[1];
-    int k = K - 1;
-    if (find_grid_coord_in_list(off, i, j)) {
-      continue;
-    }
-    idx += 1;
-    std::string last_index = "t" + std::to_string(counter_group[i][j][k]);
-    grid_of_groups_of_tensors[i][j][k].push_back(
-        Tensor({"th", last_index}, {2, 2}, gate_array("h")));
-    if (find_grid_coord_in_list(final_qubit_region, i, j)) {
-      continue;
-    }
-    std::string delta_gate = (final_conf[idx] == '0') ? "delta_0" : "delta_1";
-    grid_of_groups_of_tensors[i][j][k].push_back(
-        Tensor({"th"}, {2}, gate_array(delta_gate)));
-  }
-  */
-
-
 
   // Be proper about pointers.
   scratch = NULL; 
