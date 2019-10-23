@@ -54,15 +54,6 @@ def GetGate(line, qubits):
 
 def GetMomentAndGate(line, qubits):
 
-    from warnings import warn
-    warn("fSim will be substituted with cirq native gate.", DeprecationWarning, stacklevel=2)
-    fSim = lambda theta,phi: cirq.TwoQubitMatrixGate(np.array(
-      [[1,0,0,0],
-       [0,np.cos(theta*np.pi),-1j*np.sin(theta*np.pi),0],
-       [0,-1j*np.sin(theta*np.pi),np.cos(theta*np.pi),0],
-       [0,0,0,np.exp(-1j*phi*np.pi)]])
-    )
-
     # Get map from gate name to cirq
     gates_map = {}
     gates_map['h'] = cirq.H
@@ -75,7 +66,6 @@ def GetMomentAndGate(line, qubits):
     gates_map['cz'] = cirq.CZ
     gates_map['cx'] = cirq.CNOT
     gates_map['rz'] = cirq.Rz
-    gates_map['fsim'] = fSim
 
     # Remove last cr
     line = line.strip()
