@@ -18,6 +18,9 @@
 #include "errors.h"
 
 namespace qflex {
+// TODO: when building tensor networks and pulling gates from gate_array(s), 
+// stop relying on dimensions given by hand. They should all rely on dimensions 
+// either stored in gate_arrays or on DIM, which is 2 as a global variable.
 
 const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
     {// Deltas.
@@ -495,8 +498,8 @@ void circuit_data_to_tensor_network(
 void flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
-    std::optional<std::vector<std::vector<int>>> final_qubit_region,
-    std::optional<std::vector<std::vector<int>>> off,
+    const std::optional<std::vector<std::vector<int>>>& final_qubit_region,
+    const std::optional<std::vector<std::vector<int>>>& off,
     const std::list<ContractionOperation>& ordering, s_type* scratch) {
 
   if (scratch == nullptr) {
