@@ -150,6 +150,7 @@ void QflexCircuit::load(std::istream&& istream) {
   }
 
   // Compute circuit depth
+  // TODO: have scratch space be allocated not relying on depth.
   {
     std::unordered_map<std::size_t, std::unordered_map<std::size_t, std::size_t>> layers;
     for(const auto &gate: this->gates) {
@@ -161,7 +162,11 @@ void QflexCircuit::load(std::istream&& istream) {
         auto q2 = gate.qubits[1];
         if(q2 > q1) std::swap(q1, q2);
 
-        if(auto new_depth = ++layers[q1][q2]; new_depth > depth)
+        size_t pair_depth_increment = 1;
+        if (gate.name == "fsim") pair_depth_increment = 2;
+        layers[q1][q2] += pair_depth_increment;
+        size_t new_depth = layers[q1][q2];
+        if(new_depth > depth)
           this->depth = new_depth;
       }
     }
