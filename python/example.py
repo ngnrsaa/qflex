@@ -21,17 +21,17 @@ options = {
 # Get output from qFlex
 print(qflex.simulate(options))
 
-with open(simulation['circuit_filename']) as f:
-    simulation['circuit'] = f.readlines()
+with open(options['circuit_filename']) as f:
+    options['circuit'] = f.readlines()
 
-with open(simulation['ordering_filename']) as f:
-    simulation['ordering'] = f.readlines()
+with open(options['ordering_filename']) as f:
+    options['ordering'] = f.readlines()
 
-with open(simulation['grid_filename']) as f:
-    simulation['grid'] = f.readlines()
+with open(options['grid_filename']) as f:
+    options['grid'] = f.readlines()
 
-del (simulation['circuit_filename'])
-del (simulation['grid_filename'])
-del (simulation['ordering_filename'])
+del (options['circuit_filename'])
+del (options['grid_filename'])
+del (options['ordering_filename'])
 
-print(qflex.simulate(simulation))
+print(qflex.simulate(options))
