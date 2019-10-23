@@ -90,7 +90,7 @@ if __name__ == "__main__":
     #
     # TODO: This simulation fails due to insufficient memory
     #
-    # print("  === Simulation 3" + config_mem_crash)
+    # print("  === Simulation 3" + str(config_mem_crash))
     # run_qflex_simulator(config_mem_crash)
     # run_pybind_interface(config_mem_crash)
 
