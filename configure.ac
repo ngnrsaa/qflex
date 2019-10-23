@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([qFlex], [1.0], [salvatore.mandra@nasa.gov])
+AC_INIT([qFlex], [0.1], [salvatore.mandra@nasa.gov])
 AC_CONFIG_SRCDIR([src/main.cpp])
 AC_PREFIX_DEFAULT([$HOME/local])
 

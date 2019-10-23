@@ -4,8 +4,9 @@
  *
  * @author Benjamin Villalonga (main contributor), Bron Nelson, Sergio Boixo and
  * Salvatore Mandra
+ * @contributors: The qFlex Developers (see CONTRIBUTORS.md)
  * @date Created: August 2018
- * @date Modified: August 2018
+ * @date Modified: October 2019
  *
  * @copyright: Copyright © 2019, United States Government, as represented
  * by the Administrator of the National Aeronautics and Space Administration.
@@ -32,6 +33,7 @@
 
 #include "contraction_utils.h"
 #include "read_circuit.h"
+#include "circuit.h"
 #include "tensor.h"
 
 namespace qflex {
@@ -44,9 +46,8 @@ struct QflexGrid {
 };
 
 struct QflexInput {
-  int K;
-  std::istream* circuit_data;
   std::istream* ordering_data;
+  QflexCircuit circuit;
   QflexGrid grid;
   std::string initial_state;
   std::string final_state;
@@ -89,7 +90,7 @@ std::string get_output_states(const QflexInput* input,
  *
  * @param input args required to specify a circuit for evaluation.
  * @return vector of <state bitstring, amplitude> pairs for each output state.
- * States for qubits with terminal cuts are listed at the end onf the state
+ * States for qubits with terminal cuts are listed at the end of the state
  * bitstring, in the order of their terminal cuts.
  */
 std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(

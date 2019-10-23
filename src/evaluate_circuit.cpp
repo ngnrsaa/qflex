@@ -4,8 +4,9 @@
  *
  * @author Benjamin Villalonga (main contributor), Bron Nelson, Sergio Boixo and
  * Salvatore Mandra
+ * @contributors: The qFlex Developers (see CONTRIBUTORS.md)
  * @date Created: August 2018
- * @date Modified: August 2018
+ * @date Modified: October 2019
  *
  * @copyright: Copyright © 2019, United States Government, as represented
  * by the Administrator of the National Aeronautics and Space Administration.
@@ -146,7 +147,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   std::chrono::duration<double> time_span;
 
   // Reading input.
-  const int super_dim = (int)pow(DIM, input->K);
+  const int super_dim = (int)pow(DIM, input->circuit.depth);
 
   // Create the ordering for this tensor contraction from file.
   t0 = std::chrono::high_resolution_clock::now();
@@ -200,7 +201,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     t0 = std::chrono::high_resolution_clock::now();
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
     circuit_data_to_tensor_network(
-        input->circuit_data, input->grid.I, input->grid.J,
+        input->circuit, input->grid.I, input->grid.J,
         input->initial_state, input->final_state, final_qubits,
         input->grid.qubits_off, tensor_grid_3D, scratch);
 
