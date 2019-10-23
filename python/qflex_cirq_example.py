@@ -24,7 +24,7 @@ config_mem_crash = {
 }
 
 config_large = {
-    'circuit_filename': "config/circuits/bristlecone_70_1-24-1_0.txt",
+    'circuit_filename': "config/circuits/bristlecone_70_1-16-1_0.txt",
     'ordering_filename': "config/ordering/bristlecone_70.txt",
     'grid_filename': 'config/grid/bristlecone_70.txt',
     'final_state': "1" * 70
