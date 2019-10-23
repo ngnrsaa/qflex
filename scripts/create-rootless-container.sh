@@ -6,7 +6,7 @@
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 print_help() {
-  echo -e "\n\tUsage: $(basename $0) {-|folder} [-h -j <p> -x -r -c]\n"        >&2
+  echo -e "\n\tUsage: $(basename $0) (-|folder) [-h -j <p> -x -r -c]\n"        >&2
   echo -e "\t\tCreate rootless container for qflex in [folder]."               >&2
   echo -e "\t\tIf [folder] == \"-\", use a temporary folder instead."          >&2
   echo                                                                         >&2
