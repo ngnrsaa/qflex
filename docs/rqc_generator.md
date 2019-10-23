@@ -36,6 +36,12 @@ Example usage:
     * Random seed to initialize PRNG
 * --output
     * Name of output file to write the generated RQC in qsim format
+    
+### Output
+
+Currently, the generated RQC is not directly compatible with qFlex input. The qubit 
+indices generated need to be mapped to the indexing used by qFlex as described in the 
+[input_formats](/docs/input_formats.md) file.
 
 ## Patterns
 
