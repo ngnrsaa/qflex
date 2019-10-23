@@ -24,7 +24,7 @@ import python.cirq_interface.qflex_order as qorder
 
 import python.utils as qflexutils
 
-num_runs = 50
+num_runs = 20
 
 circuit_test = """16
 0 h 0
@@ -209,10 +209,159 @@ circuit_test = """16
 17 h 15
 """
 
-# replaced from the previous string
-# cz with  fsim(0.4860239014600936, 0.16383319416244227)
-# t with rz(0.25)
-# h with hz_1_2
+grid_test = """1111
+1111
+1111
+1111
+"""
+
+ordering_test = """
+cut () 4 8
+cut () 5 9
+cut () 6 10
+
+expand A 0
+expand A 1
+expand A 2
+expand A 3
+expand A 4
+expand A 5
+expand A 6
+expand A 7
+
+expand B 8
+expand B 9
+expand B 10
+expand B 11
+expand B 12
+expand B 13
+expand B 14
+expand B 15
+
+merge A B
+"""
+
+ordering_with_cuts_test = """
+cut () 4 8
+cut () 5 9
+cut () 6 10
+
+expand A 0
+expand A 1
+expand A 2
+expand A 3
+expand A 4
+expand A 5
+expand A 6
+expand A 7
+
+expand B 8
+expand B 9
+expand B 10
+expand B 11
+expand B 12
+expand B 13
+expand B 14
+expand B 15
+
+merge A B
+"""
+
+# Simulate circuit
+qubits = utils.GetGridQubits(StringIO(grid_test))
+circuit = utils.GetCircuit(StringIO(circuit_test), qubits)
+auto_ordering = auto_order.circuit_to_ordering(circuit, qubit_names=sorted(qubits))
+results = cirq.Simulator().simulate(circuit)
+
+# Save circuit and grid on temporary files
+circuit_filename = mkstemp()
+grid_filename = mkstemp()
+ordering_filename = mkstemp()
+ordering_with_cuts_filename = mkstemp()
+ordering_auto_filename = mkstemp()
+
+with open(circuit_filename[1], 'w') as f:
+    print(circuit_test, file=f)
+with open(grid_filename[1], 'w') as f:
+    print(grid_test, file=f)
+with open(ordering_filename[1], 'w') as f:
+    print(ordering_test, file=f)
+with open(ordering_with_cuts_filename[1], 'w') as f:
+    print(ordering_with_cuts_test, file=f)
+with open(ordering_auto_filename[1], 'w') as f:
+    print('\n'.join(auto_ordering), file=f)
+
+
+@pytest.mark.parametrize(
+    'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
+def test_simulation(x):
+
+    # Get configuration as a string
+    final_conf = bin(x)[2:].zfill(len(qubits))
+
+    options = {
+        'circuit_filename': circuit_filename[1],
+        'ordering_filename': ordering_filename[1],
+        'grid_filename': grid_filename[1],
+        'final_state': final_conf
+    }
+
+    # Get output from qFlex
+    qflex_amplitude = qflex.simulate(options)[0][1]
+
+    # Compare the amplitudes
+    assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
+
+
+@pytest.mark.parametrize(
+    'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
+def test_simulation_with_cuts(x):
+
+    # Get configuration as a string
+    final_conf = bin(x)[2:].zfill(len(qubits))
+
+    options = {
+        'circuit_filename': circuit_filename[1],
+        'ordering_filename': ordering_with_cuts_filename[1],
+        'grid_filename': grid_filename[1],
+        'final_state': final_conf
+    }
+
+    # Get output from qFlex
+    qflex_amplitude = qflex.simulate(options)[0][1]
+
+    # Compare the amplitudes
+    assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
+
+@pytest.mark.parametrize(
+    'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
+def test_simulation_with_auto_order(x):
+
+    # Get configuration as a string
+    final_conf = bin(x)[2:].zfill(len(qubits))
+
+    options = {
+        'circuit_filename': circuit_filename[1],
+        'ordering_filename': ordering_auto_filename[1],
+        'grid_filename': grid_filename[1],
+        'final_state': final_conf
+    }
+
+    # Get output from qFlex
+    qflex_amplitude = qflex.simulate(options)[0][1]
+
+    # Compare the amplitudes
+    assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
+
+
+"""
+    FSim Tests
+    replaced from the previous string
+    cz with  fsim(0.4860239014600936, 0.16383319416244227)
+    t with rz(0.25)
+    h with hz_1_2
+"""
+
 circuit_test_fsim= """16
 0 hz_1_20
 0 hz_1_21
@@ -396,159 +545,10 @@ circuit_test_fsim= """16
 17 hz_1_215
 """
 
-grid_test = """1111
-1111
-1111
-1111
-"""
-
-ordering_test = """
-cut () 4 8
-cut () 5 9
-cut () 6 10
-
-expand A 0
-expand A 1
-expand A 2
-expand A 3
-expand A 4
-expand A 5
-expand A 6
-expand A 7
-
-expand B 8
-expand B 9
-expand B 10
-expand B 11
-expand B 12
-expand B 13
-expand B 14
-expand B 15
-
-merge A B
-"""
-
-ordering_with_cuts_test = """
-cut () 4 8
-cut () 5 9
-cut () 6 10
-
-expand A 0
-expand A 1
-expand A 2
-expand A 3
-expand A 4
-expand A 5
-expand A 6
-expand A 7
-
-expand B 8
-expand B 9
-expand B 10
-expand B 11
-expand B 12
-expand B 13
-expand B 14
-expand B 15
-
-merge A B
-"""
-
-# Simulate circuit
-qubits = utils.GetGridQubits(StringIO(grid_test))
-circuit = utils.GetCircuit(StringIO(circuit_test), qubits)
-auto_ordering = auto_order.circuit_to_ordering(circuit, qubit_names=sorted(qubits))
-results = cirq.Simulator().simulate(circuit)
-
-# Save circuit and grid on temporary files
-circuit_filename = mkstemp()
-grid_filename = mkstemp()
-ordering_filename = mkstemp()
-ordering_with_cuts_filename = mkstemp()
-ordering_auto_filename = mkstemp()
-
-with open(circuit_filename[1], 'w') as f:
-    print(circuit_test, file=f)
-with open(grid_filename[1], 'w') as f:
-    print(grid_test, file=f)
-with open(ordering_filename[1], 'w') as f:
-    print(ordering_test, file=f)
-with open(ordering_with_cuts_filename[1], 'w') as f:
-    print(ordering_with_cuts_test, file=f)
-with open(ordering_auto_filename[1], 'w') as f:
-    print('\n'.join(auto_ordering), file=f)
-
-
-# @pytest.mark.parametrize(
-#     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
-# def test_simulation(x):
-#
-#     # Get configuration as a string
-#     final_conf = bin(x)[2:].zfill(len(qubits))
-#
-#     options = {
-#         'circuit_filename': circuit_filename[1],
-#         'ordering_filename': ordering_filename[1],
-#         'grid_filename': grid_filename[1],
-#         'final_state': final_conf
-#     }
-#
-#     # Get output from qFlex
-#     qflex_amplitude = qflex.simulate(options)[0][1]
-#
-#     # Compare the amplitudes
-#     assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
-#
-#
-# @pytest.mark.parametrize(
-#     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
-# def test_simulation_with_cuts(x):
-#
-#     # Get configuration as a string
-#     final_conf = bin(x)[2:].zfill(len(qubits))
-#
-#     options = {
-#         'circuit_filename': circuit_filename[1],
-#         'ordering_filename': ordering_with_cuts_filename[1],
-#         'grid_filename': grid_filename[1],
-#         'final_state': final_conf
-#     }
-#
-#     # Get output from qFlex
-#     qflex_amplitude = qflex.simulate(options)[0][1]
-#
-#     # Compare the amplitudes
-#     assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
-#
-# @pytest.mark.parametrize(
-#     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
-# def test_simulation_with_auto_order(x):
-#
-#     # Get configuration as a string
-#     final_conf = bin(x)[2:].zfill(len(qubits))
-#
-#     options = {
-#         'circuit_filename': circuit_filename[1],
-#         'ordering_filename': ordering_auto_filename[1],
-#         'grid_filename': grid_filename[1],
-#         'final_state': final_conf
-#     }
-#
-#     # Get output from qFlex
-#     qflex_amplitude = qflex.simulate(options)[0][1]
-#
-#     # Compare the amplitudes
-#     assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
-
-
-"""
-    FSim Tests
-"""
 circuit_fsim_filename = mkstemp()
 
 with open(circuit_fsim_filename[1], 'w') as f:
     print(circuit_test_fsim, file=f)
-
 
 qdev = qdevice.QFlexVirtualDevice(qflex_grid=grid_test)
 qord = qorder.QFlexOrder.from_existing_file(ordering_filename[1])
@@ -561,7 +561,6 @@ qcir = qcirc.QFlexCircuit(
 sim = qsim.QFlexSimulator()
 
 results_fsim = cirq.Simulator().simulate(mycirc)
-
 
 @pytest.mark.parametrize(
     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
