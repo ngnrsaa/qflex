@@ -100,8 +100,8 @@ void circuit_data_to_tensor_network(
 void flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
-    std::optional<std::vector<std::vector<int>>> final_qubit_region,
-    std::optional<std::vector<std::vector<int>>> off,
+    std::optional<std::vector<std::vector<int>>>& final_qubit_region,
+    std::optional<std::vector<std::vector<int>>>& off,
     const std::list<ContractionOperation>& ordering, s_type* scratch);
 
 /**
