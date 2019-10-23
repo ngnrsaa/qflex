@@ -7,6 +7,9 @@ import numpy as np
 import cirq
 import re
 
+# Used to include a class which does not exist in Cirq 0.5.0
+import python.cirq_interface.fsim_gate as cirqtmp
+
 
 def ComputeSchmidtRank(gate):
 
@@ -65,7 +68,9 @@ def GetMomentAndGate(line, qubits):
     gates_map['h_1_2'] = cirq.H**(0.5)
     gates_map['cz'] = cirq.CZ
     gates_map['cx'] = cirq.CNOT
-    gates_map['rz'] = cirq.Rz
+    gates_map['rz'] = cirq.ZPowGate
+    gates_map['hz_1_2'] = cirq.PhasedXPowGate(phase_exponent=0.25, exponent=0.5)
+    gates_map['fsim'] = cirqtmp.FSimGate
 
     # Remove last cr
     line = line.strip()
@@ -120,6 +125,18 @@ def GetMomentAndGate(line, qubits):
     if params == None:
         return cycle, gates_map[gate_name](*[qubits[q] for q in gate_qubits])
     else:
+        if gate_name == "fsim":
+            # the Cirq Fsim gate takes angles and not exponents
+            # Transform the params
+            params = [p * np.pi for p in params]
+            return cycle, gates_map[gate_name](theta=params[0], phi=params[1])(*[qubits[q] for q in gate_qubits])
+
+        if gate_name == "rz":
+            # the Cirq Fsim gate takes angles and not exponents
+            # Transform the params
+            # params = [p * np.pi for p in params]
+            return cycle, gates_map[gate_name](exponent=params[0])(qubits[gate_qubits[0]])
+
         return cycle, gates_map[gate_name](*params)(*[qubits[q] for q in gate_qubits])
 
 

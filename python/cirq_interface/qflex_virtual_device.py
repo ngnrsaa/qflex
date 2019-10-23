@@ -1,12 +1,9 @@
-from io import StringIO
-
 import cirq
 import cirq.ops as ops
 
 from python.cirq_interface.qflex_grid import QFlexGrid
 
-from python import utils as qflexutils
-
+import python.cirq_interface.fsim_gate as cirqtmp
 
 class QFlexVirtualDevice(cirq.Device):
 
@@ -19,8 +16,6 @@ class QFlexVirtualDevice(cirq.Device):
         else:
             raise TypeError("{!r} is not a valid QFlexGrid".format(qflex_grid))
 
-
-        # self._qubits = qflexutils.GetGridQubits(StringIO(qflex_grid_string))
 
     @property
     def grid_data(self):
@@ -69,7 +64,7 @@ class QFlexVirtualDevice(cirq.Device):
 
     def is_qflex_virt_dev_op(self, op):
         """
-            For the moment allow only CZ, CX, sqrt(X), sqrt(Y), T, H
+            This checks for the currently supported gate set
         """
         if not isinstance(op, ops.GateOperation):
             return False
@@ -99,6 +94,16 @@ class QFlexVirtualDevice(cirq.Device):
         keep = keep or (isinstance(op.gate, ops.ZPowGate)
                         and
                         (op.gate.exponent == 0.25))
+
+        keep = keep or (isinstance(op.gate, ops.ZPowGate))
+
+        keep = keep or (isinstance(op.gate, ops.PhasedXPowGate)
+                        and
+                        (op.gate.exponent == 0.5)
+                        and
+                        (op.gate.phase_exponent == 0.25))
+
+        keep = keep or (isinstance(op.gate, cirqtmp.FSimGate))
 
         return keep
 

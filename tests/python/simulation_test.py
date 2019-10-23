@@ -15,6 +15,14 @@ from python.ordering import order_circuit_simulation as auto_order
 from python import utils
 from python import qflex
 
+import python.cirq_interface.qflex_simulator as qsim
+import python.cirq_interface.qflex_virtual_device as qdevice
+import python.cirq_interface.qflex_grid as qgrid
+import python.cirq_interface.qflex_circuit as qcirc
+import python.cirq_interface.qflex_order as qorder
+
+import python.utils as qflexutils
+
 num_runs = 20
 
 circuit_test = """16
@@ -475,3 +483,100 @@ def test_simulation_with_auto_order(x):
 
     # Compare the amplitudes
     assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
+
+
+"""
+    FSim Tests
+    replaced from the previous string
+    cx with  fsim(0.4860239014600936, 0.16383319416244227)
+    t with rz(0.25)
+    h with hz_1_2 
+"""
+
+circuit_test_fsim= """4
+0 hz_1_2 0
+0 hz_1_2 1
+0 hz_1_2 2
+0 hz_1_2 3
+1 rz(0.25) 0
+1 rz(0.25) 1
+1 rz(0.25) 2
+1 rz(0.25) 3
+2 fsim(0.4860239014600936, 0.16383319416244227) 0 1
+2 fsim(0.4860239014600936, 0.16383319416244227) 2 3
+3 rz(0.25) 0
+3 rz(0.25) 1
+3 rz(0.25) 2
+3 rz(0.25) 3
+4 fsim(0.4860239014600936, 0.16383319416244227) 0 2
+4 fsim(0.4860239014600936, 0.16383319416244227) 1 3
+8 rz(0.25) 0
+8 rz(0.25) 1
+8 rz(0.25) 2
+8 rz(0.25) 3
+9 fsim(0.4860239014600936, 0.16383319416244227) 0 1
+9 fsim(0.4860239014600936, 0.16383319416244227) 2 3
+10 rz(0.25) 0
+10 rz(0.25) 1
+10 rz(0.25) 2
+10 rz(0.25) 3
+11 fsim(0.4860239014600936, 0.16383319416244227) 0 2
+11 fsim(0.4860239014600936, 0.16383319416244227) 1 3
+17 hz_1_2 0
+17 hz_1_2 1
+17 hz_1_2 2
+17 hz_1_2 3"""
+
+circuit_fsim_filename = mkstemp()
+
+with open(circuit_fsim_filename[1], 'w') as f:
+    print(circuit_test_fsim, file=f)
+
+qdev = qdevice.QFlexVirtualDevice(
+    qflex_grid=qgrid.QFlexGrid.from_existing_file("../../config/grid/rectangular_2x2.txt"))
+
+qqubits = qdev.get_grid_qubits_as_keys()
+
+qord = qorder.QFlexOrder.from_existing_file("../../config/ordering/rectangular_2x2.txt")
+mycirc = qflexutils.GetCircuitOfMoments(circuit_fsim_filename[1],
+                                        qdev.get_indexed_grid_qubits())
+qcir = qcirc.QFlexCircuit(
+    cirq_circuit = mycirc,
+    device = qdev,
+    qflex_order = qord)
+
+sim = qsim.QFlexSimulator()
+
+results_fsim = cirq.Simulator().simulate(mycirc)
+
+@pytest.mark.parametrize(
+    'x', [np.random.randint(0, 2**len(qqubits)) for _ in range(num_runs)])
+def test_simulation_with_fsim_gates(x):
+    """
+    Is a cirq Simulation of a cirq.Circuit consisting of fSim gates
+    equal to the simulation through qFlex?
+    :return:
+    """
+    # Get configuration as a string
+    final_conf = bin(x)[2:].zfill(len(qqubits))
+
+    options = {
+        'circuit_filename': circuit_fsim_filename[1],
+        'ordering_filename': "../../config/ordering/rectangular_2x2.txt",
+        'grid_filename': "../../config/grid/rectangular_2x2.txt",
+        'final_state': final_conf
+    }
+
+    print(options)
+
+    # Pybind: Get output from qFlex
+    qflex_amplitude1 = qflex.simulate(options)[0][1]
+
+    # Cirq: Get output from qFlex
+
+    qflex_amplitude2 = sim.compute_amplitudes(qcir, bitstrings=[final_conf])
+
+    # Compare the amplitudes
+    assert (np.abs(results_fsim.final_state[x] - qflex_amplitude1) < 1.e-6)
+    # Compare the amplitudes
+    assert (np.abs(results_fsim.final_state[x] - qflex_amplitude2) < 1.e-6)

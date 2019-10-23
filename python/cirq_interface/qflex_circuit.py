@@ -1,12 +1,17 @@
 import tempfile
 import os
 
+import numpy as np
+
 import cirq
 
 import python.cirq_interface.qflex_virtual_device as qdevice
 import python.cirq_interface.qflex_order as qorder
 
 import python.utils as qflexutils
+
+# Used to include a class which does not exist in Cirq 0.5.0
+import python.cirq_interface.fsim_gate as cirqtmp
 
 class QFlexCircuit(cirq.Circuit):
 
@@ -48,7 +53,7 @@ class QFlexCircuit(cirq.Circuit):
         with open(self._file_handle[1], "w") as f:
             # The cirq_circuit has QFlexVirtualDevice
             qubit_to_index_dict = self.device.get_grid_qubits_as_keys()
-            print(QFlexCircuit.translate_cirq_to_qflex(cirq_circuit,
+            print(QFlexCircuit.translate_cirq_to_qflex(self,
                                                        qubit_to_index_dict),
                   file = f)
 
@@ -113,7 +118,7 @@ class QFlexCircuit(cirq.Circuit):
                 if isinstance(op.gate, cirq.ops.CZPowGate)\
                         and op.gate.exponent == 1.0:
                     qflex_gate = "cz"
-                if isinstance(op.gate, cirq.ops.CNotPowGate) \
+                elif isinstance(op.gate, cirq.ops.CNotPowGate) \
                         and op.gate.exponent == 1.0:
                     qflex_gate = "cx"
                 elif isinstance(op.gate, cirq.ops.HPowGate) \
@@ -128,6 +133,20 @@ class QFlexCircuit(cirq.Circuit):
                 elif isinstance(op.gate, cirq.ops.ZPowGate) \
                         and op.gate.exponent == 0.25:
                     qflex_gate = "t"
+                elif isinstance(op.gate, cirq.ops.PhasedXPowGate) \
+                        and op.gate.phase_exponent == 0.25 \
+                        and op.gate.exponent == 0.5:
+                    qflex_gate = "hz_1_2"
+                elif isinstance(op.gate, cirq.ops.ZPowGate):
+                    qflex_gate = "rz({})".format(op.gate.exponent)
+                elif isinstance(op.gate, cirqtmp.FSimGate):
+                    # qFlex uses fractions of pi instead of radians
+                    exponent1 = op.gate.theta / np.pi
+                    exponent2 = op.gate.phi / np.pi
+                    qflex_gate = "fsim({}, {})".format(exponent1, exponent2)
+                else:
+                    raise ValueError("{!r} No translation for ".format(op))
+
 
                 # The moment is missing
                 qflex_gate = "{} {} {}\n".format(mi, qflex_gate,

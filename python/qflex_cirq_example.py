@@ -24,10 +24,17 @@ config_mem_crash = {
 }
 
 config_large = {
-    'circuit_filename': "config/circuits/bristlecone_70_1-24-1_0.txt",
+    'circuit_filename': "config/circuits/bristlecone_70_1-16-1_0.txt",
     'ordering_filename': "config/ordering/bristlecone_70.txt",
     'grid_filename': 'config/grid/bristlecone_70.txt',
     'final_state': "1" * 70
+}
+
+config_sycamore = {
+    'circuit_filename': "config/circuits/sycamore_53_4_0.txt",
+    'ordering_filename': "config/ordering/sycamore_53.txt",
+    'grid_filename': 'config/grid/sycamore_53.txt',
+    'final_state': "1" * 53
 }
 
 
@@ -67,7 +74,7 @@ def run_pybind_interface(config):
 
 
 if __name__ == "__main__":
-
+    #
     print("\n\n  === Simulation 1" + str(config_small))
     run_qflex_simulator(config_small)
     run_pybind_interface(config_small)
@@ -76,10 +83,14 @@ if __name__ == "__main__":
     run_qflex_simulator(config_large)
     run_pybind_interface(config_large)
 
+    print("\n\n  === Simulation 3" + str(config_sycamore))
+    run_qflex_simulator(config_sycamore)
+    run_pybind_interface(config_sycamore)
+
     #
     # TODO: This simulation fails due to insufficient memory
     #
-    # print("  === Simulation 3" + config_mem_crash)
+    # print("  === Simulation 3" + str(config_mem_crash))
     # run_qflex_simulator(config_mem_crash)
     # run_pybind_interface(config_mem_crash)
 
