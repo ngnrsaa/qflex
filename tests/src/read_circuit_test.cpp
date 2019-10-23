@@ -251,21 +251,7 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   ASSERT_EQ(tensor_grid_3D.size(), 3);
   for(const auto &tensor: tensor_grid_3D) ASSERT_EQ(tensor.size(), 2);
 
-  // (0,0) has 4 diagonal gates + 2 non diagonal gates = 8
-  ASSERT_EQ(std::size(tensor_grid_3D[0][0]), 8);
-
-  // (0,1) has 4 diagonal gates + 2 non diagonal gates = 8
-  ASSERT_EQ(std::size(tensor_grid_3D[0][1]), 8);
-
-  // (1,0) has 4 diagonal gates + 2 non diagonal gates = 8
-  ASSERT_EQ(std::size(tensor_grid_3D[1][0]), 8);
-
-  // (1,1) has 5 diagonal gates + 3 non diagonal gates = 11
-  ASSERT_EQ(std::size(tensor_grid_3D[1][1]), 11);
-
-  // (2,1) has 3 diagonal gates + 1 non diagonal gates = 5
-  ASSERT_EQ(std::size(tensor_grid_3D[2][1]), 5);
-
+  // TODO Add check on tensors
 
   std::vector<std::vector<Tensor>> tensor_grid_2D;
   for (int i = 0; i < 3; ++i) {
