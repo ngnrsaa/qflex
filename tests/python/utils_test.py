@@ -15,12 +15,16 @@ def test_GetNrQubits():
     b = cirq.GridQubit(0, 1)
     c = cirq.GridQubit(0, 2)
 
-    circ = cirq.Circuit()
-    circ.append(cirq.H.on(a))
-    circ.append(cirq.H.on(b))
-    circ.append(cirq.CNOT.on(b, c))
-    circ.append(cirq.H.on(a))
+    circuit = cirq.Circuit()
+    circuit.append(cirq.H.on(a))
+    circuit.append(cirq.H.on(b))
+    circuit.append(cirq.CNOT.on(b, c))
+    circuit.append(cirq.H.on(a))
 
-    nrq = utils.GetNrQubits(circ)
+    nrq = utils.GetNumberOfQubits(circuit)
+
+    # Cirq supported allready this functionality
+    nrq2 = len(circuit.all_qubits())
+    assert (nrq2 == 3)
 
     assert(nrq == 3)

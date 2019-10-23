@@ -77,26 +77,13 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
   }
 
   // Get auto_depth
-  std::size_t auto_depth;
   if (options.contains("circuit_filename")) {
-    auto_depth = qflex::compute_depth(
+    input.K = qflex::compute_depth(
         std::ifstream(options["circuit_filename"].cast<std::string>()));
   } else {
     std::cerr << "ERROR: not yet implemented." << std::endl;
     return {};
   }
-
-  // Get depth
-  if (options.contains("depth")) {
-    input.K = options["depth"].cast<int>();
-    if (input.K != auto_depth) {
-      std::cerr << "WARNING: user-provided depth (" << input.K
-                << ") differs from the auto-computed depth (" << auto_depth
-                << ")." << std::endl;
-      return {};
-    }
-  } else
-    input.K = auto_depth;
 
   // Setting initial and final circuit states.
   if (options.contains("initial_state"))
