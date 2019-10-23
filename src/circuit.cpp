@@ -1,13 +1,5 @@
 #include "circuit.h"
 
-namespace std {
-template <typename T, typename U> struct hash<std::pair<T, U>> {
-  std::size_t operator()(const std::pair<T, U>& p) const {
-    return std::hash<T>()(p.first) ^ (std::hash<U>()(p.second) << 1);
-  }
-};
-}
-
 namespace qflex {
 
 std::ostream &QflexGate::operator<<(std::ostream &out) const { 
@@ -159,7 +151,7 @@ void QflexCircuit::load(std::istream&& istream) {
 
   // Compute circuit depth
   {
-    std::unordered_map<std::pair<std::size_t, std::size_t>, std::size_t> layers;
+    std::unordered_map<std::size_t, std::unordered_map<std::size_t, std::size_t>> layers;
     for(const auto &gate: this->gates) {
       if(std::size(gate.qubits) > 2) 
         throw error_msg("Depth calculation does not handle k-qubit gates with k > 2.");
@@ -169,7 +161,7 @@ void QflexCircuit::load(std::istream&& istream) {
         auto q2 = gate.qubits[1];
         if(q2 > q1) std::swap(q1, q2);
 
-        if(auto new_depth = ++layers[{q1,q2}]; new_depth > depth)
+        if(auto new_depth = ++layers[q1][q2]; new_depth > depth)
           this->depth = new_depth;
       }
     }
