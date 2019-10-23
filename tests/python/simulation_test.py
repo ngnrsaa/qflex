@@ -490,26 +490,26 @@ def test_simulation_with_auto_order(x):
     replaced from the previous string
     cz with  fsim(0.4860239014600936, 0.16383319416244227)
     t with rz(0.25)
-    h with hz_1_2
+    h with hz_1_2 
 """
 
 circuit_test_fsim= """16
-0 hz_1_20
-0 hz_1_21
-0 hz_1_22
-0 hz_1_23
-0 hz_1_24
-0 hz_1_25
-0 hz_1_26
-0 hz_1_27
-0 hz_1_28
-0 hz_1_29
-0 hz_1_210
-0 hz_1_211
-0 hz_1_212
-0 hz_1_213
-0 hz_1_214
-0 hz_1_215
+0 hz_1_2 0
+0 hz_1_2 1
+0 hz_1_2 2
+0 hz_1_2 3
+0 hz_1_2 4
+0 hz_1_2 5
+0 hz_1_2 6
+0 hz_1_2 7
+0 hz_1_2 8
+0 hz_1_2 9
+0 hz_1_2 10
+0 hz_1_2 11
+0 hz_1_2 12
+0 hz_1_2 13
+0 hz_1_2 14
+0 hz_1_2 15
 1 fsim(0.4860239014600936, 0.16383319416244227) 0 1
 1 fsim(0.4860239014600936, 0.16383319416244227) 6 7
 1 fsim(0.4860239014600936, 0.16383319416244227) 8 9
@@ -658,22 +658,22 @@ circuit_test_fsim= """16
 16 rz(0.25) 9
 16 rz(0.25) 11
 16 y_1_2 13
-17 hz_1_20
-17 hz_1_21
-17 hz_1_22
-17 hz_1_23
-17 hz_1_24
-17 hz_1_25
-17 hz_1_26
-17 hz_1_27
-17 hz_1_28
-17 hz_1_29
-17 hz_1_210
-17 hz_1_211
-17 hz_1_212
-17 hz_1_213
-17 hz_1_214
-17 hz_1_215
+17 hz_1_2 0
+17 hz_1_2 1
+17 hz_1_2 2
+17 hz_1_2 3
+17 hz_1_2 4
+17 hz_1_2 5
+17 hz_1_2 6
+17 hz_1_2 7
+17 hz_1_2 8
+17 hz_1_2 9
+17 hz_1_2 10
+17 hz_1_2 11
+17 hz_1_2 12
+17 hz_1_2 13
+17 hz_1_2 14
+17 hz_1_2 15
 """
 
 circuit_fsim_filename = mkstemp()
@@ -683,7 +683,8 @@ with open(circuit_fsim_filename[1], 'w') as f:
 
 qdev = qdevice.QFlexVirtualDevice(qflex_grid=grid_test)
 qord = qorder.QFlexOrder.from_existing_file(ordering_filename[1])
-mycirc = qflexutils.GetCircuitOfMoments(circuit_fsim_filename[1], qdev.get_indexed_grid_qubits())
+mycirc = qflexutils.GetCircuitOfMoments(circuit_fsim_filename[1],
+                                        qdev.get_indexed_grid_qubits())
 qcir = qcirc.QFlexCircuit(
     cirq_circuit = mycirc,
     device = qdev,
