@@ -1,13 +1,11 @@
 /**
  * @file read_circuit.cpp
  * Helper functions to read quantum circuits from a file.
- * @see https://github.com/benjaminvillalonga/optimized_parallel_QC_with_TN
  *
  * @author Benjamin Villalonga (main contributor), Bron Nelson, Sergio Boixo and
  * Salvatore Mandra
  * @contributors: The qFlex Developers (see CONTRIBUTORS.md)
  * @date Created: September 2018
- * @date Modified: October 2019
  *
  * @copyright: Copyright © 2019, United States Government, as represented
  * by the Administrator of the National Aeronautics and Space Administration.
@@ -67,11 +65,11 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
      {"cx", std::vector<s_type>({1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 1.,
                                  0., 0., 1., 0.})}});
 
-std::vector<s_type> gate_array(const std::string& gate_name) {
-  static const std::regex rz_regex("rz\\((.*)\\)");
-  std::smatch match;
-  if (std::regex_match(gate_name, match, rz_regex) && match.size() > 1) {
-    const double angle_rads = _PI * stod(match.str(1));
+// TODO: make params optional.
+std::vector<s_type> gate_array(const std::string& gate_name,
+                               const std::vector<double>& params) {
+  if (gate_name == "rz") {
+    const double angle_rads = _PI * params[0];
     const s_type phase = exp(s_type(0., angle_rads / 2));
     return std::vector<s_type>({conj(phase), 0., 0., phase});
   }
@@ -85,141 +83,61 @@ std::vector<s_type> gate_array(const std::string& gate_name) {
 }
 
 /**
- * Returns vector of vectors of s_type with the Schmidt decomposition of the
- * fSim gate.
- * @param theta s_type::value_type with the angle $theta$. Modulo $2\pi$ is
- * taken.
- * @param phi s_type::value_type with the angle $phi$. Modulo $2\pi$ is taken.
- * @param scratch pointer to s_type array with scratch space for all operations
- * performed in this function.
- * @return vector<vector<s_type>> with three elements: first the vector with
- * entries of the first qubit, second the vector with entries of the second
- * qubit, and third the vector with the singular values (informational only).
+ * Get fSim decomposed tensors given angles theta and phi, in units of PI.
+ * @param double theta_rads with the first angle of the fSim gate.
+ * @param double phi_rads with the second angle of the fSim gate.
+ * @return vector<vector<stype>> with the two tensors of the fSim gate in
+ * row major storage and order (input, virtual, output) for indices on both
+ * tensors.
  */
-std::vector<std::vector<s_type>> fSim(s_type::value_type theta,
-                                      s_type::value_type phi, s_type* scratch) {
-  if (scratch == nullptr) {
-    std::cout << "Scratch must be non-null." << std::endl;
-    assert(scratch != nullptr);
-  }
+std::vector<std::vector<s_type>> fSim(double theta_rads, double phi_rads) {
+  s_type c1, c2, c3, c4, d;
+  c1 = s_type(0.5) * (exp(s_type({0.0, -1 * phi_rads / 2}))
+       + s_type({cos(theta_rads), 0.0}));
+  c2 = s_type(0.5) * (exp(s_type({0.0, -1 * phi_rads / 2}))
+       - s_type({cos(theta_rads), 0.0}));
+  c3 = s_type({0.0, -1/2.}) * s_type({sin(theta_rads), 0.0});
+  c4 = c3;
+  s_type s1, s2, s3, s4;
+  s1 = sqrt(c1);
+  s2 = sqrt(c2);
+  s3 = sqrt(c3);
+  s4 = sqrt(c4);
+  d = exp(s_type({0.0, phi_rads / 4.}));
+  std::vector<s_type> q1_tensor_array(
+      { d * s1, {0.0, 0.0}, d * s2, {0.0, 0.0},
+      {0.0, 0.0}, s3,{0.0, 0.0}, s_type({0.0, 1.0}) * s4,
+      {0.0, 0.0}, conj(d) * s1, {0.0, 0.0}, -conj(d) * s2,
+      s3, {0.0, 0.0}, s_type({0.0, -1.0}) * s4, {0.0, 0.0}});
 
-  static_assert(std::is_floating_point<typename s_type::value_type>::value);
-
-  std::vector<s_type> coeffs(
-      {{0.0, -std::sin(theta) / 2},
-       {0.0, -std::sin(theta) / 2},
-       {(std::cos(-theta / 2) - std::cos(theta)) / 2, std::sin(-theta / 2) / 2},
-       {(std::cos(-theta / 2) + std::cos(theta)) / 2,
-        std::sin(-theta / 2) / 2}});
-
-  std::vector<double> norm_coeffs(coeffs.size());
-  for (int i = 0; i < coeffs.size(); ++i) {
-    norm_coeffs[i] = abs(coeffs[i]);
-  }
-
-  std::vector<std::vector<s_type>> q1_matrices(
-      {{{0., 0.}, {1., 0.}, {1., 0.}, {0., 0.}},
-       {{0., 0.}, {0., 1.}, {0., -1.}, {0., 0.}},
-       {{std::cos(phi / 4), std::sin(phi / 4)},
-        {0., 0.},
-        {0., 0.},
-        {-std::cos(-phi / 4), -std::sin(-phi / 4)}},
-       {{std::cos(phi / 4), std::sin(phi / 4)},
-        {0., 0.},
-        {0., 0.},
-        {std::cos(-phi / 4), std::sin(-phi / 4)}}});
-  std::vector<std::vector<s_type>> q2_matrices(
-      {{{0., 0.}, {1., 0.}, {1., 0.}, {0., 0.}},
-       {{0., 0.}, {0., 1.}, {0., -1.}, {0., 0.}},
-       {{std::cos(phi / 4), std::sin(phi / 4)},
-        {0., 0.},
-        {0., 0.},
-        {-std::cos(-phi / 4), -std::sin(-phi / 4)}},
-       {{std::cos(phi / 4), std::sin(phi / 4)},
-        {0., 0.},
-        {0., 0.},
-        {std::cos(-phi / 4), std::sin(-phi / 4)}}});
-
-  for (int i = 0; i < coeffs.size(); ++i) {
-    for (int j = 0; j < q1_matrices[i].size(); ++j) {
-      q1_matrices[i][j] *= coeffs[i];
-      q2_matrices[i][j] *= coeffs[i];
-    }
-  }
-
-  struct cnmm {
-    s_type c;
-    double n;
-    std::vector<s_type> m1;
-    std::vector<s_type> m2;
-    cnmm(s_type c_, double n_, std::vector<s_type> m1_, std::vector<s_type> m2_)
-        : c(c_), n(n_), m1(m1_), m2(m2_) {}
-    bool operator<(const cnmm& other) const { return n < other.n; }
-  };
-
-  std::vector<cnmm> my_cnmm;
-  for (int i = 0; i < coeffs.size(); ++i) {
-    my_cnmm.emplace_back(coeffs[i], norm_coeffs[i], q1_matrices[i],
-                         q2_matrices[i]);
-  }
-
-  sort(my_cnmm.begin(), my_cnmm.end());
-  reverse(my_cnmm.begin(), my_cnmm.end());
-
-  std::vector<s_type> vec_q1_tensor, vec_q2_tensor;
-  for (auto v : my_cnmm) {
-    for (auto w : v.m1) vec_q1_tensor.emplace_back(w);
-    for (auto w : v.m2) vec_q2_tensor.emplace_back(w);
-  }
-
-  Tensor q1_tensor({"v", "q1i", "q2i"}, {4, 2, 2}, vec_q1_tensor);
-  Tensor q2_tensor({"v", "q1i", "q2i"}, {4, 2, 2}, vec_q2_tensor);
-  q1_tensor.reorder({"q1i", "v", "q2i"}, scratch);
-  q2_tensor.reorder({"q1i", "v", "q2i"}, scratch);
-  std::vector<s_type> q1_reordered_tensor(q1_tensor.size());
-  std::vector<s_type> q2_reordered_tensor(q2_tensor.size());
-  for (int i = 0; i < q1_tensor.size(); ++i) {
-    q1_reordered_tensor[i] = *(q1_tensor.data() + i);
-    q2_reordered_tensor[i] = *(q2_tensor.data() + i);
-  }
-
-  sort(norm_coeffs.begin(), norm_coeffs.end());
-  reverse(norm_coeffs.begin(), norm_coeffs.end());
-
-  // TODO: Convert norm_coeffs to vector<s_type> and return it.
-  std::vector<std::vector<s_type>> ret_val(
-      {q1_reordered_tensor, q2_reordered_tensor});
-
-  return ret_val;
+  std::vector<s_type> q2_tensor_array(q1_tensor_array);
+  return std::vector<std::vector<s_type>>({q1_tensor_array, q2_tensor_array});
 }
 
 // TODO: Refactor this so that all gate arrays are handled similarly regardless
 // of how many qubits they operate on and whether they're parametrized. Put gate
 // array handling into its own class.
+// TODO: make params optional.
+// TODO: implement c-phase, cpf(phi).
 std::tuple<std::vector<s_type>, std::vector<s_type>, std::vector<size_t>>
-gate_arrays(const std::string& gate_name, s_type* scratch) {
-  if (scratch == nullptr) {
-    std::cout << "Scratch must be non-null." << std::endl;
-    assert(scratch != nullptr);
-  }
-  static const std::regex fsim_regex("fsim\\((.*),(.*)\\)");
-  std::smatch match;
+gate_arrays(const std::string& gate_name, const std::vector<double>& params) {
   if (gate_name == "cz") {
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
-                      std::vector<size_t>>(gate_array("cz_q1"),
-                                           gate_array("cz_q2"), {2, 2, 2});
+                      std::vector<size_t>>(gate_array("cz_q1", params),
+                                           gate_array("cz_q2", params),
+                                           {2, 2, 2});
   } else if (gate_name == "cx") {
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
-                      std::vector<size_t>>(gate_array("cx_q1"),
-                                           gate_array("cx_q2"), {2, 2, 2});
-  } else if (std::regex_match(gate_name, match, fsim_regex) &&
-             match.size() > 2) {
-    const double theta_rads = _PI * stod(match.str(1));
-    const double phi_rads = _PI * stod(match.str(2));
+                      std::vector<size_t>>(gate_array("cx_q1", params),
+                                           gate_array("cx_q2", params),
+                                           {2, 2, 2});
+  } else if (gate_name == "fsim") {
+    const double theta_rads = _PI * params[0];
+    const double phi_rads = _PI * params[1];
     std::vector<std::vector<s_type>> ret_val =
-        fSim(theta_rads, phi_rads, scratch);
+        fSim(theta_rads, phi_rads);
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
-                      std::vector<size_t>>(ret_val[0], ret_val[1], {4, 2, 2});
+                      std::vector<size_t>>(ret_val[0], ret_val[1], {2, 4, 2});
   }
   std::cout << "Invalid gate name provided: " << gate_name << std::endl;
   assert(false);
@@ -438,7 +356,7 @@ void circuit_data_to_tensor_network(
         + std::to_string(i_j[1]) + "),("
         + std::to_string(grid_of_counters[i][j]) + ")";
     grid_of_tensors[i][j].push_back(
-        Tensor({output_name}, {2}, gate_array(delta_gate)));
+        Tensor({output_name}, {2}, gate_array(delta_gate, {})));
     idx += 1;
   }
 
@@ -480,7 +398,8 @@ void circuit_data_to_tensor_network(
         + std::to_string(i_j_1[1]) + "),("
         + std::to_string(grid_of_counters[i_j_1[0]][i_j_1[1]]) + ")";
       grid_of_tensors[i_j_1[0]][i_j_1[1]].push_back(
-          Tensor({input_name, output_name}, {2, 2}, gate_array(gate.name)));
+          Tensor({input_name, output_name}, {2, 2},
+                  gate_array(gate.name, gate.params)));
 
     } else if(num_qubits == 2) {
 
@@ -503,7 +422,7 @@ void circuit_data_to_tensor_network(
       std::vector<s_type> gate_q1;
       std::vector<s_type> gate_q2;
       std::vector<size_t> dimensions;
-      tie(gate_q1, gate_q2, dimensions) = gate_arrays(gate.name, scratch);
+      tie(gate_q1, gate_q2, dimensions) = gate_arrays(gate.name, gate.params);
       std::string link_name = index_name(i_j_1, i_j_2);
       link_counters[link_name]++;
       int counter = link_counters[link_name];
@@ -561,7 +480,7 @@ void circuit_data_to_tensor_network(
       std::string delta_gate = (final_conf[idx] == '0') ? "delta_0"
           : "delta_1";
       grid_of_tensors[i][j].push_back(
-          Tensor({last_name}, {2}, gate_array(delta_gate)));
+          Tensor({last_name}, {2}, gate_array(delta_gate, {})));
     }
   }
 
@@ -744,7 +663,8 @@ void read_wave_function_evolution(
         std::string input_index = std::to_string(q1) + ",i";
         std::string output_index = std::to_string(q1) + ",o";
         gates.push_back(
-            Tensor({input_index, output_index}, {DIM, DIM}, gate_array(gate)));
+            Tensor({input_index, output_index}, {DIM, DIM},
+                   gate_array(gate, {})));
         inputs.push_back({input_index});
         outputs.push_back({output_index});
       }
@@ -757,7 +677,7 @@ void read_wave_function_evolution(
         outputs.push_back({output_index1, output_index2});
         gates.push_back(
             Tensor({input_index1, input_index2, output_index1, output_index2},
-                   {DIM, DIM, DIM, DIM}, gate_array(gate)));
+                   {DIM, DIM, DIM, DIM}, gate_array(gate, {})));
       }
     }
 
