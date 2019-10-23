@@ -30,6 +30,13 @@ config_large = {
     'final_state': "1" * 70
 }
 
+config_sycamore = {
+    'circuit_filename': "config/circuits/sycamore_53_4_0.txt",
+    'ordering_filename': "config/ordering/sycamore_53.txt",
+    'grid_filename': 'config/grid/sycamore_53.txt',
+    'final_state': "1" * 53
+}
+
 
 def run_qflex_simulator(config):
 
@@ -75,6 +82,10 @@ if __name__ == "__main__":
     print("\n\n  === Simulation 2" + str(config_large))
     run_qflex_simulator(config_large)
     run_pybind_interface(config_large)
+
+    print("\n\n  === Simulation 3" + str(config_sycamore))
+    run_qflex_simulator(config_sycamore)
+    run_pybind_interface(config_sycamore)
 
     #
     # TODO: This simulation fails due to insufficient memory
