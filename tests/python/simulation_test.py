@@ -291,67 +291,67 @@ with open(ordering_with_cuts_filename[1], 'w') as f:
 with open(ordering_auto_filename[1], 'w') as f:
     print('\n'.join(auto_ordering), file=f)
 
-#
-# @pytest.mark.parametrize(
-#     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
-# def test_simulation(x):
-#
-#     # Get configuration as a string
-#     final_conf = bin(x)[2:].zfill(len(qubits))
-#
-#     options = {
-#         'circuit_filename': circuit_filename[1],
-#         'ordering_filename': ordering_filename[1],
-#         'grid_filename': grid_filename[1],
-#         'final_state': final_conf
-#     }
-#
-#     # Get output from qFlex
-#     qflex_amplitude = qflex.simulate(options)[0][1]
-#
-#     # Compare the amplitudes
-#     assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
-#
-#
-# @pytest.mark.parametrize(
-#     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
-# def test_simulation_with_cuts(x):
-#
-#     # Get configuration as a string
-#     final_conf = bin(x)[2:].zfill(len(qubits))
-#
-#     options = {
-#         'circuit_filename': circuit_filename[1],
-#         'ordering_filename': ordering_with_cuts_filename[1],
-#         'grid_filename': grid_filename[1],
-#         'final_state': final_conf
-#     }
-#
-#     # Get output from qFlex
-#     qflex_amplitude = qflex.simulate(options)[0][1]
-#
-#     # Compare the amplitudes
-#     assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
-#
-# @pytest.mark.parametrize(
-#     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
-# def test_simulation_with_auto_order(x):
-#
-#     # Get configuration as a string
-#     final_conf = bin(x)[2:].zfill(len(qubits))
-#
-#     options = {
-#         'circuit_filename': circuit_filename[1],
-#         'ordering_filename': ordering_auto_filename[1],
-#         'grid_filename': grid_filename[1],
-#         'final_state': final_conf
-#     }
-#
-#     # Get output from qFlex
-#     qflex_amplitude = qflex.simulate(options)[0][1]
-#
-#     # Compare the amplitudes
-#     assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
+
+@pytest.mark.parametrize(
+    'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
+def test_simulation(x):
+
+    # Get configuration as a string
+    final_conf = bin(x)[2:].zfill(len(qubits))
+
+    options = {
+        'circuit_filename': circuit_filename[1],
+        'ordering_filename': ordering_filename[1],
+        'grid_filename': grid_filename[1],
+        'final_state': final_conf
+    }
+
+    # Get output from qFlex
+    qflex_amplitude = qflex.simulate(options)[0][1]
+
+    # Compare the amplitudes
+    assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
+
+
+@pytest.mark.parametrize(
+    'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
+def test_simulation_with_cuts(x):
+
+    # Get configuration as a string
+    final_conf = bin(x)[2:].zfill(len(qubits))
+
+    options = {
+        'circuit_filename': circuit_filename[1],
+        'ordering_filename': ordering_with_cuts_filename[1],
+        'grid_filename': grid_filename[1],
+        'final_state': final_conf
+    }
+
+    # Get output from qFlex
+    qflex_amplitude = qflex.simulate(options)[0][1]
+
+    # Compare the amplitudes
+    assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
+
+@pytest.mark.parametrize(
+    'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
+def test_simulation_with_auto_order(x):
+
+    # Get configuration as a string
+    final_conf = bin(x)[2:].zfill(len(qubits))
+
+    options = {
+        'circuit_filename': circuit_filename[1],
+        'ordering_filename': ordering_auto_filename[1],
+        'grid_filename': grid_filename[1],
+        'final_state': final_conf
+    }
+
+    # Get output from qFlex
+    qflex_amplitude = qflex.simulate(options)[0][1]
+
+    # Compare the amplitudes
+    assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
 
 
 """
