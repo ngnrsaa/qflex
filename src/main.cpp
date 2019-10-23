@@ -8,13 +8,12 @@ tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
     qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf>]
-    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [-d <depth> --initial-conf <initial_conf> --final-conf <final_conf>]
+    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf>]
     qflex (-h | --help)
     qflex --version
 
   Options:
     -h,--help                              Show this help.
-    -d,--depth=<circuit_depth>             Depth of the circuit (optional)
     -c,--circuit=<circuit_filename>        Circuit filename.
     -o,--ordering=<ordering_filename>      Ordering filename.
     -g,--grid=<grid_filename>              Grid filename.
@@ -59,18 +58,7 @@ int main(int argc, char** argv) {
                                   : args["<grid_filename>"].asString();
 
   // Get depth of the circuit
-  {
-    auto auto_depth = qflex::compute_depth(std::ifstream(circuit_filename));
-    if (bool(args["--depth"])) {
-      input.K = args["--depth"].asLong();
-      if (input.K != auto_depth) {
-        std::cerr << "WARNING: user-provided depth (" << input.K
-                  << ") differs from the auto-computed depth (" << auto_depth
-                  << ")." << std::endl;
-      }
-    } else
-      input.K = auto_depth;
-  }
+  input.K = qflex::compute_depth(std::ifstream(circuit_filename));
 
   // Creating streams for input files.
   auto circuit_data = std::ifstream(circuit_filename);
