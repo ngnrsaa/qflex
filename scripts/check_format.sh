@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# This script checks the formatting of all C++ and python files in the
+# repository. If issues are found, a command to automatically resolve them will
+# be printed as output.
+
 ROOT_DIR="$(realpath $(dirname $0))/../"
 
 # Space separated folders in $ROOT_DIR

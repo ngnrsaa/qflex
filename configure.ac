@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([qFlex], [1.0], [salvatore.mandra@nasa.gov])
+AC_INIT([qFlex], [0.1], [salvatore.mandra@nasa.gov])
 AC_CONFIG_SRCDIR([src/main.cpp])
 AC_PREFIX_DEFAULT([$HOME/local])
 
@@ -94,16 +94,16 @@ AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],,
 REQ_CIRQ_VERSION="0.5"
 AS_IF([test ${cirq_tests} == "true"],
   AC_MSG_CHECKING([for cirq])
-  AS_IF([${PYTHON} - << EOF
+  AS_IF([ $(${PYTHON} - 2>/dev/null << EOF
 import cirq
 try:
     import sys
     from packaging import version
-    sys.exit(not version.parse(cirq.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))
+    sys.exit(not version.parse(cirq.__version__) >= version.parse('${REQ_CIRQ_VERSION}'))
 except:
     pass
 EOF
-2>/dev/null],
+)],
     AC_MSG_RESULT([yes]), 
     AC_MSG_RESULT([no])
     AC_MSG_ERROR([Some tests require cirq. Please install cirq >= '${REQ_CIRQ_VERSION}' before configuring (or --disable-cirq_tests).]))
@@ -115,7 +115,7 @@ AC_SUBST(cirq_tests, ${cirq_tests})
 REQ_PYBIND11_VERSION="2.2.4"
 AS_IF([test ${pybind11} == "true"],
   AC_MSG_CHECKING([for pybind11])
-  AS_IF([${PYTHON} - << EOF
+  AS_IF([ $(${PYTHON} - 2>/dev/null << EOF
 import pybind11
 try:
     import sys
@@ -124,7 +124,7 @@ try:
 except:
     pass
 EOF 
-2>/dev/null],
+)],
     AC_MSG_RESULT([yes]), 
     AC_MSG_RESULT([no])
     AC_MSG_ERROR([Please install pybind11 >= '${REQ_PYBIND11_VERSION}' before configuring (or --disable-pybind11).]))
@@ -137,16 +137,16 @@ REQ_PYTEST_VERSION="4.5"
 AS_IF([test ${pybind11} == "true"],
   AS_IF([test ${cirq_tests} == "true"],
     AC_MSG_CHECKING([for pytest])
-    AS_IF([${PYTHON} - << EOF
+    AS_IF([ $(${PYTHON} - 2>/dev/null << EOF
 import pytest
 try:
     import sys
     from packaging import version
-    sys.exit(not version.parse(pytest.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))
+    sys.exit(not version.parse(pytest.__version__) >= version.parse('${REQ_PYTEST_VERSION}'))
 except:
     pass
 EOF
-    2>/dev/null],
+    )],
       AC_MSG_RESULT([yes])
       pytest=true, 
       AC_MSG_RESULT([no])
