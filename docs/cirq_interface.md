@@ -1,37 +1,37 @@
 # The Cirq Interface
 
-
-HOWTO use QFlex from Google Cirq.
+HOWTO use QFlex from Google [Cirq](https://github.com/quantumlib/cirq).
 * Note: For the moment, the Cirq-qFlex integration is experimental code.
 
-The currently supported version of Cirq is 0.5.0, and newer stable 
-versions will be supported, once they are available. Therefore, the 
+The currently supported version of Cirq is 0.5.0, and newer stable
+versions will be supported, once they are available. Therefore, the
 prerequisites are:
 - Cirq 0.5.0
 - qFlex C++ code (the code from this repo)
 
 This file is an example of how to use the qFlex Python interface with Cirq.
 
+
 ## Setting up
 
-1. Compile qFlex with Pybind support (see [install.md](/docs/install.md)). 
-The `./python` folder 
+1. Compile qFlex with Pybind support (see [install.md](/docs/install.md)).
+The `./python` folder
 should contain a shared library that is available as module to Python.
 
-2. If Cirq is not installed globally on the machine, create a virtual environment
-and install Cirq by calling `./scripts/construct_cirq_environment.sh`
+2. Cirq can either be [installed on your machine](https://cirq.readthedocs.io/en/stable/install.html),
+or you can install Cirq in a virtual environment by calling
+`./scripts/construct_cirq_environment.sh`
 
 3. If the environment existed, make sure to `source .venv/bin/activate`
 * Note `deactivate` exits the environment
 
-3. Run the example about how to simulate a small and a large quantum circuit.
-
-`export PYTHONPATH=. && python python/qflex_cirq_example.py`
-
-* Note: set PYTHONPATH before -- it will start the search of Python modules 
-from the current working directory, aka root.
+4. Ensure that Python modules load correctly by modifying PYTHONPATH:
+`export PYTHONPATH=$PYTHONPATH:.`
 * Note: All the paths in this document, assume the root is the directory where the
 repository was cloned. For example, `/home/user/github/qflex`.
+
+5. Run the example about how to simulate a small and a large quantum circuit.
+`python python/qflex_cirq_example.py`
 
 
 ## Interface design and operations
@@ -46,21 +46,19 @@ generated in the code (and not read from a file).
 
 ### Classes
 
-The interface includes QFlexSimulator which is communicates through a Pybind11 
-interface with QFlex. The simulator accepts only QFlexCircuits, which are 
-effectively a specialized kind of `cirq.Circuit`. 
+The interface includes QFlexSimulator which is communicates through a Pybind11
+interface with QFlex. The simulator accepts only QFlexCircuits, which are
+effectively a specialized kind of `cirq.Circuit`.
 
-Architectural constraints such as permitting only grid qubits, QFlex supported 
-gate sets, and different circuit validations are performed by the 
+Architectural constraints such as permitting only grid qubits, QFlex supported
+gate sets, and different circuit validations are performed by the
 QFlexVirtualDevice.
 
 A QFlexCircuit can work only with a QFlexVirtualDevice.
 
 Finally, because the QFlex uses tensor contraction operations, the class
-QFlexOrdering is used to manually load, or to automatically generate orderings 
+QFlexOrdering is used to manually load, or to automatically generate orderings
 by a heuristic (see Notes).
-
-
 
 ### Usage procedure
 
@@ -71,7 +69,7 @@ by a heuristic (see Notes).
 111
 ```
 The string can be loaded from a file, or created (e.g. `create_rectangular()`).
-For example, 
+For example,
 ```
 my_grid = qgrid.QFlexGrid.from_existing_file(grid_file_path)
 ```
@@ -82,14 +80,14 @@ my_device = qdevice.QFlexVirtualDevice(qflex_grid = my_grid)
 ```
 
 And the device can output a list of indexed qubits, which are useful later
-during circuit compilation 
+during circuit compilation
 ```
 my_qubits = my_device.get_indexed_grid_qubits()
 ```
 
-A QFlexCircuit can be created from a Cirq circuit. However, if a cirq.Circuit 
-is not available, an example file from the qFlex (e.g. 
-[a circuit for Bristlecone](/config/circuits/bristlecone_48_1-16-1_0.txt)) 
+A QFlexCircuit can be created from a Cirq circuit. However, if a cirq.Circuit
+is not available, an example file from the qFlex (e.g.
+[a circuit for Bristlecone](/config/circuits/bristlecone_48_1-16-1_0.txt))
 can be loaded:
 ```
 my_circuit = qflexutils.GetCircuitOfMoments(config["circuit_filename"], my_qubits)
@@ -119,8 +117,8 @@ myres = my_sim.compute_amplitudes(program = my_qflex_circuit,
 
 ## Notes
 
-This version includes preliminary support for gate decompositions and 
-parametrized operations. Users relying on them should know how Cirq works behind 
+This version includes preliminary support for gate decompositions and
+parametrized operations. Users relying on them should know how Cirq works behind
 the scenes, in order to write the code that is still required.
 
 ### Gate decompositions
@@ -140,8 +138,8 @@ yield CZ(c, t)**self._exponent
 yield YPowGate(exponent=0.5).on(t)
 ```
 
-qFlex accepts the `CZ` and the `YPowGate(exponent=0.5)`, but 
-`YPowGate(exponent=-0.5)` is not supported for the moment, 
+qFlex accepts the `CZ` and the `YPowGate(exponent=0.5)`, but
+`YPowGate(exponent=-0.5)` is not supported for the moment,
 and an exception will be raised.
 
 ### Tensor contractions: automatic and manual
@@ -151,7 +149,7 @@ The QFlexCircuit constructor accepts a QFlexOrder object specified as
 an ordering.
 
 Behind the scenes, the QFlexOrdering can be constructed either:
-* automatically by using `circuit_to_ordering()` from 
+* automatically by using `circuit_to_ordering()` from
 [order_circuit_simulation.py](python/ordering/ordering/order_circuit_simulation.py)
 
 * manual loading from a file
@@ -168,19 +166,18 @@ parametrized gates, and circuit composition will fail when such gates are added.
 
 If needed, file an issue.
 
-
 ### Use qFlex from Python without Cirq
 
 This is possible by using the Pybind11 interface, which, currently, can be used
-exclusively with files. Sample files are in the `config` directory. An 
+exclusively with files. Sample files are in the `config` directory. An
 example of how to use this interface is the `run_pybind_interface()` method from
 `./python/qflex_cirq_example.py`
 
 A simulator and a device are necessary:
 
-* The Device is a virtual device, that essentially makes sure that circuit gates
-are decomposed (TODO) to supported gate types (for the moment,
- a restricted gate set)
+* The Device is a virtual device which ensures that circuit gates are decomposed
+into qFlex-supported gate types. For the moment this is a restricted gate set;
+for a full listing of valid gates see [QflexVirtualDevice](/python/cirq_interface/qflex_virtual_device.py).
 
 * The Simulator calls the Python pybind11-based interface and checks that the
 circuit to simulate was compiled (validated) against the device.
