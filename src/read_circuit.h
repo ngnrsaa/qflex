@@ -27,10 +27,22 @@
 #include <regex>
 #include <sstream>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "contraction_utils.h"
 #include "tensor.h"
+
+namespace std {
+
+template <typename T, typename U>
+struct hash<std::pair<T, U>> {
+  std::size_t operator()(const std::pair<T, U>& p) const {
+    return std::hash<T>()(p.first) ^ (std::hash<U>()(p.second) << 1);
+  }
+};
+
+}  // namespace std
 
 namespace qflex {
 
@@ -40,6 +52,12 @@ const double _INV_SQRT_2 = 1. / _SQRT_2;
 const double _PI = 3.14159265358979323846264338;
 const int SUPER_CYCLE_DEPTH = 8;
 const int DIM = 2;
+
+/**
+ * Read circuit from stream and compute depth.
+ * @param circuit_data std::istream containing circuit as a string.
+ */
+std::size_t compute_depth(std::istream&& istream);
 
 /**
  * Read circuit from stream and fill in a 3D grid of tensors with the indices
