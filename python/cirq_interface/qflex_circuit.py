@@ -1,6 +1,8 @@
 import tempfile
 import os
 
+import numpy as np
+
 import cirq
 
 import python.cirq_interface.qflex_virtual_device as qdevice
@@ -51,7 +53,7 @@ class QFlexCircuit(cirq.Circuit):
         with open(self._file_handle[1], "w") as f:
             # The cirq_circuit has QFlexVirtualDevice
             qubit_to_index_dict = self.device.get_grid_qubits_as_keys()
-            print(QFlexCircuit.translate_cirq_to_qflex(cirq_circuit,
+            print(QFlexCircuit.translate_cirq_to_qflex(self,
                                                        qubit_to_index_dict),
                   file = f)
 
@@ -138,11 +140,12 @@ class QFlexCircuit(cirq.Circuit):
                 elif isinstance(op.gate, cirq.ops.ZPowGate):
                     qflex_gate = "rz({})".format(op.gate.exponent)
                 elif isinstance(op.gate, cirqtmp.FSimGate):
-                    qflex_gate = "fsim({}, {})".format(op.gate.theta, op.gate.phi)
+                    # qFlex uses fractions of pi instead of radians
+                    exponent1 = op.gate.theta / np.pi
+                    exponent2 = op.gate.phi / np.pi
+                    qflex_gate = "fsim({}, {})".format(exponent1, exponent2)
                 else:
                     raise ValueError("{!r} No translation for ".format(op))
-
-                cirq.Rz
 
 
                 # The moment is missing

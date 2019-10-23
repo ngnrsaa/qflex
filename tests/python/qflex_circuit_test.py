@@ -1,6 +1,8 @@
 import pytest
 import cirq
 
+import numpy as np
+
 # Due to the directory structure of QFlex
 # go up in hierarchy twice
 import sys
@@ -67,8 +69,17 @@ def test_resolve_parameters():
     from python.cirq_interface.qflex_order import QFlexOrder
     dummy_order = QFlexOrder("This is a dummy order")
 
+    # save the translator
+    original_translator = QFlexCircuit.translate_cirq_to_qflex
+
+    # place a dummy translator
+    QFlexCircuit.translate_cirq_to_qflex = lambda x, y: "dummy contents"
+
     # Create a QFlexCircuit
     qcircuit = QFlexCircuit(circuit, dummy_device, dummy_order)
+
+    # put back the translator
+    QFlexCircuit.translate_cirq_to_qflex =original_translator
 
     param_solver = {"symbol" : 0.5}
     solved_circuit = cirq.protocols.resolve_parameters(qcircuit, param_solver)
@@ -90,9 +101,9 @@ def test_translate_cirq_to_qflex():
     circuit.append(cirq.Moment([cirq.ops.YPowGate(exponent=0.5).on(qubit_1)]))
     circuit.append(cirq.Moment([cirq.ops.CNOT.on(qubit_1, qubit_2)]))
     circuit.append(cirq.Moment([cirq.ops.CZ.on(qubit_1, qubit_2)]))
-    circuit.append(cirq.Moment([cirq.ops.Rz(0.7).on(qubit_1)]))
+    circuit.append(cirq.Moment([cirq.ops.ZPowGate(exponent=0.7).on(qubit_1)]))
     circuit.append(cirq.Moment([cirq.ops.PhasedXPowGate(phase_exponent=0.25, exponent=0.5).on(qubit_2)]))
-    circuit.append(cirq.Moment([cirqtmp.FSimGate(0.3, 0.7).on(qubit_2, qubit_1)]))
+    circuit.append(cirq.Moment([cirqtmp.FSimGate(0, np.pi).on(qubit_2, qubit_1)]))
 
     file_lines = [
         "2",
@@ -104,7 +115,7 @@ def test_translate_cirq_to_qflex():
         "5 cz 1 2",
         "6 rz(0.7) 1",
         "7 hz_1_2 2",
-        "8 fsim(0.3, 0.7) 2 1"
+        "8 fsim(0.0, 1.0) 2 1"
     ]
 
     qubits_to_index_dict = { qubit_1: 1, qubit_2: 2}

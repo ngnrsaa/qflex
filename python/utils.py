@@ -68,7 +68,7 @@ def GetMomentAndGate(line, qubits):
     gates_map['h_1_2'] = cirq.H**(0.5)
     gates_map['cz'] = cirq.CZ
     gates_map['cx'] = cirq.CNOT
-    gates_map['rz'] = cirq.Rz
+    gates_map['rz'] = cirq.ZPowGate
     gates_map['hz_1_2'] = cirq.PhasedXPowGate(phase_exponent=0.25, exponent=0.5)
     gates_map['fsim'] = cirqtmp.FSimGate
 
@@ -125,6 +125,11 @@ def GetMomentAndGate(line, qubits):
     if params == None:
         return cycle, gates_map[gate_name](*[qubits[q] for q in gate_qubits])
     else:
+        if gate_name == "fsim":
+            # the Cirq Fsim gate takes angles and not exponents
+            # Transform the params
+            params = [p * np.pi for p in params]
+
         return cycle, gates_map[gate_name](*params)(*[qubits[q] for q in gate_qubits])
 
 
