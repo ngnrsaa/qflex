@@ -307,13 +307,25 @@ circuit_no_h_and_sparse_test = """16
 17 h 15
 """
 
-circuit_no_h_and_sparse_and_fsim_test = """16
+circuit_sparse_and_fsim_test = """16
 0 h 0
 0 h 1
 0 h 2
+0 h 3
+0 h 4
+0 h 5
+0 h 6
+0 h 7
+0 h 8
+0 h 9
 0 h 10
+0 h 11
+0 h 12
+0 h 13
+0 h 14
+0 h 15
 1 cz 0 1
-1 cz 6 7
+1 fsim(0.2, 0.35) 6 7
 1 cz 8 9
 1 cz 14 15
 1 t 2
@@ -324,7 +336,7 @@ circuit_no_h_and_sparse_and_fsim_test = """16
 1 t 12
 1 t 13
 2 cz 4 8
-2 cz 6 10
+2 fsim   (  0.2,  0.45  ) 6 10
 2 x_1_2 9
 2 y_1_2 14
 2 x_1_2 15
@@ -338,9 +350,9 @@ circuit_no_h_and_sparse_and_fsim_test = """16
 3 t 14
 3 t 15
 4 cz 0 4
-4 cz 9 13
+4 fsim(0.33, 0.67) 9 13
 4 cz 2 6
-5 cz 10 11
+5 fsim(0.55, 0.88) 10 11
 5 cz 12 13
 5 y_1_2 0
 5 t 1
@@ -371,7 +383,7 @@ circuit_no_h_and_sparse_and_fsim_test = """16
 8 t 11
 8 x_1_2 13
 9 cz 0 1
-9 cz 6 7
+9 fsim(0.11, 4.75) 6 7
 9 cz 8 9
 9 cz 14 15
 9 x_1_2 3
@@ -394,10 +406,10 @@ circuit_no_h_and_sparse_and_fsim_test = """16
 12 cz 2 6
 12 cz 11 15
 12 x_1_2 10
-13 cz 2 3
-13 cz 4 5
-13 cz 10 11
-13 cz 12 13
+13 fsim(0.33, 0.12) 2 3
+13 fsim(0.33, 0.12) 4 5
+13 fsim(0.33, 0.12) 10 11
+13 fsim(0.33, 0.12) 12 13
 13 x_1_2 0
 13 t 1
 13 y_1_2 6
@@ -479,17 +491,17 @@ merge A B
 qubits = utils.GetGridQubits(StringIO(grid_test))
 circuit = utils.GetCircuit(StringIO(circuit_test), qubits)
 circuit_no_h_and_sparse = utils.GetCircuit(StringIO(circuit_no_h_and_sparse_test), qubits)
-circuit_no_h_and_sparse_and_fsim = utils.GetCircuit(StringIO(circuit_no_h_and_sparse_and_fsim_test), qubits)
+circuit_sparse_and_fsim = utils.GetCircuit(StringIO(circuit_sparse_and_fsim_test), qubits)
 auto_ordering = auto_order.circuit_to_ordering(circuit,
                                                qubit_names=sorted(qubits))
 results = cirq.Simulator().simulate(circuit)
 results_no_h_and_sparse = cirq.Simulator().simulate(circuit_no_h_and_sparse)
-results_no_h_and_sparse_and_fsim = cirq.Simulator().simulate(circuit_no_h_and_sparse_and_fsim)
+results_sparse_and_fsim = cirq.Simulator().simulate(circuit_sparse_and_fsim)
 
 # Save circuit and grid on temporary files
 circuit_filename = mkstemp()
 circuit_no_h_and_sparse_filename = mkstemp()
-circuit_no_h_and_sparse_and_fsim_filename = mkstemp()
+circuit_sparse_and_fsim_filename = mkstemp()
 grid_filename = mkstemp()
 ordering_filename = mkstemp()
 ordering_with_cuts_filename = mkstemp()
@@ -499,8 +511,8 @@ with open(circuit_filename[1], 'w') as f:
     print(circuit_test, file=f)
 with open(circuit_no_h_and_sparse_filename[1], 'w') as f:
     print(circuit_no_h_and_sparse_test, file=f)
-with open(circuit_no_h_and_sparse_and_fsim_filename[1], 'w') as f:
-    print(circuit_no_h_and_sparse_and_fsim_test, file=f)
+with open(circuit_sparse_and_fsim_filename[1], 'w') as f:
+    print(circuit_sparse_and_fsim_test, file=f)
 with open(grid_filename[1], 'w') as f:
     print(grid_test, file=f)
 with open(ordering_filename[1], 'w') as f:
@@ -553,13 +565,13 @@ def test_no_h_and_sparse_simulation(x):
 
 @pytest.mark.parametrize(
     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
-def test_no_h_and_sparse_and_fsim_simulation(x):
+def test_sparse_and_fsim_simulation(x):
 
     # Get configuration as a string
     final_conf = bin(x)[2:].zfill(len(qubits))
 
     options = {
-        'circuit_filename': circuit_no_h_and_sparse_and_fsim_filename[1],
+        'circuit_filename': circuit_sparse_and_fsim_filename[1],
         'ordering_filename': ordering_filename[1],
         'grid_filename': grid_filename[1],
         'final_state': final_conf
@@ -569,7 +581,7 @@ def test_no_h_and_sparse_and_fsim_simulation(x):
     qflex_amplitude = qflex.simulate(options)[0][1]
 
     # Compare the amplitudes
-    assert (np.abs(results_no_h_and_sparse_and_fsim.final_state[x] - qflex_amplitude) < 1.e-6)
+    assert (np.abs(results_sparse_and_fsim.final_state[x] - qflex_amplitude) < 1.e-6)
 
 @pytest.mark.parametrize(
     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
