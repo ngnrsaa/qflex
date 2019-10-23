@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This script enables the "make clean" operation.
+
 function get_path() {
   echo $(realpath $(dirname $1))
 }

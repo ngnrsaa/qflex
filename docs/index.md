@@ -43,6 +43,8 @@ Contains useful Python scripts and integration with other Python-based tools.
 - **cirq_interface** contains the qFlex-[Cirq](https://github.com/quantumlib/cirq)
   integration layer.
 - **circuits** contains utility scripts for generating qFlex circuits.
+- **ordering** provides a tool for generating qFlex "ordering" files from a Cirq
+  "Circuit" object.
 
 ## scripts
 

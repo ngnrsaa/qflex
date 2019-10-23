@@ -1,0 +1,11 @@
+# Contributors to qFlex (alphabetical order)
+
+[Alexandru Paler](https://github.com/alexandrupaler)
+[Adam Zalcman](https://github.com/viathor)
+[Alan Kao](https://github.com/alankao64)
+[Benjamin Villalonga Correa](https://github.com/benjaminvillalonga)
+[David Yonge-Mallo](https://github.com/dlyongemallo)
+[Dmitry Lyakh](https://github.com/DmitryLyakh)
+[Orion Martin](https://github.com/95-martin-orion)
+[Salvatore Mandra](https://github.com/s-mandra)
+[Sergio Boixo](https://github.com/sboixo)
