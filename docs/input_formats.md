@@ -143,7 +143,3 @@ Example:
 0 0 1 1 0 0
 ```
 
-Sample grid files can be found under [qflex/grid](/grid).
-
-
-
