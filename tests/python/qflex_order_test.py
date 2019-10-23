@@ -86,13 +86,11 @@ def generate_circuit(size = 4):
         for y in range(size):
             for _ in range(random.randint(2, 5)):
                 moments += (cirq.Moment(
-                    # [cirq.CZ(qubits[x][y], qubits[x + 1][y])]),)
                     [cirqtmp.FSimGate(1, 2)(qubits[x][y], qubits[x + 1][y])]),)
     for y in range(size - 1):
         for x in range(size):
             for _ in range(random.randint(2, 5)):
                 moments += (cirq.Moment(
-                    # [cirq.CZ(qubits[x][y], qubits[x][y + 1])]),)
                     [cirqtmp.FSimGate(1, 2)(qubits[x][y], qubits[x][y + 1])]),)
 
     circuit = cirq.Circuit(moments)

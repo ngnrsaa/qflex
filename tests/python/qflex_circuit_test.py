@@ -103,7 +103,7 @@ def test_translate_cirq_to_qflex():
     circuit.append(cirq.Moment([cirq.ops.CZ.on(qubit_1, qubit_2)]))
     circuit.append(cirq.Moment([cirq.ops.ZPowGate(exponent=0.7).on(qubit_1)]))
     circuit.append(cirq.Moment([cirq.ops.PhasedXPowGate(phase_exponent=0.25, exponent=0.5).on(qubit_2)]))
-    circuit.append(cirq.Moment([cirqtmp.FSimGate(0, np.pi).on(qubit_2, qubit_1)]))
+    circuit.append(cirq.Moment([cirqtmp.FSimGate(np.pi/2, np.pi/16).on(qubit_2, qubit_1)]))
 
     file_lines = [
         "2",
@@ -115,7 +115,7 @@ def test_translate_cirq_to_qflex():
         "5 cz 1 2",
         "6 rz(0.7) 1",
         "7 hz_1_2 2",
-        "8 fsim(0.0, 1.0) 2 1"
+        "8 fsim(0.5, 0.0625) 2 1"
     ]
 
     qubits_to_index_dict = { qubit_1: 1, qubit_2: 2}
