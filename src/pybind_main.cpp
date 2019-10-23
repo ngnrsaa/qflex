@@ -5,7 +5,6 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
   qflex::QflexInput input;
 
   // Temporary streams
-  std::ifstream fs_circuit_data;
   std::ifstream fs_ordering_data;
 
   std::stringstream ss_circuit_data;
@@ -19,33 +18,15 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
 
   // Get circuit
   if (options.contains("circuit_filename")) {
-    fs_circuit_data.open(options["circuit_filename"].cast<std::string>());
-    if (not fs_circuit_data.good()) {
-      std::cerr << "ERROR: cannot open file: "
-                << options["circuit_filename"].cast<std::string>() << "."
-                << std::endl;
-      return {};
-    }
-    input.circuit_data = &fs_circuit_data;
-
-    // Get auto-depth
-    input.K = qflex::compute_depth(
-        std::ifstream(options["circuit_filename"].cast<std::string>()));
+    input.circuit.load(options["circuit_filename"].cast<std::string>());
 
   } else if (options.contains("circuit")) {
-    // Get auto-depth
-    input.K = qflex::compute_depth(get_stream_from_vector(
+    input.circuit.load(get_stream_from_vector(
         options["circuit"].cast<std::vector<std::string>>()));
 
-    // Get stream
-    input.circuit_data =
-        &(ss_circuit_data = get_stream_from_vector(
-              options["circuit"].cast<std::vector<std::string>>()));
-
   } else {
-    std::cerr
-        << "ERROR: Either --circuit_filename or --circuit must be specified."
-        << std::endl;
+    std::cerr << "ERROR: Either --circuit_filename or --circuit must be specified."
+              << std::endl;
     return {};
   }
 

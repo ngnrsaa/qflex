@@ -200,8 +200,7 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
   QflexInput input;
   input.grid.I = 3;
   input.grid.J = 2;
-  input.K = 2;
-  input.circuit_data = &circuit_data;
+  input.circuit.load(circuit_data);
   input.ordering_data = &ordering_data;
   input.grid.load(grid_data);
   input.initial_state = "00000";

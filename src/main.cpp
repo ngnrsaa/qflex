@@ -1,4 +1,5 @@
 #include "docopt.h"
+#include "circuit.h"
 #include "evaluate_circuit.h"
 
 static const char VERSION[] = "qFlex v1.0";
@@ -29,67 +30,75 @@ tensor network, CPU-based simulator of large quantum circuits.
 //               config/grid/bristlecone_48.txt
 //
 int main(int argc, char** argv) {
-  std::map<std::string, docopt::value> args =
-      docopt::docopt(USAGE, {argv + 1, argv + argc}, true, VERSION);
 
-  // Reading input
-  qflex::QflexInput input;
+  try {
 
-  // Get initial/final configurations
-  if (bool(args["--initial-conf"]))
-    input.initial_state = args["--initial-conf"].asString();
-  else if (bool(args["<initial_conf>"]))
-    input.initial_state = args["<initial_conf>"].asString();
+    std::map<std::string, docopt::value> args =
+        docopt::docopt(USAGE, {argv + 1, argv + argc}, true, VERSION);
 
-  if (bool(args["--final-conf"]))
-    input.final_state = args["--final-conf"].asString();
-  else if (bool(args["<final_conf>"]))
-    input.final_state = args["<final_conf>"].asString();
+    // Reading input
+    qflex::QflexInput input;
 
-  // Getting filenames
-  std::string circuit_filename = bool(args["--circuit"])
-                                     ? args["--circuit"].asString()
-                                     : args["<circuit_filename>"].asString();
-  std::string ordering_filename = bool(args["--ordering"])
-                                      ? args["--ordering"].asString()
-                                      : args["<ordering_filename>"].asString();
-  std::string grid_filename = bool(args["--grid"])
-                                  ? args["--grid"].asString()
-                                  : args["<grid_filename>"].asString();
+    // Get initial/final configurations
+    if (bool(args["--initial-conf"]))
+      input.initial_state = args["--initial-conf"].asString();
+    else if (bool(args["<initial_conf>"]))
+      input.initial_state = args["<initial_conf>"].asString();
 
-  // Get depth of the circuit
-  input.K = qflex::compute_depth(std::ifstream(circuit_filename));
+    if (bool(args["--final-conf"]))
+      input.final_state = args["--final-conf"].asString();
+    else if (bool(args["<final_conf>"]))
+      input.final_state = args["<final_conf>"].asString();
 
-  // Creating streams for input files.
-  auto circuit_data = std::ifstream(circuit_filename);
-  if (!circuit_data.good()) {
-    std::cout << "Cannot open circuit data file: " << circuit_filename
-              << std::endl;
-    assert(circuit_data.good());
+    // Getting filenames
+    std::string circuit_filename = bool(args["--circuit"])
+                                       ? args["--circuit"].asString()
+                                       : args["<circuit_filename>"].asString();
+    std::string ordering_filename = bool(args["--ordering"])
+                                        ? args["--ordering"].asString()
+                                        : args["<ordering_filename>"].asString();
+    std::string grid_filename = bool(args["--grid"])
+                                    ? args["--grid"].asString()
+                                    : args["<grid_filename>"].asString();
+
+    // Read the circuit
+    input.circuit.load(std::ifstream(circuit_filename));
+
+    auto ordering_data = std::ifstream(ordering_filename);
+    if (!ordering_data.good()) {
+      std::cout << "Cannot open ordering data file: " << ordering_filename
+                << std::endl;
+      assert(ordering_data.good());
+    }
+    input.ordering_data = &ordering_data;
+
+    // Load grid
+    input.grid.load(grid_filename);
+
+    // Evaluating circuit.
+    std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
+        qflex::EvaluateCircuit(&input);
+
+    // Printing output.
+    for (int c = 0; c < amplitudes.size(); ++c) {
+      const auto& state = amplitudes[c].first;
+      const auto& amplitude = amplitudes[c].second;
+      std::cout << input.initial_state << " --> " << state << ": "
+                << std::real(amplitude) << " " << std::imag(amplitude)
+                << std::endl;
+    }
+
+  } catch (const std::exception &ex) {
+
+    std::cerr << ex.what() << std::endl;
+    return -1;
+
+  } catch (const std::string &msg) {
+
+    std::cerr << msg << std::endl;
+    return -1;
+
   }
-  input.circuit_data = &circuit_data;
-  auto ordering_data = std::ifstream(ordering_filename);
-  if (!ordering_data.good()) {
-    std::cout << "Cannot open ordering data file: " << ordering_filename
-              << std::endl;
-    assert(ordering_data.good());
-  }
-  input.ordering_data = &ordering_data;
 
-  // Load grid
-  input.grid.load(grid_filename);
-
-  // Evaluating circuit.
-  std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
-      qflex::EvaluateCircuit(&input);
-
-  // Printing output.
-  for (int c = 0; c < amplitudes.size(); ++c) {
-    const auto& state = amplitudes[c].first;
-    const auto& amplitude = amplitudes[c].second;
-    std::cout << input.initial_state << " --> " << state << ": "
-              << std::real(amplitude) << " " << std::imag(amplitude)
-              << std::endl;
-  }
   return 0;
 }
