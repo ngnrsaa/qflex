@@ -1,6 +1,6 @@
 # The Cirq Interface
 
-HOWTO use QFlex from Google [Cirq](https://github.com/quantumlib/cirq).
+HOWTO use qFlex from Google [Cirq](https://github.com/quantumlib/cirq).
 * Note: For the moment, the Cirq-qFlex integration is experimental code.
 
 The currently supported version of Cirq is 0.5.0, and newer stable
