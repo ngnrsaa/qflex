@@ -35,24 +35,15 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
   }
 
   // Temporary streams
-  #warning FIX_CIRCUIT
-  std::ifstream fs_circuit_data;
   std::ifstream fs_ordering_data;
 
   // Get circuit
-  //if (options.contains("circuit_filename")) {
-  //  fs_circuit_data.open(options["circuit_filename"].cast<std::string>());
-  //  if (not fs_circuit_data.good()) {
-  //    std::cerr << "ERROR: cannot open file: "
-  //              << options["circuit_filename"].cast<std::string>() << "."
-  //              << std::endl;
-  //    return {};
-  //  }
-  //  input.circuit_data = &fs_circuit_data;
-  //} else {
-  //  std::cerr << "ERROR: not yet implemented." << std::endl;
-  //  return {};
-  //}
+  if (options.contains("circuit_filename")) {
+    input.circuit.load(options["circuit_filename"].cast<std::string>());
+  } else {
+    std::cerr << "ERROR: not yet implemented." << std::endl;
+    return {};
+  }
 
   // Get ordering
   if (options.contains("ordering_filename")) {
@@ -76,15 +67,6 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     std::cerr << "ERROR: not yet implemented." << std::endl;
     return {};
   }
-
-  // Get auto_depth
-  //if (options.contains("circuit_filename")) {
-  //  input.K = qflex::compute_depth(
-  //      std::ifstream(options["circuit_filename"].cast<std::string>()));
-  //} else {
-  //  std::cerr << "ERROR: not yet implemented." << std::endl;
-  //  return {};
-  //}
 
   // Setting initial and final circuit states.
   if (options.contains("initial_state"))
