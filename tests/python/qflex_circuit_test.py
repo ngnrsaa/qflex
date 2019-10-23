@@ -158,6 +158,7 @@ def test_supported_gate_set():
                 qflex_order = qord,
                 allow_decomposition = False)
 
+    # Unparameterized gates
     my_circuit.append(cirq.Moment([cirq.ops.CZ.on(qubits[0], qubits[1])]))
     my_circuit.append(cirq.Moment([cirq.ops.CNOT.on(qubits[0], qubits[1])]))
     my_circuit.append(cirq.Moment([cirq.ops.H.on(qubits[0])]))
@@ -175,6 +176,22 @@ def test_supported_gate_set():
         cirq.Moment(
             [cirqtmp.FSimGate(np.pi/2, np.pi/16).on(qubits[0], qubits[1])]))
 
+    # Parameterized gates
+    import sympy
+    s1 = sympy.Symbol("theta")
+    s2 = sympy.Symbol("phi")
+    my_circuit.append(
+        cirq.Moment([cirq.ops.ZPowGate(exponent=s1).on(qubits[0])]))
+    my_circuit.append(
+        cirq.Moment(
+            [cirqtmp.FSimGate(s1, s2).on(qubits[0], qubits[1])]))
+
+    # Should fail
     with pytest.raises(ValueError):
         my_circuit.append(
             cirq.Moment([cirq.ops.TOFFOLI.on(qubits[0], qubits[1], qubits[2])]))
+
+    with pytest.raises(ValueError):
+        s3 = sympy.Symbol("phail")
+        my_circuit.append(
+            cirq.Moment([cirq.ops.XPowGate(exponent=s3).on(qubits[0])]))

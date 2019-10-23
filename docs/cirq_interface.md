@@ -161,8 +161,10 @@ my_order = qorder.QFlexOrder.from_existing_file(config["ordering_filename"])
 * TODO: Enable the full functionality.
 
 The QFlexSimulator accepts parametrized circuits and these are resolved, but
-for the moment this are not really supported. The QFlexVirtualDevice does not validate
-parametrized gates, and circuit composition will fail when such gates are added.
+for the moment support is available for the Rz and FSim gates. 
+
+he QFlexVirtualDevice does not validate parametrized gates except fSim and Rz, 
+and circuit composition will fail when such gates are added.
 
 If needed, file an issue.
 
