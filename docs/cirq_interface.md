@@ -2,19 +2,20 @@
 
 
 HOWTO use QFlex from Google Cirq.
-* Note: For the moment, this the Cirq-QFlex is experimental code.
+* Note: For the moment, the Cirq-qFlex integration is experimental code.
 
 The currently supported version of Cirq is 0.5.0, and newer stable 
 versions will be supported, once they are available. Therefore, the 
 prerequisites are:
 - Cirq 0.5.0
-- QFlex C++ code (the code from this repo)
+- qFlex C++ code (the code from this repo)
 
-This file is an example of how to use the QFlex Python interface with Cirq.
+This file is an example of how to use the qFlex Python interface with Cirq.
 
 ## Setting up
 
-1. Compile QFlex with Pybind support (see install.md). The `./python` folder 
+1. Compile qFlex with Pybind support (see [install.md](/docs/install.md)). 
+The `./python` folder 
 should contain a shared library that is available as module to Python.
 
 2. If Cirq is not installed globally on the machine, create a virtual environment
@@ -36,7 +37,7 @@ repository was cloned. For example, `/home/user/github/qflex`.
 ## Interface design and operations
 
 The goal is to simulate circuits, and there are two major options:
-* loading QFlex text files into Cirq objects
+* loading qFlex text files into Cirq objects
 * using native Cirq objects from the beginning
 
 The above options can be hybridized. This means that, for example, one can load
@@ -56,9 +57,9 @@ QFlexVirtualDevice.
 A QFlexCircuit can work only with a QFlexVirtualDevice.
 
 Finally, because the QFlex uses tensor contraction operations, the class
-QFlexOrdering is used to load or to generate by a heuristic (see 
-`circuit_to_ordering()` in 
-`python/ordering/ordering/order_circuit_simulation.py`)
+QFlexOrdering is used to manually load, or to automatically generate orderings 
+by a heuristic (see Notes).
+
 
 
 ### Usage procedure
@@ -86,8 +87,10 @@ during circuit compilation
 my_qubits = my_device.get_indexed_grid_qubits()
 ```
 
-A QFlexCircuit can be created from a Cirq circuit. However, if that file is not
- available, and an example from the Qflex project has to be used First, from a Qflex file
+A QFlexCircuit can be created from a Cirq circuit. However, if a cirq.Circuit 
+is not available, an example file from the qFlex (e.g. 
+[a circuit for Bristlecone](/config/circuits/bristlecone_48_1-16-1_0.txt)) 
+can be loaded:
 ```
 my_circuit = qflexutils.GetCircuitOfMoments(config["circuit_filename"], my_qubits)
 ```
@@ -99,8 +102,8 @@ my_qflex_circuit = qcirc.QFlexCircuit(cirq_circuit = my_circuit, device = my_dev
 ```
 
 The tensor contraction order was not specified, and the internal heuristic
-will be used. It is possible to specify the ordering, and to also specify if
-gate decompositions should be performed or not.
+will be used. It is possible to specify the ordering (see Notes), and to also specify if
+gate decompositions should be performed or not (see Notes).
 
 Finally, the QFlexCircuit can be simulated, and the `bitstrings` is a list of
 strings representing the state vector for which the amplitudes are simulated.
@@ -120,7 +123,44 @@ This version includes preliminary support for gate decompositions and
 parametrized operations. Users relying on them should know how Cirq works behind 
 the scenes, in order to write the code that is still required.
 
+### Gate decompositions
+* TODO: Enable the full functionality.
+
+The QFlexCircuit is capable of decomposing arbitrary Cirq gates to the
+elementary gate set of qFlex. However, if the user does not specify valid
+decompositions, the QFlexCircuit composition will raise exceptions.
+
+The constructor takes the argument `allow_decomposition` which is `False` by
+default. If set `True`, the gates from the original circuit will decomposed,
+using their ` _decompose_()` contract. For example, the [cirq.CNOT is decomposed
+into](https://github.com/quantumlib/Cirq/blob/49b2f193ad99ce6770831330c19963bfa5c66f19/cirq/ops/common_gates.py#L829):
+```
+yield YPowGate(exponent=-0.5).on(t)
+yield CZ(c, t)**self._exponent
+yield YPowGate(exponent=0.5).on(t)
+```
+
+qFlex accepts the `CZ` and the `YPowGate(exponent=0.5)`, but 
+`YPowGate(exponent=-0.5)` is not supported for the moment, 
+and an exception will be raised.
+
+### Tensor contractions: automatic and manual
+
+The QFlexCircuit constructor accepts a QFlexOrder object specified as
+`qflex_order`. If the param is None, the circuit is used to automatically compute
+an ordering.
+
+Behind the scenes, the QFlexOrdering can be constructed either:
+* automatically by using `circuit_to_ordering()` from 
+[order_circuit_simulation.py](python/ordering/ordering/order_circuit_simulation.py)
+
+* manual loading from a file
+```
+my_order = qorder.QFlexOrder.from_existing_file(config["ordering_filename"])
+```
+
 ### Parametrized circuits
+* TODO: Enable the full functionality.
 
 The QFlexSimulator accepts parametrized circuits and these are resolved, but
 for the moment this are not really supported. The QFlexVirtualDevice does not validate
@@ -128,13 +168,8 @@ parametrized gates, and circuit composition will fail when such gates are added.
 
 If needed, file an issue.
 
-### Gate decompositions
 
-The QFlexCircuit is capable of decomposing arbitrary Cirq gates to the
-elementary gate set of QFlex. However, if the user does not specify valid
-decompositions, the QFlexCircuit composition will raise exceptions.
-
-### Use QFlex from Python without Cirq
+### Use qFlex from Python without Cirq
 
 This is possible by using the Pybind11 interface, which, currently, can be used
 exclusively with files. Sample files are in the `config` directory. An 
