@@ -95,13 +95,7 @@ std::string get_output_states(const QflexInput* input,
     if (final_state_unspecified) {
       base_state[pos] = 'x';
     }
-    if (base_state.at(pos) != 'x') {
-      std::cout << "Terminal cut on qubit (" << tensor_pos[0] << ", "
-                << tensor_pos[1] << " does not have a matching 'x' "
-                << "in final_state at position " << pos << "; found '"
-                << base_state.at(pos) << "' instead." << std::endl;
-      assert(base_state.at(pos) == 'x');
-    }
+    // TODO(martinop): reconsider requiring 'x' for cut indices.
     output_pos_map.push_back(pos);
     if (op.cut.values.empty()) {
       output_values_map.push_back({0, 1});
