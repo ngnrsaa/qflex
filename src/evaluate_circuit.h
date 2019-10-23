@@ -33,6 +33,7 @@
 
 #include "contraction_utils.h"
 #include "read_circuit.h"
+#include "circuit.h"
 #include "tensor.h"
 
 namespace qflex {
@@ -45,9 +46,8 @@ struct QflexGrid {
 };
 
 struct QflexInput {
-  int K;
-  std::istream* circuit_data;
   std::istream* ordering_data;
+  QflexCircuit circuit;
   QflexGrid grid;
   std::string initial_state;
   std::string final_state;
