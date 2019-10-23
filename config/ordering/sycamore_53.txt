@@ -1,8 +1,8 @@
-
+# TODO: improve this ordering for reusage of tensors across cut instances.
 # BEGIN INITIAL CUTS
 cut () 33 34
-cut () 33 43
 cut () 43 44
+cut () 34 44
 #
 # EXPAND PATCH A
 expand Aa 72
@@ -13,8 +13,9 @@ expand A 94
 expand A 84
 expand A 83
 expand A 85
-merge Aa A
 merge Ab A
+expand A 74
+merge Aa A
 #
 # EXPAND PATCH B
 expand B 39
@@ -27,12 +28,12 @@ expand Da 41
 expand Da 42
 expand Db 50
 expand Db 51
-expand Db 61
-expand Db 62
+expand Dc 61
+expand Dc 62
 expand Dd 58 
 expand Dd 57 
-expand Dd 28 
-expand Dd 27 
+expand De 28 
+expand De 27 
 expand D 32
 expand D 33
 merge Da D
@@ -83,19 +84,14 @@ cut (0) 15
 cut (0) 16
 cut (0) 17
 #
-# EXPAND PATCH Ca
+# EXPAND PATCH C
 expand C 14
 expand C 15
-# EXPAND PATCH Cb
-expand C 16
-expand C 17
-# EXPAND PATCH C
+expand Ca 16
+expand Ca 17
 expand C 5
 expand C 6
-# MERGE PATCHES Ca-C
 merge Ca C
-# MERGE PATCHES Cb-C
-merge Cb C
 #
 # MERGE PATCHES B-C
 merge D C
