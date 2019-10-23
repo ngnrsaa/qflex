@@ -905,8 +905,8 @@ void grid_of_tensors_3D_to_2D( std::vector<std::vector<std::vector<Tensor>>>& gr
 // Add depth functionality to read a circuit up to a certain cycle.
 void circuit_data_to_tensor_network(
     std::istream* circuit_data, int I, int J,
-    const std::string initial_conf, const std::string final_conf_B,
-    const std::optional<std::vector<std::vector<int>>>& A,
+    const std::string initial_conf, const std::string final_conf,
+    const std::optional<std::vector<std::vector<int>>>& final_qubit_region,
     const std::optional<std::vector<std::vector<int>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch) {
@@ -919,40 +919,51 @@ void circuit_data_to_tensor_network(
     assert(scratch != nullptr);
   }
   // Gotten from the file.
-  int num_qubits, cycle, q1, q2;
+  int circuit_data_num_qubits, cycle, q1, q2;
   std::string gate;
   // Useful for plugging into the tensor network:
   std::vector<int> i_j_1, i_j_2;
+  int super_cycle;
+  // Calculated from input.
+  const int grid_size = I * J;
+  const int off_size = off.has_value() ? off.value().size() : 0;
+  const int num_active_qubits_from_grid = grid_size - off_size;
 
-  // The first element should be the number of qubits
-  *(circuit_data) >> num_qubits;
-  // TODO: Decide whether to determine number of qubits from file or from I*J
-  if (num_qubits != I * J) {
-    std::cout << "The number of qubits read from the file: " << num_qubits
-              << ", does not match I*J: " << I * J << "." << std::endl;
-    num_qubits = I * J;
+  // The first element is required to be the number of active qubits.
+  *(circuit_data) >> circuit_data_num_qubits;
+  if (circuit_data_num_qubits == 0) {
+    std::cout
+        << "First line in circuit file must be the number of active qubits."
+        << std::endl;
+    assert(circuit_data_num_qubits != 0);
+  }
+  if (circuit_data_num_qubits != num_active_qubits_from_grid) {
+    std::cout
+        << "The number of active qubits read from the file: "
+        << circuit_data_num_qubits
+        << ", does not match the number of active qubits read from the grid: "
+        << num_active_qubits_from_grid << "." << std::endl;
+    assert(circuit_data_num_qubits == num_active_qubits_from_grid);
   }
 
-  // Assert for the length of initial_conf and final_conf_B.
+  // Assert for the length of initial_conf and final_conf.
   {
-    size_t off_size = off.has_value() ? off.value().size() : 0;
-    size_t A_size = A.has_value() ? A.value().size() : 0;
-    if (initial_conf.size() != num_qubits - off_size) {
+    // size_t off_size = off.has_value() ? off.value().size() : 0;
+    if (initial_conf.size() != num_active_qubits_from_grid) {
       std::cout << "Size of initial_conf: " << initial_conf.size()
                 << ", must be equal to the number of qubits: "
-                << num_qubits - off_size << "." << std::endl;
-      assert(initial_conf.size() == num_qubits - off_size);
+                << num_active_qubits_from_grid << "." << std::endl;
+      assert(initial_conf.size() == num_active_qubits_from_grid);
     }
-    if (final_conf_B.size() != num_qubits - off_size - A_size) {
-      std::cout << "Size of final_conf_B: " << final_conf_B.size()
-                << ", must be equal to the number of qubits: "
-                << num_qubits - off_size - A_size << "." << std::endl;
-      assert(final_conf_B.size() == num_qubits - off_size - A_size);
+    if (final_conf.size() != initial_conf.size()) {
+      std::cout << "Size of final_conf: " << final_conf.size()
+                << ", must be equal to size of initial_conf: "
+                << initial_conf.size() << "." << std::endl;
+      assert(final_conf.size() == initial_conf.size());
     }
   }
 
   // Creating grid variables.
-  
   grid_of_tensors = std::vector<std::vector<std::vector<Tensor>>>(I);
   std::vector<std::vector<int>> grid_of_counters(I);
   std::unordered_map<std::string, int> link_counters;
@@ -967,7 +978,7 @@ void circuit_data_to_tensor_network(
 
   // Insert deltas to first layer.
   int idx = 0;
-  for (int q = 0; q < num_qubits; ++q) {
+  for (int q = 0; q < grid_size; ++q) {
     std::vector<int> i_j = get_qubit_coords(q, J);
     int i = i_j[0], j = i_j[1];
     if (find_grid_coord_in_list(off, i, j)) {
@@ -983,12 +994,19 @@ void circuit_data_to_tensor_network(
   }
 
   std::string line;
+  int line_counter = 0;
+  int cycle_holder = 0;
+  std::unordered_set<int> used_qubits;
   // Read one line at a time from the circuit, skipping comments.
   while (getline(*circuit_data, line)) {
     if (line.size() && line[0] != '#') {
       std::stringstream ss(line);
       // The first element is the cycle
       ss >> cycle;
+      if (cycle != cycle_holder) {
+        cycle_holder = cycle;
+        used_qubits.clear();
+      }
       // The second element is the gate
       ss >> gate;
       // Get the first position
@@ -1004,7 +1022,31 @@ void circuit_data_to_tensor_network(
         q2 = -1;
       }
 
-      // Get i, j and super_cycle
+
+      // Check that q1 hasn't already been used in this cycle.
+      std::unordered_set<int>::const_iterator q1_used = used_qubits.find(q1);
+      if (q1_used != used_qubits.end()) {
+        std::cout << "The qubit " << q1 << " in '" << line_counter << ": "
+                  << line << "' has already been used in this cycle."
+                  << std::endl;
+        assert(q1_used == used_qubits.end());
+      } else {
+        used_qubits.insert(q1);
+      }
+      // Check that q2 hasn't already been used in this cycle when applicable.
+      if (q2 != -1) {
+        std::unordered_set<int>::const_iterator q2_used = used_qubits.find(q2);
+        if (q2_used != used_qubits.end()) {
+          std::cout << "The qubit " << q2 << " in '" << line_counter << ": "
+                    << line << "' has already been used in this cycle. "
+                    << std::endl;
+          assert(q2_used == used_qubits.end());
+        } else {
+          used_qubits.insert(q2);
+        }
+      }
+
+      // Get i and j
       i_j_1 = get_qubit_coords(q1, J);
       if (q2 >= 0) {
         i_j_2 = get_qubit_coords(q2, J);
@@ -1094,10 +1136,11 @@ void circuit_data_to_tensor_network(
     }
   }
 
-  // Insert deltas to last layer on qubits that are in B.
-  // Rename last index when in A to "(i,j),(o)".
+  // Insert deltas to last layer on qubits that are in not in
+  // final_qubit_region. Rename last index when in final_qubit_region to
+  // "(i,j),(o)".
   idx = 0;
-  for (int q = 0; q < num_qubits; ++q) {
+  for (int q = 0; q < grid_size; ++q) {
     std::vector<int> i_j = get_qubit_coords(q, J);
     int i = i_j[0], j = i_j[1];
     if (find_grid_coord_in_list(off, i, j)) {
@@ -1106,16 +1149,16 @@ void circuit_data_to_tensor_network(
     std::string last_name = "(" + std::to_string(i_j[0]) + ","
         + std::to_string(i_j[1]) + "),("
         + std::to_string(grid_of_counters[i][j]) + ")";
-    if (find_grid_coord_in_list(A, i, j)) {
+    if (find_grid_coord_in_list(final_qubit_region, i, j)) {
       std::string output_name = "(" + std::to_string(i_j[0]) + ","
           + std::to_string(i_j[1]) + "),(o)";
       grid_of_tensors[i][j].back().rename_index(last_name, output_name);
     } else {
-      std::string delta_gate = (final_conf_B[idx] == '0') ? "delta_0"
+      std::string delta_gate = (final_conf[idx] == '0') ? "delta_0"
           : "delta_1";
       grid_of_tensors[i][j].push_back(
           Tensor({last_name}, {2}, gate_array(delta_gate)));
-      idx += 1;  // Move in B only.
+      idx += 1;  // Move when not in final_qubit_region only.
     }
   }
 
@@ -1129,7 +1172,7 @@ void circuit_data_to_tensor_network(
 void flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
-    std::optional<std::vector<std::vector<int>>> A,
+    std::optional<std::vector<std::vector<int>>> final_qubit_region,
     std::optional<std::vector<std::vector<int>>> off,
     const std::list<ContractionOperation>& ordering, s_type* scratch) {
 
@@ -1214,7 +1257,7 @@ void flatten_grid_of_tensors(
 
       // If this qubit is in the final region, bundling must be adjusted.
       int fr_buffer = 0;
-      if (find_grid_coord_in_list(A, i, j)) {
+      if (find_grid_coord_in_list(final_qubit_region, i, j)) {
         ordered_indices_2D.push_back(index_name({i, j}, {}));
         fr_buffer = 1;
       }
