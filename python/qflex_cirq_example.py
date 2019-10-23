@@ -75,13 +75,13 @@ def run_pybind_interface(config):
 
 if __name__ == "__main__":
     #
-    # print("\n\n  === Simulation 1" + str(config_small))
-    # run_qflex_simulator(config_small)
-    # run_pybind_interface(config_small)
-    #
-    # print("\n\n  === Simulation 2" + str(config_large))
-    # run_qflex_simulator(config_large)
-    # run_pybind_interface(config_large)
+    print("\n\n  === Simulation 1" + str(config_small))
+    run_qflex_simulator(config_small)
+    run_pybind_interface(config_small)
+
+    print("\n\n  === Simulation 2" + str(config_large))
+    run_qflex_simulator(config_large)
+    run_pybind_interface(config_large)
 
     print("\n\n  === Simulation 3" + str(config_sycamore))
     run_qflex_simulator(config_sycamore)
