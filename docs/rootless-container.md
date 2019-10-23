@@ -1,19 +1,19 @@
 # Rootless Containers
 
-Alternatively to [Docker](https://docker.com), qFlex can be run in rootless
+As an alternative to [Docker](https://docker.com), qFlex can be run in rootless
 containers that do not require `root` privileges.
 
 ## Build Rootless Image
 
-To build a rootless qFlex image:
+To build a rootless qFlex image, run:
 
 ```
 $ bash scripts/create-rootless-container.sh (-|image_folder) [-x -c]
 ```
 The script will create a container in `image_folder`, or in a temporary
-directory if `-` is specified. The flag `-x` create an rootless image without
-installing qFlex while the flag `-c` instructs the script to install Cirq in the
-rootless container.
+directory if `-` is specified. The flag `-x` creates a rootless image without
+installing qFlex, while the flag `-c` instructs the script to also install Cirq
+in the rootless container.
 
 ## Namespaces
 
