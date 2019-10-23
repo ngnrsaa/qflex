@@ -710,7 +710,6 @@ void read_wave_function_evolution(
   std::string gate;
   // Useful for plugging into the tensor network:
   std::vector<int> i_j_1, i_j_2;
-  int super_cycle;
 
   // The first element should be the number of qubits
   io >> num_qubits;
