@@ -177,7 +177,10 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
   // Scratch space to be reused for operations.
   t0 = std::chrono::high_resolution_clock::now();
-  s_type* scratch = new s_type[(int)pow(super_dim, 7)];
+  // This scratch space is used for reading circuit and building tensor
+  // network. At most we need super_dim * 4 for square grids, and times 2
+  // when qubits are cut on the output index.
+  s_type* scratch = new s_type[(int)pow(super_dim, 4) * 2];
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
@@ -196,10 +199,11 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     // Creating 3D grid of tensors from file.
     t0 = std::chrono::high_resolution_clock::now();
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
-    circuit_data_to_grid_of_tensors(
-        input->circuit_data, input->grid.I, input->grid.J, input->K,
+    circuit_data_to_tensor_network(
+        input->circuit_data, input->grid.I, input->grid.J,
         input->initial_state, input->final_state, final_qubits,
         input->grid.qubits_off, tensor_grid_3D, scratch);
+
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
@@ -210,8 +214,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
     // Contract 3D grid onto 2D grid of tensors, as usual.
     t0 = std::chrono::high_resolution_clock::now();
-    grid_of_tensors_3D_to_2D(tensor_grid_3D, tensor_grid, final_qubits,
-                             input->grid.qubits_off, ordering, scratch);
+    flatten_grid_of_tensors(tensor_grid_3D, tensor_grid, final_qubits,
+                            input->grid.qubits_off, ordering, scratch);
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
