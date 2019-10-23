@@ -144,31 +144,12 @@ TEST(ReadCircuitDeathTest, MultipleGatesPerQubitPerCycle) {
   s_type scratch[256];
 
   QflexCircuit circuit;
-  #warning FIX THIS
-  //circuit.load(std::stringstream(kBadCycle1));
-  //EXPECT_ANY_THROW(
-  //    circuit_data_to_tensor_network(circuit, 2, 2, "000", "111", {},
-  //                                    off_qubits, grid_of_tensors, scratch));
+  EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle1)));
+  EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle2)));
+  EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle3)));
+  EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle4)));
+  EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle5)));
 
-  //circuit.load(std::stringstream(kBadCycle2));
-  //EXPECT_ANY_THROW(
-  //    circuit_data_to_tensor_network(circuit, 2, 2, "000", "111", {},
-  //                                    off_qubits, grid_of_tensors, scratch));
-
-  //circuit.load(std::stringstream(kBadCycle3));
-  //EXPECT_ANY_THROW(
-  //    circuit_data_to_tensor_network(circuit, 2, 2, "000", "111", {},
-  //                                    off_qubits, grid_of_tensors, scratch));
-
-  //circuit.load(std::stringstream(kBadCycle4));
-  //EXPECT_ANY_THROW(
-  //    circuit_data_to_tensor_network(circuit, 2, 2, "000", "111", {},
-  //                                    off_qubits, grid_of_tensors, scratch));
-
-  //circuit.load(std::stringstream(kBadCycle5));
-  //EXPECT_ANY_THROW(
-  //    circuit_data_to_tensor_network(circuit, 2, 2, "000", "111", {},
-  //                                    off_qubits, grid_of_tensors, scratch));
 }
 
 // This circuit returns the input string with amplitude 1.
