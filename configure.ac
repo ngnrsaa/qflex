@@ -64,6 +64,16 @@ AC_CONFIG_FILES([Makefile
                  tests/src/Makefile
                  tests/python/Makefile])
 
+# Skip python checks
+AC_ARG_ENABLE([python_checks], 
+  AS_HELP_STRING([--disable-python_checks],[Disable Python checks.]), 
+  [case "${enableval}" in
+      yes) python_checks=true  ;;
+       no) python_checks=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_checks])
+   esac], [python_checks=true]
+)
+
 # Add extra param for cirq
 AC_ARG_ENABLE([cirq_tests], 
   AS_HELP_STRING([--disable-cirq_tests],[Disable cirq tests.]), 
@@ -92,7 +102,7 @@ AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],,
 
 # Check that cirq is installed
 REQ_CIRQ_VERSION="0.5"
-AS_IF([test ${cirq_tests} == "true"],
+AS_IF([test ${python_checks} == "true" && ${cirq_tests} == "true"],
   AC_MSG_CHECKING([for cirq])
   AS_IF([ $(${PYTHON} - 2>/dev/null << EOF
 import cirq
@@ -113,7 +123,7 @@ AC_SUBST(cirq_tests, ${cirq_tests})
 
 # Check that pybind11 is installed
 REQ_PYBIND11_VERSION="2.2.4"
-AS_IF([test ${pybind11} == "true"],
+AS_IF([test ${python_checks} == "true" && ${pybind11} == "true"],
   AC_MSG_CHECKING([for pybind11])
   AS_IF([ $(${PYTHON} - 2>/dev/null << EOF
 import pybind11
@@ -134,10 +144,10 @@ AC_SUBST(pybind11, ${pybind11})
 
 # Check that pytest is installed
 REQ_PYTEST_VERSION="4.5"
-AS_IF([test ${pybind11} == "true"],
-  AS_IF([test ${cirq_tests} == "true"],
-    AC_MSG_CHECKING([for pytest])
-    AS_IF([ $(${PYTHON} - 2>/dev/null << EOF
+AS_IF([test ${python_checks} == "true"], AS_IF([test ${pybind11} == "true"],
+    AS_IF([test ${cirq_tests} == "true"],
+      AC_MSG_CHECKING([for pytest])
+      AS_IF([ $(${PYTHON} - 2>/dev/null << EOF
 import pytest
 try:
     import sys
@@ -146,15 +156,17 @@ try:
 except:
     pass
 EOF
-    )],
-      AC_MSG_RESULT([yes])
-      pytest=true, 
-      AC_MSG_RESULT([no])
+      )],
+        AC_MSG_RESULT([yes])
+        pytest=true, 
+        AC_MSG_RESULT([no])
+        pytest=false
+        AC_MSG_WARN([Please install pytest >= '${REQ_PYTEST_VERSION}' to run python tests.])),
       pytest=false
-      AC_MSG_WARN([Please install pytest >= '${REQ_PYTEST_VERSION}' to run python tests.])),
+    ),
     pytest=false
   ),
-  pytest=false
+  pytest=true
 )
 
 AC_SUBST(pytest, ${pytest})
