@@ -255,41 +255,6 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   ordering.emplace_back(ExpandPatch("b", {1, 1}));
   ordering.emplace_back(MergePatches("a", "b"));
 
-  #warning FIX THIS
-  //grid_of_tensors_3D_to_2D(tensor_grid_3D, tensor_grid_2D, qubits_A, qubits_off,
-  //                         ordering, scratch);
-
-  // Verify that index ordering follows this pattern:
-  //   1) Final-region indices ("<index>,(o)")
-  //   2) Cut indices
-  //   3) Same-patch indices in order by index
-  //   4) Cross-patch indices in order by patch
-  std::vector<std::vector<std::vector<std::string>>> expected_indices = {
-      {
-          // qubit (0,0) - normal
-          {"(0,0),(0,1)", "(0,0),(1,0)"},
-          // qubit (0,1) - cut index
-          {"(0,1),(1,1)", "(0,0),(0,1)"},
-      },
-      {
-          // qubit (1,0) - cross-patch index
-          {"(0,0),(1,0)", "(1,0),(1,1)"},
-          // qubit (1,1) - cut index and cross-patch index
-          {"(0,1),(1,1)", "(1,1),(2,1)", "(1,0),(1,1)"},
-      },
-      {
-          // qubit (2,0) - off
-          {},
-          // qubit (2,1) - final-region index
-          {"(2,1),(o)", "(1,1),(2,1)"},
-      },
-  };
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 2; ++j) {
-      #warning FIX THIS
-      //ASSERT_EQ(tensor_grid_2D[i][j].get_indices(), expected_indices[i][j]);
-    }
-  }
 }
 
 TEST(ReadCircuitDeathTest, CircuitDataToGridOfTensorsInvalidInput) {
@@ -316,19 +281,6 @@ TEST(ReadCircuitDeathTest, CircuitDataToGridOfTensorsInvalidInput) {
       circuit_data_to_tensor_network(circuit, 2, 1, "00", "011", {},
                                       {}, grid_of_tensors, scratch),
       "");
-}
-
-TEST(ReadCircuitDeathTest, GridOfTensors3DTo2DInvalidInput) {
-  std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors_3D;
-  std::vector<std::vector<Tensor>> grid_of_tensors_2D;
-  std::optional<std::vector<std::vector<int>>> A;
-  std::optional<std::vector<std::vector<int>>> off;
-  std::list<ContractionOperation> ordering;
-
-  // Scratch cannot be null pointer.
-  EXPECT_DEATH(grid_of_tensors_3D_to_2D(grid_of_tensors_3D, grid_of_tensors_2D,
-                                        A, off, ordering, nullptr),
-               "");
 }
 
 }  // namespace

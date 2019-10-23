@@ -55,37 +55,6 @@ const int SUPER_CYCLE_DEPTH = 8;
 const int DIM = 2;
 
 /**
- * Read circuit from stream and compute depth.
- * @param circuit_data std::istream containing circuit as a string.
- */
-std::size_t compute_depth(std::istream&& istream);
-
-/**
- * Contracts a 3D grid of tensors onto a 2D grid of tensors, contracting
- * in the time (third) direction, and renaming the indices accordingly.
- * @param grid_of_tensors_3D reference to a
- * vector<vector<vector<Tensor>>> with the 3D grid of tensors. It must be a
- * grid dimensionswise. The typical names for the indices in a grid is assumed.
- * @param grid_of_tensors_2D reference to a vector<vector<Tensor>> where the
- * 2D grid of tensors will be stored. The typical names for the indices will
- * be used.
- * @param final_qubit_region optional<vector<vector<int>>> with the coords. of
- * the qubits in qubits with terminal cuts.
- * @param off optional<vector<vector<int>>> with the coords. of the qubits
- * turned off.
- * @param ordering std::list<ContractionOperation> providing the steps required
- * to contract the tensor grid.
- * @param scratch pointer to s_type array with enough space for all scratch
- * work.
- */
-void grid_of_tensors_3D_to_2D(
-    std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors_3D,
-    std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
-    std::optional<std::vector<std::vector<int>>> final_qubit_region,
-    std::optional<std::vector<std::vector<int>>> off,
-    const std::list<ContractionOperation>& ordering, s_type* scratch);
-
-/**
  * Read circuit from stream and fill in a 2D grid of vectors of tensors.
  * @param qflex::QflexCircuit.
  * @param I int with the first spatial dimension of the grid of qubits.
