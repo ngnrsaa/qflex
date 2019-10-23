@@ -123,3 +123,49 @@ def test_translate_cirq_to_qflex():
                                                        qubit_to_index_dict = qubits_to_index_dict)
 
     assert(translation.strip() == "\n".join(file_lines))
+
+def test_supported_gate_set():
+    """
+    Is the circuit validated correctly on append?
+    """
+
+    import python.cirq_interface.qflex_simulator as qsim
+    import python.cirq_interface.qflex_virtual_device as qdevice
+    import python.cirq_interface.qflex_grid as qgrid
+    import python.cirq_interface.qflex_circuit as qcirc
+    import python.cirq_interface.qflex_order as qorder
+
+    qdev = qdevice.QFlexVirtualDevice(qflex_grid=qgrid.QFlexGrid.create_rectangular(4, 4))
+    qord = qorder.QFlexOrder("Dummy Ordering")
+
+    qubits = qdev.get_indexed_grid_qubits()
+
+    cirq_circuit = cirq.Circuit()
+    # cirq_circuit.append(cirq.ops.TOFFOLI.on(qubits[0], qubits[1], qubits[2]))
+
+    my_circuit = QFlexCircuit(
+                cirq_circuit = cirq_circuit,
+                device = qdev,
+                qflex_order = qord,
+                allow_decomposition = False)
+
+    my_circuit.append(cirq.Moment([cirq.ops.CZ.on(qubits[0], qubits[1])]))
+    my_circuit.append(cirq.Moment([cirq.ops.CNOT.on(qubits[0], qubits[1])]))
+    my_circuit.append(cirq.Moment([cirq.ops.H.on(qubits[0])]))
+    my_circuit.append(cirq.Moment([cirq.ops.T.on(qubits[0])]))
+    my_circuit.append(cirq.Moment([cirq.ops.ZPowGate(exponent=0.7).on(qubits[0])]))
+    my_circuit.append(
+        cirq.Moment([cirq.ops.XPowGate(exponent=0.5).on(qubits[0])]))
+    my_circuit.append(
+        cirq.Moment([cirq.ops.YPowGate(exponent=0.5).on(qubits[0])]))
+    my_circuit.append(
+        cirq.Moment(
+            [cirq.ops.PhasedXPowGate(
+                phase_exponent=0.25, exponent=0.5).on(qubits[0])]))
+    my_circuit.append(
+        cirq.Moment(
+            [cirqtmp.FSimGate(np.pi/2, np.pi/16).on(qubits[0], qubits[1])]))
+
+    with pytest.raises(ValueError):
+        my_circuit.append(
+            cirq.Moment([cirq.ops.TOFFOLI.on(qubits[0], qubits[1], qubits[2])]))
