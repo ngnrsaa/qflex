@@ -2,13 +2,11 @@
  * @file tensor.h
  * Definition of the Tensor class, which implements tensors with
  * matrix multiplication and a self-written entry reordering algorithm.
- * @see https://github.com/benjaminvillalonga/optimized_parallel_QC_with_TN
  *
  * @author Benjamin Villalonga (main contributor), Bron Nelson, Sergio Boixo and
  * @contributors: The qFlex Developers (see CONTRIBUTORS.md)
  * Salvatore Mandra
  * @date Created: August 2018
- * @date Modified: October 2019
  *
  * @copyright: Copyright © 2019, United States Government, as represented
  * by the Administrator of the National Aeronautics and Space Administration.
