@@ -274,7 +274,7 @@ void ContractionData::ContractGrid(
 
 // External methods
 
-void ordering_data_to_contraction_ordering(
+bool ordering_data_to_contraction_ordering(
     std::istream* ordering_data, const int I, const int J,
     const std::optional<std::vector<std::vector<int>>>& off,
     std::list<ContractionOperation>* ordering) {
@@ -389,7 +389,7 @@ void ordering_data_to_contraction_ordering(
   if (!error_msg.empty()) {
     std::cout << "Parsing failed on line: \"" << line
               << "\" with error: " << error_msg << std::endl;
-    assert(error_msg.empty());
+    return false;
   }
   // Ensure ordering generated is valid
   bool valid_ordering = IsOrderingValid(*ordering);
@@ -397,6 +397,7 @@ void ordering_data_to_contraction_ordering(
     std::cout << "Generated ordering must be valid." << std::endl;
     assert(valid_ordering);
   }
+  return true;
 }
 
 std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
