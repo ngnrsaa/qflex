@@ -44,13 +44,22 @@ class Bond:
     def __init__(self, nodes):
         self.nodes = frozenset(nodes)
         self.ops = []
+        self._dim = 0
 
     def dim(self):
-        """Returns the bond dimension for all operations this represents."""
-        return len(self.ops)
+        """Returns the bond dimension for all operations this represents.
+        Bond dimension is cached to reduce cost from computing operation ranks.
+        """
+        if not self._dim:
+            self._dim = sum([math.log2(utils.ComputeSchmidtRank(op))
+                             for op in self.ops])
+        return self._dim
 
     def add_op(self, op):
+        """Add 'op' to this bond and cache the new bond dimension."""
         self.ops.append(op)
+        self._dim = sum([math.log2(utils.ComputeSchmidtRank(op))
+                         for op in self.ops])
 
     def swap_nodes(self, old_nodes, new_nodes):
         """Removes old_nodes from, and adds new_nodes to, this bond."""
@@ -317,11 +326,6 @@ def circuit_to_ordering(circuit: cirq.circuits.Circuit,
           for g in circuit.all_operations()
           if len(g.qubits) > 1
       ])
-
-    # Check Schmidt decomposition
-    if sum(utils.ComputeSchmidtRank(g) != 2 for g in circuit.all_operations()):
-        raise AssertionError(
-            "Auto-ordering with Schmidt-rank > 2 gates not yet supported.")
 
     if max_cuts < 0:
         raise ValueError('max_cuts must be positive!')

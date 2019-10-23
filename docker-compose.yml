@@ -7,15 +7,15 @@ services:
       context: ./
       dockerfile: Dockerfile
     environment:
-      - OMP_NUM_THREADS=4
+      - OMP_NUM_THREADS=8
   qflex-tests:
     image: qflex-tests
     container_name: qflex-tests
     build:
       context: ./
-      dockerfile: tests/Dockerfile
+      dockerfile: tests/src/Dockerfile
     environment:
-      - OMP_NUM_THREADS=4
+      - OMP_NUM_THREADS=8
     depends_on:
     - qflex
   qflex-py-tests:
@@ -23,8 +23,8 @@ services:
     container_name: qflex-py-tests
     build:
       context: ./
-      dockerfile: python/Dockerfile
+      dockerfile: tests/python/Dockerfile
     environment:
-      - OMP_NUM_THREADS=4
+      - OMP_NUM_THREADS=8
     depends_on:
     - qflex
