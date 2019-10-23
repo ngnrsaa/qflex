@@ -87,18 +87,6 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     return {};
   }
 
-  // Get depth
-  if (options.contains("depth")) {
-    input.K = options["depth"].cast<int>();
-    if (input.K != auto_depth) {
-      std::cerr << "WARNING: user-provided depth (" << input.K
-                << ") differs from the auto-computed depth (" << auto_depth
-                << ")." << std::endl;
-      return {};
-    }
-  } else
-    input.K = auto_depth;
-
   // Setting initial and final circuit states.
   if (options.contains("initial_state"))
     input.initial_state = options["initial_state"].cast<std::string>();
