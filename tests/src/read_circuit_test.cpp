@@ -167,28 +167,41 @@ TEST(ReadCircuitTest, NullCircuit) {
 
   QflexCircuit circuit;
   circuit.load(std::stringstream(kNullCircuit));
-  circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {},
+  circuit_data_to_tensor_network(circuit, 2, 1, "00", "10", {}, {},
                                   grid_of_tensors, scratch);
   // Qubit-0 path has amplitude 1 (0 --> 0)
   // Qubit-1 path has amplitude 0 (0 --> 1)
   std::vector<s_type> expected_data = {std::complex<float>(1, 0),
                                        std::complex<float>(0, 0)};
 
-  // Resulting tensor grid should be 2x1x1 (IxJxK).
-  ASSERT_EQ(grid_of_tensors.size(), 2);
-  for (int i = 0; i < 2; i++) {
-    ASSERT_EQ(grid_of_tensors[i].size(), 1);
-    // TODO: tensors are not homogeneous anymore.
-    //ASSERT_EQ(grid_of_tensors[i][0].size(), 1);
-    //ASSERT_EQ(grid_of_tensors[i][0][0].size(), 1);
-    // TODO: tensors are not homogeneous anymore.
-    //const std::vector<s_type> data(grid_of_tensors[i][0][0].data(),
-    //                               grid_of_tensors[i][0][0].data() + 1);
-    // Testing exact equality of floating-point types will fail.
-    // Instead, we use EXPECT_FLOAT_EQ on each component of the data.
-    //EXPECT_FLOAT_EQ(data[0].real(), expected_data[i].real());
-    //EXPECT_FLOAT_EQ(data[0].imag(), expected_data[i].imag());
+  // Resulting tensor grid should be 2x1 (IxJ) ..
+  ASSERT_EQ(std::size(grid_of_tensors), 2);
+  for(std::size_t i = 0; i < 2; ++i) {
+
+    const auto &tensor = grid_of_tensors[i];
+    ASSERT_EQ(std::size(tensor), 1);
+
+    // .. and each qubit tensor should have 4 tensors ..
+    for(const auto &t: tensor) {
+      ASSERT_EQ(std::size(t), 4);
+
+      // .. of size 1, 2, 2, 1 (x2, because of complex numbers) respectively
+      ASSERT_EQ(std::size(t[0]), 1 * 2);
+      ASSERT_EQ(std::size(t[1]), 2 * 2);
+      ASSERT_EQ(std::size(t[2]), 2 * 2);
+      ASSERT_EQ(std::size(t[3]), 1 * 2);
+
+      // Each qubit tensor should have 4 elements (delta_0, h, h, delta_0)
+      // and (delta_0, h, h, delta_1) respectively
+      ASSERT_EQ(t[0].data()[0], std::complex<float>(1,0));
+      ASSERT_EQ(t[1].data()[0], std::complex<float>(1./M_SQRT2,0));
+      ASSERT_EQ(t[1].data()[1], std::complex<float>(1./M_SQRT2,0));
+      ASSERT_EQ(t[2].data()[0], std::complex<float>(1./M_SQRT2,0));
+      ASSERT_EQ(t[2].data()[1], std::complex<float>(1./M_SQRT2,0));
+      ASSERT_EQ(t[3].data()[0], std::complex<float>(i,0));
+    }
   }
+  
 }
 
 // Simple grid with one "off" qubit and one cut:
@@ -236,10 +249,9 @@ TEST(ReadCircuitTest, CondenseToGrid) {
                                   scratch);
 
   ASSERT_EQ(tensor_grid_3D.size(), 3);
-  for(const auto &g: tensor_grid_3D) ASSERT_EQ(g.size(), 2);
+  for(const auto &tensor: tensor_grid_3D) ASSERT_EQ(tensor.size(), 2);
 
-  // TODO: tensors are not homogeneous anymore.
-  //ASSERT_EQ(tensor_grid_3D[0][0].size(), 2);
+  // TODO Add check on tensors
 
   std::vector<std::vector<Tensor>> tensor_grid_2D;
   for (int i = 0; i < 3; ++i) {
