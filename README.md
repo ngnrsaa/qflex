@@ -45,6 +45,11 @@ To run qFlex in a docker container, see [qflex/docs/docker.md](/docs/docker.md).
 To run qFlex in a rootless container, see
 [qflex/docs/rootless-container.md](/docs/rootless-container.md).
 
+## Using Google Cirq
+
+To run qFlex on Google Cirq circuits, or just to call the simulator from Python,
+see [qflex/docs/cirq_interface.md](/docs/cirq_interface.md).
+
 ## Licence
 
 Copyright © 2019, United States Government as represented by the Administrator
