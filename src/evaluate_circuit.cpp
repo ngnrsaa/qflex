@@ -177,6 +177,9 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
   // Scratch space to be reused for operations.
   t0 = std::chrono::high_resolution_clock::now();
+  // This scratch space is used for reading circuit and building tensor
+  // network. At most we need super_dim * 4 for square grids, and times 2
+  // when qubits are cut on the output index.
   s_type* scratch = new s_type[(int)pow(super_dim, 4) * 2];
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
