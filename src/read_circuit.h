@@ -5,8 +5,9 @@
  *
  * @author Benjamin Villalonga (main contributor), Bron Nelson, Sergio Boixo and
  * Salvatore Mandra
+ * @contributors: The qFlex Developers (see CONTRIBUTORS.md)
  * @date Created: September 2018
- * @date Modified: February 2019
+ * @date Modified: October 2019
  *
  * @copyright: Copyright © 2019, United States Government, as represented
  * by the Administrator of the National Aeronautics and Space Administration.
@@ -31,6 +32,7 @@
 #include <vector>
 
 #include "contraction_utils.h"
+#include "circuit.h"
 #include "tensor.h"
 
 namespace std {
@@ -54,60 +56,52 @@ const int SUPER_CYCLE_DEPTH = 8;
 const int DIM = 2;
 
 /**
- * Read circuit from stream and compute depth.
- * @param circuit_data std::istream containing circuit as a string.
- */
-std::size_t compute_depth(std::istream&& istream);
-
-/**
- * Read circuit from stream and fill in a 3D grid of tensors with the indices
- * labelled as "(i1,j1,k1),(i2,j2,k2)", where i1<=i2, j1<=j2, and k1<=k2.
- * I*J must be equal to the number of qubits; K must be equal to
- * (depth_of_circuit-2)/8; initial_conf and final_conf must have the length
- * equal to the number of qubits.
- * @param circuit_data std::istream containing circuit as a string.
+ * Read circuit from stream and fill in a 2D grid of vectors of tensors.
+ * @param qflex::QflexCircuit containing circuit information.
  * @param I int with the first spatial dimension of the grid of qubits.
  * @param J int with the second spatial dimension of the grid of qubits.
- * @param K int with depth of the grid of tensors (depth_of_circuit-2)/8.
  * @param initial_conf string with 0s and 1s with the input configuration of
  * the circuit.
- * @param final_conf_B string with 0s and 1s with the output configuration on B.
- * @param A vector<vector<int>> with the coords. of the qubits in A.
+ * @param final_conf string with 0s and 1s with the output configuration on B.
+ * @param final_qubit_region vector<vector<int>> with the coords. of the
+ * qubits in qubits with terminal cuts.
  * @param off vector<vector<int>> with the coords. of the qubits turned off.
  * @param grid_of_tensors referenced to a vector<vector<vector<Tensor>>> with
- * tensors at each position of the grid.
+ * tensors (gates) at each position of the grid.
  * @param scratch pointer to s_type array with scratch space for all operations
  * performed in this function.
  */
-void circuit_data_to_grid_of_tensors(
-    std::istream* circuit_data, int I, int J, int K,
-    const std::string initial_conf, const std::string final_conf_B,
-    const std::optional<std::vector<std::vector<int>>>& A,
+void circuit_data_to_tensor_network(
+    const QflexCircuit &circuit, int I, int J,
+    const std::string initial_conf, const std::string final_conf,
+    const std::optional<std::vector<std::vector<int>>>& final_qubit_region,
     const std::optional<std::vector<std::vector<int>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch);
 
 /**
- * Contracts a 3D grid of tensors onto a 2D grid of tensors, contracting
- * in the time (third) direction, and renaming the indices accordingly.
- * @param grid_of_tensors_3D reference to a
- * vector<vector<vector<Tensor>>> with the 3D grid of tensors. It must be a
- * grid dimensionswise. The typical names for the indices in a grid is assumed.
+ * Contracts a 2D grid of vectors of tensors onto a 2D grid of tensors,
+ * contracting in the time (third) direction (i.e. flattening the tensor
+ * network), and renaming the indices accordingly.
+ * @param grid_of_tensors reference to a vector<vector<vector<Tensor>>> with the 2D
+ * grid of vectors of tensors. The typical names for the indices in a grid are
+ * assumed.
  * @param grid_of_tensors_2D reference to a vector<vector<Tensor>> where the
  * 2D grid of tensors will be stored. The typical names for the indices will
  * be used.
- * @param A optional<vector<vector<int>>> with the coords. of the qubits in A.
+ * @param final_qubit_region optional<vector<vector<int>>> with the coords.
+ * of the qubits in qubits with terminal cuts.
  * @param off optional<vector<vector<int>>> with the coords. of the qubits
  * turned off.
  * @param ordering std::list<ContractionOperation> providing the steps required
  * to contract the tensor grid.
  * @param scratch pointer to s_type array with enough space for all scratch
  * work.
- */
-void grid_of_tensors_3D_to_2D(
-    std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors_3D,
+*/
+void flatten_grid_of_tensors(
+    std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
-    std::optional<std::vector<std::vector<int>>> A,
+    std::optional<std::vector<std::vector<int>>> final_qubit_region,
     std::optional<std::vector<std::vector<int>>> off,
     const std::list<ContractionOperation>& ordering, s_type* scratch);
 

@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
+# See "docs/rootless-container.md" for more information about this file.
+
 # Get Script path
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 print_help() {
-  echo -e "\n\tUsage: $(basename $0) {-|folder} [-h -j <p> -x -r -c]\n"        >&2
+  echo -e "\n\tUsage: $(basename $0) (-|folder) [-h -j <p> -x -r -c]\n"        >&2
   echo -e "\t\tCreate rootless container for qflex in [folder]."               >&2
   echo -e "\t\tIf [folder] == \"-\", use a temporary folder instead."          >&2
   echo                                                                         >&2
@@ -194,7 +196,7 @@ cat >> $root/install_qflex.sh << EOF
 # Install dependencies
 /sbin/apk update
 /sbin/apk add g++ make gsl-dev git autoconf automake
-/sbin/apk add python3-dev py3-pybind11 py3-packaging py3-pytest
+/sbin/apk add python3-dev py3-pybind11 py3-packaging py3-pytest py3-docopt
 
 # Change folder
 cd /qflex

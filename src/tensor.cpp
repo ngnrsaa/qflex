@@ -5,8 +5,9 @@
  *
  * @author Benjamin Villalonga (main contributor), Bron Nelson, Sergio Boixo and
  * Salvatore Mandra
+ * @contributors: The qFlex Developers (see CONTRIBUTORS.md)
  * @date Created: August 2018
- * @date Modified: August 2018
+ * @date Modified: October 2019
  *
  * @copyright: Copyright © 2019, United States Government, as represented
  * by the Administrator of the National Aeronautics and Space Administration.
@@ -991,6 +992,42 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
   // std::cout << "Time updating C's variables: " << time_span.count() << "s\n";
+}
+
+// TODO: write tests for this function.
+size_t result_size(Tensor& A, Tensor& B) {
+  std::vector<std::string> left_indices =
+      _vector_subtraction(A.get_indices(), B.get_indices());
+  std::vector<std::string> right_indices =
+      _vector_subtraction(B.get_indices(), A.get_indices());
+  size_t left_dim = 1, right_dim = 1, result_dim;
+  for (int i = 0; i < left_indices.size(); ++i) {
+    left_dim *= A.get_index_to_dimension().at(left_indices[i]);
+  }
+  for (int i = 0; i < right_indices.size(); ++i) {
+    right_dim *= B.get_index_to_dimension().at(right_indices[i]);
+  }
+  result_dim = left_dim * right_dim;
+  return result_dim;
+}
+
+// TODO: write tests for this function.
+void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
+                    s_type* scratch_copy) {
+  std::vector<std::string> left_indices =
+      _vector_subtraction(A.get_indices(), B.get_indices());
+  std::vector<std::string> right_indices =
+      _vector_subtraction(B.get_indices(), A.get_indices());
+  std::vector<std::string> common_indices =
+      _vector_intersection(A.get_indices(), B.get_indices());
+  std::vector<std::string> A_new_ordering =
+      _vector_union(left_indices, common_indices);
+  std::vector<std::string> B_new_ordering =
+      _vector_union(common_indices, right_indices);
+  A.reorder(A_new_ordering, scratch_copy);
+  B.reorder(B_new_ordering, scratch_copy);
+  A.bundle(common_indices, bundled_index);
+  B.bundle(common_indices, bundled_index);
 }
 
 // Split it in parts, as before? Nah, it was all about generating small maps.
