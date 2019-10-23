@@ -18,7 +18,6 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
   };
 
   // Get circuit
-  std::size_t auto_depth;
   if (options.contains("circuit_filename")) {
     fs_circuit_data.open(options["circuit_filename"].cast<std::string>());
     if (not fs_circuit_data.good()) {
@@ -30,12 +29,12 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     input.circuit_data = &fs_circuit_data;
 
     // Get auto-depth
-    auto_depth = qflex::compute_depth(
+    input.K = qflex::compute_depth(
         std::ifstream(options["circuit_filename"].cast<std::string>()));
 
   } else if (options.contains("circuit")) {
     // Get auto-depth
-    auto_depth = qflex::compute_depth(get_stream_from_vector(
+    input.K = qflex::compute_depth(get_stream_from_vector(
         options["circuit"].cast<std::vector<std::string>>()));
 
     // Get stream
