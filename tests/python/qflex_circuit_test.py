@@ -54,17 +54,23 @@ def test_resolve_parameters():
     circuit = cirq.Circuit()
 
     import sympy
-    s = sympy.Symbol("symbol")
-    operation = cirq.X.on(cirq.GridQubit(0,0)) ** s
-    circuit.append(operation)
+    s1 = sympy.Symbol("theta")
+    s2 = sympy.Symbol("phi")
+
+    operation1 = cirq.Z.on(cirq.GridQubit(0,0)) ** s1
+    circuit.append(operation1)
+
+    operation2 = cirqtmp.FSimGate(s1, s2).on(cirq.GridQubit(0,0), cirq.GridQubit(0,1))
+    circuit.append(operation2)
 
     from python.cirq_interface.qflex_virtual_device import QFlexVirtualDevice
     dummy_device = QFlexVirtualDevice()
 
     # Override the function to accept anything
-    dummy_device.is_qflex_virt_dev_op = lambda x : True
+    # dummy_device.is_qflex_virt_dev_op = lambda x : True
     # Return a single pair gridqubit : index
-    dummy_device.get_grid_qubits_as_keys = lambda : {cirq.GridQubit(0,0) : 99}
+    dummy_device.get_grid_qubits_as_keys = lambda : {cirq.GridQubit(0, 0) : 1,
+                                                     cirq.GridQubit(0, 1) : 2}
 
     from python.cirq_interface.qflex_order import QFlexOrder
     dummy_order = QFlexOrder("This is a dummy order")
@@ -81,10 +87,13 @@ def test_resolve_parameters():
     # put back the translator
     QFlexCircuit.translate_cirq_to_qflex =original_translator
 
-    param_solver = {"symbol" : 0.5}
+    param_solver = {"theta" : 0.3, "phi": 0.7}
     solved_circuit = cirq.protocols.resolve_parameters(qcircuit, param_solver)
 
-    assert (solved_circuit[0].operations[0].gate.exponent == 0.5)
+    assert (solved_circuit[0].operations[0].gate.exponent == 0.3)
+    assert (solved_circuit[1].operations[0].gate.theta == 0.3)
+    assert (solved_circuit[1].operations[0].gate.phi == 0.7)
+
     assert (solved_circuit.device is dummy_device)
     assert (solved_circuit._own_order is dummy_order)
 
