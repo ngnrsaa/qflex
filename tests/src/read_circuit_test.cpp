@@ -249,10 +249,23 @@ TEST(ReadCircuitTest, CondenseToGrid) {
                                   scratch);
 
   ASSERT_EQ(tensor_grid_3D.size(), 3);
-  for(const auto &g: tensor_grid_3D) ASSERT_EQ(g.size(), 2);
+  for(const auto &tensor: tensor_grid_3D) ASSERT_EQ(tensor.size(), 2);
 
-  // TODO: qFlex does not rely anymore on super-cycle blocks.
-  //ASSERT_EQ(tensor_grid_3D[0][0].size(), 2);
+  // (0,0) has 4 diagonal gates + 2 non diagonal gates = 8
+  ASSERT_EQ(std::size(tensor_grid_3D[0][0]), 8);
+
+  // (0,1) has 4 diagonal gates + 2 non diagonal gates = 8
+  ASSERT_EQ(std::size(tensor_grid_3D[0][1]), 8);
+
+  // (1,0) has 4 diagonal gates + 2 non diagonal gates = 8
+  ASSERT_EQ(std::size(tensor_grid_3D[1][0]), 8);
+
+  // (1,1) has 5 diagonal gates + 3 non diagonal gates = 11
+  ASSERT_EQ(std::size(tensor_grid_3D[1][1]), 11);
+
+  // (2,1) has 3 diagonal gates + 1 non diagonal gates = 5
+  ASSERT_EQ(std::size(tensor_grid_3D[2][1]), 5);
+
 
   std::vector<std::vector<Tensor>> tensor_grid_2D;
   for (int i = 0; i < 3; ++i) {
