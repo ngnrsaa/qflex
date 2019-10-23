@@ -93,7 +93,7 @@ void circuit_data_to_grid_of_tensors(
  * in the time (third) direction, and renaming the indices accordingly.
  * @param grid_of_tensors_3D reference to a
  * vector<vector<vector<Tensor>>> with the 3D grid of tensors. It must be a
- * grid dimensionswise. The typical names for the indices in a grid is assumed.
+ * grid dimensions wise. The typical names for the indices in a grid is assumed.
  * @param grid_of_tensors_2D reference to a vector<vector<Tensor>> where the
  * 2D grid of tensors will be stored. The typical names for the indices will
  * be used.
