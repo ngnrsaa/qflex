@@ -146,7 +146,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   std::chrono::duration<double> time_span;
 
   // Reading input.
-  const int super_dim = (int)pow(DIM, input->K);
+  const int super_dim = (int)pow(DIM, input->circuit.depth);
 
   // Create the ordering for this tensor contraction from file.
   t0 = std::chrono::high_resolution_clock::now();
@@ -200,7 +200,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     t0 = std::chrono::high_resolution_clock::now();
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
     circuit_data_to_tensor_network(
-        input->circuit_data, input->grid.I, input->grid.J,
+        input->circuit, input->grid.I, input->grid.J,
         input->initial_state, input->final_state, final_qubits,
         input->grid.qubits_off, tensor_grid_3D, scratch);
 
