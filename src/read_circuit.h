@@ -56,7 +56,7 @@ const int DIM = 2;
 
 /**
  * Read circuit from stream and fill in a 2D grid of vectors of tensors.
- * @param qflex::QflexCircuit.
+ * @param qflex::QflexCircuit containing circuit information.
  * @param I int with the first spatial dimension of the grid of qubits.
  * @param J int with the second spatial dimension of the grid of qubits.
  * @param initial_conf string with 0s and 1s with the input configuration of
