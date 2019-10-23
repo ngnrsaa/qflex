@@ -43,8 +43,6 @@ indices:     The integer indices of the qubit or qubits that the gate affect.
              Currently, the indices are zero indexed and run from left to right, top to bottom.
 ```
 
-Sample circuit files can be found under [qflex/circuits](/circuits).
-
 ## Ordering files
 
 Circuit-ordering files allow fine-tuned optimization of how qFlex simulates a
@@ -117,9 +115,6 @@ cut (0,1) 24 42 -> This performs a cut betwen tensors 24 and 42 and projects the
 
 cut (0) 64 -> This performs a projection of the final state '0' onto the tensor at index 64.
 ```
-
-Sample ordering files can be found under [qflex/config/ordering](/config/ordering).
-
 
 
 ## Grid files
