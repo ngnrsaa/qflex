@@ -1139,13 +1139,14 @@ void circuit_data_to_tensor_network(
   // Insert deltas to last layer on qubits that are in not in
   // final_qubit_region. Rename last index when in final_qubit_region to
   // "(i,j),(o)".
-  idx = 0;
+  idx = -1;
   for (int q = 0; q < grid_size; ++q) {
     std::vector<int> i_j = get_qubit_coords(q, J);
     int i = i_j[0], j = i_j[1];
     if (find_grid_coord_in_list(off, i, j)) {
       continue;
     }
+    idx += 1;
     std::string last_name = "(" + std::to_string(i_j[0]) + ","
         + std::to_string(i_j[1]) + "),("
         + std::to_string(grid_of_counters[i][j]) + ")";
@@ -1158,9 +1159,34 @@ void circuit_data_to_tensor_network(
           : "delta_1";
       grid_of_tensors[i][j].push_back(
           Tensor({last_name}, {2}, gate_array(delta_gate)));
-      idx += 1;  // Move when not in final_qubit_region only.
     }
   }
+
+
+  /*
+  // Insert Hadamards and deltas to last layer.
+  idx = -1;
+  for (int q = 0; q < grid_size; ++q) {
+    std::vector<int> i_j = get_qubit_coords(q, J);
+    int i = i_j[0], j = i_j[1];
+    int k = K - 1;
+    if (find_grid_coord_in_list(off, i, j)) {
+      continue;
+    }
+    idx += 1;
+    std::string last_index = "t" + std::to_string(counter_group[i][j][k]);
+    grid_of_groups_of_tensors[i][j][k].push_back(
+        Tensor({"th", last_index}, {2, 2}, gate_array("h")));
+    if (find_grid_coord_in_list(final_qubit_region, i, j)) {
+      continue;
+    }
+    std::string delta_gate = (final_conf[idx] == '0') ? "delta_0" : "delta_1";
+    grid_of_groups_of_tensors[i][j][k].push_back(
+        Tensor({"th"}, {2}, gate_array(delta_gate)));
+  }
+  */
+
+
 
   // Be proper about pointers.
   scratch = NULL; 
