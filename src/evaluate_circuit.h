@@ -5,7 +5,6 @@
  * Salvatore Mandra
  * @contributors: The qFlex Developers (see CONTRIBUTORS.md)
  * @date Created: August 2018
- * @date Modified: October 2019
  *
  * @copyright: Copyright © 2019, United States Government, as represented
  * by the Administrator of the National Aeronautics and Space Administration.
