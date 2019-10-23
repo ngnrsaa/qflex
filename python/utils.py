@@ -135,7 +135,7 @@ def GetMomentAndGate(line, qubits):
             # the Cirq Fsim gate takes angles and not exponents
             # Transform the params
             # params = [p * np.pi for p in params]
-            return cycle, gates_map[gate_name](exponent=params[0])(qubits[0])
+            return cycle, gates_map[gate_name](exponent=params[0])(qubits[gate_qubits[0]])
 
         return cycle, gates_map[gate_name](*params)(*[qubits[q] for q in gate_qubits])
 
