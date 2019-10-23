@@ -923,7 +923,6 @@ void circuit_data_to_tensor_network(
   std::string gate;
   // Useful for plugging into the tensor network:
   std::vector<int> i_j_1, i_j_2;
-  int super_cycle;
   // Calculated from input.
   const int grid_size = I * J;
   const int off_size = off.has_value() ? off.value().size() : 0;

@@ -73,7 +73,7 @@ std::size_t compute_depth(std::istream&& istream);
  * the circuit.
  * @param final_conf string with 0s and 1s with the output configuration on B.
  * @param final_qubit_region vector<vector<int>> with the coords. of the
- * qubits in final_qubit_region.
+ * qubits in qubits with terminal cuts.
  * @param off vector<vector<int>> with the coords. of the qubits turned off.
  * @param grid_of_tensors referenced to a vector<vector<vector<Tensor>>> with
  * tensors at each position of the grid.
@@ -98,7 +98,7 @@ void circuit_data_to_grid_of_tensors(
  * 2D grid of tensors will be stored. The typical names for the indices will
  * be used.
  * @param final_qubit_region optional<vector<vector<int>>> with the coords. of
- * the qubits in final_qubit_region.
+ * the qubits in qubits with terminal cuts.
  * @param off optional<vector<vector<int>>> with the coords. of the qubits
  * turned off.
  * @param ordering std::list<ContractionOperation> providing the steps required
@@ -122,7 +122,7 @@ void grid_of_tensors_3D_to_2D(
  * the circuit.
  * @param final_conf string with 0s and 1s with the output configuration on B.
  * @param final_qubit_region vector<vector<int>> with the coords. of the
- * qubits in final_qubit_region.
+ * qubits in qubits with terminal cuts.
  * @param off vector<vector<int>> with the coords. of the qubits turned off.
  * @param grid_of_tensors referenced to a vector<vector<vector<Tensor>>> with
  * tensors (gates) at each position of the grid.
@@ -148,7 +148,7 @@ void circuit_data_to_tensor_network(
  * 2D grid of tensors will be stored. The typical names for the indices will
  * be used.
  * @param final_qubit_region optional<vector<vector<int>>> with the coords.
- * of the qubits in final_qubit_region.
+ * of the qubits in qubits with terminal cuts.
  * @param off optional<vector<vector<int>>> with the coords. of the qubits
  * turned off.
  * @param ordering std::list<ContractionOperation> providing the steps required
