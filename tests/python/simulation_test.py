@@ -15,6 +15,15 @@ from python.ordering import order_circuit_simulation as auto_order
 from python import utils
 from python import qflex
 
+
+import python.cirq_interface.qflex_simulator as qsim
+import python.cirq_interface.qflex_virtual_device as qdevice
+import python.cirq_interface.qflex_grid as qgrid
+import python.cirq_interface.qflex_circuit as qcirc
+import python.cirq_interface.qflex_order as qorder
+
+import python.utils as qflexutils
+
 num_runs = 50
 
 circuit_test = """16
@@ -343,3 +352,240 @@ def test_simulation_with_auto_order(x):
 
     # Compare the amplitudes
     assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
+
+
+"""
+    FSim Tests
+"""
+circuit_fsim_filename = mkstemp()
+
+with open(circuit_fsim_filename[1], 'w') as f:
+    print(circuit_test, file=f)
+
+
+qdev = qdevice.QFlexVirtualDevice(qflex_grid=grid_test)
+qord = qorder.QFlexOrder.from_existing_file(ordering_filename[1])
+mycirc = qflexutils.GetCircuitOfMoments(circuit_fsim_filename[1], qdev.get_indexed_grid_qubits())
+qcir = qcirc.QFlexCircuit(
+    cirq_circuit = mycirc,
+    device = qdev,
+    qflex_order = qord)
+
+sim = qsim.QFlexSimulator()
+
+results_fsim = cirq.Simulator().simulate(mycirc)
+
+
+@pytest.mark.parametrize(
+    'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
+def test_simulation_with_fsim_gates(x):
+    """
+    Is a cirq Simulation of a cirq.Circuit consisting of fSim gates
+    equal to the simulation through qFlex?
+    :return:
+    """
+    # Get configuration as a string
+    final_conf = bin(x)[2:].zfill(len(qubits))
+
+    options = {
+        'circuit_filename': circuit_fsim_filename[1],
+        'ordering_filename': ordering_filename[1],
+        'grid_filename': grid_filename[1],
+        'final_state': final_conf
+    }
+
+    # Pybind: Get output from qFlex
+    qflex_amplitude1 = qflex.simulate(options)[0][1]
+
+    # Cirq: Get output from qFlex
+
+    qflex_amplitude2 = sim.compute_amplitudes(qcir, bitstrings=[final_conf])
+
+    # Compare the amplitudes
+    assert (np.abs(results_fsim.final_state[x] - qflex_amplitude1) < 1.e-6)
+    # Compare the amplitudes
+    assert (np.abs(results_fsim.final_state[x] - qflex_amplitude2) < 1.e-6)
+
+# replaced cz with the same fsim
+ccircuit_test_fsim= """16
+0 h 0
+0 h 1
+0 h 2
+0 h 3
+0 h 4
+0 h 5
+0 h 6
+0 h 7
+0 h 8
+0 h 9
+0 h 10
+0 h 11
+0 h 12
+0 h 13
+0 h 14
+0 h 15
+1 fsim(0.4860239014600936, 0.16383319416244227) 0 1
+1 fsim(0.4860239014600936, 0.16383319416244227) 6 7
+1 fsim(0.4860239014600936, 0.16383319416244227) 8 9
+1 fsim(0.4860239014600936, 0.16383319416244227) 14 15
+1 t 2
+1 t 3
+1 t 4
+1 t 5
+1 t 10
+1 t 11
+1 t 12
+1 t 13
+2 fsim(0.4860239014600936, 0.16383319416244227) 4 8
+2 fsim(0.4860239014600936, 0.16383319416244227) 6 10
+2 y_1_2 0
+2 y_1_2 1
+2 x_1_2 7
+2 x_1_2 9
+2 y_1_2 14
+2 x_1_2 15
+3 fsim(0.4860239014600936, 0.16383319416244227) 1 2
+3 fsim(0.4860239014600936, 0.16383319416244227) 9 10
+3 t 0
+3 y_1_2 4
+3 x_1_2 6
+3 t 7
+3 x_1_2 8
+3 t 14
+3 t 15
+4 fsim(0.4860239014600936, 0.16383319416244227) 0 4
+4 fsim(0.4860239014600936, 0.16383319416244227) 9 13
+4 fsim(0.4860239014600936, 0.16383319416244227) 2 6
+4 fsim(0.4860239014600936, 0.16383319416244227) 11 15
+4 y_1_2 1
+4 t 8
+4 y_1_2 10
+5 fsim(0.4860239014600936, 0.16383319416244227) 2 3
+5 fsim(0.4860239014600936, 0.16383319416244227) 4 5
+5 fsim(0.4860239014600936, 0.16383319416244227) 10 11
+5 fsim(0.4860239014600936, 0.16383319416244227) 12 13
+5 y_1_2 0
+5 t 1
+5 x_1_2 6
+5 y_1_2 9
+5 y_1_2 15
+6 fsim(0.4860239014600936, 0.16383319416244227) 5 9
+6 fsim(0.4860239014600936, 0.16383319416244227) 7 11
+6 t 0
+6 x_1_2 2
+6 y_1_2 3
+6 y_1_2 4
+6 t 6
+6 y_1_2 10
+6 y_1_2 12
+6 x_1_2 13
+6 t 15
+7 fsim(0.4860239014600936, 0.16383319416244227) 5 6
+7 fsim(0.4860239014600936, 0.16383319416244227) 13 14
+7 t 2
+7 t 3
+7 t 4
+7 y_1_2 7
+7 y_1_2 9
+7 t 10
+7 y_1_2 11
+7 t 12
+8 fsim(0.4860239014600936, 0.16383319416244227) 8 12
+8 fsim(0.4860239014600936, 0.16383319416244227) 1 5
+8 fsim(0.4860239014600936, 0.16383319416244227) 10 14
+8 fsim(0.4860239014600936, 0.16383319416244227) 3 7
+8 x_1_2 6
+8 t 9
+8 t 11
+8 x_1_2 13
+9 fsim(0.4860239014600936, 0.16383319416244227) 0 1
+9 fsim(0.4860239014600936, 0.16383319416244227) 6 7
+9 fsim(0.4860239014600936, 0.16383319416244227) 8 9
+9 fsim(0.4860239014600936, 0.16383319416244227) 14 15
+9 x_1_2 3
+9 y_1_2 5
+9 y_1_2 10
+9 y_1_2 12
+9 t 13
+10 fsim(0.4860239014600936, 0.16383319416244227) 4 8
+10 fsim(0.4860239014600936, 0.16383319416244227) 6 10
+10 x_1_2 0
+10 y_1_2 1
+10 t 3
+10 t 5
+10 x_1_2 7
+10 y_1_2 9
+10 t 12
+10 y_1_2 14
+10 x_1_2 15
+11 fsim(0.4860239014600936, 0.16383319416244227) 1 2
+11 fsim(0.4860239014600936, 0.16383319416244227) 9 10
+11 t 0
+11 y_1_2 4
+11 x_1_2 6
+11 t 7
+11 y_1_2 8
+11 t 14
+11 t 15
+12 fsim(0.4860239014600936, 0.16383319416244227) 0 4
+12 fsim(0.4860239014600936, 0.16383319416244227) 9 13
+12 fsim(0.4860239014600936, 0.16383319416244227) 2 6
+12 fsim(0.4860239014600936, 0.16383319416244227) 11 15
+12 y_1_2 1
+12 t 8
+12 x_1_2 10
+13 fsim(0.4860239014600936, 0.16383319416244227) 2 3
+13 fsim(0.4860239014600936, 0.16383319416244227) 4 5
+13 fsim(0.4860239014600936, 0.16383319416244227) 10 11
+13 fsim(0.4860239014600936, 0.16383319416244227) 12 13
+13 x_1_2 0
+13 t 1
+13 y_1_2 6
+13 x_1_2 9
+13 x_1_2 15
+14 fsim(0.4860239014600936, 0.16383319416244227) 5 9
+14 fsim(0.4860239014600936, 0.16383319416244227) 7 11
+14 t 0
+14 y_1_2 2
+14 x_1_2 3
+14 y_1_2 4
+14 t 6
+14 x_1_2 10
+14 y_1_2 12
+14 y_1_2 13
+14 t 15
+15 fsim(0.4860239014600936, 0.16383319416244227) 5 6
+15 fsim(0.4860239014600936, 0.16383319416244227) 13 14
+15 t 2
+15 t 3
+15 t 4
+15 x_1_2 7
+15 x_1_2 9
+15 t 10
+15 x_1_2 11
+15 t 12
+16 fsim(0.4860239014600936, 0.16383319416244227) 8 12
+16 fsim(0.4860239014600936, 0.16383319416244227) 1 5
+16 fsim(0.4860239014600936, 0.16383319416244227) 10 14
+16 fsim(0.4860239014600936, 0.16383319416244227) 3 7
+16 y_1_2 6
+16 t 9
+16 t 11
+16 y_1_2 13
+17 h 0
+17 h 1
+17 h 2
+17 h 3
+17 h 4
+17 h 5
+17 h 6
+17 h 7
+17 h 8
+17 h 9
+17 h 10
+17 h 11
+17 h 12
+17 h 13
+17 h 14
+17 h 15
+"""
