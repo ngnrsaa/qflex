@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# See "docs/rootless-container.md" for more information about this file.
+
 # Get Script path
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 

@@ -29,7 +29,7 @@ Once `qflex:tests` is created, use the following command to run all the tests:
 ## Run Simulations
 
 Once `qflex:latest` is created, use the following command to run a simulation
-(see [Input File Formatting](input_format.md) for more information regarding
+(see [Input File Formatting](input_formats.md) for more information regarding
 the simulation parameters):
 
 ```
@@ -42,8 +42,8 @@ the simulation parameters):
 ```
 
 The flag `-v [orig]:[dest]:[attr]` is required to allow qFlex image access to
-the host folders. However, the original `qflex/circuits`, `qflex/ordering` and
-`qflex/grid` folders are copied during the building phase (but not updated if
+the host folders. However, the original `config/circuits`, `config/ordering` and
+`config/grid` folders are copied during the building phase (but not updated if
 changes are made after qFlex images are built). To run simulations using the
 default input files, `-v` flags may be dropped:
 
