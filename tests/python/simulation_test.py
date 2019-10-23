@@ -291,67 +291,67 @@ with open(ordering_with_cuts_filename[1], 'w') as f:
 with open(ordering_auto_filename[1], 'w') as f:
     print('\n'.join(auto_ordering), file=f)
 
-
-@pytest.mark.parametrize(
-    'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
-def test_simulation(x):
-
-    # Get configuration as a string
-    final_conf = bin(x)[2:].zfill(len(qubits))
-
-    options = {
-        'circuit_filename': circuit_filename[1],
-        'ordering_filename': ordering_filename[1],
-        'grid_filename': grid_filename[1],
-        'final_state': final_conf
-    }
-
-    # Get output from qFlex
-    qflex_amplitude = qflex.simulate(options)[0][1]
-
-    # Compare the amplitudes
-    assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
-
-
-@pytest.mark.parametrize(
-    'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
-def test_simulation_with_cuts(x):
-
-    # Get configuration as a string
-    final_conf = bin(x)[2:].zfill(len(qubits))
-
-    options = {
-        'circuit_filename': circuit_filename[1],
-        'ordering_filename': ordering_with_cuts_filename[1],
-        'grid_filename': grid_filename[1],
-        'final_state': final_conf
-    }
-
-    # Get output from qFlex
-    qflex_amplitude = qflex.simulate(options)[0][1]
-
-    # Compare the amplitudes
-    assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
-
-@pytest.mark.parametrize(
-    'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
-def test_simulation_with_auto_order(x):
-
-    # Get configuration as a string
-    final_conf = bin(x)[2:].zfill(len(qubits))
-
-    options = {
-        'circuit_filename': circuit_filename[1],
-        'ordering_filename': ordering_auto_filename[1],
-        'grid_filename': grid_filename[1],
-        'final_state': final_conf
-    }
-
-    # Get output from qFlex
-    qflex_amplitude = qflex.simulate(options)[0][1]
-
-    # Compare the amplitudes
-    assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
+#
+# @pytest.mark.parametrize(
+#     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
+# def test_simulation(x):
+#
+#     # Get configuration as a string
+#     final_conf = bin(x)[2:].zfill(len(qubits))
+#
+#     options = {
+#         'circuit_filename': circuit_filename[1],
+#         'ordering_filename': ordering_filename[1],
+#         'grid_filename': grid_filename[1],
+#         'final_state': final_conf
+#     }
+#
+#     # Get output from qFlex
+#     qflex_amplitude = qflex.simulate(options)[0][1]
+#
+#     # Compare the amplitudes
+#     assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
+#
+#
+# @pytest.mark.parametrize(
+#     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
+# def test_simulation_with_cuts(x):
+#
+#     # Get configuration as a string
+#     final_conf = bin(x)[2:].zfill(len(qubits))
+#
+#     options = {
+#         'circuit_filename': circuit_filename[1],
+#         'ordering_filename': ordering_with_cuts_filename[1],
+#         'grid_filename': grid_filename[1],
+#         'final_state': final_conf
+#     }
+#
+#     # Get output from qFlex
+#     qflex_amplitude = qflex.simulate(options)[0][1]
+#
+#     # Compare the amplitudes
+#     assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
+#
+# @pytest.mark.parametrize(
+#     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
+# def test_simulation_with_auto_order(x):
+#
+#     # Get configuration as a string
+#     final_conf = bin(x)[2:].zfill(len(qubits))
+#
+#     options = {
+#         'circuit_filename': circuit_filename[1],
+#         'ordering_filename': ordering_auto_filename[1],
+#         'grid_filename': grid_filename[1],
+#         'final_state': final_conf
+#     }
+#
+#     # Get output from qFlex
+#     qflex_amplitude = qflex.simulate(options)[0][1]
+#
+#     # Compare the amplitudes
+#     assert (np.abs(results.final_state[x] - qflex_amplitude) < 1.e-6)
 
 
 """
@@ -406,36 +406,39 @@ def test_simulation_with_fsim_gates(x):
     # Compare the amplitudes
     assert (np.abs(results_fsim.final_state[x] - qflex_amplitude2) < 1.e-6)
 
-# replaced cz with the same fsim
+# replaced
+# cz with  fsim(0.4860239014600936, 0.16383319416244227)
+# t with  rz(0.25)
+# h with hz_1_2
 ccircuit_test_fsim= """16
-0 h 0
-0 h 1
-0 h 2
-0 h 3
-0 h 4
-0 h 5
-0 h 6
-0 h 7
-0 h 8
-0 h 9
-0 h 10
-0 h 11
-0 h 12
-0 h 13
-0 h 14
-0 h 15
+0 hz_1_20
+0 hz_1_21
+0 hz_1_22
+0 hz_1_23
+0 hz_1_24
+0 hz_1_25
+0 hz_1_26
+0 hz_1_27
+0 hz_1_28
+0 hz_1_29
+0 hz_1_210
+0 hz_1_211
+0 hz_1_212
+0 hz_1_213
+0 hz_1_214
+0 hz_1_215
 1 fsim(0.4860239014600936, 0.16383319416244227) 0 1
 1 fsim(0.4860239014600936, 0.16383319416244227) 6 7
 1 fsim(0.4860239014600936, 0.16383319416244227) 8 9
 1 fsim(0.4860239014600936, 0.16383319416244227) 14 15
-1 t 2
-1 t 3
-1 t 4
-1 t 5
-1 t 10
-1 t 11
-1 t 12
-1 t 13
+1 rz(0.25) 2
+1 rz(0.25) 3
+1 rz(0.25) 4
+1 rz(0.25) 5
+1 rz(0.25) 10
+1 rz(0.25) 11
+1 rz(0.25) 12
+1 rz(0.25) 13
 2 fsim(0.4860239014600936, 0.16383319416244227) 4 8
 2 fsim(0.4860239014600936, 0.16383319416244227) 6 10
 2 y_1_2 0
@@ -446,57 +449,57 @@ ccircuit_test_fsim= """16
 2 x_1_2 15
 3 fsim(0.4860239014600936, 0.16383319416244227) 1 2
 3 fsim(0.4860239014600936, 0.16383319416244227) 9 10
-3 t 0
+3 rz(0.25) 0
 3 y_1_2 4
 3 x_1_2 6
-3 t 7
+3 rz(0.25) 7
 3 x_1_2 8
-3 t 14
-3 t 15
+3 rz(0.25) 14
+3 rz(0.25) 15
 4 fsim(0.4860239014600936, 0.16383319416244227) 0 4
 4 fsim(0.4860239014600936, 0.16383319416244227) 9 13
 4 fsim(0.4860239014600936, 0.16383319416244227) 2 6
 4 fsim(0.4860239014600936, 0.16383319416244227) 11 15
 4 y_1_2 1
-4 t 8
+4 rz(0.25) 8
 4 y_1_2 10
 5 fsim(0.4860239014600936, 0.16383319416244227) 2 3
 5 fsim(0.4860239014600936, 0.16383319416244227) 4 5
 5 fsim(0.4860239014600936, 0.16383319416244227) 10 11
 5 fsim(0.4860239014600936, 0.16383319416244227) 12 13
 5 y_1_2 0
-5 t 1
+5 rz(0.25) 1
 5 x_1_2 6
 5 y_1_2 9
 5 y_1_2 15
 6 fsim(0.4860239014600936, 0.16383319416244227) 5 9
 6 fsim(0.4860239014600936, 0.16383319416244227) 7 11
-6 t 0
+6 rz(0.25) 0
 6 x_1_2 2
 6 y_1_2 3
 6 y_1_2 4
-6 t 6
+6 rz(0.25) 6
 6 y_1_2 10
 6 y_1_2 12
 6 x_1_2 13
-6 t 15
+6 rz(0.25) 15
 7 fsim(0.4860239014600936, 0.16383319416244227) 5 6
 7 fsim(0.4860239014600936, 0.16383319416244227) 13 14
-7 t 2
-7 t 3
-7 t 4
+7 rz(0.25) 2
+7 rz(0.25) 3
+7 rz(0.25) 4
 7 y_1_2 7
 7 y_1_2 9
-7 t 10
+7 rz(0.25) 10
 7 y_1_2 11
-7 t 12
+7 rz(0.25) 12
 8 fsim(0.4860239014600936, 0.16383319416244227) 8 12
 8 fsim(0.4860239014600936, 0.16383319416244227) 1 5
 8 fsim(0.4860239014600936, 0.16383319416244227) 10 14
 8 fsim(0.4860239014600936, 0.16383319416244227) 3 7
 8 x_1_2 6
-8 t 9
-8 t 11
+8 rz(0.25) 9
+8 rz(0.25) 11
 8 x_1_2 13
 9 fsim(0.4860239014600936, 0.16383319416244227) 0 1
 9 fsim(0.4860239014600936, 0.16383319416244227) 6 7
@@ -506,86 +509,86 @@ ccircuit_test_fsim= """16
 9 y_1_2 5
 9 y_1_2 10
 9 y_1_2 12
-9 t 13
+9 rz(0.25) 13
 10 fsim(0.4860239014600936, 0.16383319416244227) 4 8
 10 fsim(0.4860239014600936, 0.16383319416244227) 6 10
 10 x_1_2 0
 10 y_1_2 1
-10 t 3
-10 t 5
+10 rz(0.25) 3
+10 rz(0.25) 5
 10 x_1_2 7
 10 y_1_2 9
-10 t 12
+10 rz(0.25) 12
 10 y_1_2 14
 10 x_1_2 15
 11 fsim(0.4860239014600936, 0.16383319416244227) 1 2
 11 fsim(0.4860239014600936, 0.16383319416244227) 9 10
-11 t 0
+11 rz(0.25) 0
 11 y_1_2 4
 11 x_1_2 6
-11 t 7
+11 rz(0.25) 7
 11 y_1_2 8
-11 t 14
-11 t 15
+11 rz(0.25) 14
+11 rz(0.25) 15
 12 fsim(0.4860239014600936, 0.16383319416244227) 0 4
 12 fsim(0.4860239014600936, 0.16383319416244227) 9 13
 12 fsim(0.4860239014600936, 0.16383319416244227) 2 6
 12 fsim(0.4860239014600936, 0.16383319416244227) 11 15
 12 y_1_2 1
-12 t 8
+12 rz(0.25) 8
 12 x_1_2 10
 13 fsim(0.4860239014600936, 0.16383319416244227) 2 3
 13 fsim(0.4860239014600936, 0.16383319416244227) 4 5
 13 fsim(0.4860239014600936, 0.16383319416244227) 10 11
 13 fsim(0.4860239014600936, 0.16383319416244227) 12 13
 13 x_1_2 0
-13 t 1
+13 rz(0.25) 1
 13 y_1_2 6
 13 x_1_2 9
 13 x_1_2 15
 14 fsim(0.4860239014600936, 0.16383319416244227) 5 9
 14 fsim(0.4860239014600936, 0.16383319416244227) 7 11
-14 t 0
+14 rz(0.25) 0
 14 y_1_2 2
 14 x_1_2 3
 14 y_1_2 4
-14 t 6
+14 rz(0.25) 6
 14 x_1_2 10
 14 y_1_2 12
 14 y_1_2 13
-14 t 15
+14 rz(0.25) 15
 15 fsim(0.4860239014600936, 0.16383319416244227) 5 6
 15 fsim(0.4860239014600936, 0.16383319416244227) 13 14
-15 t 2
-15 t 3
-15 t 4
+15 rz(0.25) 2
+15 rz(0.25) 3
+15 rz(0.25) 4
 15 x_1_2 7
 15 x_1_2 9
-15 t 10
+15 rz(0.25) 10
 15 x_1_2 11
-15 t 12
+15 rz(0.25) 12
 16 fsim(0.4860239014600936, 0.16383319416244227) 8 12
 16 fsim(0.4860239014600936, 0.16383319416244227) 1 5
 16 fsim(0.4860239014600936, 0.16383319416244227) 10 14
 16 fsim(0.4860239014600936, 0.16383319416244227) 3 7
 16 y_1_2 6
-16 t 9
-16 t 11
+16 rz(0.25) 9
+16 rz(0.25) 11
 16 y_1_2 13
-17 h 0
-17 h 1
-17 h 2
-17 h 3
-17 h 4
-17 h 5
-17 h 6
-17 h 7
-17 h 8
-17 h 9
-17 h 10
-17 h 11
-17 h 12
-17 h 13
-17 h 14
-17 h 15
+17 hz_1_20
+17 hz_1_21
+17 hz_1_22
+17 hz_1_23
+17 hz_1_24
+17 hz_1_25
+17 hz_1_26
+17 hz_1_27
+17 hz_1_28
+17 hz_1_29
+17 hz_1_210
+17 hz_1_211
+17 hz_1_212
+17 hz_1_213
+17 hz_1_214
+17 hz_1_215
 """
