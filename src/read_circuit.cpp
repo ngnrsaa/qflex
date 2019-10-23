@@ -17,24 +17,139 @@
 #include "read_circuit.h"
 
 namespace qflex {
-namespace {
 
-// clang-format off
+std::size_t compute_depth(std::istream&& istream) {
+  auto is_number = [](const std::string& token) {
+    try {
+      std::stol(token);
+    } catch (...) {
+      return false;
+    }
+    return true;
+  };
+
+  auto is_integer = [&is_number](const std::string& token) {
+    return is_number(token) and std::stol(token) == std::stod(token);
+  };
+
+  auto strip_line = [](std::string line) {
+    // Remove everything after '#'
+    line = std::regex_replace(line, std::regex("#.*"), "");
+
+    // Remove any special character
+    line = std::regex_replace(line, std::regex("[^)(\\s\\ta-zA-Z0-9_.,-]"), "");
+
+    // Convert tabs to spaces
+    line = std::regex_replace(line, std::regex("[\\t]"), " ");
+
+    // Remove multiple spaces
+    line = std::regex_replace(line, std::regex("[\\s]{2,}"), " ");
+
+    // Remove last space
+    line = std::regex_replace(line, std::regex("\\s+$"), "");
+
+    // Remove any space before '('
+    line = std::regex_replace(line, std::regex("[\\s]+[(]"), "(");
+
+    // Remove spaces between parentheses
+    line = std::regex_replace(line, std::regex("\\s+(?=[^()]*\\))"), "");
+
+    return line;
+  };
+
+  auto tokenize = [](const std::string& line,
+                     const std::string& regex_expr = "[^\\s]+") {
+    std::vector<std::string> tokens;
+    auto word_regex = std::regex(regex_expr);
+    for (auto w =
+             std::sregex_iterator(std::begin(line), std::end(line), word_regex);
+         w != std::sregex_iterator(); ++w)
+      tokens.push_back(w->str());
+    return tokens;
+  };
+
+  std::size_t line_counter{0}, last_cycle_number{0};
+  std::string line;
+
+  auto error_msg = [&line, &line_counter](const std::string& msg) {
+    std::string err_msg =
+        "[" + std::to_string(line_counter + 1) + ": " + line + "] " + msg;
+    std::cerr << err_msg << std::endl;
+    return err_msg;
+  };
+
+  std::size_t depth{0};
+  std::unordered_map<std::pair<std::size_t, std::size_t>, std::size_t> layers;
+
+  while (std::getline(istream, line)) {
+    if (std::size(line = strip_line(line))) {
+      // Check that there are only one '(' and one ')'
+      if (std::count(std::begin(line), std::end(line), '(') > 1 or
+          std::count(std::begin(line), std::end(line), ')') > 1)
+        throw error_msg("Wrong format.");
+
+      // Tokenize the line
+      auto tokens = tokenize(line);
+
+      // Enforce first line to be a single number which correspond to the number
+      // of qubits
+      if (line_counter == 0) {
+        if (std::size(tokens) != 1 or std::stol(tokens[0]) <= 0)
+          throw error_msg(
+              "First line in circuit must be the number of active qubits.");
+      } else {
+        // Check the correct number of tokens
+        if (std::size(tokens) < 3)
+          throw error_msg(
+              "Gate must be specified as: cycle gate_name[(p1[,p2,...])] q1 "
+              "[q2, ...]");
+
+        // Check the first token is actually a number
+        if (not is_integer(tokens[0]))
+          throw error_msg("First token must be a valid cycle number.");
+
+        std::size_t cycle = std::stol(tokens[0]);
+
+        // Check that cycle number is monotonically increasing
+        if (cycle < last_cycle_number)
+          throw error_msg("Cycle number can only increase.");
+
+        // Add all the qubits
+        if (std::size_t num_qubits = std::size(tokens) - 2; num_qubits == 2) {
+          std::size_t q1 = std::stol(tokens[2]);
+          std::size_t q2 = std::stol(tokens[3]);
+          if (q1 > q2) std::swap(q1, q2);
+
+          if (auto new_depth = ++layers[{q1, q2}]; new_depth > depth)
+            depth = new_depth;
+          else if (num_qubits > 2)
+            throw error_msg("k-qubit gates are not supported.");
+        }
+      }
+    }
+
+    // Increment line counter
+    ++line_counter;
+  }
+
+  return depth;
+}
+
 const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
     {// Deltas.
      {"delta_0", std::vector<s_type>({1.0, 0.0})},
      {"delta_1", std::vector<s_type>({0.0, 1.0})},
      // For one-qubit gates, the first index is input an second is output.
-     {"h", std::vector<s_type>({_INV_SQRT_2, _INV_SQRT_2,
-                                _INV_SQRT_2, -_INV_SQRT_2})},
-     {"hz_1_2", std::vector<s_type>({{0.5, 0.5}, {_INV_SQRT_2, 0},
-                                     {0., -_INV_SQRT_2}, {0.5, 0.5}})},
-     {"t", std::vector<s_type>({1.0, 0.,
-                                0., {_INV_SQRT_2, _INV_SQRT_2}})},
-     {"x_1_2", std::vector<s_type>({{0.5, 0.5}, {0.5, -0.5},
-                                    {0.5, -0.5}, {0.5, 0.5}})},
-     {"y_1_2", std::vector<s_type>({{0.5, 0.5}, {0.5, 0.5},
-                                    {-0.5, -0.5}, {0.5, 0.5}})},
+     {"h", std::vector<s_type>({_INV_SQRT_2, _INV_SQRT_2, _INV_SQRT_2,
+                                -_INV_SQRT_2})},
+     {"hz_1_2",
+      std::vector<s_type>(
+          {{0.5, 0.5}, {_INV_SQRT_2, 0}, {0., -_INV_SQRT_2}, {0.5, 0.5}})},
+     {"t", std::vector<s_type>({1.0, 0., 0., {_INV_SQRT_2, _INV_SQRT_2}})},
+     {"x_1_2",
+      std::vector<s_type>({{0.5, 0.5}, {0.5, -0.5}, {0.5, -0.5}, {0.5, 0.5}})},
+     {"y_1_2",
+      std::vector<s_type>({{0.5, 0.5}, {0.5, 0.5}, {-0.5, -0.5}, {0.5, 0.5}})},
      // For cz, both q1 and q2 get indices in the order (input, virtual,
      // output).
      // {"cz_q1", vector<s_type>({1.,0.,0.,0.,0.,0.,0.,1.})},
@@ -47,9 +162,7 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
       std::vector<s_type>({-1.0484937059720079, 0., 0.5611368023131075, 0., 0.,
                            0.5611368023131075, 0., 1.0484937059720079})},
      // For the non-decomposed cz, the convention is (in1, in2, out1, out2).
-     {"cz", std::vector<s_type>({1., 0., 0., 0.,
-                                 0., 1., 0., 0.,
-                                 0., 0., 1., 0.,
+     {"cz", std::vector<s_type>({1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0.,
                                  0., 0., 0., -1.})},
 
      // For cx, both q1 and q2 get indices in the order (input, virtual,
@@ -60,17 +173,13 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
      {"cx_q1",
       std::vector<s_type>({0.8408964152537143, 0., 0.8408964152537143, 0., 0.,
                            -0.8408964152537143, 0., 0.8408964152537143})},
-     {"cx_q2",
-      std::vector<s_type>({0.5946035575013604, -0.5946035575013604,
-                           0.5946035575013604, 0.5946035575013604,
-                           -0.5946035575013604, 0.5946035575013604,
-                           0.5946035575013604, 0.5946035575013604})},
+     {"cx_q2", std::vector<s_type>({0.5946035575013604, -0.5946035575013604,
+                                    0.5946035575013604, 0.5946035575013604,
+                                    -0.5946035575013604, 0.5946035575013604,
+                                    0.5946035575013604, 0.5946035575013604})},
      // For the non-decomposed cx, the convention is (in1, in2, out1, out2).
-     {"cx", std::vector<s_type>({1., 0., 0., 0.,
-                                 0., 1., 0., 0.,
-                                 0., 0., 0., 1.,
+     {"cx", std::vector<s_type>({1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 1.,
                                  0., 0., 1., 0.})}});
-// clang-format on
 
 std::vector<s_type> gate_array(const std::string& gate_name) {
   static const std::regex rz_regex("rz\\((.*)\\)");
@@ -352,6 +461,10 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
         if (lpatch == op.merge.source_id) return true;
         if (rpatch == op.merge.source_id) return false;
         // local_patch is already the target ID.
+      } else if (lpatch == op.merge.source_id) {
+        lpatch = op.merge.target_id;
+      } else if (rpatch == op.merge.source_id) {
+        rpatch = op.merge.target_id;
       }
     }
     // Error in comparison - likely issue in contraction ordering.
@@ -365,12 +478,12 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
   };
 }
 
-}  // namespace
-
+// TODO(martinop): remove "final_qubit_region" argument?
+// This can be derived from the 'x' states in final_conf.
 void circuit_data_to_grid_of_tensors(
     std::istream* circuit_data, int I, int J, int K,
-    const std::string initial_conf, const std::string final_conf_B,
-    const std::optional<std::vector<std::vector<int>>>& A,
+    const std::string initial_conf, const std::string final_conf,
+    const std::optional<std::vector<std::vector<int>>>& final_qubit_region,
     const std::optional<std::vector<std::vector<int>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch) {
@@ -410,21 +523,20 @@ void circuit_data_to_grid_of_tensors(
     assert(circuit_data_num_qubits == num_active_qubits_from_grid);
   }
 
-  // Assert for the length of initial_conf and final_conf_B.
+  // Assert for the length of initial_conf and final_conf.
   {
     // size_t off_size = off.has_value() ? off.value().size() : 0;
-    size_t A_size = A.has_value() ? A.value().size() : 0;
     if (initial_conf.size() != num_active_qubits_from_grid) {
       std::cout << "Size of initial_conf: " << initial_conf.size()
                 << ", must be equal to the number of qubits: "
                 << num_active_qubits_from_grid << "." << std::endl;
       assert(initial_conf.size() == num_active_qubits_from_grid);
     }
-    if (final_conf_B.size() != num_active_qubits_from_grid - A_size) {
-      std::cout << "Size of final_conf_B: " << final_conf_B.size()
-                << ", must be equal to the number of qubits: "
-                << num_active_qubits_from_grid - A_size << "." << std::endl;
-      assert(final_conf_B.size() == num_active_qubits_from_grid - A_size);
+    if (final_conf.size() != initial_conf.size()) {
+      std::cout << "Size of final_conf: " << final_conf.size()
+                << ", must be equal to size of initial_conf: "
+                << initial_conf.size() << "." << std::endl;
+      assert(final_conf.size() == initial_conf.size());
     }
   }
 
@@ -595,7 +707,7 @@ void circuit_data_to_grid_of_tensors(
     }
   }
   // Insert Hadamards and deltas to last layer.
-  idx = 0;
+  idx = -1;
   for (int q = 0; q < grid_size; ++q) {
     std::vector<int> i_j = get_qubit_coords(q, J);
     int i = i_j[0], j = i_j[1];
@@ -603,16 +715,16 @@ void circuit_data_to_grid_of_tensors(
     if (find_grid_coord_in_list(off, i, j)) {
       continue;
     }
+    idx += 1;
     std::string last_index = "t" + std::to_string(counter_group[i][j][k]);
     grid_of_groups_of_tensors[i][j][k].push_back(
         Tensor({"th", last_index}, {2, 2}, gate_array("h")));
-    if (find_grid_coord_in_list(A, i, j)) {
+    if (find_grid_coord_in_list(final_qubit_region, i, j)) {
       continue;
     }
-    std::string delta_gate = (final_conf_B[idx] == '0') ? "delta_0" : "delta_1";
+    std::string delta_gate = (final_conf[idx] == '0') ? "delta_0" : "delta_1";
     grid_of_groups_of_tensors[i][j][k].push_back(
         Tensor({"th"}, {2}, gate_array(delta_gate)));
-    idx += 1;  // Move in B only.
   }
 
   // Contracting each group of gates into a single tensor.
@@ -652,7 +764,7 @@ void circuit_data_to_grid_of_tensors(
           std::string new_last_index = index_name({i, j, k}, {i, j, k + 1});
           grid_of_tensors[i][j][k].rename_index(last_index, new_last_index);
         }
-        if (k == K - 1 && find_grid_coord_in_list(A, i, j)) {
+        if (k == K - 1 && find_grid_coord_in_list(final_qubit_region, i, j)) {
           std::string last_index = "th";
           std::string new_last_index = index_name({i, j}, {});
           grid_of_tensors[i][j][k].rename_index(last_index, new_last_index);
@@ -666,7 +778,7 @@ void circuit_data_to_grid_of_tensors(
 void grid_of_tensors_3D_to_2D(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors_3D,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
-    std::optional<std::vector<std::vector<int>>> A,
+    std::optional<std::vector<std::vector<int>>> final_qubit_region,
     std::optional<std::vector<std::vector<int>>> off,
     const std::list<ContractionOperation>& ordering, s_type* scratch) {
   if (scratch == nullptr) {
@@ -687,7 +799,7 @@ void grid_of_tensors_3D_to_2D(
       }
 
       size_t container_dim = (int)pow(super_dim, 4);
-      if (find_grid_coord_in_list(A, i, j)) {
+      if (find_grid_coord_in_list(final_qubit_region, i, j)) {
         container_dim *= DIM;
       }
       std::vector<Tensor> group_containers =
@@ -740,7 +852,7 @@ void grid_of_tensors_3D_to_2D(
 
       // If this qubit is in the final region, bundling must be adjusted.
       int fr_buffer = 0;
-      if (find_grid_coord_in_list(A, i, j)) {
+      if (find_grid_coord_in_list(final_qubit_region, i, j)) {
         ordered_indices_3D.push_back(index_name({i, j}, {}));
         fr_buffer = 1;
       }

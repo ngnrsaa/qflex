@@ -19,10 +19,16 @@ todo.txt
 
 # Python cache
 __pycache__
+.ipynb_checkpoints
 
 # Autotools
 Makefile
+aclocal.m4
 autom4te*
 config.status
 config.log
 configure
+
+.venv/
+.idea/
+.vscode/

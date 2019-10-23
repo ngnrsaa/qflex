@@ -1,41 +1,69 @@
-TARGET1 = qflex
+TARGETS = qflex
 
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@
 PREFIX = @prefix@
+PYBIND11 = @pybind11@
+CIRQ = @cirq@
+PYTEST = @pytest@
 
 ifeq ($(CXX), icpc)
 	CXXFLAGS += -mkl -qopenmp -DMKL_TENSOR
 else
-  CXXFLAGS += -fopenmp -lgsl -lgslcblas
+  CXXFLAGS += -fopenmp -lgslcblas
+endif
+
+ifeq ($(PYBIND11), true)
+  TARGETS += pybind
 endif
 
 export CXX
 export CXXFLAGS
 export FLAGS
 
-$(TARGET1):
+.PHONY: all
+all: $(TARGETS)
+
+.PHONY: qflex
+qflex:
 	git submodule update --init --recursive src/docopt
 	$(MAKE) -C src/
+
+.PHONY: pybind
+pybind: qflex
+	git submodule update --init --recursive src/pybind11
+	$(MAKE) -C src/ pybind
 
 .PHONY: tests
 tests:
 	git submodule update --init --recursive tests/src/googletest
 	$(MAKE) -C tests/src/
 
-.PHONY: run-tests
-run-tests: tests
+.PHONY: run-py-tests
+run-py-tests: pybind
+	$(MAKE) -C tests/python/ run-all
+
+.PHONY: run-cxx-tests
+run-cxx-tests: tests
 	$(MAKE) -C tests/src/ run-all
+
+TESTS = run-cxx-tests
+ifeq ($(PYTEST), true)
+  TESTS += run-py-tests
+endif
+
+.PHONY: run-tests
+run-tests: $(TESTS)
 
 .PHONY: install
 install:
 	@find config -type f -exec install -vD {} $(PREFIX)/share/qflex/{} \;
 	@find docs -type f -exec install -vD {} $(PREFIX)/share/qflex/{} \;
 	@install -vD src/qflex.x $(PREFIX)/bin/qflex
+	@find python -type f -iname "*.so" -exec install -vD {} $(PREFIX)/lib/qflex/{} \;
 
 .PHONY: clean
 clean:
-	-rm -f $(TARGET1).x
 	-$(MAKE) -C src/ clean
 	-$(MAKE) -C tests/src/ clean
 

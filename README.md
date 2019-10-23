@@ -23,6 +23,19 @@ implemented on real hardware"**, NPJ Quantum Information 5, 86 (2019)
 [[2]](https://arxiv.org/abs/1905.00444) B. Villalonga, *et al.*, **"Establishing
 the Quantum Supremacy Frontier with a 281 Pflop/s Simulation"**, arXiv:1905.00444 (2019)
 
+## Installation
+
+To install qFlex, simply run:
+
+```
+$ autoreconf -i && autoconf && ./configure 
+$ make && make run-tests && make install
+```
+To disable tests based on `cirq`, use `./configure --disable-cirq_tests`
+instead. By default, qFlex is installed in `$HOME/local/`. To change the
+installation folder, use `./configure --prefix=/new/installation/folder/`. For more information:
+[qflex/docs/install.md](/docs/install.md).
+
 ## Build Using Docker
 
 To run qFlex in a docker container, see [qflex/docs/docker.md](/docs/docker.md).
@@ -31,17 +44,6 @@ To run qFlex in a docker container, see [qflex/docs/docker.md](/docs/docker.md).
 
 To run qFlex in a rootless container, see
 [qflex/docs/rootless-container.md](/docs/rootless-container.md).
-
-## Install
-
-To install qFlex, simply run:
-
-```
-$ autoconf && ./configure 
-$ make && make run-tests && make install
-```
-By default, qFlex is installed in `$HOME/local/`. For more information:
-[qflex/docs/install.md](/docs/install.md)
 
 ## Licence
 

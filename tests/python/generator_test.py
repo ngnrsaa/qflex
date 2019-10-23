@@ -6,6 +6,9 @@ Invocation:
 
 from typing import Dict, Set, Tuple
 
+import sys
+sys.path.insert(1, '../../')
+
 from python.circuits import generator
 
 
@@ -15,9 +18,9 @@ def GetDevice(pattern_filename):
     return generator.Device(pattern)
 
 
-TestDevice = GetDevice('config/patterns/test.txt')
-Rochester = GetDevice('config/patterns/ibm_rochester.txt')
-Aspen = GetDevice('config/patterns/rigetti_aspen.txt')
+TestDevice = GetDevice('../../config/patterns/test.txt')
+Rochester = GetDevice('../../config/patterns/ibm_rochester.txt')
+Aspen = GetDevice('../../config/patterns/rigetti_aspen.txt')
 
 
 def test_qubit_numbers():
