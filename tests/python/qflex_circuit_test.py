@@ -8,6 +8,8 @@ sys.path.insert(1, '../../')
 
 from python.cirq_interface.qflex_circuit import QFlexCircuit
 
+# Used to include a class which does not exist in Cirq 0.5.0
+import python.cirq_interface.fsim_gate as cirqtmp
 
 def test_constructor_decomposition():
 
@@ -88,6 +90,9 @@ def test_translate_cirq_to_qflex():
     circuit.append(cirq.Moment([cirq.ops.YPowGate(exponent=0.5).on(qubit_1)]))
     circuit.append(cirq.Moment([cirq.ops.CNOT.on(qubit_1, qubit_2)]))
     circuit.append(cirq.Moment([cirq.ops.CZ.on(qubit_1, qubit_2)]))
+    circuit.append(cirq.Moment([cirq.ops.Rz(0.7).on(qubit_1)]))
+    circuit.append(cirq.Moment([cirq.ops.PhasedXPowGate(phase_exponent=0.25, exponent=0.5).on(qubit_2)]))
+    circuit.append(cirq.Moment([cirqtmp.FSimGate(0.3, 0.7).on(qubit_2, qubit_1)]))
 
     file_lines = [
         "2",
@@ -96,7 +101,10 @@ def test_translate_cirq_to_qflex():
         "2 x_1_2 1",
         "3 y_1_2 1",
         "4 cx 1 2",
-        "5 cz 1 2"
+        "5 cz 1 2",
+        "6 rz(0.7) 1",
+        "7 hz_1_2 2",
+        "8 fsim(0.3, 0.7) 2 1"
     ]
 
     qubits_to_index_dict = { qubit_1: 1, qubit_2: 2}

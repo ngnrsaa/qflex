@@ -8,6 +8,9 @@ import python.cirq_interface.qflex_order as qorder
 
 import python.utils as qflexutils
 
+# Used to include a class which does not exist in Cirq 0.5.0
+import python.cirq_interface.fsim_gate as cirqtmp
+
 class QFlexCircuit(cirq.Circuit):
 
     def __init__(self,
@@ -113,7 +116,7 @@ class QFlexCircuit(cirq.Circuit):
                 if isinstance(op.gate, cirq.ops.CZPowGate)\
                         and op.gate.exponent == 1.0:
                     qflex_gate = "cz"
-                if isinstance(op.gate, cirq.ops.CNotPowGate) \
+                elif isinstance(op.gate, cirq.ops.CNotPowGate) \
                         and op.gate.exponent == 1.0:
                     qflex_gate = "cx"
                 elif isinstance(op.gate, cirq.ops.HPowGate) \
@@ -128,6 +131,19 @@ class QFlexCircuit(cirq.Circuit):
                 elif isinstance(op.gate, cirq.ops.ZPowGate) \
                         and op.gate.exponent == 0.25:
                     qflex_gate = "t"
+                elif isinstance(op.gate, cirq.ops.PhasedXPowGate) \
+                        and op.gate.phase_exponent == 0.25 \
+                        and op.gate.exponent == 0.5:
+                    qflex_gate = "hz_1_2"
+                elif isinstance(op.gate, cirq.ops.ZPowGate):
+                    qflex_gate = "rz({})".format(op.gate.exponent)
+                elif isinstance(op.gate, cirqtmp.FSimGate):
+                    qflex_gate = "fsim({}, {})".format(op.gate.theta, op.gate.phi)
+                else:
+                    raise ValueError("{!r} No translation for ".format(op))
+
+                cirq.Rz
+
 
                 # The moment is missing
                 qflex_gate = "{} {} {}\n".format(mi, qflex_gate,
