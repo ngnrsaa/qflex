@@ -564,38 +564,25 @@ void circuit_data_to_tensor_network(
   }
 
   std::unordered_set<int> used_qubits;
+  std::size_t last_cycle{0};
   for(auto gate: circuit.gates) {
 
     // gate.name = gate name
     // gate.cycle = gate cycle
     // gate.qubits = vector of qubits
     // gate.params = vector of params
-  
-    /*
-    // Check that q1 hasn't already been used in this cycle.
-    std::unordered_set<int>::const_iterator q1_used = used_qubits.find(q1);
-    if (q1_used != used_qubits.end()) {
-      std::cout << "The qubit " << q1 << " in '" << line_counter << ": "
-        << line << "' has already been used in this cycle."
-        << std::endl;
-      assert(q1_used == used_qubits.end());
-    } else {
-      used_qubits.insert(q1);
-    }
-    // Check that q2 hasn't already been used in this cycle when applicable.
-    if (q2 != -1) {
-      std::unordered_set<int>::const_iterator q2_used = used_qubits.find(q2);
-      if (q2_used != used_qubits.end()) {
-        std::cout << "The qubit " << q2 << " in '" << line_counter << ": "
-          << line << "' has already been used in this cycle. "
-          << std::endl;
-        assert(q2_used == used_qubits.end());
-      } else {
-        used_qubits.insert(q2);
-      }
-    }
-    */
 
+    if(last_cycle != gate.cycle) {
+      last_cycle = gate.cycle;
+      used_qubits.clear();
+    }
+
+    for(const auto &q: gate.qubits)
+      if(used_qubits.find(q) != std::end(used_qubits))
+        throw ERROR_MSG("Qubit ", q, " has been used twice in the same cycle: ", gate.cycle);
+      else
+        used_qubits.insert(q);
+  
     if(std::size_t num_qubits = std::size(gate.qubits); num_qubits == 1) {
 
       // Get qubit
