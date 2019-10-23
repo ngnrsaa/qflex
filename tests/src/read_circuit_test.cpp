@@ -235,9 +235,8 @@ TEST(ReadCircuitTest, CondenseToGrid) {
                                   qubits_A, qubits_off, tensor_grid_3D,
                                   scratch);
   ASSERT_EQ(tensor_grid_3D.size(), 3);
-
+  ASSERT_EQ(tensor_grid_3D[0].size(), 2);
   #warning FIX THIS
-  //ASSERT_EQ(tensor_grid_3D[0].size(), 2);
   //ASSERT_EQ(tensor_grid_3D[0][0].size(), 2);
 
   std::vector<std::vector<Tensor>> tensor_grid_2D;
