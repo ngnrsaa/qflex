@@ -1,4 +1,5 @@
 #include "docopt.h"
+#include "circuit.h"
 #include "evaluate_circuit.h"
 
 static const char VERSION[] = "qFlex v1.0";
@@ -57,17 +58,9 @@ int main(int argc, char** argv) {
                                   ? args["--grid"].asString()
                                   : args["<grid_filename>"].asString();
 
-  // Get depth of the circuit
-  input.K = qflex::compute_depth(std::ifstream(circuit_filename));
+  // Read the circuit
+  input.circuit.load(std::ifstream(circuit_filename));
 
-  // Creating streams for input files.
-  auto circuit_data = std::ifstream(circuit_filename);
-  if (!circuit_data.good()) {
-    std::cout << "Cannot open circuit data file: " << circuit_filename
-              << std::endl;
-    assert(circuit_data.good());
-  }
-  input.circuit_data = &circuit_data;
   auto ordering_data = std::ifstream(ordering_filename);
   if (!ordering_data.good()) {
     std::cout << "Cannot open ordering data file: " << ordering_filename
@@ -79,17 +72,17 @@ int main(int argc, char** argv) {
   // Load grid
   input.grid.load(grid_filename);
 
-  // Evaluating circuit.
-  std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
-      qflex::EvaluateCircuit(&input);
+  //// Evaluating circuit.
+  //std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
+  //    qflex::EvaluateCircuit(&input);
 
-  // Printing output.
-  for (int c = 0; c < amplitudes.size(); ++c) {
-    const auto& state = amplitudes[c].first;
-    const auto& amplitude = amplitudes[c].second;
-    std::cout << input.initial_state << " --> " << state << ": "
-              << std::real(amplitude) << " " << std::imag(amplitude)
-              << std::endl;
-  }
+  //// Printing output.
+  //for (int c = 0; c < amplitudes.size(); ++c) {
+  //  const auto& state = amplitudes[c].first;
+  //  const auto& amplitude = amplitudes[c].second;
+  //  std::cout << input.initial_state << " --> " << state << ": "
+  //            << std::real(amplitude) << " " << std::imag(amplitude)
+  //            << std::endl;
+  //}
   return 0;
 }

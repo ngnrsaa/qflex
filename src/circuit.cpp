@@ -25,6 +25,9 @@ std::ostream &QflexGate::operator<<(std::ostream &out) const {
 std::ostream &operator<<(std::ostream &out, const QflexGate &gate) { return gate.operator<<(out); }
 
 void QflexCircuit::load(std::istream& istream) {
+  this->load(std::move(istream));
+}
+void QflexCircuit::load(std::istream&& istream) {
 
   auto is_number = [](const std::string &token) {
     try { std::stol(token); } catch(...) { return false; }
@@ -36,6 +39,7 @@ void QflexCircuit::load(std::istream& istream) {
   };
 
   auto strip_line = [](std::string line) {
+
     // Remove everything after '#'
     line = std::regex_replace(line, std::regex("#.*"), "");
 
@@ -83,10 +87,10 @@ void QflexCircuit::load(std::istream& istream) {
     
     if(std::size(line = strip_line(line))) {
 
-      // Check that there are only one '(' and one ')'
-      if(std::count(std::begin(line), std::end(line), '(') > 1 or \
-         std::count(std::begin(line), std::end(line), ')') > 1)
-            throw error_msg("Wrong format.");
+      // Check number of parentheses
+      if(std::size_t n_open = std::count(std::begin(line), std::end(line), '('), 
+                     n_close = std::count(std::begin(line), std::end(line), ')'); n_open != n_close or n_open > 1) 
+        throw error_msg("Not-matching parentheses.");
 
       // Tokenize the line
       auto tokens = tokenize(line);

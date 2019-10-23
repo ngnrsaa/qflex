@@ -27,6 +27,7 @@ struct QflexCircuit {
   std::vector<QflexGate> gates;
 
   void load(std::istream &istream);
+  void load(std::istream &&istream);
   void load(const std::string &filename);
 };
 

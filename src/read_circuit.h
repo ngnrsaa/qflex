@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "contraction_utils.h"
+#include "circuit.h"
 #include "tensor.h"
 
 namespace std {
@@ -130,7 +131,7 @@ void grid_of_tensors_3D_to_2D(
  * performed in this function.
  */
 void circuit_data_to_tensor_network(
-    std::istream* circuit_data, int I, int J,
+    const QflexCircuit &circuit, int I, int J,
     const std::string initial_conf, const std::string final_conf,
     const std::optional<std::vector<std::vector<int>>>& final_qubit_region,
     const std::optional<std::vector<std::vector<int>>>& off,
