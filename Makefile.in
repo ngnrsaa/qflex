@@ -9,9 +9,9 @@ PYTEST = @pytest@
 OPENMP = @openmp@
 
 ifeq ($(CXX), icpc)
-	CXXFLAGS += -mkl -DMKL_TENSOR
+	CXXFLAGS += -mkl -DMKL_TENSOR -lpthread
 else
-  CXXFLAGS += -lgslcblas
+  CXXFLAGS += -lgslcblas -lpthread
 endif
 
 ifeq ($(OPENMP), true)
@@ -20,6 +20,8 @@ ifeq ($(OPENMP), true)
   else
     CXXFLAGS += -fopenmp
   endif
+else
+  CXXFLAGS += -Wno-unknown-pragmas
 endif
 
 ifeq ($(PYBIND11), true)
