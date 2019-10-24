@@ -25,32 +25,45 @@ implemented on real hardware"**, NPJ Quantum Information 5, 86 (2019)
 the Quantum Supremacy Frontier with a 281 Pflop/s Simulation"**,
 arXiv:1905.00444 (2019)
 
-## Installation
+## Build methods
 
-To install qFlex on your machine, simply run:
+To ensure cross-platform viability, qFlex supports multiple different build
+methods. If one of the build methods below does not work on your system, try
+using one of the other methods listed.
+
+Known incompatibilities:
+
+-   MacOS only supports building via Docker.
+
+### Local installation
+
+To build qFlex on your machine, simply run:
 
 ```
 $ autoreconf -i && autoconf && ./configure
-$ make && make run-tests && make install
+$ make && make run-tests
 ```
 
 To disable tests based on `cirq`, use `./configure --disable-cirq_tests`
-instead. By default, qFlex is installed in `$HOME/local/`. To change the
-installation folder, use `./configure --prefix=/new/installation/folder/`. 
+instead.
+
+After running these commands, qFlex can be installed by running `make install`.
+By default, this installs qFlex in `$HOME/local/`. To change the installation
+folder, use `./configure --prefix=/new/installation/folder/`.
 
 qFlex provides an experimental support for `OpenMP`. To activate `OpenMP`, run
 `./configure` with the extra-option `--enable-openmp`.
 
 For more information, see [the installation guide](/docs/install.md).
 
-## Build Using Docker
+### Build Using Docker
 
 [Docker](https://docker.com) allows you to run qFlex in an isolated environment,
 without having to worry about managing dependencies.
 
 To build qFlex with Docker, see [the Docker guide](/docs/docker.md).
 
-## Build Using Rootless Containers
+### Build Using Rootless Containers
 
 Rootless containers are an alternative to Docker targeted at users who may not
 have `root` privileges on their machine.

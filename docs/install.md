@@ -62,6 +62,15 @@ make -j8 && make run-tests -j8
 ```
 where `-j8` means that `8` parallel processes are used.
 
+## Running circuits
+
+To run a sample simulation, use the following command:
+
+```
+./src/qflex.x config/circuits/bristlecone_48_1-24-1_0.txt \
+config/ordering/bristlecone_48.txt config/grid/bristlecone_48.txt
+```
+
 ## Install qFlex
 
 Finally, qFlex can be installed as:
@@ -69,7 +78,7 @@ Finally, qFlex can be installed as:
 make install
 ```
 By default, qFlex is installed in `$HOME/local`. See
-["Check PreRequisites"](#check-prerequisites) to change the default folder.
+["Check prerequisites"](#check-prerequisites) to change the default folder.
 
 ## Clean-up
 
