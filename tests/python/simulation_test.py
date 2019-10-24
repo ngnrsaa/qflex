@@ -373,6 +373,25 @@ expand B 15
 merge A B
 """
 
+ordering_2x2_test = """
+# CUT BETWEEN A AND B
+cut () 1 3
+
+# EXPAND PATCH A
+expand A 0
+expand A 1
+
+# EXPAND PATCH B
+expand B 2
+expand B 3
+
+# MERGE PATCHES A-B
+merge A B
+"""
+
+grid_2x2_test = """1 1
+1 1"""
+
 # Simulate circuit
 qubits = utils.GetGridQubits(StringIO(grid_test))
 circuit = utils.GetCircuit(StringIO(circuit_test), qubits)
@@ -386,7 +405,9 @@ results_no_h_and_sparse = cirq.Simulator().simulate(circuit_no_h_and_sparse)
 circuit_filename = mkstemp()
 circuit_no_h_and_sparse_filename = mkstemp()
 grid_filename = mkstemp()
+grid_2x2_filename = mkstemp()
 ordering_filename = mkstemp()
+ordering_2x2_filename = mkstemp()
 ordering_with_cuts_filename = mkstemp()
 ordering_auto_filename = mkstemp()
 
@@ -396,8 +417,12 @@ with open(circuit_no_h_and_sparse_filename[1], 'w') as f:
     print(circuit_no_h_and_sparse_test, file=f)
 with open(grid_filename[1], 'w') as f:
     print(grid_test, file=f)
+with open(grid_2x2_filename[1], 'w') as f:
+    print(grid_2x2_test, file=f)
 with open(ordering_filename[1], 'w') as f:
     print(ordering_test, file=f)
+with open(ordering_2x2_filename[1], 'w') as f:
+    print(ordering_2x2_test, file=f)
 with open(ordering_with_cuts_filename[1], 'w') as f:
     print(ordering_with_cuts_test, file=f)
 with open(ordering_auto_filename[1], 'w') as f:
@@ -533,11 +558,11 @@ with open(circuit_fsim_filename[1], 'w') as f:
     print(circuit_test_fsim, file=f)
 
 qdev = qdevice.QFlexVirtualDevice(
-    qflex_grid=qgrid.QFlexGrid.from_existing_file("config/grid/rectangular_2x2.txt"))
+    qflex_grid=qgrid.QFlexGrid.from_existing_file(grid_2x2_filename[1]))
 
 qqubits = qdev.get_grid_qubits_as_keys()
 
-qord = qorder.QFlexOrder.from_existing_file("config/ordering/rectangular_2x2.txt")
+qord = qorder.QFlexOrder.from_existing_file(ordering_2x2_filename[1])
 mycirc = qflexutils.GetCircuitOfMoments(circuit_fsim_filename[1],
                                         qdev.get_indexed_grid_qubits())
 qcir = qcirc.QFlexCircuit(
@@ -562,8 +587,8 @@ def test_simulation_with_fsim_gates(x):
 
     options = {
         'circuit_filename': circuit_fsim_filename[1],
-        'ordering_filename': "config/ordering/rectangular_2x2.txt",
-        'grid_filename': "config/grid/rectangular_2x2.txt",
+        'ordering_filename': ordering_2x2_filename[1],
+        'grid_filename': grid_2x2_filename[1],
         'final_state': final_conf
     }
 
