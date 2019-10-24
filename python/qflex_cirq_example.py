@@ -72,8 +72,7 @@ def run_pybind_interface(config):
     print(qflex.simulate(config))
 
 
-
-if __name__ == "__main__":
+def main():
     #
     print("\n\n  === Simulation 1" + str(config_small))
     run_qflex_simulator(config_small)
@@ -94,4 +93,7 @@ if __name__ == "__main__":
     # run_qflex_simulator(config_mem_crash)
     # run_pybind_interface(config_mem_crash)
 
+
+if __name__ == "__main__":
+    main()
 
