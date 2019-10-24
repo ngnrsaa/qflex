@@ -46,6 +46,6 @@ make -C /qflex/ run-tests
 
 To run a sample simulation inside the image, use the following command:
 ```
-./qflex/src/qflex.x qflex/config/circuits/bristlecone_48_1-24-1_0.txt \
-qflex/config/ordering/bristlecone_48.txt qflex/config/grid/bristlecone_48.txt
+/qflex/src/qflex.x /qflex/config/circuits/bristlecone_48_1-24-1_0.txt \
+/qflex/config/ordering/bristlecone_48.txt /qflex/config/grid/bristlecone_48.txt
 ```
