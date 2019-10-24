@@ -104,7 +104,7 @@ AC_ARG_ENABLE([openmp],
    esac], [openmp=false]
 )
 
-AS_IF([test ${openmp} = "true"], AC_MSG_WARN([OpenMP is still experimental with potential memory leak.]))
+AS_IF([test ${openmp} == "true"], AC_MSG_WARN([OpenMP is still experimental with potential memory leak.]))
 
 AC_SUBST(openmp, ${openmp})
 
