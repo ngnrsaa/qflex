@@ -533,11 +533,11 @@ with open(circuit_fsim_filename[1], 'w') as f:
     print(circuit_test_fsim, file=f)
 
 qdev = qdevice.QFlexVirtualDevice(
-    qflex_grid=qgrid.QFlexGrid.from_existing_file("../../config/grid/rectangular_2x2.txt"))
+    qflex_grid=qgrid.QFlexGrid.from_existing_file("config/grid/rectangular_2x2.txt"))
 
 qqubits = qdev.get_grid_qubits_as_keys()
 
-qord = qorder.QFlexOrder.from_existing_file("../../config/ordering/rectangular_2x2.txt")
+qord = qorder.QFlexOrder.from_existing_file("config/ordering/rectangular_2x2.txt")
 mycirc = qflexutils.GetCircuitOfMoments(circuit_fsim_filename[1],
                                         qdev.get_indexed_grid_qubits())
 qcir = qcirc.QFlexCircuit(
@@ -562,8 +562,8 @@ def test_simulation_with_fsim_gates(x):
 
     options = {
         'circuit_filename': circuit_fsim_filename[1],
-        'ordering_filename': "../../config/ordering/rectangular_2x2.txt",
-        'grid_filename': "../../config/grid/rectangular_2x2.txt",
+        'ordering_filename': "config/ordering/rectangular_2x2.txt",
+        'grid_filename': "config/grid/rectangular_2x2.txt",
         'final_state': final_conf
     }
 
