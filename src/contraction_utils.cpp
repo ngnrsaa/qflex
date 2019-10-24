@@ -1,18 +1,3 @@
-/**
- * @file contraction_utils.cpp
- * @see https://github.com/benjaminvillalonga/optimized_parallel_QC_with_TN
- *
- * @author Benjamin Villalonga (main contributor), Bron Nelson, Sergio Boixo and
- * Salvatore Mandra
- * @date Created: August 2018
- * @date Modified: August 2018
- *
- * @copyright: Copyright © 2019, United States Government, as represented
- * by the Administrator of the National Aeronautics and Space Administration.
- * All rights reserved.
- * @licence: Apache License, Version 2.0
- */
-
 #include "contraction_utils.h"
 
 #include <algorithm>
@@ -22,6 +7,8 @@
 #include <regex>
 #include <sstream>
 #include <unordered_set>
+
+#include "errors.h"
 
 namespace qflex {
 
@@ -465,39 +452,21 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
   std::unordered_map<std::string, PatchState> patches;
   std::unordered_set<std::string> cut_indices;
   std::unordered_set<std::string> used_tensors;
-  int error_space = 4000;                  // ~4kiB for error logs
-  char error_msg[error_space + 100] = "";  // space for "too long" warning
-  int next_error = 0;                      // position of next error log
+  std::string error_msg;
   for (const auto& op : ordering) {
-    if (next_error >= error_space) {
-      // The error log is too full to report any more errors; return early.
-      next_error +=
-          snprintf(error_msg + next_error, sizeof(error_msg) - next_error,
-                   "Too many errors to log!\n");
-      break;
-    }
     switch (op.op_type) {
       case ContractionOperation::EXPAND: {
-        if (patches[op.expand.id].is_used) {
-          next_error += snprintf(
-              error_msg + next_error, error_space - next_error,
-              "Tensor at (%d,%d) is added to non-empty patch %s after a cut.\n",
-              op.expand.tensor[0], op.expand.tensor[1], op.expand.id.c_str());
-        }
-        if (patches[op.expand.id].is_merged) {
-          next_error += snprintf(
-              error_msg + next_error, error_space - next_error,
-              "Tensor at (%d,%d) is added to previously-merged patch %s.\n",
-              op.expand.tensor[0], op.expand.tensor[1], op.expand.id.c_str());
-        }
+        if (patches[op.expand.id].is_used)
+          error_msg = concat(error_msg, "\nTensor at (", op.expand.tensor[0], ",", op.expand.tensor[1], ") is added to non-empty patch ", op.expand.id.c_str(), " after a cut.");
+        if (patches[op.expand.id].is_merged) 
+          error_msg = concat(error_msg, "\nTensor at (", op.expand.tensor[0], ",", op.expand.tensor[1], ") is added to non-empty patch ", op.expand.id.c_str(), " after a cut.");
+
         char tensor_name[20];
         snprintf(tensor_name, sizeof(tensor_name), "(%d,%d)",
                  op.expand.tensor[0], op.expand.tensor[1]);
-        if (used_tensors.find(tensor_name) != used_tensors.end()) {
-          next_error += snprintf(
-              error_msg + next_error, error_space - next_error,
-              "Tensor %s is contracted multiple times.\n", tensor_name);
-        }
+        if (used_tensors.find(tensor_name) != used_tensors.end())
+          error_msg = concat(error_msg, "\nTensor ", tensor_name," is contracted multiple times.");
+
         used_tensors.insert(tensor_name);
         patches[op.expand.id].is_active = true;
         continue;
@@ -509,36 +478,28 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
           }
         }
         const std::string index = index_name(op.cut.tensors);
-        if (cut_indices.find(index) != cut_indices.end()) {
-          next_error +=
-              snprintf(error_msg + next_error, error_space - next_error,
-                       "Index %s is cut multiple times.\n", index.c_str());
-        }
+        if (cut_indices.find(index) != cut_indices.end()) 
+          error_msg = concat(error_msg, "\nIndex ", index.c_str()," is cut multiple times.");
+
         cut_indices.insert(index);
         continue;
       }
       case ContractionOperation::MERGE: {
-        if (patches[op.merge.source_id].is_merged) {
-          next_error +=
-              snprintf(error_msg + next_error, error_space - next_error,
-                       "Patch %s is merged multiple times.\n",
-                       op.merge.source_id.c_str());
-        }
-        if (patches[op.merge.target_id].is_used) {
-          next_error += snprintf(
-              error_msg + next_error, error_space - next_error,
-              "Patch %s is merged into non-empty patch %s after a cut.\n",
-              op.merge.source_id.c_str(), op.merge.target_id.c_str());
-        }
+        if (patches[op.merge.source_id].is_merged) 
+          error_msg = concat(error_msg, "\nPatch ", op.merge.source_id.c_str()," is merged multiple times.");
+
+        if (patches[op.merge.target_id].is_used) 
+          error_msg = concat(error_msg, "\nPatch ", op.merge.source_id.c_str()," is merged into non-empty patch ", op.merge.target_id.c_str(), " after a cut.");
+
         patches[op.merge.source_id].is_merged = true;
         patches[op.merge.target_id].is_active = true;
         continue;
       }
     }
   }
-  if (next_error == 0) {
-    return true;
-  }
+
+  if (std::empty(error_msg)) return true;
+
   std::cout << error_msg << std::endl;
   return false;
 }

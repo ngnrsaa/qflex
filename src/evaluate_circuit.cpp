@@ -1,11 +1,10 @@
 /**
  * @file evaluate_circuit.cpp
- * @see https://github.com/benjaminvillalonga/optimized_parallel_QC_with_TN
  *
  * @author Benjamin Villalonga (main contributor), Bron Nelson, Sergio Boixo and
  * Salvatore Mandra
+ * @contributors: The qFlex Developers (see CONTRIBUTORS.md)
  * @date Created: August 2018
- * @date Modified: August 2018
  *
  * @copyright: Copyright © 2019, United States Government, as represented
  * by the Administrator of the National Aeronautics and Space Administration.
@@ -94,13 +93,7 @@ std::string get_output_states(const QflexInput* input,
     if (final_state_unspecified) {
       base_state[pos] = 'x';
     }
-    if (base_state.at(pos) != 'x') {
-      std::cout << "Terminal cut on qubit (" << tensor_pos[0] << ", "
-                << tensor_pos[1] << " does not have a matching 'x' "
-                << "in final_state at position " << pos << "; found '"
-                << base_state.at(pos) << "' instead." << std::endl;
-      assert(base_state.at(pos) == 'x');
-    }
+    // TODO(martinop): reconsider requiring 'x' for cut indices.
     output_pos_map.push_back(pos);
     if (op.cut.values.empty()) {
       output_values_map.push_back({0, 1});
@@ -152,7 +145,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   std::chrono::duration<double> time_span;
 
   // Reading input.
-  const int super_dim = (int)pow(DIM, input->K);
+  const int super_dim = (int)pow(DIM, input->circuit.depth);
 
   // Create the ordering for this tensor contraction from file.
   t0 = std::chrono::high_resolution_clock::now();
@@ -183,7 +176,10 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
   // Scratch space to be reused for operations.
   t0 = std::chrono::high_resolution_clock::now();
-  s_type* scratch = new s_type[(int)pow(super_dim, 7)];
+  // This scratch space is used for reading circuit and building tensor
+  // network. At most we need super_dim * 4 for square grids, and times 2
+  // when qubits are cut on the output index.
+  s_type* scratch = new s_type[(int)pow(super_dim, 4) * 2];
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
@@ -202,10 +198,11 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     // Creating 3D grid of tensors from file.
     t0 = std::chrono::high_resolution_clock::now();
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
-    circuit_data_to_grid_of_tensors(
-        input->circuit_data, input->grid.I, input->grid.J, input->K,
+    circuit_data_to_tensor_network(
+        input->circuit, input->grid.I, input->grid.J,
         input->initial_state, input->final_state, final_qubits,
         input->grid.qubits_off, tensor_grid_3D, scratch);
+
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
@@ -216,8 +213,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
     // Contract 3D grid onto 2D grid of tensors, as usual.
     t0 = std::chrono::high_resolution_clock::now();
-    grid_of_tensors_3D_to_2D(tensor_grid_3D, tensor_grid, final_qubits,
-                             input->grid.qubits_off, ordering, scratch);
+    flatten_grid_of_tensors(tensor_grid_3D, tensor_grid, final_qubits,
+                            input->grid.qubits_off, ordering, scratch);
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);

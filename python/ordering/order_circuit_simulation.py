@@ -44,13 +44,22 @@ class Bond:
     def __init__(self, nodes):
         self.nodes = frozenset(nodes)
         self.ops = []
+        self._dim = 0
 
     def dim(self):
-        """Returns the bond dimension for all operations this represents."""
-        return len(self.ops)
+        """Returns the bond dimension for all operations this represents.
+        Bond dimension is cached to reduce cost from computing operation ranks.
+        """
+        if not self._dim:
+            self._dim = sum([math.log2(utils.ComputeSchmidtRank(op))
+                             for op in self.ops])
+        return self._dim
 
     def add_op(self, op):
+        """Add 'op' to this bond and cache the new bond dimension."""
         self.ops.append(op)
+        self._dim = sum([math.log2(utils.ComputeSchmidtRank(op))
+                         for op in self.ops])
 
     def swap_nodes(self, old_nodes, new_nodes):
         """Removes old_nodes from, and adds new_nodes to, this bond."""
@@ -304,12 +313,22 @@ def circuit_to_ordering(circuit: cirq.circuits.Circuit,
   Throws:
       ValueError: The gate can't be applied to the qubits.
   """
+
+    # Check that there are no k-qubit gates with k > 2
+    if sum(len(g.qubits) > 2 for g in circuit.all_operations()):
+        raise AssertionError(
+            "Auto-ordering now working for k-qubit gates with k > 2.")
+
+    # Strip single qubit gates
+    if sum(len(g.qubits) == 1 for g in circuit.all_operations()):
+      circuit = cirq.Circuit([
+          cirq.Moment([g])
+          for g in circuit.all_operations()
+          if len(g.qubits) > 1
+      ])
+
     if max_cuts < 0:
         raise ValueError('max_cuts must be positive!')
-
-    if sum(utils.ComputeSchmidtRank(g) != 2 for g in circuit.all_operations()):
-        raise AssertionError(
-            "Auto-ordering with Schmidt-rank > 2 gates not yet supported.")
 
     if qubit_names is None:
         qubit_names = range(len(circuit.all_qubits()))
@@ -374,18 +393,6 @@ if __name__ == "__main__":
         print('Get circuit.', file=stderr)
     with open(circuit_filename) as f:
         circuit = utils.GetCircuit(f, qubits)
-
-        # Chech that there are no k-qubit gates with k > 2
-        if sum(len(g.qubits) > 2 for g in circuit.all_operations()):
-            raise AssertionError(
-                "Auto-ordering now working for k-qubit gates with k > 2.")
-
-        # Strip single qubit gates
-        circuit = cirq.Circuit([
-            cirq.Moment([g])
-            for g in circuit.all_operations()
-            if len(g.qubits) > 1
-        ])
 
     if verbose:
         print('Compute ordering.', file=stderr)

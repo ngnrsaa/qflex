@@ -7,6 +7,9 @@ import numpy as np
 import cirq
 import re
 
+# Used to include a class which does not exist in Cirq 0.5.0
+import python.cirq_interface.fsim_gate as cirqtmp
+
 
 def ComputeSchmidtRank(gate):
 
@@ -49,6 +52,10 @@ def GetGridQubits(grid_stream):
 
 
 def GetGate(line, qubits):
+    return GetMomentAndGate(line, qubits)[1]
+
+
+def GetMomentAndGate(line, qubits):
 
     # Get map from gate name to cirq
     gates_map = {}
@@ -61,7 +68,9 @@ def GetGate(line, qubits):
     gates_map['h_1_2'] = cirq.H**(0.5)
     gates_map['cz'] = cirq.CZ
     gates_map['cx'] = cirq.CNOT
-    gates_map['rz'] = cirq.Rz
+    gates_map['rz'] = cirq.ZPowGate
+    gates_map['hz_1_2'] = cirq.PhasedXPowGate(phase_exponent=0.25, exponent=0.5)
+    gates_map['fsim'] = cirqtmp.FSimGate
 
     # Remove last cr
     line = line.strip()
@@ -114,9 +123,21 @@ def GetGate(line, qubits):
             "ERROR: Gate {} not supported yet.".format(gate_name))
 
     if params == None:
-        return gates_map[gate_name](*[qubits[q] for q in gate_qubits])
+        return cycle, gates_map[gate_name](*[qubits[q] for q in gate_qubits])
     else:
-        return gates_map[gate_name](*params)(*[qubits[q] for q in gate_qubits])
+        if gate_name == "fsim":
+            # the Cirq Fsim gate takes angles and not exponents
+            # Transform the params
+            params = [p * np.pi for p in params]
+            return cycle, gates_map[gate_name](theta=params[0], phi=params[1])(*[qubits[q] for q in gate_qubits])
+
+        if gate_name == "rz":
+            # the Cirq Fsim gate takes angles and not exponents
+            # Transform the params
+            # params = [p * np.pi for p in params]
+            return cycle, gates_map[gate_name](exponent=params[0])(qubits[gate_qubits[0]])
+
+        return cycle, gates_map[gate_name](*params)(*[qubits[q] for q in gate_qubits])
 
 
 def GetCircuit(circuit_stream, qubits):
@@ -127,3 +148,82 @@ def GetCircuit(circuit_stream, qubits):
                           for line in circuit_stream
                           if len(line) and len(line.strip().split()) > 1))
     return circuit
+
+
+def GetCircuitOfMoments(file_name, qubits):
+
+    with open(file_name, "r") as circuit_stream:
+
+        moment_index = -1
+        current_moment = []
+        moments = []
+
+        for line in circuit_stream:
+            if not (len(line) and len(line.strip().split()) > 1):
+                continue
+
+            parts = GetMomentAndGate(line, qubits)
+
+            moment_idx_dif = int(parts[0]) - moment_index
+
+            if moment_idx_dif != 0:
+
+                moment_index = int(parts[0])
+                if len(current_moment) > 0:
+                    moments.append(cirq.Moment(current_moment))
+
+                for mi in range(moment_idx_dif - 1):
+                    # add empty moments
+                    moments.append(cirq.Moment([]))
+
+                current_moment = []
+
+            current_moment.append(parts[1])
+
+        if len(current_moment) > 0:
+            moments.append(cirq.Moment(current_moment))
+
+        return cirq.Circuit(moments = moments)
+
+
+
+def GetNumberOfQubits(cirq_circuit):
+    """
+    Determine the number of qubits from an unknown Cirq circuit
+    :param cirq_circuit:
+    :return:
+    """
+    known_qubits = {}
+    size = 0
+    for operation in cirq_circuit:
+        for qub in operation.qubits:
+            if not qub in known_qubits:
+                size += 1
+                known_qubits[qub] = size
+    return size
+
+
+def GetGridQubitFromIndex(index, rows=11, cols=12):
+
+    row = index // cols
+    col = index % cols
+
+    if row >= rows:
+        raise ValueError("Wrong maximum of rows?")
+
+    qub = cirq.GridQubit(row, col)
+
+    return qub
+
+
+def GetIndexFromGridQubit(grid_qubit, rows=11, cols=12):
+
+    if grid_qubit.row >= rows:
+        raise ValueError("This GridQubit seems to have wrong row coordinate...")
+
+
+    return grid_qubit.row * cols + grid_qubit.col
+
+
+
+

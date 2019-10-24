@@ -24,8 +24,8 @@ def test_circuit_to_ordering():
 
     random.seed(0)
 
-    # Build moments with CZs on each adjacent pair of qubits.
-    # Each bond has a pseudorandom rank between 2 and 5:
+    # Build moments with ISWAPs and CZs on each adjacent pair of qubits.
+    # Each bond has a pseudorandom dimension between 2 and 5:
     # (Dots represent qubits, numbers are bond dimension, and Xs are cuts)
     #
     #  .3.4.5.         Canonical qubit numbering goes in row-major order:
@@ -36,17 +36,30 @@ def test_circuit_to_ordering():
     #  4 3 3 4
     #  .3.X.5.
     #
+    # ISWAPs add 2 to the bond dimension, and CZs add 1.
     moments = ()
     for x in range(size - 1):
         for y in range(size):
-            for _ in range(random.randint(2, 5)):
+            r = random.randint(2, 5)
+            while r > 1:
+                moments += (cirq.Moment(
+                    [cirq.ISWAP(qubits[x][y], qubits[x + 1][y])]),)
+                r -= 2
+            while r > 0:
                 moments += (cirq.Moment(
                     [cirq.CZ(qubits[x][y], qubits[x + 1][y])]),)
+                r -= 1
     for y in range(size - 1):
         for x in range(size):
-            for _ in range(random.randint(2, 5)):
+            r = random.randint(2, 5)
+            while r > 1:
+                moments += (cirq.Moment(
+                    [cirq.ISWAP(qubits[x][y], qubits[x][y + 1])]),)
+                r -= 2
+            while r > 0:
                 moments += (cirq.Moment(
                     [cirq.CZ(qubits[x][y], qubits[x][y + 1])]),)
+                r -= 1
 
     circuit = cirq.Circuit(moments)
     order = order_lib.circuit_to_ordering(circuit)
@@ -54,7 +67,7 @@ def test_circuit_to_ordering():
     print("\n".join(order))
     assert len(order) == 36
     # The order of these two operations doesn't matter, and cuts may have their
-    # indices swapped.
+    # indices Iswapped.
     cut1 = set(["cut () 13 14", "cut () 14 13"])
     cut2 = set(["cut () 9 10", "cut () 10 9"])
     assert cut1.intersection(set(order[0:2]))
@@ -65,52 +78,41 @@ def test_circuit_to_ordering():
     ]
     order2_30 = [order[i] for i in command_indices]
     assert order2_30 == [
-        # 1: ['CZ((3, 2), (3, 3))', 'CZ((3, 2), (3, 3))', 'CZ((3, 2), (3, 3))',
-        #     'CZ((3, 2), (3, 3))', 'CZ((3, 2), (3, 3))']
+        # 1: ['ISWAP((3, 2), (3, 3))', 'ISWAP((3, 2), (3, 3))', 'CZ((3, 2), (3, 3))']
         "expand A 14",
         "expand A 15",
-        # 2: ['CZ((0, 0), (1, 0))', 'CZ((0, 0), (1, 0))', 'CZ((0, 0), (1, 0))',
-        #     'CZ((0, 0), (1, 0))', 'CZ((0, 0), (1, 0))']
+        # 2: ['ISWAP((0, 0), (1, 0))', 'ISWAP((0, 0), (1, 0))', 'CZ((0, 0), (1, 0))']
         "expand B 0",
         "expand B 4",
-        # 3: ['CZ((0, 2), (0, 3))', 'CZ((0, 2), (0, 3))', 'CZ((0, 2), (0, 3))',
-        #     'CZ((0, 2), (0, 3))', 'CZ((0, 2), (0, 3))']
+        # 3: ['ISWAP((0, 2), (0, 3))', 'ISWAP((0, 2), (0, 3))', 'CZ((0, 2), (0, 3))']
         "expand C 2",
         "expand C 3",
-        # 4: ['CZ((2, 3), (3, 3))', 'CZ((2, 3), (3, 3))', 'CZ((2, 3), (3, 3))',
-        #     'CZ((2, 3), (3, 3))']
+        # 4: ['ISWAP((2, 3), (3, 3))', 'ISWAP((2, 3), (3, 3))']
         "expand A 11",
-        # 5: ['CZ((2, 2), (2, 3))', 'CZ((2, 2), (2, 3))', 'CZ((2, 2), (2, 3))',
-        #     'CZ((2, 2), (2, 3))', 'CZ((2, 2), (3, 2))', 'CZ((2, 2), (3, 2))',
-        #     'CZ((2, 2), (3, 2))']
+        # 5: ['ISWAP((2, 2), (2, 3))', 'ISWAP((2, 2), (2, 3))', 'ISWAP((2, 2), (3, 2))', 'CZ((2, 2), (3, 2))']
         "expand A 10",
-        # 6: ['CZ((1, 3), (2, 3))', 'CZ((1, 3), (2, 3))', 'CZ((1, 3), (2, 3))',
-        #     'CZ((1, 3), (2, 3))', 'CZ((1, 3), (2, 3))']
+        # 6: ['ISWAP((1, 3), (2, 3))', 'ISWAP((1, 3), (2, 3))', 'CZ((1, 3), (2, 3))']
         "expand A 7",
-        # 7: ['CZ((1, 2), (2, 2))', 'CZ((1, 2), (2, 2))', 'CZ((1, 2), (2, 2))',
-        #     'CZ((1, 2), (2, 2))', 'CZ((1, 2), (1, 3))', 'CZ((1, 2), (1, 3))']
+        # 7: ['ISWAP((1, 2), (2, 2))', 'ISWAP((1, 2), (2, 2))', 'ISWAP((1, 2), (1, 3))']
         "expand A 6",
-        # 8: ['CZ((0, 2), (1, 2))', 'CZ((0, 2), (1, 2))', 'CZ((0, 3), (1, 3))',
-        #     'CZ((0, 3), (1, 3))', 'CZ((0, 3), (1, 3))', 'CZ((0, 3), (1, 3))']
+        # 8: ['ISWAP((0, 2), (1, 2))', 'ISWAP((0, 3), (1, 3))', 'ISWAP((0, 3), (1, 3))']
         "merge A C",
-        # 9: ['CZ((0, 1), (0, 2))', 'CZ((0, 1), (0, 2))', 'CZ((0, 1), (0, 2))',
-        #     'CZ((0, 1), (0, 2))']
+        # 9: ['ISWAP((0, 1), (0, 2))', 'ISWAP((0, 1), (0, 2))']
         "expand C 1",
-        # 10: ['CZ((0, 1), (1, 1))', 'CZ((0, 1), (1, 1))', 'CZ((0, 1), (1, 1))',
-        #      'CZ((0, 1), (1, 1))', 'CZ((0, 1), (1, 1))', 'CZ((1, 1), (1, 2))',
-        #      'CZ((1, 1), (1, 2))']
+        # 10: ['ISWAP((0, 1), (1, 1))', 'ISWAP((0, 1), (1, 1))', 'CZ((0, 1), (1, 1))', 'ISWAP((1, 1), (1, 2))']
         "expand C 5",
-        # 11: ['CZ((2, 0), (3, 0))', 'CZ((2, 0), (3, 0))', 'CZ((2, 0), (3, 0))',
-        #      'CZ((2, 0), (3, 0))']
+        # 11: ['ISWAP((2, 0), (3, 0))', 'ISWAP((2, 0), (3, 0))']
         "expand D 8",
         "expand D 12",
-        # 12: ['CZ((1, 0), (1, 1))', 'CZ((1, 0), (1, 1))', 'CZ((0, 0), (0, 1))',
-        #      'CZ((0, 0), (0, 1))', 'CZ((0, 0), (0, 1))']
+        # 12: ['ISWAP((0, 0), (0, 1))', 'CZ((0, 0), (0, 1))', 'ISWAP((1, 0), (1, 1))']
         "merge B C"
     ]
     # The order of these two operations doesn't matter.
+    # 13: ['ISWAP((1, 0), (2, 0))', 'ISWAP((1, 0), (2, 0))', 'CZ((1, 0), (2, 0))']
+    # 14: ['ISWAP((1, 1), (2, 1))', 'ISWAP((1, 1), (2, 1))', 'CZ((1, 1), (2, 1))', 'ISWAP((2, 0), (2, 1))', 'ISWAP((2, 0), (2, 1))']
     assert (["expand C 9", "merge C D"] == [order[31], order[33]] or
             ["merge C D", "expand D 9"] == [order[31], order[33]])
+    # 15: ['ISWAP((2, 1), (3, 1))', 'CZ((2, 1), (3, 1))', 'ISWAP((3, 0), (3, 1))', 'CZ((3, 0), (3, 1))']
     assert order[35] == "expand D 13"
 
 

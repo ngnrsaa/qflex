@@ -35,19 +35,11 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
   }
 
   // Temporary streams
-  std::ifstream fs_circuit_data;
   std::ifstream fs_ordering_data;
 
   // Get circuit
   if (options.contains("circuit_filename")) {
-    fs_circuit_data.open(options["circuit_filename"].cast<std::string>());
-    if (not fs_circuit_data.good()) {
-      std::cerr << "ERROR: cannot open file: "
-                << options["circuit_filename"].cast<std::string>() << "."
-                << std::endl;
-      return {};
-    }
-    input.circuit_data = &fs_circuit_data;
+    input.circuit.load(options["circuit_filename"].cast<std::string>());
   } else {
     std::cerr << "ERROR: not yet implemented." << std::endl;
     return {};
@@ -75,28 +67,6 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     std::cerr << "ERROR: not yet implemented." << std::endl;
     return {};
   }
-
-  // Get auto_depth
-  std::size_t auto_depth;
-  if (options.contains("circuit_filename")) {
-    auto_depth = qflex::compute_depth(
-        std::ifstream(options["circuit_filename"].cast<std::string>()));
-  } else {
-    std::cerr << "ERROR: not yet implemented." << std::endl;
-    return {};
-  }
-
-  // Get depth
-  if (options.contains("depth")) {
-    input.K = options["depth"].cast<int>();
-    if (input.K != auto_depth) {
-      std::cerr << "WARNING: user-provided depth (" << input.K
-                << ") differs from the auto-computed depth (" << auto_depth
-                << ")." << std::endl;
-      return {};
-    }
-  } else
-    input.K = auto_depth;
 
   // Setting initial and final circuit states.
   if (options.contains("initial_state"))
