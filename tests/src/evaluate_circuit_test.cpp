@@ -9,12 +9,13 @@ namespace {
 class GetOutputStatesTest : public testing::Test {
  public:
   void TestOutputExpectations() {
-    get_output_states(ordering_, &final_qubits_, &output_states_);
+    get_output_states(&input_, ordering_, &final_qubits_, &output_states_);
     EXPECT_EQ(final_qubits_, expected_final_qubits_);
     EXPECT_EQ(output_states_, expected_output_states_);
   }
 
  protected:
+  QflexInput input_;
   std::vector<std::vector<int>> final_qubits_, expected_final_qubits_;
   std::vector<std::string> output_states_, expected_output_states_;
   std::list<ContractionOperation> ordering_;
@@ -47,31 +48,41 @@ TEST_F(GetOutputStatesTest, IgnoresNonTerminalCuts) {
   TestOutputExpectations();
 }
 
-// Terminal cuts are listed in the order applied.
-TEST_F(GetOutputStatesTest, TerminalCutsDefineOutputStates) {
+// Terminal cuts are listed in index order, inline with other qubits.
+TEST_F(GetOutputStatesTest, TerminalCutsOrderedNormally) {
+  input_.grid.I = 3;
+  input_.grid.J = 2;
+  input_.final_state = "xx00x0";
   ordering_.emplace_back(CutIndex({{0, 1}}, {0}));
   ordering_.emplace_back(CutIndex({{0, 0}}, {0, 1}));
-  ordering_.emplace_back(CutIndex({{1, 0}}, {1}));
-  expected_final_qubits_ = {{0, 1}, {0, 0}, {1, 0}};
-  expected_output_states_ = {"001", "011"};
+  ordering_.emplace_back(CutIndex({{2, 0}}, {1}));
+  expected_final_qubits_ = {{0, 1}, {0, 0}, {2, 0}};
+  expected_output_states_ = {"000010", "100010"};
   TestOutputExpectations();
 }
 
 // Terminal cuts with no values will be evaluated as "0" and "1", since output
 // states can only be one of those two values.
 TEST_F(GetOutputStatesTest, BlankCutValuesEvaluateBothStates) {
+  input_.grid.I = 2;
+  input_.grid.J = 2;
+  input_.final_state = "xxx";
   ordering_.emplace_back(CutIndex({{0, 1}}));
   ordering_.emplace_back(CutIndex({{0, 0}}));
   ordering_.emplace_back(CutIndex({{1, 0}}));
   expected_final_qubits_ = {{0, 1}, {0, 0}, {1, 0}};
-  expected_output_states_ = {"000", "001", "010", "011",
-                             "100", "101", "110", "111"};
+  expected_output_states_ = {"000", "001", "100", "101",
+                             "010", "011", "110", "111"};
   TestOutputExpectations();
 }
 
 // When a mixture of operations are applied, only terminal cuts affect the
 // output states.
 TEST_F(GetOutputStatesTest, OnlyUseTerminalCuts) {
+  input_.grid.I = 3;
+  input_.grid.J = 2;
+  input_.grid.qubits_off.push_back({2, 0});
+  input_.final_state = "0000x";
   ordering_.emplace_back(CutIndex({{0, 1}, {1, 1}}, {1, 2}));
   ordering_.emplace_back(ExpandPatch("a", {0, 1}));
   ordering_.emplace_back(ExpandPatch("a", {0, 0}));
@@ -81,21 +92,23 @@ TEST_F(GetOutputStatesTest, OnlyUseTerminalCuts) {
   ordering_.emplace_back(ExpandPatch("b", {1, 1}));
   ordering_.emplace_back(MergePatches("a", "b"));
   expected_final_qubits_ = {{2, 1}};
-  expected_output_states_ = {"0", "1"};
+  expected_output_states_ = {"00000", "00001"};
   TestOutputExpectations();
 }
 
 // Nullptr input in get_output_states()
 TEST(GetOutputStatesDeathTest, InvalidInput) {
+  QflexInput input;
   std::list<ContractionOperation> ordering;
   std::vector<std::vector<int>> final_qubits;
   std::vector<std::string> output_states;
 
   // Final qubits cannot be null pointer.
-  EXPECT_ANY_THROW(get_output_states(ordering, nullptr, &output_states), "");
+  EXPECT_DEATH(get_output_states(&input, ordering, nullptr, &output_states),
+               "");
 
   // Output states cannot be null pointer.
-  EXPECT_ANY_THROW(get_output_states(ordering, &final_qubits, nullptr), "");
+  EXPECT_DEATH(get_output_states(&input, ordering, &final_qubits, nullptr), "");
 }
 
 // Grid layout with trailing whitespace.
@@ -187,19 +200,18 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
   QflexInput input;
   input.grid.I = 3;
   input.grid.J = 2;
-  input.K = 2;
-  input.circuit_data = &circuit_data;
+  input.circuit.load(circuit_data);
   input.ordering_data = &ordering_data;
   input.grid.load(grid_data);
   input.initial_state = "00000";
-  input.final_state_A = "1100";
+  input.final_state = "1100x";
 
   std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
       EvaluateCircuit(&input);
 
   ASSERT_EQ(amplitudes.size(), 2);
-  EXPECT_EQ(amplitudes[0].first, "1100 0");
-  EXPECT_EQ(amplitudes[1].first, "1100 1");
+  EXPECT_EQ(amplitudes[0].first, "11000");
+  EXPECT_EQ(amplitudes[1].first, "11001");
   EXPECT_NEAR(amplitudes[0].second.real(), 0.10669, 1e-5);
   EXPECT_NEAR(amplitudes[0].second.imag(), 0.04419, 1e-5);
   EXPECT_NEAR(amplitudes[1].second.real(), -0.01831, 1e-5);

@@ -1,11 +1,10 @@
 /**
  * @file evaluate_circuit.h
- * @see https://github.com/benjaminvillalonga/optimized_parallel_QC_with_TN
  *
  * @author Benjamin Villalonga (main contributor), Bron Nelson, Sergio Boixo and
  * Salvatore Mandra
+ * @contributors: The qFlex Developers (see CONTRIBUTORS.md)
  * @date Created: August 2018
- * @date Modified: August 2018
  *
  * @copyright: Copyright © 2019, United States Government, as represented
  * by the Administrator of the National Aeronautics and Space Administration.
@@ -32,6 +31,7 @@
 
 #include "contraction_utils.h"
 #include "read_circuit.h"
+#include "circuit.h"
 #include "tensor.h"
 #include "errors.h"
 
@@ -45,12 +45,11 @@ struct QflexGrid {
 };
 
 struct QflexInput {
-  int K;
-  std::istream* circuit_data;
   std::istream* ordering_data;
+  QflexCircuit circuit;
   QflexGrid grid;
   std::string initial_state;
-  std::string final_state_A;
+  std::string final_state;
   bool enable_timing_logs = false;
 };
 
@@ -67,15 +66,18 @@ std::vector<std::vector<int>> read_grid_layout_from_stream(
 
 /**
  * Determines the final qubit positions and output states for a given ordering.
+ * @param input QflexInput generated from the command line.
  * @param ordering std::list<ContractionOperation> to parse output states from
  * @param final_qubits vector of coordinates for qubits with terminal cuts, to
  * be populated by this method.
  * @param output_states vector of output states for the given contraction
  * ordering, to be populated by this method.
+ * @return the final state vector, with 'x' for cut locations.
  */
-void get_output_states(const std::list<ContractionOperation>& ordering,
-                       std::vector<std::vector<int>>* final_qubits,
-                       std::vector<std::string>* output_states);
+std::string get_output_states(const QflexInput* input,
+                              const std::list<ContractionOperation>& ordering,
+                              std::vector<std::vector<int>>* final_qubits,
+                              std::vector<std::string>* output_states);
 
 /**
  * Evaluates a circuit and returns the final amplitudes of each state resulting
@@ -83,11 +85,11 @@ void get_output_states(const std::list<ContractionOperation>& ordering,
  *
  * Usage:
  * $ ./qflex.x I J K fidelity circuit_filename ordering_filename \
- *       grid_filename [initial_state] [final_state_A]
+ *       grid_filename [initial_state] [final_state]
  *
  * @param input args required to specify a circuit for evaluation.
  * @return vector of <state bitstring, amplitude> pairs for each output state.
- * States for qubits with terminal cuts are listed at the end onf the state
+ * States for qubits with terminal cuts are listed at the end of the state
  * bitstring, in the order of their terminal cuts.
  */
 std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(

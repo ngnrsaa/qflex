@@ -1,6 +1,6 @@
 # Random Quantum Circuit (RQC) Generator
 
-A Python RQC generator has been provided and can be found in here: [generator.py](/python/circuits/generator.py).
+A Python-based RQC generator is provided in [generator.py](/python/circuits/generator.py).
 
 The purpose of this document is to provide information on how to use the provided
 RQC generator.
@@ -9,7 +9,7 @@ RQC generator.
 
 ### Input
 
-This RQC can be called in the following manner:
+This tool can be called in the following manner:
 ```
 Example usage:
     $ python generator.py --pattern-file=config/patterns/ibm_rochester.txt \
@@ -36,16 +36,26 @@ Example usage:
     * Random seed to initialize PRNG
 * --output
     * Name of output file to write the generated RQC in qsim format
+    
+### Output
+
+Currently, the generated RQC is not directly compatible with qFlex input. The qubit 
+indices generated need to be mapped to the indexing used by qFlex as described in the 
+[input_formats](/docs/input_formats.md) file.
 
 ## Patterns
 
-To generate a random quantum circuit, a file containing the activation pattern must be provided 
-(see [/patterns](/patterns) for examples). Activation patterns must be given in a dictionaty like format
-(see for instance [test.txt](/patterns/test.txt)):
+To generate a random quantum circuit, a file containing the activation pattern
+must be provided (see [/patterns](/patterns) for examples). Activation patterns
+must be given in a dictionary-like format (see for instance
+[test.txt](/patterns/test.txt)):
 ```
 {
-  'A': {(0, 2), (1, 3)}, 
-  'B': {(0, 1), (2, 3)} 
+  'A': {(0, 2), (1, 3)},
+  'B': {(0, 1), (2, 3)}
 }
 ```
-with `A` and `B` being tags for the patterns. Each pattern must be a list of pairs of qubits where two-qubit gates will be applied. The RQC is created by applying a layer of single-qubit gates, followed by two-qubit gates accordingly to the sequence given in `--sequence`. 
+with `A` and `B` being tags for the patterns. Each pattern must be a list of
+pairs of qubits where two-qubit gates will be applied. The RQC is created by
+applying a layer of single-qubit gates, followed by two-qubit gates accordingly
+to the sequence given in `--sequence`.

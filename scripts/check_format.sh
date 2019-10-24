@@ -1,16 +1,36 @@
 #!/bin/bash
 
+# This script checks the formatting of all C++ and python files in the
+# repository. If issues are found, a command to automatically resolve them will
+# be printed as output.
+
 ROOT_DIR="$(realpath $(dirname $0))/../"
 
+# Space separated folders in $ROOT_DIR
+EXCLUDED_FOLDERS=".env"
+
 function find_cmd() {
+
   # Get path
   path=$1
   shift
+
   # Get modules
   modules=$(cat ${ROOT_DIR}/.gitmodules 2>/dev/null | grep path | sed 's/[[:space:]]*//g' | awk -F "=" -v root_dir=${ROOT_DIR} '{ print root_dir"/"$2 }' | tr '\n' '|')
   if [[ ! -z $modules ]]; then
     modules=${modules::-1}
-    find "$path" "$@" | grep -Ev ^"$modules|${ROOT_DIR}/.git"
+    modules="$modules|${ROOT_DIR}/.git"
+  fi
+
+  # Get excluded folders
+  excluded_folders=$(echo $EXCLUDED_FOLDERS | sed 's/ \+/|/g')
+
+  if [[ ! -z $modules && ! -z $excluded_folders ]]; then
+    find "$path" "$@" | grep -Ev ^"$modules|$excluded_folders"
+  elif [[ ! -z $modules ]]; then
+    find "$path" "$@" | grep -Ev ^$modules
+  elif [[ ! -z $excluded_folders ]]; then
+    find "$path" "$@" | grep -Ev ^$excluded_folders
   else
     find "$path" "$@" 
   fi

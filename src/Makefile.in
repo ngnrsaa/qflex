@@ -1,11 +1,27 @@
 TARGET1 = qflex
 
-OBJS1 = evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o docopt/docopt.o
+# The folder where the Python interface is stored
+CIRQ_IF_DIR = ../python/
 
-CXXFLAGS += -Idocopt/
+# The name of the shared library that results after compiling QFlex for Pybind11
+QFLEXLIB = $(CIRQ_IF_DIR)/$(TARGET1)`python3-config --extension-suffix`
+
+OBJS1 = circuit.o evaluate_circuit.o tensor.o contraction_utils.o \
+    read_circuit.o docopt/docopt.o
+
+CXXFLAGS += -Idocopt/ -fPIC
+
+# The flags for the compilation of the Pybind11 interface
+PYBINDFLAGS = -shared `python3 -m pybind11 --includes`
+
+# commented out because pip install pybind11
+#-Ipybind11/include
 
 $(TARGET1): main.cpp $(OBJS1)
 	$(CXX) -o $(@).x $< $(OBJS1) $(CXXFLAGS)
+
+pybind: $(OBJS1) pybind_main.h
+	$(CXX) pybind_main.cpp -o $(QFLEXLIB) $^ $(CXXFLAGS) $(PYBINDFLAGS)
 
 %.o: %.cpp %.h
 	$(CXX) -c $< $(CXXFLAGS) -o $@
@@ -13,3 +29,4 @@ $(TARGET1): main.cpp $(OBJS1)
 .PHONY: clean
 clean:
 	-rm -f ./*.x ./*.a ./*.so ./*.mod $(OBJS1)
+	-rm -f $(QFLEXLIB)

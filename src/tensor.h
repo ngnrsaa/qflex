@@ -2,12 +2,11 @@
  * @file tensor.h
  * Definition of the Tensor class, which implements tensors with
  * matrix multiplication and a self-written entry reordering algorithm.
- * @see https://github.com/benjaminvillalonga/optimized_parallel_QC_with_TN
  *
  * @author Benjamin Villalonga (main contributor), Bron Nelson, Sergio Boixo and
+ * @contributors: The qFlex Developers (see CONTRIBUTORS.md)
  * Salvatore Mandra
  * @date Created: August 2018
- * @date Modified: August 2018
  *
  * @copyright: Copyright © 2019, United States Government, as represented
  * by the Administrator of the National Aeronautics and Space Administration.
@@ -40,7 +39,7 @@ namespace qflex {
 typedef std::complex<float> s_type;
 
 /**
- * Represents an Tensor.
+ * Represents a Tensor.
  */
 class Tensor {
  public:
@@ -50,7 +49,7 @@ class Tensor {
   Tensor();
 
   /**
-   * Creates an Tensor. New space is allocated.
+   * Creates a Tensor. New space is allocated.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
    * @param dimensions std::vector<size_t> with the ordered dimensions of the
@@ -59,7 +58,7 @@ class Tensor {
   Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions);
 
   /**
-   * Creates an Tensor. New space is allocated and filled with a copy of
+   * Creates a Tensor. New space is allocated and filled with a copy of
    * the vector's data. Useful for small tensors where the copying time is
    * negligible.
    * @param indices std::vector<std::string> with the names of the indices in
@@ -74,7 +73,7 @@ class Tensor {
          const std::vector<s_type>& data);
 
   /**
-   * Creates an Tensor. A pointer to the data is passed.
+   * Creates a Tensor. A pointer to the data is passed.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
    * @param dimensions std::vector<int> with the ordered dimensions of the
@@ -93,15 +92,15 @@ class Tensor {
 
   /**
    * Destructor: frees all memory associated with a given Tensor object.
-   * Invoked by the syste.
+   * Invoked by the system.
    */
   ~Tensor();
 
   /**
    * Assignment operator for setting two Tensor equal to one another.
-   * It is responsibility of the user to copy onto an Tensor with the same
+   * It is responsibility of the user to copy onto a Tensor with the same
    * total dimension as other. If there is space allocated, no new space will
-   * be allocated. Changing the size of an Tensor is not allowed, although
+   * be allocated. Changing the size of a Tensor is not allowed, although
    * if this Tensor has at least as much space allocated as other, then
    * everything will run smoothly, with a non-optimal usage of memory.
    * @param other Tensor to copy into the current Tensor.
@@ -110,7 +109,7 @@ class Tensor {
   const Tensor& operator=(const Tensor& other);
 
   /**
-   * Get inidices.
+   * Get indices.
    * @return const reference to std::vector<std::string> of indices.
    */
   const std::vector<std::string>& get_indices() const;
@@ -284,9 +283,9 @@ class Tensor {
 
   /**
    * Helper function for the copy constructor and the assignment operator.
-   * It is responsibility of the user to copy onto an Tensor with the same
+   * It is responsibility of the user to copy onto a Tensor with the same
    * total dimension as other. If there is space allocated, no new space will
-   * be allocated. Changing the size of an Tensor is not allowed.
+   * be allocated. Changing the size of a Tensor is not allowed.
    * @param other Tensor to copy into the current Tensor.
    */
   void _copy(const Tensor& other);
@@ -410,6 +409,26 @@ void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
  * memory.
  */
 void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy);
+
+/**
+ * Returns the size of the tensor product of A and B.
+ * @param A Reference to Tensor A.
+ * @param B Reference to Tensor B.
+ * @return size_t with the size of the tensor resulting from the multiplication
+ * of A and B.
+ */
+size_t result_size(Tensor& A, Tensor& B);
+
+/**
+ * Bundle indices shared by tensors A and B.
+ * @param A Reference to Tensor A. A can be reordered, and therfore modified.
+ * @param B Reference to Tensor B. B can be reordered, and therfore modified.
+ * @param scratch_copy Pointer to s_type array for scratch work while
+ * reordering. It has to allocate at least as much max(A.size(), B.size())
+ * memory.
+ */
+void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
+                    s_type* scratch_copy);
 
 /**
  * Creates a reordering map for the data of a tensor with binary indices

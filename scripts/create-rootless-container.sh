@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
 
+# See "docs/rootless-container.md" for more information about this file.
+
 # Get Script path
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 print_help() {
-  echo -e "\n\tUsage: $(basename $0) {-|folder} [-h -x]\n"                >&2
-  echo -e "\t\tCreate rootless container for qflex in [folder]."          >&2
-  echo -e "\t\tIf [folder] == \"-\", use a temporary folder instead."     >&2
-  echo                                                                    >&2
-  echo -e "\tOptions:"                                                    >&2
-  echo -e "\t\t-h   : Print this help."                                   >&2
-  echo -e "\t\t-x   : Do not install qFlex (just create container)."      >&2
-  echo -e "\t\t-c   : Install Cirq."                                      >&2
-  echo                                                                    >&2
+  echo -e "\n\tUsage: $(basename $0) (-|folder) [-h -j <p> -x -r -c]\n"        >&2
+  echo -e "\t\tCreate rootless container for qflex in [folder]."               >&2
+  echo -e "\t\tIf [folder] == \"-\", use a temporary folder instead."          >&2
+  echo                                                                         >&2
+  echo -e "\tOptions:"                                                         >&2
+  echo -e "\t\t-h        Print this help."                                     >&2
+  echo -e "\t\t-j <p>    Number of parallel processes."                        >&2
+  echo -e "\t\t-x        Do not install qFlex (just create container)."        >&2
+  echo -e "\t\t-r        Run rootless container immediately after creation."   >&2
+  echo -e "\t\t-c        Install Cirq."                                        >&2
+  echo                                                                         >&2
 }
 
 get_location() {
@@ -25,8 +29,10 @@ get_location() {
   fi
 }
 
+num_par_processes=1
 user_root=""
 no_inst=""
+run_immediately=""
 cirq=""
 num_args=$#
 
@@ -51,11 +57,19 @@ for((idx=1; idx<=$num_args; ++idx)); do
           print_help
           exit -1
           ;;
+        -j)
+          shift
+          num_par_processes=$1
+          num_args=$((num_args-1))
+          ;;
         -c)
           cirq=1
           ;;
         -x)
           no_inst=1
+          ;;
+        -r)
+          run_immediately=1
           ;;
         *)
           print_help
@@ -131,7 +145,7 @@ fi
 
 # Get commands with absolute path
 unshare="$(get_location unshare) -muipUCrf"
-chroot="$(get_location chroot) $root/ $(get_location env) -i PATH=/bin/:/sbin:/usr/bin/:/usr/sbin/:/usr/local/bin:/usr/local/sbin OMP_NUM_THREADS=${OMP_NUM_THREADS:-1} LANG=${LANG:-en}"
+chroot="$(get_location chroot) $root/ $(get_location env) -i PATH=/bin/:/sbin:/usr/bin/:/usr/sbin/:/usr/local/bin:/usr/local/sbin num_par_processes=${num_par_processes:-1} LANG=${LANG:-en}"
 
 # Download alpine
 echo "[CHROOT] Download $alpine_url/$latest_miniroot." >&2
@@ -145,6 +159,9 @@ tar xvf $root/rootfs.tar.gz -C $root >/dev/null
 echo "[CHROOT] Copy /etc/resolv.conf." >&2
 cp -fv /etc/resolv.conf $root/etc/
 
+echo "[CHROOT] Creating /dev/shm"
+mkdir -p $root/dev/shm
+
 # Clone qflex
 echo "[CHROOT] Clone qFlex." >&2
 git clone $SCRIPTPATH/../ $root/qflex
@@ -153,26 +170,11 @@ echo "[CHROOT] Create installation script." >&2
 cat > $root/install_qflex.sh << EOF
 #!/bin/sh
 
-# Install dependencies
-/sbin/apk update
-/sbin/apk add g++ make gsl-dev git autoconf
-
-# Change folder
-cd /qflex
-
-# Run autoconf
-autoconf && ./configure
-
-# Make qFlex
-make -j\$OMP_NUM_THREADS
-
-# Make and run tests
-make run-tests -j\$OMP_NUM_THREADS
+num_par_processes=\${num_par_processes:-1}
 EOF
-chmod 755 $root/install_qflex.sh
 
-cat > $root/install_cirq.sh << EOF
-#!/bin/sh
+if [[ $cirq == 1 ]]; then
+cat >> $root/install_qflex.sh << EOF
 
 # Update repository
 /sbin/apk update
@@ -186,25 +188,42 @@ cat > $root/install_cirq.sh << EOF
 # Install Cirq
 /usr/bin/pip3 install cirq
 
-# Used by multiprocessing
-mkdir -p /dev/shm
-
-/usr/bin/python3 -c "import cirq; print(cirq.Circuit())"
 EOF
-chmod 755 $root/install_cirq.sh
+fi
 
-if [[ -z $no_inst || $no_inst != "1" ]]; then
+cat >> $root/install_qflex.sh << EOF
+
+# Install dependencies
+/sbin/apk update
+/sbin/apk add g++ make gsl-dev git autoconf automake
+/sbin/apk add python3-dev py3-pybind11 py3-packaging py3-pytest py3-docopt
+
+# Change folder
+cd /qflex
+
+# Run autoconf
+autoreconf -i && autoconf && ./configure $(if [[ $cirq != "1" ]]; then echo "--disable-cirq"; fi)
+
+# Make qFlex
+make -j\$num_par_processes
+
+# Make and run tests
+make run-tests -j\$num_par_processes
+EOF
+chmod 755 $root/install_qflex.sh
+
+
+
+if [[ $no_inst != "1" ]]; then
   echo "[CHROOT] Install qFlex." >&2
   $unshare $chroot /install_qflex.sh
 else
   echo "[CHROOT] To install qFlex, run /install_qflex.sh in the container." >&2
 fi
 
-if [[ -z $cirq || $cirq != "1" ]]; then
-  echo "[CHROOT] To install Cirq, run /install_cirq.sh in the container." >&2
-else
-  echo "[CHROOT] Install Cirq." >&2
-  $unshare $chroot /install_cirq.sh
-fi
-
 echo "[CHROOT] Container in: $(realpath $root)" >&2
+
+if [[ $run_immediately == "1" ]]; then
+  echo "[CHROOT] Run container." >&2
+  bash ${SCRIPTPATH}/run-rootless-container.sh $root
+fi

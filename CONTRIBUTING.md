@@ -1,7 +1,8 @@
 # How to Contribute
 
 We'd love to accept your patches and contributions to this project.
-We do have some guidelines to follow, covered in this document, but don't worry about (or expect to) get everything right the first time!
+We do have some guidelines to follow, covered in this document, but don't worry
+about (or expect to) get everything right the first time!
 Create a pull request and we'll nudge you in the right direction.
 
 ## Contributor License Agreement
@@ -58,7 +59,7 @@ into your branch:
 you should see the option to create a new pull request from
 your clone repository.  Alternatively you can create the pull request
 by navigating to the "Pull requests" tab in the page, and selecting
-the appropriate branches. 
+the appropriate branches.
 1. The reviewer will comment on your code and may ask for changes,
 you can perform these locally, and then push the new commit following
 the same process as above.
@@ -68,29 +69,16 @@ the same process as above.
 When a pull request is created or updated, various automatic checks will run to
 ensure that the change won't break qFlex and meets our coding standards.
 
-qFlex contains a continuous integration tool to verify testing.  See our
-[development page](docs/development.md) on how to run the continuous integration
-checks locally.
-
 Please be aware of the following code standards that will be applied to any
 new changes.
 
 - **Tests**.
 Existing tests must continue to pass (or be updated) when new changes are introduced.
-We use [pytest](https://docs.pytest.org/en/latest/) to run our tests.
-- **Coverage**.
-Code should be covered by tests.
-We use [pytest-cov](https://pytest-cov.readthedocs.io/en/latest/) to compute coverage, and custom tooling to filter down the output to only include new or changed code.
-We don't require 100% coverage, but any uncovered code must be annotated with `# coverage: ignore`.
-To ignore coverage of a single line, place `# coverage: ignore` at the end of the line.
-To ignore coverage for an entire block, start the block with a `# coverage: ignore` comment on its own line.
-- **Lint**.
-Code should meet common style standards for python and be free of error-prone constructs.
-We use [pylint](https://www.pylint.org/) to check for lint.
-To see which lint checks we enforce, see the [dev_tools/conf/.pylintrc](dev_tools/conf/.pylintrc) file.
-When pylint produces a false positive, it can be squashed with annotations like `# pylint: disable=unused-import`.
-- **Types**.
-Code should have [type annotations](https://www.python.org/dev/peps/pep-0484/).
-We use [mypy](http://mypy-lang.org/) to check that type annotations are correct.
-When type checking produces a false positive, it can be ignored with annotations like `# type: ignore`.
-
+We use [pytest](https://docs.pytest.org/en/latest/) to run our Python tests, and
+[googletest](https://github.com/google/googletest) for C++ tests.
+- **Formatting**.
+Code should meet common style standards for python and C++, and be free of
+error-prone constructs. We use [YAPF](https://github.com/google/yapf) and
+[clang-format](https://clang.llvm.org/docs/ClangFormat.html) to format files;
+running [check_format.sh](/scripts/check_format.sh) will identify any formatting
+issues and provide commands to automatically resolve them.
