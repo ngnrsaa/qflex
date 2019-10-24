@@ -8,8 +8,11 @@ namespace py = pybind11;
 
 #include <vector>
 
-#include "evaluate_circuit.h"
-#include "read_circuit.h"
+#include "input.h"
+
+namespace qflex {
+  extern std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(QflexInput* input);
+}
 
 std::vector<std::pair<std::string, std::complex<double>>> simulate(
     const py::dict &options);
