@@ -79,7 +79,7 @@ std::vector<s_type> gate_array(const std::string& gate_name,
 
   bool valid_gate = _GATES_DATA.find(gate_name) != _GATES_DATA.end();
   if (!valid_gate) {
-    throw ERROR_MSG("Invalid gate name provided: " + gate_name);
+    throw ERROR_MSG("Invalid gate name provided: ", gate_name);
   }
   return _GATES_DATA.at(gate_name);
 }
@@ -141,7 +141,7 @@ gate_arrays(const std::string& gate_name, const std::vector<double>& params) {
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
                       std::vector<size_t>>(ret_val[0], ret_val[1], {2, 4, 2});
   }
-  throw ERROR_MSG("Invalid gate name provided: " + gate_name);
+  throw ERROR_MSG("Invalid gate name provided: ", gate_name);
 }
 
 /**
@@ -305,10 +305,10 @@ void circuit_data_to_tensor_network(
                 num_active_qubits_from_grid, ".");
     }
     if (final_conf.size() != initial_conf.size()) {
-      std::cout << "Size of final_conf: " << final_conf.size()
-                << ", must be equal to size of initial_conf: "
-                << initial_conf.size() << "." << std::endl;
-      assert(final_conf.size() == initial_conf.size());
+      throw ERROR_MSG(
+                "Size of final_conf: ", final_conf.size(),
+                ", must be equal to size of initial_conf: ",
+               initial_conf.size(), ".");
     }
   }
 
@@ -601,7 +601,7 @@ void read_wave_function_evolution(
   // Open file.
   auto io = std::ifstream(filename);
   if (io.bad()) {
-    throw ERROR_MSG("Cannot open file: " + filename);
+    throw ERROR_MSG("Cannot open file: ", filename);
   }
 
   // Gotten from the file.
