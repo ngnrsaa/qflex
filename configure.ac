@@ -94,6 +94,20 @@ AC_ARG_ENABLE([pybind11],
    esac], [pybind11=true]
 )
 
+# Add extra param for OpenMP
+AC_ARG_ENABLE([openmp], 
+  AS_HELP_STRING([--enable-openmp],[(Experimental) Enable OpenMP.]), 
+  [case "${enableval}" in
+      yes) openmp=true  ;;
+       no) openmp=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --enable-openmp])
+   esac], [openmp=false]
+)
+
+AS_IF([test ${openmp} = "true"], AC_MSG_WARN([OpenMP is still experimental with potential memory leak.]))
+
+AC_SUBST(openmp, ${openmp})
+
 # Check for Python version
 REQ_PYTHON_VERSION="3.5"
 AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],, 
