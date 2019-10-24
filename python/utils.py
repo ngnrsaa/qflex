@@ -129,15 +129,19 @@ def GetMomentAndGate(line, qubits):
             # the Cirq Fsim gate takes angles and not exponents
             # Transform the params
             params = [p * np.pi for p in params]
-            return cycle, gates_map[gate_name](theta=params[0], phi=params[1])(*[qubits[q] for q in gate_qubits])
+            return cycle, gates_map[gate_name](
+                theta=params[0],
+                phi=params[1])(*[qubits[q] for q in gate_qubits])
 
         if gate_name == "rz":
             # the Cirq Fsim gate takes angles and not exponents
             # Transform the params
             # params = [p * np.pi for p in params]
-            return cycle, gates_map[gate_name](exponent=params[0])(qubits[gate_qubits[0]])
+            return cycle, gates_map[gate_name](exponent=params[0])(
+                qubits[gate_qubits[0]])
 
-        return cycle, gates_map[gate_name](*params)(*[qubits[q] for q in gate_qubits])
+        return cycle, gates_map[gate_name](*params)(
+            *[qubits[q] for q in gate_qubits])
 
 
 def GetCircuit(circuit_stream, qubits):
@@ -183,8 +187,7 @@ def GetCircuitOfMoments(file_name, qubits):
         if len(current_moment) > 0:
             moments.append(cirq.Moment(current_moment))
 
-        return cirq.Circuit(moments = moments)
-
+        return cirq.Circuit(moments=moments)
 
 
 def GetNumberOfQubits(cirq_circuit):
@@ -221,9 +224,4 @@ def GetIndexFromGridQubit(grid_qubit, rows=11, cols=12):
     if grid_qubit.row >= rows:
         raise ValueError("This GridQubit seems to have wrong row coordinate...")
 
-
     return grid_qubit.row * cols + grid_qubit.col
-
-
-
-

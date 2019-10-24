@@ -29,9 +29,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "circuit.h"
 #include "contraction_utils.h"
 #include "read_circuit.h"
-#include "circuit.h"
 #include "tensor.h"
 
 namespace qflex {

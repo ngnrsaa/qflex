@@ -13,6 +13,7 @@ from python.cirq_interface.qflex_circuit import QFlexCircuit
 # Used to include a class which does not exist in Cirq 0.5.0
 import python.cirq_interface.fsim_gate as cirqtmp
 
+
 def test_constructor_decomposition():
 
     qubit_1 = cirq.GridQubit(0, 0)
@@ -30,11 +31,11 @@ def test_constructor_decomposition():
     dummy_order = QFlexOrder("This is dummy order")
 
     qcircuit1 = QFlexCircuit(circuit,
-                            dummy_device_1,
-                            dummy_order,
-                            allow_decomposition=True)
+                             dummy_device_1,
+                             dummy_order,
+                             allow_decomposition=True)
     # There are three CNOTs
-    assert(len(list(qcircuit1.all_operations())) == 3)
+    assert (len(list(qcircuit1.all_operations())) == 3)
 
     # This should crash because SWAP is not supported by the device
     with pytest.raises(ValueError):
@@ -42,7 +43,6 @@ def test_constructor_decomposition():
                                  dummy_device_1,
                                  dummy_order,
                                  allow_decomposition=False)
-
 
 
 def test_resolve_parameters():
@@ -57,10 +57,11 @@ def test_resolve_parameters():
     s1 = sympy.Symbol("theta")
     s2 = sympy.Symbol("phi")
 
-    operation1 = cirq.Z.on(cirq.GridQubit(0,0)) ** s1
+    operation1 = cirq.Z.on(cirq.GridQubit(0, 0))**s1
     circuit.append(operation1)
 
-    operation2 = cirqtmp.FSimGate(s1, s2).on(cirq.GridQubit(0,0), cirq.GridQubit(0,1))
+    operation2 = cirqtmp.FSimGate(s1, s2).on(cirq.GridQubit(0, 0),
+                                             cirq.GridQubit(0, 1))
     circuit.append(operation2)
 
     from python.cirq_interface.qflex_virtual_device import QFlexVirtualDevice
@@ -69,8 +70,10 @@ def test_resolve_parameters():
     # Override the function to accept anything
     # dummy_device.is_qflex_virt_dev_op = lambda x : True
     # Return a single pair gridqubit : index
-    dummy_device.get_grid_qubits_as_keys = lambda : {cirq.GridQubit(0, 0) : 1,
-                                                     cirq.GridQubit(0, 1) : 2}
+    dummy_device.get_grid_qubits_as_keys = lambda: {
+        cirq.GridQubit(0, 0): 1,
+        cirq.GridQubit(0, 1): 2
+    }
 
     from python.cirq_interface.qflex_order import QFlexOrder
     dummy_order = QFlexOrder("This is a dummy order")
@@ -85,9 +88,9 @@ def test_resolve_parameters():
     qcircuit = QFlexCircuit(circuit, dummy_device, dummy_order)
 
     # put back the translator
-    QFlexCircuit.translate_cirq_to_qflex =original_translator
+    QFlexCircuit.translate_cirq_to_qflex = original_translator
 
-    param_solver = {"theta" : 0.3, "phi": 0.7}
+    param_solver = {"theta": 0.3, "phi": 0.7}
     solved_circuit = cirq.protocols.resolve_parameters(qcircuit, param_solver)
 
     assert (solved_circuit[0].operations[0].gate.exponent == 0.3)
@@ -111,27 +114,26 @@ def test_translate_cirq_to_qflex():
     circuit.append(cirq.Moment([cirq.ops.CNOT.on(qubit_1, qubit_2)]))
     circuit.append(cirq.Moment([cirq.ops.CZ.on(qubit_1, qubit_2)]))
     circuit.append(cirq.Moment([cirq.ops.ZPowGate(exponent=0.7).on(qubit_1)]))
-    circuit.append(cirq.Moment([cirq.ops.PhasedXPowGate(phase_exponent=0.25, exponent=0.5).on(qubit_2)]))
-    circuit.append(cirq.Moment([cirqtmp.FSimGate(np.pi/2, np.pi/16).on(qubit_2, qubit_1)]))
+    circuit.append(
+        cirq.Moment([
+            cirq.ops.PhasedXPowGate(phase_exponent=0.25,
+                                    exponent=0.5).on(qubit_2)
+        ]))
+    circuit.append(
+        cirq.Moment(
+            [cirqtmp.FSimGate(np.pi / 2, np.pi / 16).on(qubit_2, qubit_1)]))
 
     file_lines = [
-        "2",
-        "0 h 1",
-        "1 t 1",
-        "2 x_1_2 1",
-        "3 y_1_2 1",
-        "4 cx 1 2",
-        "5 cz 1 2",
-        "6 rz(0.7) 1",
-        "7 hz_1_2 2",
-        "8 fsim(0.5, 0.0625) 2 1"
+        "2", "0 h 1", "1 t 1", "2 x_1_2 1", "3 y_1_2 1", "4 cx 1 2", "5 cz 1 2",
+        "6 rz(0.7) 1", "7 hz_1_2 2", "8 fsim(0.5, 0.0625) 2 1"
     ]
 
-    qubits_to_index_dict = { qubit_1: 1, qubit_2: 2}
-    translation = QFlexCircuit.translate_cirq_to_qflex(cirq_circuit=circuit,
-                                                       qubit_to_index_dict = qubits_to_index_dict)
+    qubits_to_index_dict = {qubit_1: 1, qubit_2: 2}
+    translation = QFlexCircuit.translate_cirq_to_qflex(
+        cirq_circuit=circuit, qubit_to_index_dict=qubits_to_index_dict)
 
-    assert(translation.strip() == "\n".join(file_lines))
+    assert (translation.strip() == "\n".join(file_lines))
+
 
 def test_supported_gate_set():
     """
@@ -144,7 +146,8 @@ def test_supported_gate_set():
     import python.cirq_interface.qflex_circuit as qcirc
     import python.cirq_interface.qflex_order as qorder
 
-    qdev = qdevice.QFlexVirtualDevice(qflex_grid=qgrid.QFlexGrid.create_rectangular(4, 4))
+    qdev = qdevice.QFlexVirtualDevice(
+        qflex_grid=qgrid.QFlexGrid.create_rectangular(4, 4))
     qord = qorder.QFlexOrder("Dummy Ordering")
 
     qubits = qdev.get_indexed_grid_qubits()
@@ -152,29 +155,30 @@ def test_supported_gate_set():
     cirq_circuit = cirq.Circuit()
     # cirq_circuit.append(cirq.ops.TOFFOLI.on(qubits[0], qubits[1], qubits[2]))
 
-    my_circuit = QFlexCircuit(
-                cirq_circuit = cirq_circuit,
-                device = qdev,
-                qflex_order = qord,
-                allow_decomposition = False)
+    my_circuit = QFlexCircuit(cirq_circuit=cirq_circuit,
+                              device=qdev,
+                              qflex_order=qord,
+                              allow_decomposition=False)
 
     # Unparameterized gates
     my_circuit.append(cirq.Moment([cirq.ops.CZ.on(qubits[0], qubits[1])]))
     my_circuit.append(cirq.Moment([cirq.ops.CNOT.on(qubits[0], qubits[1])]))
     my_circuit.append(cirq.Moment([cirq.ops.H.on(qubits[0])]))
     my_circuit.append(cirq.Moment([cirq.ops.T.on(qubits[0])]))
-    my_circuit.append(cirq.Moment([cirq.ops.ZPowGate(exponent=0.7).on(qubits[0])]))
+    my_circuit.append(
+        cirq.Moment([cirq.ops.ZPowGate(exponent=0.7).on(qubits[0])]))
     my_circuit.append(
         cirq.Moment([cirq.ops.XPowGate(exponent=0.5).on(qubits[0])]))
     my_circuit.append(
         cirq.Moment([cirq.ops.YPowGate(exponent=0.5).on(qubits[0])]))
     my_circuit.append(
-        cirq.Moment(
-            [cirq.ops.PhasedXPowGate(
-                phase_exponent=0.25, exponent=0.5).on(qubits[0])]))
+        cirq.Moment([
+            cirq.ops.PhasedXPowGate(phase_exponent=0.25,
+                                    exponent=0.5).on(qubits[0])
+        ]))
     my_circuit.append(
         cirq.Moment(
-            [cirqtmp.FSimGate(np.pi/2, np.pi/16).on(qubits[0], qubits[1])]))
+            [cirqtmp.FSimGate(np.pi / 2, np.pi / 16).on(qubits[0], qubits[1])]))
 
     # Parameterized gates
     import sympy
@@ -183,8 +187,7 @@ def test_supported_gate_set():
     my_circuit.append(
         cirq.Moment([cirq.ops.ZPowGate(exponent=s1).on(qubits[0])]))
     my_circuit.append(
-        cirq.Moment(
-            [cirqtmp.FSimGate(s1, s2).on(qubits[0], qubits[1])]))
+        cirq.Moment([cirqtmp.FSimGate(s1, s2).on(qubits[0], qubits[1])]))
 
     # Should fail
     with pytest.raises(ValueError):

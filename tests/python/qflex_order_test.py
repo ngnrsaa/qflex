@@ -30,7 +30,7 @@ def test_qorder_from_file():
     import os
     os.unlink(fd[1])
 
-    assert(read_contents.strip() == test_file_contents.strip())
+    assert (read_contents.strip() == test_file_contents.strip())
 
 
 def test_only_for_cirq_circuits():
@@ -55,29 +55,28 @@ def test_cirquit_without_qubits():
 def test_automatic_ordering():
 
     test_size = 2
-    test_circuit = generate_circuit(size = test_size)
+    test_circuit = generate_circuit(size=test_size)
 
     # This is a known order
     random.seed(0)
     order = order_lib.circuit_to_ordering(test_circuit)
 
     # Now I am creating a QFlexOrder
-    qorder = QFlexOrder(qflex_order_strings = None,
-                        cirq_circuit = test_circuit,
-                        qubits = list(range(test_size ** 2)))
+    qorder = QFlexOrder(qflex_order_strings=None,
+                        cirq_circuit=test_circuit,
+                        qubits=list(range(test_size**2)))
 
     read_contents = None
     with open(qorder.order_data, "r") as file:
         read_contents = "".join(file.readlines())
 
-    assert(read_contents.strip() == "\n".join(order).strip())
+    assert (read_contents.strip() == "\n".join(order).strip())
 
 
-def generate_circuit(size = 4):
+def generate_circuit(size=4):
     qubits = []
     for x in range(size):
         qubits.append([cirq.GridQubit(x, y) for y in range(size)])
-
 
     import python.cirq_interface.fsim_gate as cirqtmp
 
