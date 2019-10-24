@@ -36,8 +36,12 @@ $ make && make run-tests && make install
 
 To disable tests based on `cirq`, use `./configure --disable-cirq_tests`
 instead. By default, qFlex is installed in `$HOME/local/`. To change the
-installation folder, use `./configure --prefix=/new/installation/folder/`. For
-more information, see [the installation guide](/docs/install.md).
+installation folder, use `./configure --prefix=/new/installation/folder/`. 
+
+qFlex provides an experimental support for `OpenMP`. To activate `OpenMP`, run
+`./configure` with the extra-option `--enable-openmp`.
+
+For more information, see [the installation guide](/docs/install.md).
 
 ## Build Using Docker
 

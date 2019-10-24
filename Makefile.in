@@ -6,11 +6,22 @@ PREFIX = @prefix@
 PYBIND11 = @pybind11@
 CIRQ = @cirq@
 PYTEST = @pytest@
+OPENMP = @openmp@
 
 ifeq ($(CXX), icpc)
-	CXXFLAGS += -mkl -qopenmp -DMKL_TENSOR
+	CXXFLAGS += -mkl -DMKL_TENSOR -lpthread
 else
-  CXXFLAGS += -fopenmp -lgslcblas
+  CXXFLAGS += -lgslcblas -lpthread
+endif
+
+ifeq ($(OPENMP), true)
+  ifeq ($(CXX), icpc)
+  	CXXFLAGS += -qopenmp
+  else
+    CXXFLAGS += -fopenmp
+  endif
+else
+  CXXFLAGS += -Wno-unknown-pragmas
 endif
 
 ifeq ($(PYBIND11), true)

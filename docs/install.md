@@ -38,6 +38,7 @@ $ autoreconf -i && autoconf && ./configure --help
 
 The following options for `configure` are also available:
 ```
+--enable-openmp       Enable experimental support for OpenMP
 --disable-pybind11    Disable installation of Python porting of qFlex
 --disable-cirq_tests  Disable tests which depends on cirq
 ```
