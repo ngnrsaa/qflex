@@ -33,7 +33,7 @@ using one of the other methods listed.
 
 Known incompatibilities:
 
--   MacOS only supports building via Docker. Local and
+-   MacOS only supports building via Docker.
 
 ### Local installation
 
