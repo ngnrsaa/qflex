@@ -35,15 +35,11 @@ To run the rootless image:
 $ bash scripts/run-rootless-container.sh image_folder
 ```
 
-Inside the rootless image, qFlex and Cirq can be installed by executing:
+Inside the rootless image, qFlex can be installed by executing:
 ```
 /install_qflex.sh
 ```
-and
-```
-/install_cirq.sh
-```
-respectively. After the installation of qFlex, tests can be run as:
+After the installation of qFlex, tests can be run as:
 ```
 make -C /qflex/ run-tests
 ```
