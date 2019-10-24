@@ -13,13 +13,14 @@ import python.utils as qflexutils
 # Used to include a class which does not exist in Cirq 0.5.0
 import python.cirq_interface.fsim_gate as cirqtmp
 
+
 class QFlexCircuit(cirq.Circuit):
 
     def __init__(self,
                  cirq_circuit,
                  device,
-                 qflex_order = None,
-                 allow_decomposition = False):
+                 qflex_order=None,
+                 allow_decomposition=False):
 
         if (device is None) \
                 or (not isinstance(device, qdevice.QFlexVirtualDevice)):
@@ -29,13 +30,12 @@ class QFlexCircuit(cirq.Circuit):
             # No order was specified.
             # Construct and order from a circuit
             qubits = device.get_indexed_grid_qubits()
-            self._own_order = qorder.QFlexOrder(cirq_circuit = cirq_circuit,
-                                                qubits = qubits)
+            self._own_order = qorder.QFlexOrder(cirq_circuit=cirq_circuit,
+                                                qubits=qubits)
         elif isinstance(qflex_order, qorder.QFlexOrder):
             self._own_order = qflex_order
         else:
             raise ValueError("{!r} is not of a QFlexOrder!")
-
 
         if allow_decomposition:
             super().__init__([], device)
@@ -55,8 +55,7 @@ class QFlexCircuit(cirq.Circuit):
             qubit_to_index_dict = self.device.get_grid_qubits_as_keys()
             print(QFlexCircuit.translate_cirq_to_qflex(self,
                                                        qubit_to_index_dict),
-                  file = f)
-
+                  file=f)
 
     @property
     def circuit_data(self):
@@ -66,7 +65,6 @@ class QFlexCircuit(cirq.Circuit):
     def ordering_data(self):
         return self._own_order._file_handle[1]
 
-
     def _resolve_parameters_(self, param_resolver: cirq.study.ParamResolver):
 
         qflex_circuit = super()._resolve_parameters_(param_resolver)
@@ -75,7 +73,6 @@ class QFlexCircuit(cirq.Circuit):
         qflex_circuit._own_order = self._own_order
 
         return qflex_circuit
-
 
     def __del__(self):
         # The destructor removes the temporary file
@@ -91,7 +88,6 @@ class QFlexCircuit(cirq.Circuit):
 
         # remove the temporary file from disk
         os.remove(self._file_handle[1])
-
 
     @staticmethod
     def translate_cirq_to_qflex(cirq_circuit, qubit_to_index_dict):
@@ -146,7 +142,6 @@ class QFlexCircuit(cirq.Circuit):
                     qflex_gate = "fsim({}, {})".format(exponent1, exponent2)
                 else:
                     raise ValueError("{!r} No translation for ".format(op))
-
 
                 # The moment is missing
                 qflex_gate = "{} {} {}\n".format(mi, qflex_gate,

@@ -51,15 +51,15 @@ class Bond:
         Bond dimension is cached to reduce cost from computing operation ranks.
         """
         if not self._dim:
-            self._dim = sum([math.log2(utils.ComputeSchmidtRank(op))
-                             for op in self.ops])
+            self._dim = sum(
+                [math.log2(utils.ComputeSchmidtRank(op)) for op in self.ops])
         return self._dim
 
     def add_op(self, op):
         """Add 'op' to this bond and cache the new bond dimension."""
         self.ops.append(op)
-        self._dim = sum([math.log2(utils.ComputeSchmidtRank(op))
-                         for op in self.ops])
+        self._dim = sum(
+            [math.log2(utils.ComputeSchmidtRank(op)) for op in self.ops])
 
     def swap_nodes(self, old_nodes, new_nodes):
         """Removes old_nodes from, and adds new_nodes to, this bond."""
@@ -321,11 +321,11 @@ def circuit_to_ordering(circuit: cirq.circuits.Circuit,
 
     # Strip single qubit gates
     if sum(len(g.qubits) == 1 for g in circuit.all_operations()):
-      circuit = cirq.Circuit([
-          cirq.Moment([g])
-          for g in circuit.all_operations()
-          if len(g.qubits) > 1
-      ])
+        circuit = cirq.Circuit([
+            cirq.Moment([g])
+            for g in circuit.all_operations()
+            if len(g.qubits) > 1
+        ])
 
     if max_cuts < 0:
         raise ValueError('max_cuts must be positive!')
@@ -398,5 +398,6 @@ if __name__ == "__main__":
         print('Compute ordering.', file=stderr)
 
     ordering = circuit_to_ordering(circuit, qubit_names=sorted(qubits))
-    with (stdout if output_filename == None else open(output_filename, 'w')) as f:
-      print('\n'.join(ordering), file=f)
+    with (stdout
+          if output_filename == None else open(output_filename, 'w')) as f:
+        print('\n'.join(ordering), file=f)

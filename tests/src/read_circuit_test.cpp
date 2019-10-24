@@ -25,16 +25,14 @@ TEST(ReadCircuitDeathTest, InvalidNumberOfQubits) {
 
   QflexCircuit circuit;
   circuit.load(std::stringstream(kMissingNumQubitsCircuit));
-  EXPECT_DEATH(
-      circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {},
-                                      {}, grid_of_tensors, scratch),
-      "");
+  EXPECT_DEATH(circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {},
+                                              grid_of_tensors, scratch),
+               "");
 
   circuit.load(std::stringstream(kWrongNumQubitsCircuit));
-  EXPECT_DEATH(
-      circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {},
-                                      {}, grid_of_tensors, scratch),
-      "");
+  EXPECT_DEATH(circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {},
+                                              grid_of_tensors, scratch),
+               "");
 }
 
 // This circuit has an invalid one-qubit gate.
@@ -49,10 +47,9 @@ TEST(ReadCircuitDeathTest, BadOneQubitGate) {
 
   QflexCircuit circuit;
   circuit.load(std::stringstream(kBadCircuit));
-  EXPECT_DEATH(
-      circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {},
-                                      {}, grid_of_tensors, scratch),
-      "");
+  EXPECT_DEATH(circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {},
+                                              grid_of_tensors, scratch),
+               "");
 }
 
 // This circuit has an invalid fsim-type gate.
@@ -67,10 +64,9 @@ TEST(ReadCircuitDeathTest, BadFsimGate) {
 
   QflexCircuit circuit;
   circuit.load(std::stringstream(kBadFsimCircuit));
-  EXPECT_DEATH(
-      circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {},
-                                      {}, grid_of_tensors, scratch),
-      "");
+  EXPECT_DEATH(circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {},
+                                              grid_of_tensors, scratch),
+               "");
 }
 
 // These circuits reference inactive qubits.
@@ -92,29 +88,29 @@ TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
   QflexCircuit circuit;
   circuit.load(std::stringstream(kBadTGate));
   EXPECT_DEATH(
-      circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {},
-                                      off_qubits, grid_of_tensors, scratch),
+      circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits,
+                                     grid_of_tensors, scratch),
       "");
 
   // Two qubit gate must have active qubit as first qubit input.
   circuit.load(std::stringstream(kBadCzGate));
   EXPECT_DEATH(
-      circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {},
-                                      off_qubits, grid_of_tensors, scratch),
+      circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits,
+                                     grid_of_tensors, scratch),
       "");
 
   // Two qubit gate must have active qubit as first qubit input.
   circuit.load(std::stringstream(kBadCxGate));
   EXPECT_DEATH(
-      circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {},
-                                      off_qubits, grid_of_tensors, scratch),
+      circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits,
+                                     grid_of_tensors, scratch),
       "");
 
   // Two qubit gate must have active qubit as second qubit input.
   off_qubits = {{1, 0}};
   EXPECT_DEATH(
-      circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {},
-                                      off_qubits, grid_of_tensors, scratch),
+      circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits,
+                                     grid_of_tensors, scratch),
       "");
 }
 
@@ -149,7 +145,6 @@ TEST(ReadCircuitDeathTest, MultipleGatesPerQubitPerCycle) {
   EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle3)));
   EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle4)));
   EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle5)));
-
 }
 
 // This circuit returns the input string with amplitude 1.
@@ -168,7 +163,7 @@ TEST(ReadCircuitTest, NullCircuit) {
   QflexCircuit circuit;
   circuit.load(std::stringstream(kNullCircuit));
   circuit_data_to_tensor_network(circuit, 2, 1, "00", "10", {}, {},
-                                  grid_of_tensors, scratch);
+                                 grid_of_tensors, scratch);
   // Qubit-0 path has amplitude 1 (0 --> 0)
   // Qubit-1 path has amplitude 0 (0 --> 1)
   std::vector<s_type> expected_data = {std::complex<float>(1, 0),
@@ -176,13 +171,12 @@ TEST(ReadCircuitTest, NullCircuit) {
 
   // Resulting tensor grid should be 2x1 (IxJ) ..
   ASSERT_EQ(std::size(grid_of_tensors), 2);
-  for(std::size_t i = 0; i < 2; ++i) {
-
+  for (std::size_t i = 0; i < 2; ++i) {
     const auto &tensor = grid_of_tensors[i];
     ASSERT_EQ(std::size(tensor), 1);
 
     // .. and each qubit tensor should have 4 tensors ..
-    for(const auto &t: tensor) {
+    for (const auto &t : tensor) {
       ASSERT_EQ(std::size(t), 4);
 
       // .. of size 1, 2, 2, 1 (x2, because of complex numbers) respectively
@@ -193,15 +187,14 @@ TEST(ReadCircuitTest, NullCircuit) {
 
       // Each qubit tensor should have 4 elements (delta_0, h, h, delta_0)
       // and (delta_0, h, h, delta_1) respectively
-      ASSERT_EQ(t[0].data()[0], std::complex<float>(1,0));
-      ASSERT_EQ(t[1].data()[0], std::complex<float>(1./M_SQRT2,0));
-      ASSERT_EQ(t[1].data()[1], std::complex<float>(1./M_SQRT2,0));
-      ASSERT_EQ(t[2].data()[0], std::complex<float>(1./M_SQRT2,0));
-      ASSERT_EQ(t[2].data()[1], std::complex<float>(1./M_SQRT2,0));
-      ASSERT_EQ(t[3].data()[0], std::complex<float>(i,0));
+      ASSERT_EQ(t[0].data()[0], std::complex<float>(1, 0));
+      ASSERT_EQ(t[1].data()[0], std::complex<float>(1. / M_SQRT2, 0));
+      ASSERT_EQ(t[1].data()[1], std::complex<float>(1. / M_SQRT2, 0));
+      ASSERT_EQ(t[2].data()[0], std::complex<float>(1. / M_SQRT2, 0));
+      ASSERT_EQ(t[2].data()[1], std::complex<float>(1. / M_SQRT2, 0));
+      ASSERT_EQ(t[3].data()[0], std::complex<float>(i, 0));
     }
   }
-  
 }
 
 // Simple grid with one "off" qubit and one cut:
@@ -240,16 +233,15 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
   std::vector<std::vector<int>> qubits_A = {{2, 1}};
   std::vector<std::vector<int>> qubits_off = {{2, 0}};
-  s_type* scratch = new s_type[256];
+  s_type *scratch = new s_type[256];
 
   QflexCircuit circuit;
   circuit.load(std::stringstream(kSimpleCircuit));
-  circuit_data_to_tensor_network(circuit, 3, 2, "00000", "0000x",
-                                  qubits_A, qubits_off, tensor_grid_3D,
-                                  scratch);
+  circuit_data_to_tensor_network(circuit, 3, 2, "00000", "0000x", qubits_A,
+                                 qubits_off, tensor_grid_3D, scratch);
 
   ASSERT_EQ(tensor_grid_3D.size(), 3);
-  for(const auto &tensor: tensor_grid_3D) ASSERT_EQ(tensor.size(), 2);
+  for (const auto &tensor : tensor_grid_3D) ASSERT_EQ(tensor.size(), 2);
 
   // TODO Add check on tensors
 
@@ -269,7 +261,7 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   ordering.emplace_back(MergePatches("a", "b"));
 
   flatten_grid_of_tensors(tensor_grid_3D, tensor_grid_2D, qubits_A, qubits_off,
-                           ordering, scratch);
+                          ordering, scratch);
 
   // Verify that index ordering follows this pattern:
   //   1) Final-region indices ("<index>,(o)")
@@ -311,22 +303,19 @@ TEST(ReadCircuitDeathTest, CircuitDataToGridOfTensorsInvalidInput) {
   circuit.load(std::stringstream(kNullCircuit));
 
   // Scratch cannot be null pointer.
-  EXPECT_DEATH(
-      circuit_data_to_tensor_network(circuit, 2, 1, "01", "01", {},
-                                      {}, grid_of_tensors, nullptr),
-      "");
+  EXPECT_DEATH(circuit_data_to_tensor_network(circuit, 2, 1, "01", "01", {}, {},
+                                              grid_of_tensors, nullptr),
+               "");
 
   // Input configuration length must be equal to the number of qubits.
-  EXPECT_DEATH(
-      circuit_data_to_tensor_network(circuit, 2, 1, "001", "01", {},
-                                      {}, grid_of_tensors, scratch),
-      "");
+  EXPECT_DEATH(circuit_data_to_tensor_network(circuit, 2, 1, "001", "01", {},
+                                              {}, grid_of_tensors, scratch),
+               "");
 
   // Output configuration length must be equal to the number of qubits.
-  EXPECT_DEATH(
-      circuit_data_to_tensor_network(circuit, 2, 1, "00", "011", {},
-                                      {}, grid_of_tensors, scratch),
-      "");
+  EXPECT_DEATH(circuit_data_to_tensor_network(circuit, 2, 1, "00", "011", {},
+                                              {}, grid_of_tensors, scratch),
+               "");
 }
 
 TEST(ReadCircuitDeathTest, GridOfTensors3DTo2DInvalidInput) {
@@ -338,14 +327,14 @@ TEST(ReadCircuitDeathTest, GridOfTensors3DTo2DInvalidInput) {
 
   // Scratch cannot be null pointer.
   EXPECT_DEATH(flatten_grid_of_tensors(grid_of_tensors_3D, grid_of_tensors_2D,
-                                        A, off, ordering, nullptr),
+                                       A, off, ordering, nullptr),
                "");
 }
 
 }  // namespace
 }  // namespace qflex
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
