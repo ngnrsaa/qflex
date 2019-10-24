@@ -39,7 +39,6 @@ AC_CHECK_HEADER([iostream], [], [AC_MSG_ERROR([Please install iostream before co
 AC_CHECK_HEADER([iterator], [], [AC_MSG_ERROR([Please install iterator before configuring.])])
 AC_CHECK_HEADER([list], [], [AC_MSG_ERROR([Please install list before configuring.])])
 AC_CHECK_HEADER([memory], [], [AC_MSG_ERROR([Please install memory before configuring.])])
-AC_CHECK_HEADER([omp.h], [], [AC_MSG_ERROR([Please install omp.h before configuring.])])
 AC_CHECK_HEADER([regex], [], [AC_MSG_ERROR([Please install regex before configuring.])])
 AC_CHECK_HEADER([sstream], [], [AC_MSG_ERROR([Please install sstream before configuring.])])
 AC_CHECK_HEADER([string], [], [AC_MSG_ERROR([Please install string before configuring.])])
@@ -104,7 +103,10 @@ AC_ARG_ENABLE([openmp],
    esac], [openmp=false]
 )
 
-AS_IF([test ${openmp} == "true"], AC_MSG_WARN([OpenMP is still experimental with potential memory leak.]))
+AS_IF([test ${openmp} == "true"], 
+  AC_CHECK_HEADER([omp.h], [], [AC_MSG_ERROR([Please install omp.h before configuring.])])
+  AC_MSG_WARN([OpenMP is still experimental with potential memory leak.])
+)
 
 AC_SUBST(openmp, ${openmp})
 
