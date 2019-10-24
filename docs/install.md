@@ -41,6 +41,9 @@ The following options for `configure` are also available:
 --disable-pybind11    Disable installation of Python porting of qFlex
 --disable-cirq_tests  Disable tests which depends on cirq
 ```
+*Note: If you are using ICPC to build qFlex, you **must** specify
+--disable-pybind11 in this step. Construction of the python wrappers with ICPC
+is currently unsupported.*
 
 ## Compile qFlex
 
