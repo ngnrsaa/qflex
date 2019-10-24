@@ -198,10 +198,10 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     // Creating 3D grid of tensors from file.
     t0 = std::chrono::high_resolution_clock::now();
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
-    circuit_data_to_tensor_network(
-        input->circuit, input->grid.I, input->grid.J,
-        input->initial_state, input->final_state, final_qubits,
-        input->grid.qubits_off, tensor_grid_3D, scratch);
+    circuit_data_to_tensor_network(input->circuit, input->grid.I, input->grid.J,
+                                   input->initial_state, input->final_state,
+                                   final_qubits, input->grid.qubits_off,
+                                   tensor_grid_3D, scratch);
 
     t1 = std::chrono::high_resolution_clock::now();
     time_span =

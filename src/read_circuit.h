@@ -29,8 +29,8 @@
 #include <unordered_set>
 #include <vector>
 
-#include "contraction_utils.h"
 #include "circuit.h"
+#include "contraction_utils.h"
 #include "tensor.h"
 
 namespace std {
@@ -70,8 +70,8 @@ const int DIM = 2;
  * performed in this function.
  */
 void circuit_data_to_tensor_network(
-    const QflexCircuit &circuit, int I, int J,
-    const std::string initial_conf, const std::string final_conf,
+    const QflexCircuit& circuit, int I, int J, const std::string initial_conf,
+    const std::string final_conf,
     const std::optional<std::vector<std::vector<int>>>& final_qubit_region,
     const std::optional<std::vector<std::vector<int>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
@@ -81,9 +81,9 @@ void circuit_data_to_tensor_network(
  * Contracts a 2D grid of vectors of tensors onto a 2D grid of tensors,
  * contracting in the time (third) direction (i.e. flattening the tensor
  * network), and renaming the indices accordingly.
- * @param grid_of_tensors reference to a vector<vector<vector<Tensor>>> with the 2D
- * grid of vectors of tensors. The typical names for the indices in a grid are
- * assumed.
+ * @param grid_of_tensors reference to a vector<vector<vector<Tensor>>> with the
+ * 2D grid of vectors of tensors. The typical names for the indices in a grid
+ * are assumed.
  * @param grid_of_tensors_2D reference to a vector<vector<Tensor>> where the
  * 2D grid of tensors will be stored. The typical names for the indices will
  * be used.
@@ -95,7 +95,7 @@ void circuit_data_to_tensor_network(
  * to contract the tensor grid.
  * @param scratch pointer to s_type array with enough space for all scratch
  * work.
-*/
+ */
 void flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,

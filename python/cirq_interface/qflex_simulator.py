@@ -8,6 +8,7 @@ from python.cirq_interface.cirq_amplitudes_sim import SimulatesAmplitudes
 import python.cirq_interface.qflex_virtual_device as qdevice
 import python.cirq_interface.qflex_circuit as qcirc
 
+
 class QFlexSimulator(SimulatesAmplitudes):
 
     def __init__(self):
@@ -27,7 +28,8 @@ class QFlexSimulator(SimulatesAmplitudes):
         if not isinstance(program.device, qdevice.QFlexVirtualDevice):
             # The circuit was not validated against the device
             # TODO: Make it compatible? Validate, but for which grid?
-            raise ValueError('{!r} is not a QFlexVirtualDevice'.format(program.device))
+            raise ValueError('{!r} is not a QFlexVirtualDevice'.format(
+                program.device))
 
         param_resolvers = study.to_resolvers(params)
 
