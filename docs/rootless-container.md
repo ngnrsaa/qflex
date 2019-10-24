@@ -17,7 +17,7 @@ directory if `-` is specified. The script also supports the following options:
 -j <p>    Number of parallel processes (where possible).
 -x        Do not install qFlex (just create container).
 -r        Run rootless container immediately after creation.
--c        Install Cirq in the rootless container.
+-c        Disable installation of Cirq in the rootless container.
 ```
 
 ## Namespaces
