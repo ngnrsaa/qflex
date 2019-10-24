@@ -6,6 +6,7 @@
 namespace qflex {
 namespace {
 
+#if 0
 TEST(ContractionTest, IndexNaming) {
   // Standard two-qubit index.
   std::vector<std::vector<int>> index = {{1, 2}, {3, 4}};
@@ -446,6 +447,7 @@ TEST(ContractionDeathTest, InitializeInvalidInput) {
   EXPECT_ANY_THROW(ContractionData::Initialize(ordering, &tensor_grid, nullptr),
                "");
 }
+#endif
 
 }  // namespace
 }  // namespace qflex

@@ -7,6 +7,7 @@
 namespace qflex {
 namespace {
 
+#if 0
 using ::testing::Eq;
 using ::testing::Pointwise;
 
@@ -362,6 +363,7 @@ TEST(ReadCircuitDeathTest, GridOfTensors3DTo2DInvalidInput) {
                                         A, off, ordering, nullptr),
                "");
 }
+#endif
 
 }  // namespace
 }  // namespace qflex
