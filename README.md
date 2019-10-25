@@ -13,8 +13,10 @@ and benchmark such experiments.
 ## Documentation
 
 qFlex scientific documentation and results can be found in
-[[1]](https://arxiv.org/abs/1811.09599) and
-[[2]](https://arxiv.org/abs/1905.00444). For technical documentation on how to
+[[1]](https://arxiv.org/abs/1811.09599),
+[[2]](https://arxiv.org/abs/1905.00444) and
+[[3]](https://www.nature.com/articles/s41586-019-1666-5). 
+For technical documentation on how to
 use qFlex, see [qflex/docs](/docs).
 
 [[1]](https://arxiv.org/abs/1811.09599) B. Villalonga, *et al.*, **"A flexible
@@ -24,6 +26,10 @@ implemented on real hardware"**, NPJ Quantum Information 5, 86 (2019)
 [[2]](https://arxiv.org/abs/1905.00444) B. Villalonga, *et al.*, **"Establishing
 the Quantum Supremacy Frontier with a 281 Pflop/s Simulation"**,
 arXiv:1905.00444 (2019)
+
+[[3]](https://www.nature.com/articles/s41586-019-1666-5) **"Quantum supremacy
+using a programmable superconducting processor"**,
+Nature 574, 505–510 (2019)
 
 ## Build methods
 
