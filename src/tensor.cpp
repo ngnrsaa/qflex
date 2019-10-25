@@ -79,10 +79,9 @@ std::unordered_map<std::string, std::vector<int>> _REORDER_MAPS;
 void Tensor::_init(const std::vector<std::string>& indices,
                    const std::vector<size_t>& dimensions) {
   if (indices.size() != dimensions.size()) {
-    std::cout << "The number of indices: " << indices.size()
-              << ", and number of dimensions: " << dimensions.size()
-              << ", should be equal." << std::endl;
-    assert(indices.size() == dimensions.size());
+    throw ERROR_MSG("The number of indices: ", indices.size(),
+              ", and number of dimensions: ", dimensions.size(),
+              ", should be equal.");
   }
   _indices = indices;
   _dimensions = dimensions;
@@ -123,10 +122,8 @@ Tensor::Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
   // Check that the data has the same length as this Tensor's size().
   size_t this_size = size();
   if (this_size != data.size()) {
-    std::cout << "The vector data size: " << data.size()
-              << ", has to match the size of the Tensor: " << this_size << "."
-              << std::endl;
-    assert(this_size == data.size());
+    throw ERROR_MSG("The vector data size: ", data.size(),
+              ", has to match the size of the Tensor: ", this_size);
   }
   _capacity = this_size;
   // Fill in the _data.
@@ -136,8 +133,7 @@ Tensor::Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
 Tensor::Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
                s_type* data) {
   if (data == nullptr) {
-    std::cout << "Data must be non-null." << std::endl;
-    assert(data != nullptr);
+    throw ERROR_MSG("Data must be non-null.");
   }
 
   _init(indices, dimensions);
@@ -172,10 +168,9 @@ void Tensor::set_dimensions(const std::vector<size_t>& dimensions) {
     size_t total_dim = 1;
     for (int i = 0; i < dimensions.size(); ++i) total_dim *= dimensions[i];
     if (capacity() < total_dim) {
-      std::cout << "The total allocated space: " << capacity()
-                << ", is insufficient for the requested tensor dimensions: "
-                << total_dim << "." << std::endl;
-      assert(capacity() >= total_dim);
+      throw ERROR_MSG("The total allocated space: ", capacity(),
+                ", is insufficient for the requested tensor dimensions: ",
+                total_dim, ".");
     }
   }
   _dimensions = dimensions;
@@ -213,14 +208,12 @@ const s_type* Tensor::data() const { return _data; }
 void Tensor::project(std::string index, size_t index_value,
                      Tensor& projection_tensor) const {
   if (index != _indices[0]) {
-    std::cout << "Index: '" << index << "' has to be equal to indices[0]: '"
-              << _indices[0] << "'." << std::endl;
-    assert(index == _indices[0]);
+    throw ERROR_MSG("Index: '", index,"' has to be equal to indices[0]: '",
+              _indices[0], "'." );
   }
   if (index_value < 0 || index_value >= _dimensions[0]) {
-    std::cout << "index_value: " << index_value << " must be contained in [0, "
-              << _dimensions[0] << ")." << std::endl;
-    assert((index_value >= 0 && index_value < _dimensions[0]));
+    throw ERROR_MSG("index_value: ", index_value, " must be contained in [0, ",
+              _dimensions[0], ").");
   }
   // Resize projection_tensor first.
   std::vector<std::string> projection_indices(_indices.begin() + 1,
@@ -243,16 +236,12 @@ void Tensor::project(std::string index, size_t index_value,
 void Tensor::rename_index(std::string old_name, std::string new_name) {
   auto it = find(_indices.begin(), _indices.end(), old_name);
   if (it == _indices.end()) {
-    std::cout << "old_name: " << old_name << ", has to be a valid index."
-              << std::endl;
-    assert(it != _indices.end());
+    throw ERROR_MSG("old_name: ", old_name, ", has to be a valid index.");
   }
   bool new_name_is_existing_index =
       (find(_indices.begin(), _indices.end(), new_name) != _indices.end());
   if (new_name_is_existing_index) {
-    std::cout << "new_name: " << new_name << ", cannot be an existing index."
-              << std::endl;
-    assert(!new_name_is_existing_index);
+    throw ERROR_MSG("new_name: ", new_name, ", cannot be an existing index.");
   }
   *it = new_name;
   _index_to_dimension[new_name] = _index_to_dimension[old_name];
@@ -265,23 +254,20 @@ void Tensor::bundle(std::vector<std::string> indices_to_bundle,
   bool indices_to_bundle_in_indices =
       _vector_s_in_vector_s(indices_to_bundle, _indices);
   if (!indices_to_bundle_in_indices) {
-    std::cout << "indices_to_bundle: "
-              << _string_vector_to_string(indices_to_bundle)
-              << " has to be contained in indices: "
-              << _string_vector_to_string(_indices) << "." << std::endl;
-    assert(indices_to_bundle_in_indices);
+    throw ERROR_MSG("indices_to_bundle: ",
+              _string_vector_to_string(indices_to_bundle),
+              " has to be contained in indices: ",
+              _string_vector_to_string(_indices), ".");
   }
   std::vector<std::string> subtracted_indices(
       _vector_subtraction(_indices, indices_to_bundle));
   std::vector<std::string> indices_to_bundled_original_order(
       _vector_subtraction(_indices, subtracted_indices));
   if (indices_to_bundled_original_order != indices_to_bundle) {
-    std::cout << "indices_to_bundle: "
-              << _string_vector_to_string(indices_to_bundle)
-              << " must be in its original order: "
-              << _string_vector_to_string(indices_to_bundled_original_order)
-              << "." << std::endl;
-    assert(indices_to_bundled_original_order == indices_to_bundle);
+    throw ERROR_MSG("indices_to_bundle: ",
+              _string_vector_to_string(indices_to_bundle),
+              " must be in its original order: ",
+              _string_vector_to_string(indices_to_bundled_original_order), ".");
   }
 
   int bundled_dim = 1;
@@ -309,8 +295,7 @@ void Tensor::bundle(std::vector<std::string> indices_to_bundle,
 void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
                             s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
-    std::cout << "Scratch copy must be non-null." << std::endl;
-    assert(scratch_copy != nullptr);
+    throw ERROR_MSG("Scratch copy must be non-null.");
   }
 
   // Don't do anything if there is nothing to reorder.
@@ -415,8 +400,7 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
 void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
                            s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
-    std::cout << "Scratch copy must be non-null." << std::endl;
-    assert(scratch_copy != nullptr);
+    throw ERROR_MSG("Scratch copy must be non-null.");
   }
 
   // Create binary orderings.
@@ -665,8 +649,7 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
                            const std::vector<std::string>& new_ordering,
                            int num_indices_right, s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
-    std::cout << "Scratch copy must be non-null." << std::endl;
-    assert(scratch_copy != nullptr);
+    throw ERROR_MSG("Scratch copy must be non-null.");
   }
 
   // Don't do anything if there is nothing to reorder.
@@ -731,18 +714,17 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
 void Tensor::reorder(std::vector<std::string> new_ordering,
                      s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
-    std::cout << "Scratch copy must be non-null." << std::endl;
-    assert(scratch_copy != nullptr);
+    throw ERROR_MSG("Scratch copy must be non-null.");
   }
 
   // Asserts.
   bool new_ordering_in_indices = _vector_s_in_vector_s(new_ordering, _indices);
   bool indices_in_new_ordering = _vector_s_in_vector_s(_indices, new_ordering);
   if (!new_ordering_in_indices || !indices_in_new_ordering) {
-    std::cout << "new_ordering: " << _string_vector_to_string(new_ordering)
-              << " must be a reordering of current indices: "
-              << _string_vector_to_string(_indices) << "." << std::endl;
-    assert(new_ordering_in_indices && indices_in_new_ordering);
+    throw ERROR_MSG("new_ordering: ", 
+              _string_vector_to_string(new_ordering),
+              " must be a reordering of current indices: ",
+              _string_vector_to_string(_indices), ".");
   }
   bool fast = true;
   for (int i = 0; i < _dimensions.size(); ++i) {
@@ -807,16 +789,13 @@ void Tensor::print_data() const {
 void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int m, int n, int k) {
   if (A_data == nullptr) {
-    std::cout << "Data from Tensor A must be non-null." << std::endl;
-    assert(A_data != nullptr);
+    throw ERROR_MSG("Data from Tensor A must be non-null.");
   }
   if (B_data == nullptr) {
-    std::cout << "Data from Tensor B must be non-null." << std::endl;
-    assert(B_data != nullptr);
+    throw ERROR_MSG("Data from Tensor B must be non-null.");
   }
   if (C_data == nullptr) {
-    std::cout << "Data from Tensor C must be non-null." << std::endl;
-    assert(C_data != nullptr);
+    throw ERROR_MSG("Data from Tensor C must be non-null.");
   }
   s_type alpha = 1.0;
   s_type beta = 0.0;
@@ -828,16 +807,13 @@ void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
 void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int m, int k) {
   if (A_data == nullptr) {
-    std::cout << "Data from Tensor A must be non-null." << std::endl;
-    assert(A_data != nullptr);
+    throw ERROR_MSG("Data from Tensor A must be non-null.");
   }
   if (B_data == nullptr) {
-    std::cout << "Data from Tensor B must be non-null." << std::endl;
-    assert(B_data != nullptr);
+    throw ERROR_MSG("Data from Tensor B must be non-null.");
   }
   if (C_data == nullptr) {
-    std::cout << "Data from Tensor C must be non-null." << std::endl;
-    assert(C_data != nullptr);
+    throw ERROR_MSG("Data from Tensor C must be non-null.");
   }
   s_type alpha = 1.0;
   s_type beta = 0.0;
@@ -848,16 +824,13 @@ void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
 void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int n, int k) {
   if (A_data == nullptr) {
-    std::cout << "Data from Tensor A must be non-null." << std::endl;
-    assert(A_data != nullptr);
+    throw ERROR_MSG("Data from Tensor A must be non-null.");
   }
   if (B_data == nullptr) {
-    std::cout << "Data from Tensor B must be non-null." << std::endl;
-    assert(B_data != nullptr);
+    throw ERROR_MSG("Data from Tensor B must be non-null.");
   }
   if (C_data == nullptr) {
-    std::cout << "Data from Tensor C must be non-null." << std::endl;
-    assert(C_data != nullptr);
+    throw ERROR_MSG("Data from Tensor C must be non-null.");
   }
   s_type alpha = 1.0;
   s_type beta = 0.0;
@@ -868,26 +841,23 @@ void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
 void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   int k) {
   if (A_data == nullptr) {
-    std::cout << "Data from Tensor A must be non-null." << std::endl;
-    assert(A_data != nullptr);
+    throw ERROR_MSG("Data from Tensor A must be non-null.");
   }
   if (B_data == nullptr) {
-    std::cout << "Data from Tensor B must be non-null." << std::endl;
-    assert(B_data != nullptr);
+    throw ERROR_MSG("Data from Tensor B must be non-null.");
   }
   if (C_data == nullptr) {
-    std::cout << "Data from Tensor C must be non-null." << std::endl;
-    assert(C_data != nullptr);
+    throw ERROR_MSG("Data from Tensor C must be non-null.");
   }
   cblas_cdotu_sub(k, A_data, 1, B_data, 1, C_data);
 }
 
 void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
-    std::cout << "Scratch copy must be non-null." << std::endl;
-    assert(scratch_copy != nullptr);
+    throw ERROR_MSG("Scratch copy must be non-null.");
   }
 
+  // need to call c.print() and change to throw
   if (A.data() == C.data()) {
     std::cout << "A and C cannot be the same tensor: ";
     C.print();
@@ -920,12 +890,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   for (int i = 0; i < common_indices.size(); ++i) {
     int a_dim = A.get_index_to_dimension().at(common_indices[i]);
     if (a_dim != B.get_index_to_dimension().at(common_indices[i])) {
-      std::cout
-          << "Common indices must have matching dimensions, but at index: " << i
-          << ", the dimensions are A: " << a_dim
-          << ", B: " << B.get_index_to_dimension().at(common_indices[i]) << "."
-          << std::endl;
-      assert(a_dim == B.get_index_to_dimension().at(common_indices[i]));
+      throw ERROR_MSG(
+          "Common indices must have matching dimensions, but at index: ", i,
+          ", the dimensions are A: ", a_dim,
+          ", B: ", B.get_index_to_dimension().at(common_indices[i]), ".");
     }
     common_dim *= a_dim;
   }
@@ -936,10 +904,9 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
 
   // Assert.
   if (left_dim * right_dim > C.capacity()) {
-    std::cout << "C: " << C.capacity()
-              << " doesn't have enough space for the product of A*B: "
-              << left_dim * right_dim << "." << std::endl;
-    assert((left_dim * right_dim <= C.capacity()));
+    throw ERROR_MSG("C: ", C.capacity(),
+              " doesn't have enough space for the product of A*B: ",
+              (left_dim * right_dim), ".");
   }
   // Reorder.
   t0 = std::chrono::high_resolution_clock::now();
@@ -1043,10 +1010,8 @@ void _generate_binary_reordering_map(
   int num_indices = map_old_to_new_idxpos.size();
   // Assert
   if ((size_t)pow(dim, num_indices) != map_old_to_new_position.size()) {
-    std::cout << "Size of map: " << map_old_to_new_position.size()
-              << " must be equal to 2^num_indices: " << pow(dim, num_indices)
-              << "." << std::endl;
-    assert((size_t)pow(dim, num_indices) == map_old_to_new_position.size());
+    throw ERROR_MSG("Size of map: ", map_old_to_new_position.size(),
+              " must be equal to 2^num_indices: ", pow(dim, num_indices), ".");
   }
 
   // Define super dimensions. See _naive_reorder().
