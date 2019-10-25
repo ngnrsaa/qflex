@@ -34,8 +34,8 @@ $ autoreconf -i && autoconf && ./configure
 $ make && make run-tests && make install
 ```
 
-To disable tests based on `cirq`, use `./configure --disable-cirq_tests`
-instead. By default, qFlex is installed in `$HOME/local/`. To change the
+To disable qFlex python interface, use `./configure --disable-pybind11`.
+By default, qFlex is installed in `$HOME/local/`. To change the
 installation folder, use `./configure --prefix=/new/installation/folder/`. 
 
 qFlex provides an experimental support for `OpenMP`. To activate `OpenMP`, run
