@@ -1,4 +1,4 @@
-# qFlex: A flexible high-performance simulator for the verification and benchmarking of quantum circuits implemented on real hardware
+# qFlex: A flexible high-performance simulator for verifying and benchmarking quantum circuits implemented on real hardware
 
 ## Description
 
