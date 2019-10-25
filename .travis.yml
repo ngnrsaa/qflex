@@ -9,7 +9,7 @@ addons:
     - clang-format
 
 before_script:
-  - bash scripts/check-format.sh
+  - bash scripts/check_format.sh
   - docker-compose build
 
 script:
