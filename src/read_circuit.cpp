@@ -287,12 +287,11 @@ void circuit_data_to_tensor_network(
   const int num_active_qubits_from_grid = grid_size - off_size;
 
   if (circuit.num_active_qubits != num_active_qubits_from_grid) {
-    std::cout
-        << "The number of active qubits read from the file: "
-        << circuit.num_active_qubits
-        << ", does not match the number of active qubits read from the grid: "
-        << num_active_qubits_from_grid << "." << std::endl;
-    assert(circuit.num_active_qubits == num_active_qubits_from_grid);
+    throw ERROR_MSG(
+        "The number of active qubits read from the file: ",
+        circuit.num_active_qubits,
+        ", does not match the number of active qubits read from the grid: ",
+        num_active_qubits_from_grid, ".");
   }
 
   // Assert for the length of initial_conf and final_conf.

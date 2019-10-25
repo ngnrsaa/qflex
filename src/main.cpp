@@ -66,9 +66,7 @@ int main(int argc, char** argv) {
 
     auto ordering_data = std::ifstream(ordering_filename);
     if (!ordering_data.good()) {
-      std::cout << "Cannot open ordering data file: " << ordering_filename
-                << std::endl;
-      assert(ordering_data.good());
+      throw ERROR_MSG("Cannot open ordering data file: ", ordering_filename);
     }
     input.ordering_data = &ordering_data;
 
