@@ -202,7 +202,7 @@ cat >> $root/install_qflex.sh << EOF
 cd /qflex
 
 # Run autoconf
-autoreconf -i && autoconf && ./configure $(if [[ $cirq != "1" ]]; then echo "--disable-cirq"; fi)
+autoreconf -i && autoconf && ./configure $(if [[ $cirq != "1" ]]; then echo "--disable-python_tests"; fi)
 
 # Make qFlex
 make -j\$num_par_processes
