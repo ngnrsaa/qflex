@@ -5,7 +5,7 @@ SRC_DIR = ../../src
 GTEST_DIR = $(CURDIR)/googletest/googletest
 GMOCK_DIR = $(CURDIR)/googletest/googlemock
 
-OBJS1 = circuit.o evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o
+OBJS1 = grid.o circuit.o evaluate_circuit.o tensor.o contraction_utils.o read_circuit.o
 
 TESTFLAGS = -I$(GTEST_DIR)/include -L$(GTEST_DIR) -I$(GMOCK_DIR)/include -L$(GMOCK_DIR) -I$(SRC_DIR)
 

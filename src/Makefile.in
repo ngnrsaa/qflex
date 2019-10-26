@@ -6,7 +6,7 @@ CIRQ_IF_DIR = ../python/
 # The name of the shared library that results after compiling QFlex for Pybind11
 QFLEXLIB = $(CIRQ_IF_DIR)/$(TARGET1)`python3-config --extension-suffix`
 
-OBJS1 = circuit.o evaluate_circuit.o tensor.o contraction_utils.o \
+OBJS1 = grid.o circuit.o evaluate_circuit.o tensor.o contraction_utils.o \
     read_circuit.o docopt/docopt.o
 
 CXXFLAGS += -Idocopt/ -fPIC

@@ -1,6 +1,8 @@
 #include "circuit.h"
 #include "docopt.h"
 #include "evaluate_circuit.h"
+#include "grid.h"
+#include "input.h"
 
 static const char VERSION[] = "qFlex v0.1";
 static const char USAGE[] =
