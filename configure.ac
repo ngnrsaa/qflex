@@ -108,7 +108,7 @@ AS_IF([test ${openmp} == "true"],
   AC_MSG_WARN([OpenMP is still experimental with potential memory leak.])
 )
 
-# Check for python. If --disable-pybind, no reasons to activate python
+# Check for python. If --disable-pybind11, no reasons to activate python
 REQ_PYTHON_VERSION="3.5"
 if test ${pybind11} == "true" && ${python_checks} == "true"; then
   AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],, 
@@ -156,7 +156,7 @@ PYBIND11_ERR_FLAG=pybind11
 PYTEST_REQ_VERSION="4.5"
 PYTEST_ERR_FLAG=python_tests
 
-# Check python modules. If --disable-pybind, no reasons to activate python
+# Check python modules. If --disable-pybind11, no reasons to activate python
 if test ${pybind11} == "true" && ${python_checks} == "true"; then
 
   python_check_module cirq     ${CIRQ_REQ_VERSION}     ${CIRQ_ERR_FLAG}
