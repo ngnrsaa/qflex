@@ -5,7 +5,7 @@ containers that do not require `root` privileges.
 
 ## Build Rootless Image
 
-To build a rootless qFlex image, run:
+To build a rootless qFlex image and run all tests in it, run:
 
 ```
 $ bash scripts/create-rootless-container.sh (-|image_folder) [-h -j <p> -x -r -c]
@@ -32,18 +32,20 @@ $ sudo echo 1 > /proc/sys/kernel/unprivileged_userns_clone
 
 To run the rootless image:
 ```
-$ bash scripts/run-rootless-image.sh image_folder
+$ bash scripts/run-rootless-container.sh image_folder
 ```
 
-Inside the rootless image, qFlex and Cirq can be installed by executing:
+Inside the rootless image, qFlex can be installed by executing:
 ```
 /install_qflex.sh
 ```
-and
-```
-/install_cirq.sh
-```
-respectively. After the installation of qFlex, tests can be run as:
+After the installation of qFlex, tests can be run as:
 ```
 make -C /qflex/ run-tests
+```
+
+To run a sample simulation inside the image, use the following command:
+```
+/qflex/src/qflex.x /qflex/config/circuits/bristlecone_48_1-24-1_0.txt \
+/qflex/config/ordering/bristlecone_48.txt /qflex/config/grid/bristlecone_48.txt
 ```
