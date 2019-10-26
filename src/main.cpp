@@ -68,14 +68,6 @@ int main(int argc, char** argv) {
     // Load ordering
     input.ordering.load(std::ifstream(ordering_filename));
 
-    auto ordering_data = std::ifstream(ordering_filename);
-    if (!ordering_data.good()) {
-      std::cout << "Cannot open ordering data file: " << ordering_filename
-                << std::endl;
-      assert(ordering_data.good());
-    }
-    input.ordering_data = &ordering_data;
-
     // Load grid
     input.grid.load(grid_filename);
 

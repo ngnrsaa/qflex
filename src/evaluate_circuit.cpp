@@ -114,9 +114,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // Create the ordering for this tensor contraction from file.
   t0 = std::chrono::high_resolution_clock::now();
   std::list<ContractionOperation> ordering;
-  ordering_data_to_contraction_ordering(input->ordering_data, input->grid.I,
-                                        input->grid.J, input->grid.qubits_off,
-                                        &ordering);
+  ordering_data_to_contraction_ordering(*input, &ordering);
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);

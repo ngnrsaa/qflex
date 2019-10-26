@@ -8,7 +8,6 @@
 namespace qflex {
 
 struct QflexInput {
-  std::istream* ordering_data;
   QflexOrdering ordering;
   QflexCircuit circuit;
   QflexGrid grid;
