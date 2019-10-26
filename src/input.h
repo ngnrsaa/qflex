@@ -1,6 +1,7 @@
 #ifndef INPUT__H
 #define INPUT__H
 
+#include "ordering.h"
 #include "circuit.h"
 #include "grid.h"
 
@@ -8,6 +9,7 @@ namespace qflex {
 
 struct QflexInput {
   std::istream* ordering_data;
+  QflexOrdering ordering;
   QflexCircuit circuit;
   QflexGrid grid;
   std::string initial_state;

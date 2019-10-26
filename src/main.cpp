@@ -1,8 +1,9 @@
+#include "ordering.h"
 #include "circuit.h"
 #include "docopt.h"
 #include "evaluate_circuit.h"
-#include "grid.h"
 #include "input.h"
+#include "grid.h"
 
 static const char VERSION[] = "qFlex v0.1";
 static const char USAGE[] =
@@ -61,8 +62,11 @@ int main(int argc, char** argv) {
                                     ? args["--grid"].asString()
                                     : args["<grid_filename>"].asString();
 
-    // Read the circuit
+    // Load circuit
     input.circuit.load(std::ifstream(circuit_filename));
+
+    // Load ordering
+    input.ordering.load(std::ifstream(ordering_filename));
 
     auto ordering_data = std::ifstream(ordering_filename);
     if (!ordering_data.good()) {
