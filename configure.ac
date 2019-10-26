@@ -165,7 +165,7 @@ if test ${pybind11} == "true" && ${python_checks} == "true"; then
 
 fi
 
-# If --disable-python, switch off everything
+# If --disable-pybind11, switch off everything
 AS_IF([test ${pybind11} == "false"],
   python_tests=false
 )
