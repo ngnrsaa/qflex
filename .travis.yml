@@ -15,7 +15,4 @@ before_script:
 script:
   - docker run -ti --rm qflex-tests:latest
   - docker run -ti --rm qflex-py-tests:latest
-  - docker run -ti --rm qflex:latest \
-          /qflex/config/circuits/bristlecone_48_1-24-1_0.txt \
-          /qflex/config/ordering/bristlecone_48.txt \
-          /qflex/config/grid/bristlecone_48.txt
+  - docker run -ti --rm qflex:latest /qflex/config/circuits/bristlecone_48_1-24-1_0.txt /qflex/config/ordering/bristlecone_48.txt /qflex/config/grid/bristlecone_48.txt
