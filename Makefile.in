@@ -4,8 +4,7 @@ CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@
 PREFIX = @prefix@
 PYBIND11 = @pybind11@
-CIRQ = @cirq@
-PYTEST = @pytest@
+PYTHON_TESTS = @python_tests@
 OPENMP = @openmp@
 
 ifeq ($(CXX), icpc)
@@ -58,7 +57,7 @@ run-cxx-tests: tests
 	$(MAKE) -C tests/src/ run-all
 
 TESTS = run-cxx-tests
-ifeq ($(PYTEST), true)
+ifeq ($(PYTHON_TESTS), true)
   TESTS += run-py-tests
 endif
 

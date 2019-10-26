@@ -56,8 +56,7 @@ $ autoreconf -i && autoconf && ./configure
 $ make && make run-tests
 ```
 
-To disable tests based on `cirq`, use `./configure --disable-cirq_tests`
-instead.
+To disable qFlex python interface, use `./configure --disable-pybind11`.
 
 After running these commands, qFlex can be installed by running `make install`.
 By default, this installs qFlex in `$HOME/local/`. To change the installation
