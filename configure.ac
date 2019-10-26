@@ -75,7 +75,7 @@ AC_ARG_ENABLE([python_checks],
 
 # Add extra param for cirq
 AC_ARG_ENABLE([python_tests], 
-  AS_HELP_STRING([--disable-python_tests],[Disable cirq tests.]), 
+  AS_HELP_STRING([--disable-python_tests],[Disable Python tests.]), 
   [case "${enableval}" in
       yes) python_tests=true  ;;
        no) python_tests=false ;; 
