@@ -57,8 +57,6 @@ $ make && make run-tests
 ```
 
 To disable qFlex python interface, use `./configure --disable-pybind11`.
-By default, qFlex is installed in `$HOME/local/`. To change the
-installation folder, use `./configure --prefix=/new/installation/folder/`. 
 
 After running these commands, qFlex can be installed by running `make install`.
 By default, this installs qFlex in `$HOME/local/`. To change the installation
