@@ -262,9 +262,7 @@ void ContractionData::ContractGrid(
 // External methods
 
 bool ordering_data_to_contraction_ordering(
-    const QflexInput &input,
-    std::list<ContractionOperation>* ordering) {
-
+    const QflexInput& input, std::list<ContractionOperation>* ordering) {
   if (ordering == nullptr) {
     std::cout << "Ordering must be non-null." << std::endl;
     assert(ordering != nullptr);
@@ -274,7 +272,7 @@ bool ordering_data_to_contraction_ordering(
   std::string error_msg;
   std::string operation;
   // Read one line at a time from the ordering, skipping comments.
-  for(const auto &line: input.ordering.instructions) {
+  for (const auto& line : input.ordering.instructions) {
     if (line.empty() || line[0] == '#') continue;
     std::stringstream ss(line);
     // The first element is the operation (expand, cut, or merge).
@@ -293,7 +291,8 @@ bool ordering_data_to_contraction_ordering(
         break;
       }
       std::vector<int> position = get_qubit_coords(index, input.grid.J);
-      if (find_grid_coord_in_list(input.grid.qubits_off, position[0], position[1])) {
+      if (find_grid_coord_in_list(input.grid.qubits_off, position[0],
+                                  position[1])) {
         error_msg = "Index must specify an active qubit.";
         break;
       }
@@ -330,7 +329,8 @@ bool ordering_data_to_contraction_ordering(
         break;
       }
       std::vector<int> position_1 = get_qubit_coords(index_1, input.grid.J);
-      if (find_grid_coord_in_list(input.grid.qubits_off, position_1[0], position_1[1])) {
+      if (find_grid_coord_in_list(input.grid.qubits_off, position_1[0],
+                                  position_1[1])) {
         error_msg = "Index 1 must specify an active qubit.";
         break;
       }
@@ -347,7 +347,8 @@ bool ordering_data_to_contraction_ordering(
           break;
         }
         std::vector<int> position_2 = get_qubit_coords(index_2, input.grid.J);
-        if (find_grid_coord_in_list(input.grid.qubits_off, position_2[0], position_2[1])) {
+        if (find_grid_coord_in_list(input.grid.qubits_off, position_2[0],
+                                    position_2[1])) {
           error_msg = "Index 2 must specify an active qubit.";
           break;
         }

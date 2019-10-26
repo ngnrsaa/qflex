@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-#include "tensor.h"
 #include "input.h"
+#include "tensor.h"
 
 namespace qflex {
 
@@ -95,13 +95,12 @@ struct ContractionOperation {
 
 /**
  * Parses a grid contraction ordering from the given stream.
- * @param QflexInput containing simulation information 
+ * @param QflexInput containing simulation information
  * @param ordering pointer to std::list<ContractionOperation> output object.
  * @return false if parsing failed at any point, true otherwise.
  **/
 bool ordering_data_to_contraction_ordering(
-    const QflexInput &input,
-    std::list<ContractionOperation>* ordering);
+    const QflexInput& input, std::list<ContractionOperation>* ordering);
 
 // Helper class for the external ContractGrid method. This should not be
 // initialized by external users.

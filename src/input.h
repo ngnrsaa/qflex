@@ -1,9 +1,9 @@
 #ifndef INPUT__H
 #define INPUT__H
 
-#include "ordering.h"
 #include "circuit.h"
 #include "grid.h"
+#include "ordering.h"
 
 namespace qflex {
 

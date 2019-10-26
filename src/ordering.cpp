@@ -2,9 +2,10 @@
 
 namespace qflex {
 
-void QflexOrdering::load(std::istream& istream) { this->load(std::move(istream)); }
+void QflexOrdering::load(std::istream& istream) {
+  this->load(std::move(istream));
+}
 void QflexOrdering::load(std::istream&& istream) {
-
   auto strip_line = [](std::string line) {
     // Remove everything after '#'
     line = std::regex_replace(line, std::regex("#.*"), "");
@@ -33,9 +34,8 @@ void QflexOrdering::load(std::istream&& istream) {
   };
 
   std::string line;
-  while(std::getline(istream, line)) if(std::size(line = strip_line(line)))
-    this->instructions.push_back(line);
-
+  while (std::getline(istream, line))
+    if (std::size(line = strip_line(line))) this->instructions.push_back(line);
 }
 
 void QflexOrdering::load(const std::string& filename) {
@@ -45,4 +45,4 @@ void QflexOrdering::load(const std::string& filename) {
     throw std::string("Cannot open ordering file: ") + filename;
 }
 
-}
+}  // namespace qflex

@@ -292,7 +292,6 @@ expand b 3
 merge a b
 )";
 TEST(OrderingParserTest, ParseSimpleOrdering) {
-
   QflexInput input;
   input.ordering.load(std::stringstream(kSimpleOrdering));
   input.grid.qubits_off = {{2, 0}};
@@ -339,7 +338,6 @@ cut (1,2) 1 0
 )";
 
 TEST(OrderingParserTest, ParseCutReordering) {
-
   QflexInput input;
   input.ordering.load(std::stringstream(kInvertedCutOrdering));
   input.grid.qubits_off = {{2, 0}};
@@ -358,7 +356,6 @@ TEST(OrderingParserTest, ParseCutReordering) {
 }
 
 TEST(OrderingParserTest, ParserFailures) {
-
   QflexInput input;
 
   // Invalid operations cause failures.
@@ -389,9 +386,9 @@ TEST(OrderingParserTest, ParserFailures) {
 }
 
 TEST(OrderingParserDeathTest, InvalidInput) {
-
   // Ordering cannot be null pointer.
-  EXPECT_DEATH(ordering_data_to_contraction_ordering(QflexInput(), nullptr), "");
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(QflexInput(), nullptr),
+               "");
 }
 
 constexpr char kInvalidOrdering[] = R"(# test comment
@@ -399,7 +396,6 @@ expand a 1
 expand a 1
 )";
 TEST(OrderingParserDeathTest, InvalidOrderingGenerated) {
-
   QflexInput input;
   input.ordering.load(std::stringstream(kInvalidOrdering));
   input.grid.qubits_off = {{2, 0}};
@@ -407,8 +403,7 @@ TEST(OrderingParserDeathTest, InvalidOrderingGenerated) {
   input.grid.J = 2;
 
   std::list<ContractionOperation> ordering;
-  EXPECT_DEATH(ordering_data_to_contraction_ordering(input, &ordering),
-               "");
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(input, &ordering), "");
 }
 
 TEST(ContractionDeathTest, ContractGridInvalidInput) {

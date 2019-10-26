@@ -2,9 +2,9 @@
 #define ORDERING__H
 
 #include <fstream>
-#include <vector>
-#include <string>
 #include <regex>
+#include <string>
+#include <vector>
 
 namespace qflex {
 
@@ -15,6 +15,6 @@ struct QflexOrdering {
   void load(const std::string& filename);
 };
 
-}
+}  // namespace qflex
 
 #endif

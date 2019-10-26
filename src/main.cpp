@@ -1,9 +1,9 @@
-#include "ordering.h"
 #include "circuit.h"
 #include "docopt.h"
 #include "evaluate_circuit.h"
-#include "input.h"
 #include "grid.h"
+#include "input.h"
+#include "ordering.h"
 
 static const char VERSION[] = "qFlex v0.1";
 static const char USAGE[] =
