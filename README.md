@@ -1,3 +1,5 @@
+[![Travis-CI](https://travis-ci.org/ngnrsaa/qflex.svg?branch=master "Travis-CI")](https://travis-ci.org/ngnrsaa/qflex)
+
 # qFlex: A flexible high-performance simulator for verifying and benchmarking quantum circuits implemented on real hardware
 
 ## Description
