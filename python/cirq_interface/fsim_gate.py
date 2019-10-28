@@ -27,7 +27,6 @@ from typing import Optional
 
 import numpy as np
 
-import cirq
 from cirq import protocols, value
 from cirq._compat import proper_repr
 from cirq.ops import gate_features
