@@ -292,13 +292,14 @@ expand b 3
 merge a b
 )";
 TEST(OrderingParserTest, ParseSimpleOrdering) {
-  auto ordering_data = std::stringstream(kSimpleOrdering);
+  QflexInput input;
+  input.ordering.load(std::stringstream(kSimpleOrdering));
+  input.grid.qubits_off = {{2, 0}};
+  input.grid.I = 3;
+  input.grid.J = 2;
+
   std::list<ContractionOperation> ordering;
-  std::vector<std::vector<int>> qubits_off = {{2, 0}};
-  int I = 3;
-  int J = 2;
-  ASSERT_TRUE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                    qubits_off, &ordering));
+  ASSERT_TRUE(ordering_data_to_contraction_ordering(input, &ordering));
 
   std::list<ContractionOperation> expected_ordering;
   expected_ordering.emplace_back(CutIndex({{0, 1}, {1, 1}}, {1, 2}));
@@ -337,13 +338,14 @@ cut (1,2) 1 0
 )";
 
 TEST(OrderingParserTest, ParseCutReordering) {
-  auto ordering_data = std::stringstream(kInvertedCutOrdering);
+  QflexInput input;
+  input.ordering.load(std::stringstream(kInvertedCutOrdering));
+  input.grid.qubits_off = {{2, 0}};
+  input.grid.I = 3;
+  input.grid.J = 2;
+
   std::list<ContractionOperation> ordering;
-  std::vector<std::vector<int>> qubits_off = {{2, 0}};
-  int I = 1;
-  int J = 2;
-  ASSERT_TRUE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                    qubits_off, &ordering));
+  ASSERT_TRUE(ordering_data_to_contraction_ordering(input, &ordering));
 
   ContractionOperation expected_op(CutIndex({{0, 0}, {0, 1}}, {1, 2}));
 
@@ -354,56 +356,38 @@ TEST(OrderingParserTest, ParseCutReordering) {
 }
 
 TEST(OrderingParserTest, ParserFailures) {
-  std::list<ContractionOperation> ordering;
-  std::vector<std::vector<int>> qubits_off = {{2, 0}};
-  std::stringstream ordering_data;
-  int I = 3;
-  int J = 2;
+  QflexInput input;
 
   // Invalid operations cause failures.
-  ordering_data = std::stringstream("bad_op 1 2");
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering));
+  input.ordering.instructions = {"bad op 1 2"};
+  input.grid.qubits_off = {{2, 0}};
+  input.grid.I = 3;
+  input.grid.J = 2;
+
+  std::list<ContractionOperation> ordering;
+  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
 
   // Qubit indices must be within the grid (3x2).
-  ordering_data = std::stringstream("expand a 8");
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering));
-  ordering_data = std::stringstream("expand a -2");
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering));
-  ordering_data = std::stringstream("cut () 1 7");
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering));
-  ordering_data = std::stringstream("cut () -1 4");
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering));
+  input.ordering.instructions = {"expand a 8"};
+  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
+  input.ordering.instructions = {"expand a -2"};
+  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
+  input.ordering.instructions = {"cut () 1 7"};
+  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
+  input.ordering.instructions = {"cut () -1 4"};
+  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
 
   // Cuts must receive a valid value list.
-  ordering_data = std::stringstream("cut 2 3");
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering));
+  input.ordering.instructions = {"cut 2 3"};
+  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
   // Spaces are not allowed in the value list.
-  ordering_data = std::stringstream("cut (1, 2) 2 3");
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering));
+  input.ordering.instructions = {"cut (1, 2) 2 3"};
+  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
 }
 
 TEST(OrderingParserDeathTest, InvalidInput) {
-  auto ordering_data = std::stringstream(kSimpleOrdering);
-  std::list<ContractionOperation> ordering;
-  std::vector<std::vector<int>> qubits_off = {{2, 0}};
-  int I = 3;
-  int J = 2;
-
-  // Ordering data cannot be null pointer.
-  EXPECT_DEATH(ordering_data_to_contraction_ordering(nullptr, I, J, qubits_off,
-                                                     &ordering),
-               "");
-
   // Ordering cannot be null pointer.
-  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, nullptr),
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(QflexInput(), nullptr),
                "");
 }
 
@@ -412,14 +396,14 @@ expand a 1
 expand a 1
 )";
 TEST(OrderingParserDeathTest, InvalidOrderingGenerated) {
-  auto ordering_data = std::stringstream(kInvalidOrdering);
+  QflexInput input;
+  input.ordering.load(std::stringstream(kInvalidOrdering));
+  input.grid.qubits_off = {{2, 0}};
+  input.grid.I = 3;
+  input.grid.J = 2;
+
   std::list<ContractionOperation> ordering;
-  std::vector<std::vector<int>> qubits_off = {{2, 0}};
-  int I = 3;
-  int J = 2;
-  EXPECT_DEATH(ordering_data_to_contraction_ordering(&ordering_data, I, J,
-                                                     qubits_off, &ordering),
-               "");
+  EXPECT_DEATH(ordering_data_to_contraction_ordering(input, &ordering), "");
 }
 
 TEST(ContractionDeathTest, ContractGridInvalidInput) {

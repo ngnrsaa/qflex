@@ -1,6 +1,9 @@
 #include "circuit.h"
 #include "docopt.h"
 #include "evaluate_circuit.h"
+#include "grid.h"
+#include "input.h"
+#include "ordering.h"
 
 static const char VERSION[] = "qFlex v0.1";
 static const char USAGE[] =
@@ -59,16 +62,11 @@ int main(int argc, char** argv) {
                                     ? args["--grid"].asString()
                                     : args["<grid_filename>"].asString();
 
-    // Read the circuit
+    // Load circuit
     input.circuit.load(std::ifstream(circuit_filename));
 
-    auto ordering_data = std::ifstream(ordering_filename);
-    if (!ordering_data.good()) {
-      std::cout << "Cannot open ordering data file: " << ordering_filename
-                << std::endl;
-      assert(ordering_data.good());
-    }
-    input.ordering_data = &ordering_data;
+    // Load ordering
+    input.ordering.load(std::ifstream(ordering_filename));
 
     // Load grid
     input.grid.load(grid_filename);
