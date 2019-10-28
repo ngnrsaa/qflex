@@ -244,9 +244,9 @@ class Tensor {
   size_t num_zeros() const;
 
   /**
-   * Prints information about the Tensor.
+   * Returns a string containing information about the Tensor.
    */
-  void print() const;
+  std::string tensor_to_string() const;
 
   /**
    * Prints the data of the Tensor.

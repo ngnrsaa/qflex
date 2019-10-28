@@ -1,7 +1,6 @@
 #include "contraction_utils.h"
 
 #include <algorithm>
-#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <regex>
@@ -250,9 +249,7 @@ void ContractionData::ContractGrid(
   // Check for an output of size larger than 1
   // need to print output along with error message.
   if (output->size() != 1) {
-    std::cout << "Contraction did not complete; final tensor is ";
-    output->print();
-    assert(false);
+    throw ERROR_MSG("Contraction did not complete; final tensor is: ", output->tensor_to_string());
   }
   (*amplitudes_)[output_index] += (*output->data());
   return;

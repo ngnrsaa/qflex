@@ -20,7 +20,6 @@
 #endif
 
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <iterator>
 
@@ -765,17 +764,17 @@ size_t Tensor::num_zeros() const {
   return count;
 }
 
-void Tensor::print() const {
-  std::string print_str("Tensor of rank ");
-  print_str += std::to_string(_indices.size());
-  print_str += ": ";
+std::string Tensor::tensor_to_string() const {
+  std::string output_str("Tensor of rank ");
+  output_str += std::to_string(_indices.size());
+  output_str += ": ";
   for (int i = 0; i < _indices.size(); ++i) {
-    print_str += _indices[i];
-    print_str += " -> ";
-    print_str += std::to_string(_dimensions[i]);
-    if (i < _indices.size() - 1) print_str += ", ";
+    output_str += _indices[i];
+    output_str += " -> ";
+    output_str += std::to_string(_dimensions[i]);
+    if (i < _indices.size() - 1) output_str += ", ";
   }
-  std::cout << print_str << std::endl;
+  return output_str;
 }
 
 void Tensor::print_data() const {
@@ -857,16 +856,11 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     throw ERROR_MSG("Scratch copy must be non-null.");
   }
 
-  // need to call c.print() and change to throw
   if (A.data() == C.data()) {
-    std::cout << "A and C cannot be the same tensor: ";
-    C.print();
-    assert(A.data() != C.data());
+    throw ERROR_MSG("A and C cannot be the same tensor: ", C.tensor_to_string());
   }
   if (B.data() == C.data()) {
-    std::cout << "B and C cannot be the same tensor: ";
-    C.print();
-    assert(B.data() != C.data());
+    throw ERROR_MSG("B and C cannot be the same tensor: ",C.tensor_to_string());
   }
 
   std::chrono::high_resolution_clock::time_point t0, t1;

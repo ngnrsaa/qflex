@@ -277,8 +277,8 @@ TEST(TensorDeathTest, InvalidInput) {
   Tensor tensor_abd({"a", "b", "d"}, {2, 2, 2});
 
   // Reusing either tensor in multiplication.
-  ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_abc, scratch.data()), "");
-  ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_cd, scratch.data()), "");
+  ASSERT_ANY_THROW(multiply(tensor_abc, tensor_cd, tensor_abc, scratch.data()));
+  ASSERT_ANY_THROW(multiply(tensor_abc, tensor_cd, tensor_cd, scratch.data()));
 
   Tensor tensor_cd_large({"c", "d"}, {4, 4});
 
