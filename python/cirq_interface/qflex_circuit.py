@@ -57,6 +57,12 @@ class QFlexCircuit(cirq.Circuit):
                                                        qubit_to_index_dict),
                   file=f)
 
+    def __eq__(self, other):
+        if not isinstance(other, QFlexCircuit):
+            return False
+        # equality is tested, for the moment, for cirq.Circuit
+        return super().__eq__(other)
+
     @property
     def circuit_data(self):
         return self._file_handle[1]
