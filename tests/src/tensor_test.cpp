@@ -200,7 +200,7 @@ TEST(TensorTest, Multiply) {
 }
 
 // Verifies that a tensor retains its initialized capacity.
-TEST(TensorDeathTest, Capacity) {
+TEST(TensorExceptionTest, Capacity) {
   std::vector<std::string> indices = {"a", "b"};
   std::vector<size_t> dimensions = {2, 4};
 
@@ -227,7 +227,7 @@ TEST(TensorDeathTest, Capacity) {
 }
 
 // Checks that various invalid method arguments generate failures.
-TEST(TensorDeathTest, InvalidInput) {
+TEST(TensorExceptionTest, InvalidInput) {
   // Mismatched indices and dimensions.
   ASSERT_ANY_THROW(Tensor({"a", "b", "c"}, {2, 2}));
 
@@ -297,7 +297,7 @@ TEST(TensorDeathTest, InvalidInput) {
 
 // Testing this function by direct call because too nested to test by calling
 // Tensor::reorder
-TEST(TensorDeathTest, GenerateBinaryReorderingMapInvalidInput) {
+TEST(TensorExceptionTest, GenerateBinaryReorderingMapInvalidInput) {
   const std::vector<int> map_old_to_new_idxpos = {1, 2};
   std::vector<int> map_old_to_new_position = {1, 2, 3};
 

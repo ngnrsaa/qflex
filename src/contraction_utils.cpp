@@ -448,9 +448,9 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
     switch (op.op_type) {
       case ContractionOperation::EXPAND: {
         if (patches[op.expand.id].is_used)
-          error_msg = concat(error_msg, "\nTensor at (", op.expand.tensor[0], ",", op.expand.tensor[1], ") is added to non-empty patch ", op.expand.id.c_str(), " after a cut.");
+          error_msg = concat(error_msg, "\nTensor at (", op.expand.tensor[0], ",", op.expand.tensor[1], ") is added to non-empty patch '", op.expand.id.c_str(), "' after a cut.");
         if (patches[op.expand.id].is_merged) 
-          error_msg = concat(error_msg, "\nTensor at (", op.expand.tensor[0], ",", op.expand.tensor[1], ") is added to non-empty patch ", op.expand.id.c_str(), " after a cut.");
+          error_msg = concat(error_msg, "\nTensor at (", op.expand.tensor[0], ",", op.expand.tensor[1], ") is added to non-empty patch '", op.expand.id.c_str(), "' after a cut.");
 
         char tensor_name[20];
         snprintf(tensor_name, sizeof(tensor_name), "(%d,%d)",
@@ -477,10 +477,10 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
       }
       case ContractionOperation::MERGE: {
         if (patches[op.merge.source_id].is_merged) 
-          error_msg = concat(error_msg, "\nPatch ", op.merge.source_id.c_str()," is merged multiple times.");
+          error_msg = concat(error_msg, "\nPatch '", op.merge.source_id.c_str(),"' is merged multiple times.");
 
         if (patches[op.merge.target_id].is_used) 
-          error_msg = concat(error_msg, "\nPatch ", op.merge.source_id.c_str()," is merged into non-empty patch ", op.merge.target_id.c_str(), " after a cut.");
+          error_msg = concat(error_msg, "\nPatch '", op.merge.source_id.c_str(),"' is merged into non-empty patch '", op.merge.target_id.c_str(), "' after a cut.");
 
         patches[op.merge.source_id].is_merged = true;
         patches[op.merge.target_id].is_active = true;

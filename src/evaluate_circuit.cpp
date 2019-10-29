@@ -71,7 +71,9 @@ std::string get_output_states(const QflexInput* input,
                               std::vector<std::string>* output_states) {
   if (final_qubits == nullptr) {
     throw ERROR_MSG("Final qubits must be non-null.");
-    
+  }
+  if (output_states == nullptr) {
+    throw ERROR_MSG("Output states must be non-null");
   }
   std::vector<int> output_pos_map;
   std::vector<std::vector<int>> output_values_map;
