@@ -258,12 +258,7 @@ void ContractionData::ContractGrid(
 // External methods
 
 bool ordering_data_to_contraction_ordering(
-    std::istream* ordering_data, const int I, const int J,
-    const std::optional<std::vector<std::vector<int>>>& off,
-    std::list<ContractionOperation>* ordering) {
-  if (ordering_data == nullptr) {
-    throw ERROR_MSG("Ordering data stream must be non-null.");
-  }
+    const QflexInput& input, std::list<ContractionOperation>* ordering) {
   if (ordering == nullptr) {
     throw ERROR_MSG("Ordering must be non-null.");
   }
@@ -272,7 +267,7 @@ bool ordering_data_to_contraction_ordering(
   std::string error_msg;
   std::string operation;
   // Read one line at a time from the ordering, skipping comments.
-  while (getline(*ordering_data, line)) {
+  for (const auto& line : input.ordering.instructions) {
     if (line.empty() || line[0] == '#') continue;
     std::stringstream ss(line);
     // The first element is the operation (expand, cut, or merge).
@@ -286,12 +281,13 @@ bool ordering_data_to_contraction_ordering(
         error_msg = "Index cannot be negative.";
         break;
       }
-      if (index >= I * J) {
+      if (index >= input.grid.I * input.grid.J) {
         error_msg = "Index must be within grid boundaries.";
         break;
       }
-      std::vector<int> position = get_qubit_coords(index, J);
-      if (find_grid_coord_in_list(off, position[0], position[1])) {
+      std::vector<int> position = get_qubit_coords(index, input.grid.J);
+      if (find_grid_coord_in_list(input.grid.qubits_off, position[0],
+                                  position[1])) {
         error_msg = "Index must specify an active qubit.";
         break;
       }
@@ -323,12 +319,13 @@ bool ordering_data_to_contraction_ordering(
         error_msg = "Index 1 cannot be negative.";
         break;
       }
-      if (index_1 >= I * J) {
+      if (index_1 >= input.grid.I * input.grid.J) {
         error_msg = "Index 1 must be within grid boundaries.";
         break;
       }
-      std::vector<int> position_1 = get_qubit_coords(index_1, J);
-      if (find_grid_coord_in_list(off, position_1[0], position_1[1])) {
+      std::vector<int> position_1 = get_qubit_coords(index_1, input.grid.J);
+      if (find_grid_coord_in_list(input.grid.qubits_off, position_1[0],
+                                  position_1[1])) {
         error_msg = "Index 1 must specify an active qubit.";
         break;
       }
@@ -340,12 +337,13 @@ bool ordering_data_to_contraction_ordering(
           error_msg = "Index 2 cannot be negative";
           break;
         }
-        if (index_2 >= I * J) {
+        if (index_2 >= input.grid.I * input.grid.J) {
           error_msg = "Index 2 must be within grid boundaries.";
           break;
         }
-        std::vector<int> position_2 = get_qubit_coords(index_2, J);
-        if (find_grid_coord_in_list(off, position_2[0], position_2[1])) {
+        std::vector<int> position_2 = get_qubit_coords(index_2, input.grid.J);
+        if (find_grid_coord_in_list(input.grid.qubits_off, position_2[0],
+                                    position_2[1])) {
           error_msg = "Index 2 must specify an active qubit.";
           break;
         }
@@ -377,6 +375,7 @@ bool ordering_data_to_contraction_ordering(
   if (!valid_ordering) {
     throw ERROR_MSG("Generated ordering must be valid.");
   }
+
   return true;
 }
 
@@ -456,7 +455,8 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
         snprintf(tensor_name, sizeof(tensor_name), "(%d,%d)",
                  op.expand.tensor[0], op.expand.tensor[1]);
         if (used_tensors.find(tensor_name) != used_tensors.end())
-          error_msg = concat(error_msg, "\nTensor ", tensor_name," is contracted multiple times.");
+          error_msg = concat(error_msg, "\nTensor ", tensor_name,
+                             " is contracted multiple times.");
 
         used_tensors.insert(tensor_name);
         patches[op.expand.id].is_active = true;
@@ -469,8 +469,9 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
           }
         }
         const std::string index = index_name(op.cut.tensors);
-        if (cut_indices.find(index) != cut_indices.end()) 
-          error_msg = concat(error_msg, "\nIndex ", index.c_str()," is cut multiple times.");
+        if (cut_indices.find(index) != cut_indices.end())
+          error_msg = concat(error_msg, "\nIndex ", index.c_str(),
+                             " is cut multiple times.");
 
         cut_indices.insert(index);
         continue;

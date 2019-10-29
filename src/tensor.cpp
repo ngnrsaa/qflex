@@ -16,7 +16,7 @@
 #include "tensor.h"
 
 #ifdef _OPENMP
-  #include <omp.h>
+#include <omp.h>
 #endif
 
 #include <algorithm>
@@ -626,11 +626,11 @@ void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
     s_type* temp_data = new s_type[dim_right];
 #pragma omp for schedule(static)
     for (int pl = 0; pl < dim_left; ++pl) {
-  #ifdef _OPENMP
+#ifdef _OPENMP
       int current_thread = omp_get_thread_num();
-  #else
+#else
       int current_thread = 0;
-  #endif
+#endif
       int offset = pl * dim_right;
       for (int pr = 0; pr < dim_right; ++pr)
         *(temp_data + pr) = *(_data + offset + pr);

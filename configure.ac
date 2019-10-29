@@ -39,7 +39,6 @@ AC_CHECK_HEADER([iostream], [], [AC_MSG_ERROR([Please install iostream before co
 AC_CHECK_HEADER([iterator], [], [AC_MSG_ERROR([Please install iterator before configuring.])])
 AC_CHECK_HEADER([list], [], [AC_MSG_ERROR([Please install list before configuring.])])
 AC_CHECK_HEADER([memory], [], [AC_MSG_ERROR([Please install memory before configuring.])])
-AC_CHECK_HEADER([omp.h], [], [AC_MSG_ERROR([Please install omp.h before configuring.])])
 AC_CHECK_HEADER([regex], [], [AC_MSG_ERROR([Please install regex before configuring.])])
 AC_CHECK_HEADER([sstream], [], [AC_MSG_ERROR([Please install sstream before configuring.])])
 AC_CHECK_HEADER([string], [], [AC_MSG_ERROR([Please install string before configuring.])])
@@ -75,13 +74,13 @@ AC_ARG_ENABLE([python_checks],
 )
 
 # Add extra param for cirq
-AC_ARG_ENABLE([cirq_tests], 
-  AS_HELP_STRING([--disable-cirq_tests],[Disable cirq tests.]), 
+AC_ARG_ENABLE([python_tests], 
+  AS_HELP_STRING([--disable-python_tests],[Disable Python tests.]), 
   [case "${enableval}" in
-      yes) cirq_tests=true  ;;
-       no) cirq_tests=false ;; 
-        *) AC_MSG_ERROR([bad value ${enableval} for --disable-cirq_tests])
-   esac], [cirq_tests=true]
+      yes) python_tests=true  ;;
+       no) python_tests=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_tests])
+   esac], [python_tests=true]
 )
 
 # Add extra param for pybind11
@@ -90,7 +89,7 @@ AC_ARG_ENABLE([pybind11],
   [case "${enableval}" in
       yes) pybind11=true  ;;
        no) pybind11=false ;; 
-        *) AC_MSG_ERROR([bad value ${enableval} for --disable-cirq_tests])
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_tests])
    esac], [pybind11=true]
 )
 
@@ -104,85 +103,75 @@ AC_ARG_ENABLE([openmp],
    esac], [openmp=false]
 )
 
-AS_IF([test ${openmp} = "true"], AC_MSG_WARN([OpenMP is still experimental with potential memory leak.]))
+AS_IF([test ${openmp} == "true"], 
+  AC_CHECK_HEADER([omp.h], [], [AC_MSG_ERROR([Please install omp.h before configuring.])])
+  AC_MSG_WARN([OpenMP is still experimental with potential memory leak.])
+)
 
-AC_SUBST(openmp, ${openmp})
+# Check for python. If --disable-pybind11, no reasons to activate python
+REQ_PYTHON_VERSION="3.5"
+if test ${pybind11} == "true" && ${python_checks} == "true"; then
+  AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],, 
+    AC_MSG_ERROR([Please install Python >= ${REQ_PYTHON_VERSION} before configuring.]))
+fi
+
+python_check_module() {
+
+  # Get module
+  module=${1}
+
+  # Get version
+  version=${2}
+
+  # Get disable
+  disable=${3}
+
+  AC_MSG_CHECKING([for ${module}])
+  if ${PYTHON} -c "
+import ${module}
+
+try:
+  from packaging import version
+  from sys import exit
+except:
+  exit(0)
+
+assert(version.parse(${module}.__version__) >= version.parse('${version}'))
+" 2>/dev/null; then
+    AC_MSG_RESULT([yes])
+  else
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([Please install ${module} >= '${version}' before configuring (or --disable-${disable}).])
+  fi
+
+}
 
 # Check for Python version
-REQ_PYTHON_VERSION="3.5"
-AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],, 
-  AS_IF([test ${cirq_tests} == "true" || ${pybind11} == "true"], AC_MSG_ERROR([Please install Python >= ${REQ_PYTHON_VERSION} before configuring.]))
+CIRQ_REQ_VERSION="0.5"
+CIRQ_ERR_FLAG=pybind11
+
+PYBIND11_REQ_VERSION="2.2.4"
+PYBIND11_ERR_FLAG=pybind11
+
+PYTEST_REQ_VERSION="4.5"
+PYTEST_ERR_FLAG=python_tests
+
+# Check python modules. If --disable-pybind11, no reasons to activate python
+if test ${pybind11} == "true" && ${python_checks} == "true"; then
+
+  python_check_module cirq     ${CIRQ_REQ_VERSION}     ${CIRQ_ERR_FLAG}
+  python_check_module pybind11 ${PYBIND11_REQ_VERSION} ${PYBIND11_ERR_FLAG}
+  python_check_module pytest   ${PYTEST_REQ_VERSION}   ${PYTEST_ERR_FLAG}
+
+fi
+
+# If --disable-pybind11, switch off everything
+AS_IF([test ${pybind11} == "false"],
+  python_tests=false
 )
 
-# Check that cirq is installed
-REQ_CIRQ_VERSION="0.5"
-AS_IF([test ${python_checks} == "true" && ${cirq_tests} == "true"],
-  AC_MSG_CHECKING([for cirq])
-  AS_IF([ $(${PYTHON} - 2>/dev/null << EOF
-import cirq
-try:
-    import sys
-    from packaging import version
-    sys.exit(not version.parse(cirq.__version__) >= version.parse('${REQ_CIRQ_VERSION}'))
-except:
-    pass
-EOF
-)],
-    AC_MSG_RESULT([yes]), 
-    AC_MSG_RESULT([no])
-    AC_MSG_ERROR([Some tests require cirq. Please install cirq >= '${REQ_CIRQ_VERSION}' before configuring (or --disable-cirq_tests).]))
-)
-
-AC_SUBST(cirq_tests, ${cirq_tests})
-
-# Check that pybind11 is installed
-REQ_PYBIND11_VERSION="2.2.4"
-AS_IF([test ${python_checks} == "true" && ${pybind11} == "true"],
-  AC_MSG_CHECKING([for pybind11])
-  AS_IF([ $(${PYTHON} - 2>/dev/null << EOF
-import pybind11
-try:
-    import sys
-    from packaging import version
-    sys.exit(not version.parse(pybind11.__version__) >= version.parse('${REQ_PYBIND11_VERSION}'))
-except:
-    pass
-EOF 
-)],
-    AC_MSG_RESULT([yes]), 
-    AC_MSG_RESULT([no])
-    AC_MSG_ERROR([Please install pybind11 >= '${REQ_PYBIND11_VERSION}' before configuring (or --disable-pybind11).]))
-)
-
+AC_SUBST(openmp, ${openmp})
 AC_SUBST(pybind11, ${pybind11})
-
-# Check that pytest is installed
-REQ_PYTEST_VERSION="4.5"
-AS_IF([test ${python_checks} == "true"], AS_IF([test ${pybind11} == "true"],
-    AS_IF([test ${cirq_tests} == "true"],
-      AC_MSG_CHECKING([for pytest])
-      AS_IF([ $(${PYTHON} - 2>/dev/null << EOF
-import pytest
-try:
-    import sys
-    from packaging import version
-    sys.exit(not version.parse(pytest.__version__) >= version.parse('${REQ_PYTEST_VERSION}'))
-except:
-    pass
-EOF
-      )],
-        AC_MSG_RESULT([yes])
-        pytest=true, 
-        AC_MSG_RESULT([no])
-        pytest=false
-        AC_MSG_WARN([Please install pytest >= '${REQ_PYTEST_VERSION}' to run python tests.])),
-      pytest=false
-    ),
-    pytest=false
-  ),
-  pytest=true
-)
-
-AC_SUBST(pytest, ${pytest})
+AC_SUBST(python_tests, ${python_tests})
 
 AC_OUTPUT

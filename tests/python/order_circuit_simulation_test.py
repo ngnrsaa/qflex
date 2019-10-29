@@ -10,6 +10,7 @@ sys.path.insert(1, '../../')
 
 from python.ordering import order_circuit_simulation as order_lib
 
+
 def test_circuit_to_ordering():
     """Tests the circuit-to-ordering conversion.
 

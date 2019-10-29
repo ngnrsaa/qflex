@@ -16,42 +16,6 @@
 
 namespace qflex {
 
-void QflexGrid::load(std::istream& istream) {
-  I = J = 0;
-  std::string line;
-  while (std::getline(istream, line))
-    if (std::size(line) and line[0] != '#') {
-      // String unnecessary chars
-      line.erase(
-          std::remove_if(std::begin(line), std::end(line),
-                         [](auto&& x) { return not(x == '0' || x == '1'); }),
-          std::end(line));
-
-      // Continue if line is empty
-      if (std::empty(line)) continue;
-
-      // Get number of columns
-      if (J != 0 and J != std::size(line))
-        throw ERROR_MSG("Grid size is inconsistent");
-      else
-        J = std::size(line);
-
-      // Get off qubits
-      for (int q = 0; q < J; ++q)
-        if (line[q] == '0') qubits_off.push_back({I, q});
-
-      // Update number of rows
-      ++I;
-    }
-};
-
-void QflexGrid::load(const std::string& filename) {
-  if (auto in = std::ifstream(filename); in.good())
-    this->load(in);
-  else
-    throw ERROR_MSG("Cannot open grid file: ", filename);
-};
-
 // Gets the position in the output state vector of the qubit at tensor_pos.
 int find_output_pos(const QflexInput* input, std::vector<int> tensor_pos) {
   int pos = (tensor_pos[0] * input->grid.J) + tensor_pos[1];
@@ -150,9 +114,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // Create the ordering for this tensor contraction from file.
   t0 = std::chrono::high_resolution_clock::now();
   std::list<ContractionOperation> ordering;
-  ordering_data_to_contraction_ordering(input->ordering_data, input->grid.I,
-                                        input->grid.J, input->grid.qubits_off,
-                                        &ordering);
+  ordering_data_to_contraction_ordering(*input, &ordering);
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
@@ -198,10 +160,10 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     // Creating 3D grid of tensors from file.
     t0 = std::chrono::high_resolution_clock::now();
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
-    circuit_data_to_tensor_network(
-        input->circuit, input->grid.I, input->grid.J,
-        input->initial_state, input->final_state, final_qubits,
-        input->grid.qubits_off, tensor_grid_3D, scratch);
+    circuit_data_to_tensor_network(input->circuit, input->grid.I, input->grid.J,
+                                   input->initial_state, input->final_state,
+                                   final_qubits, input->grid.qubits_off,
+                                   tensor_grid_3D, scratch);
 
     t1 = std::chrono::high_resolution_clock::now();
     time_span =

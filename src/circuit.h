@@ -1,11 +1,11 @@
 #ifndef CIRCUIT__H
 #define CIRCUIT__H
 
+#include <fstream>
+#include <iostream>
+#include <regex>
 #include <unordered_map>
 #include <unordered_set>
-#include <iostream>
-#include <fstream>
-#include <regex>
 
 #include "errors.h"
 
@@ -31,6 +31,6 @@ struct QflexCircuit {
   void load(const std::string &filename);
 };
 
-}
+}  // namespace qflex
 
 #endif

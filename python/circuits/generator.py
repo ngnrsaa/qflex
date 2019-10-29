@@ -116,7 +116,8 @@ class Circuit:
             for line in self.to_qsim_lines():
                 print(line)
 
-# TODO: Make generator output compatible with qFlex input. 
+
+# TODO: Make generator output compatible with qFlex input.
 # The qubit indices generated are numbered 1 to the number of qubits
 # on the device, e.g., 1-53 for the Rochester device. In qFlex,
 # they are mapped on a grid starting from 0 going left to right,

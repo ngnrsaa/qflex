@@ -166,6 +166,11 @@ TEST(ReadCircuitExceptionTest, MultipleGatesPerQubitPerCycle) {
       circuit_data_to_tensor_network(circuit, 2, 2, "000", "111", {},
                                       off_qubits, grid_of_tensors, scratch));
 
+  EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle1)));
+  EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle2)));
+  EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle3)));
+  EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle4)));
+  EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle5)));
 }
 */
 
@@ -185,7 +190,7 @@ TEST(ReadCircuitTest, NullCircuit) {
   QflexCircuit circuit;
   circuit.load(std::stringstream(kNullCircuit));
   circuit_data_to_tensor_network(circuit, 2, 1, "00", "10", {}, {},
-                                  grid_of_tensors, scratch);
+                                 grid_of_tensors, scratch);
   // Qubit-0 path has amplitude 1 (0 --> 0)
   // Qubit-1 path has amplitude 0 (0 --> 1)
   std::vector<s_type> expected_data = {std::complex<float>(1, 0),
@@ -193,13 +198,12 @@ TEST(ReadCircuitTest, NullCircuit) {
 
   // Resulting tensor grid should be 2x1 (IxJ) ..
   ASSERT_EQ(std::size(grid_of_tensors), 2);
-  for(std::size_t i = 0; i < 2; ++i) {
-
+  for (std::size_t i = 0; i < 2; ++i) {
     const auto &tensor = grid_of_tensors[i];
     ASSERT_EQ(std::size(tensor), 1);
 
     // .. and each qubit tensor should have 4 tensors ..
-    for(const auto &t: tensor) {
+    for (const auto &t : tensor) {
       ASSERT_EQ(std::size(t), 4);
 
       // .. of size 1, 2, 2, 1 (x2, because of complex numbers) respectively
@@ -210,15 +214,14 @@ TEST(ReadCircuitTest, NullCircuit) {
 
       // Each qubit tensor should have 4 elements (delta_0, h, h, delta_0)
       // and (delta_0, h, h, delta_1) respectively
-      ASSERT_EQ(t[0].data()[0], std::complex<float>(1,0));
-      ASSERT_EQ(t[1].data()[0], std::complex<float>(1./M_SQRT2,0));
-      ASSERT_EQ(t[1].data()[1], std::complex<float>(1./M_SQRT2,0));
-      ASSERT_EQ(t[2].data()[0], std::complex<float>(1./M_SQRT2,0));
-      ASSERT_EQ(t[2].data()[1], std::complex<float>(1./M_SQRT2,0));
-      ASSERT_EQ(t[3].data()[0], std::complex<float>(i,0));
+      ASSERT_EQ(t[0].data()[0], std::complex<float>(1, 0));
+      ASSERT_EQ(t[1].data()[0], std::complex<float>(1. / M_SQRT2, 0));
+      ASSERT_EQ(t[1].data()[1], std::complex<float>(1. / M_SQRT2, 0));
+      ASSERT_EQ(t[2].data()[0], std::complex<float>(1. / M_SQRT2, 0));
+      ASSERT_EQ(t[2].data()[1], std::complex<float>(1. / M_SQRT2, 0));
+      ASSERT_EQ(t[3].data()[0], std::complex<float>(i, 0));
     }
   }
-  
 }
 
 
@@ -258,16 +261,15 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
   std::vector<std::vector<int>> qubits_A = {{2, 1}};
   std::vector<std::vector<int>> qubits_off = {{2, 0}};
-  s_type* scratch = new s_type[256];
+  s_type *scratch = new s_type[256];
 
   QflexCircuit circuit;
   circuit.load(std::stringstream(kSimpleCircuit));
-  circuit_data_to_tensor_network(circuit, 3, 2, "00000", "0000x",
-                                  qubits_A, qubits_off, tensor_grid_3D,
-                                  scratch);
+  circuit_data_to_tensor_network(circuit, 3, 2, "00000", "0000x", qubits_A,
+                                 qubits_off, tensor_grid_3D, scratch);
 
   ASSERT_EQ(tensor_grid_3D.size(), 3);
-  for(const auto &tensor: tensor_grid_3D) ASSERT_EQ(tensor.size(), 2);
+  for (const auto &tensor : tensor_grid_3D) ASSERT_EQ(tensor.size(), 2);
 
   // TODO Add check on tensors
 
@@ -287,7 +289,7 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   ordering.emplace_back(MergePatches("a", "b"));
 
   flatten_grid_of_tensors(tensor_grid_3D, tensor_grid_2D, qubits_A, qubits_off,
-                           ordering, scratch);
+                          ordering, scratch);
 
   // Verify that index ordering follows this pattern:
   //   1) Final-region indices ("<index>,(o)")
@@ -357,7 +359,7 @@ TEST(ReadCircuitExceptionTest, FlattenGridOfTensorsInvalidInput) {
 }  // namespace
 }  // namespace qflex
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
