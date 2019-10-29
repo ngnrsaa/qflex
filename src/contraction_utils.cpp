@@ -368,7 +368,7 @@ bool ordering_data_to_contraction_ordering(
     }
   }
   if (!error_msg.empty()) {
-    std::cout << "Parsing failed on line: \"" << line
+    std::cerr << "Parsing failed on line: \"" << line
               << "\" with error: " << error_msg << std::endl;
     return false;
   }
@@ -491,7 +491,7 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
 
   if (std::empty(error_msg)) return true;
 
-  std::cout << error_msg << std::endl;
+  std::cerr << error_msg << std::endl;
   return false;
 }
 

@@ -97,7 +97,6 @@ TEST_F(GetOutputStatesTest, OnlyUseTerminalCuts) {
 }
 
 // Nullptr input in get_output_states()
-// #if 0
 TEST(GetOutputStatesExceptionTest, InvalidInput) {
   QflexInput input;
   std::list<ContractionOperation> ordering;
@@ -110,7 +109,6 @@ TEST(GetOutputStatesExceptionTest, InvalidInput) {
   // Output states cannot be null pointer.
   EXPECT_ANY_THROW(get_output_states(&input, ordering, &final_qubits, nullptr));
 }
-// #endif
 
 // Grid layout with trailing whitespace.
 constexpr char kTestGrid_3x4[] = R"(0 1 1 0
@@ -220,12 +218,10 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
 }
 
 // Nullptr input in EvaluateCircuit()
-// #if 0
 TEST(EvaluateCircuitExceptionTest, InvalidInput) {
   // Input cannot be null pointer.
   EXPECT_ANY_THROW(EvaluateCircuit(nullptr));
 }
-// #endif
 
 }  // namespace
 }  // namespace qflex

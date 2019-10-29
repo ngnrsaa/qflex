@@ -145,7 +145,7 @@ gate_arrays(const std::string& gate_name, const std::vector<double>& params) {
 }
 
 /**
- * Helper method for grid_of_tensors_3D_to_2D which generates a comparator
+ * Helper method for flatten_grid_of_tensors which generates a comparator
  * function for sorting the indices of a tensor at grid position "local" into
  * the order prescribed by "ordering".
  *

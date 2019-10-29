@@ -117,7 +117,7 @@ class ContractionData {
    * @param ordering std::list<ContractionOperation> listing operations to
    * perform.
    * @param tensor_grid 2D vector<Tensor> holding the tensor grid. Consumes
-   * output from grid_of_tensors_3D_to_2D.
+   * output from flatten_grid_of_tensors.
    * @param amplitudes vector of amplitudes for each final output requested.
    */
   static ContractionData Initialize(
@@ -183,7 +183,7 @@ class ContractionData {
   // Max rank of each patch generated during contraction.
   std::unordered_map<std::string, int> patch_rank_;
 
-  // Contains the tensor grid produced by grid_of_tensors_3D_to_2D.
+  // Contains the tensor grid produced by flatten_grid_of_tensors.
   std::vector<std::vector<Tensor>>* tensor_grid_;
 
   // Amplitudes for each final output requested.
@@ -215,7 +215,7 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering);
  * @param ordering std::list<ContractionOperation> listing operations to
  * perform.
  * @param tensor_grid 2D vector<Tensor> holding the tensor grid. Consumes
- * output from grid_of_tensors_3D_to_2D.
+ * output from flatten_grid_of_tensors.
  * @param amplitudes vector of amplitudes for each final output requested.
  */
 void ContractGrid(const std::list<ContractionOperation>& ordering,
