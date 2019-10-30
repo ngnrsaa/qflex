@@ -1,9 +1,9 @@
 """Generator for Random Quantum Circuits.
 
 Example usage:
-    $ python generator.py --pattern-file=config/patterns/ibm_rochester.txt \
-                          --single_qubit_gates=x_1_2,y_1_2,hz_1_2 \
-                          --two_qubit_gate=cx \
+    $ python generator.py --pattern-file=../../config/patterns/ibm_rochester.txt \
+                          --single-qubit-gates=x_1_2,y_1_2,hz_1_2 \
+                          --two-qubit-gate=cx \
                           --sequence=ABAC \
                           --depth=20 \
                           --seed=0 \
@@ -225,14 +225,14 @@ if __name__ == '__main__':
         required=True,
         help=f'sequence of device-specific coupler activation patterns')
     arg_parser.add_argument(
-        '--single_qubit_gates',
+        '--single-qubit-gates',
         type=str,
         required=True,
         help=
         'comma-separated list of single-qubit gates known to qsim, e.g. h, x_1_2'
     )
     arg_parser.add_argument(
-        '--two_qubit_gate',
+        '--two-qubit-gate',
         type=str,
         required=True,
         help='name of the two-qubit gate known to qsim, e.g. cz, fs')
