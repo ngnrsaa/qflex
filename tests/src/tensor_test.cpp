@@ -200,7 +200,7 @@ TEST(TensorTest, Multiply) {
 }
 
 // Verifies that a tensor retains its initialized capacity.
-TEST(TensorDeathTest, Capacity) {
+TEST(TensorExceptionTest, Capacity) {
   std::vector<std::string> indices = {"a", "b"};
   std::vector<size_t> dimensions = {2, 4};
 
@@ -223,88 +223,87 @@ TEST(TensorDeathTest, Capacity) {
   tensor.set_indices_and_dimensions({"k", "m", "n"}, {2, 2, 2});
 
   // Attempt to increase size to 256 units.
-  ASSERT_DEATH(tensor = Tensor({"f", "g"}, {16, 16}), "");
+  ASSERT_ANY_THROW(tensor = Tensor({"f", "g"}, {16, 16}));
 }
 
 // Checks that various invalid method arguments generate failures.
-TEST(TensorDeathTest, InvalidInput) {
+TEST(TensorExceptionTest, InvalidInput) {
   // Mismatched indices and dimensions.
-  ASSERT_DEATH(Tensor({"a", "b", "c"}, {2, 2}), "");
+  ASSERT_ANY_THROW(Tensor({"a", "b", "c"}, {2, 2}));
 
   // Data vector size mismatch.
   std::vector<std::complex<float>> data(8);
-  ASSERT_DEATH(Tensor({"a", "b"}, {2, 2}, data), "");
+  ASSERT_ANY_THROW(Tensor({"a", "b"}, {2, 2}, data));
 
   // Data passed into Tensor cannot be null pointer.
-  ASSERT_DEATH(Tensor({"a", "b"}, {2, 2}, nullptr), "");
+  ASSERT_ANY_THROW(Tensor({"a", "b"}, {2, 2}, nullptr));
 
   Tensor tensor_abc({"a", "b", "c"}, {2, 2, 2});
   Tensor tensor_ac({"a", "c"}, {2, 2});
 
   // Projecting to index other than indices[0].
-  ASSERT_DEATH(tensor_abc.project("b", 0, tensor_ac), "");
+  ASSERT_ANY_THROW(tensor_abc.project("b", 0, tensor_ac));
 
   // Projecting to bad index_value.
-  ASSERT_DEATH(tensor_abc.project("a", 2, tensor_ac), "");
+  ASSERT_ANY_THROW(tensor_abc.project("a", 2, tensor_ac));
 
   // Projecting to too-small tensor.
   Tensor tensor_ac_small({"a", "c"}, {2, 1});
-  ASSERT_DEATH(tensor_abc.project("a", 0, tensor_ac_small), "");
+  ASSERT_ANY_THROW(tensor_abc.project("a", 0, tensor_ac_small));
 
   // Renaming a non-existent index.
-  ASSERT_DEATH(tensor_abc.rename_index("x", "y"), "");
+  ASSERT_ANY_THROW(tensor_abc.rename_index("x", "y"));
 
   // Renaming an existing index to another existing index.
-  ASSERT_DEATH(tensor_abc.rename_index("a", "b"), "");
+  ASSERT_ANY_THROW(tensor_abc.rename_index("a", "b"));
 
   // Bundling on a partially-invalid set of indices.
-  ASSERT_DEATH(tensor_abc.bundle({"a", "x"}, "ax"), "");
+  ASSERT_ANY_THROW(tensor_abc.bundle({"a", "x"}, "ax"));
 
   // Bundling a valid but reordered set of indices.
-  ASSERT_DEATH(tensor_abc.bundle({"b", "a"}, "ba"), "");
+  ASSERT_ANY_THROW(tensor_abc.bundle({"b", "a"}, "ba"));
 
   // Reordering to too few indices.
   std::array<std::complex<float>, 256> scratch;
-  ASSERT_DEATH(tensor_abc.reorder({"b", "a"}, scratch.data()), "");
+  ASSERT_ANY_THROW(tensor_abc.reorder({"b", "a"}, scratch.data()));
 
   // Reordering to non-existent indices.
-  ASSERT_DEATH(tensor_abc.reorder({"b", "y", "x"}, scratch.data()), "");
+  ASSERT_ANY_THROW(tensor_abc.reorder({"b", "y", "x"}, scratch.data()));
 
   // Scratch copy passed to reordering cannot be null pointer.
-  ASSERT_DEATH(tensor_abc.reorder({"a", "b"}, nullptr), "");
+  ASSERT_ANY_THROW(tensor_abc.reorder({"a", "b"}, nullptr));
 
   Tensor tensor_cd({"c", "d"}, {2, 2});
   Tensor tensor_abd({"a", "b", "d"}, {2, 2, 2});
 
   // Reusing either tensor in multiplication.
-  ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_abc, scratch.data()), "");
-  ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_cd, scratch.data()), "");
+  ASSERT_ANY_THROW(multiply(tensor_abc, tensor_cd, tensor_abc, scratch.data()));
+  ASSERT_ANY_THROW(multiply(tensor_abc, tensor_cd, tensor_cd, scratch.data()));
 
   Tensor tensor_cd_large({"c", "d"}, {4, 4});
 
   // Mismatched index dimension in multiplication.
-  ASSERT_DEATH(
-      multiply(tensor_abc, tensor_cd_large, tensor_abd, scratch.data()), "");
+  ASSERT_ANY_THROW(
+      multiply(tensor_abc, tensor_cd_large, tensor_abd, scratch.data()));
 
   Tensor tensor_x({"x"}, {2});
 
   // Output tensor for multiplication is too small.
-  ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_x, scratch.data()), "");
+  ASSERT_ANY_THROW(multiply(tensor_abc, tensor_cd, tensor_x, scratch.data()));
 
   // Scratch copy passed to multiply cannot be null pointer.
-  ASSERT_DEATH(multiply(tensor_abc, tensor_cd, tensor_x, nullptr), "");
+  ASSERT_ANY_THROW(multiply(tensor_abc, tensor_cd, tensor_x, nullptr));
 }
 
 // Testing this function by direct call because too nested to test by calling
 // Tensor::reorder
-TEST(TensorDeathTest, GenerateBinaryReorderingMapInvalidInput) {
+TEST(TensorExceptionTest, GenerateBinaryReorderingMapInvalidInput) {
   const std::vector<int> map_old_to_new_idxpos = {1, 2};
   std::vector<int> map_old_to_new_position = {1, 2, 3};
 
   // Size of map must be equal to 2 ^ (number of indices).
-  EXPECT_DEATH(_generate_binary_reordering_map(map_old_to_new_idxpos,
-                                               map_old_to_new_position),
-               "");
+  EXPECT_ANY_THROW(_generate_binary_reordering_map(map_old_to_new_idxpos,
+                                               map_old_to_new_position));
 }
 
 }  // namespace

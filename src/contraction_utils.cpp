@@ -1,7 +1,6 @@
 #include "contraction_utils.h"
 
 #include <algorithm>
-#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <regex>
@@ -19,12 +18,10 @@ ContractionData ContractionData::Initialize(
     std::vector<std::vector<Tensor>>* tensor_grid,
     std::vector<std::complex<double>>* amplitudes) {
   if (tensor_grid == nullptr) {
-    std::cout << "Tensor grid must be non-null." << std::endl;
-    assert(tensor_grid != nullptr);
+    throw ERROR_MSG("Tensor grid must be non-null.");
   }
   if (amplitudes == nullptr) {
-    std::cout << "Amplitude return vector must be non-null." << std::endl;
-    assert(amplitudes != nullptr);
+    throw ERROR_MSG("Amplitude return vector must be non-null.");
   }
   ContractionData data;
   data.tensor_grid_ = tensor_grid;
@@ -146,10 +143,10 @@ ContractionData ContractionData::Initialize(
     ++scale;
     alloc_size /= (1 << 10);
   }
-  int old_precision = std::cout.precision(6);
+  int old_precision = std::cerr.precision(6);
   std::string suffix[] = {"B", "kB", "MB", "GB"};
-  std::cout << alloc_size << suffix[scale] << " allocated." << std::endl;
-  std::cout.precision(old_precision);
+  std::cerr << alloc_size << suffix[scale] << " allocated." << std::endl;
+  std::cerr.precision(old_precision);
   return data;
 }
 
@@ -251,9 +248,7 @@ void ContractionData::ContractGrid(
   }
   // Check for an output of size larger than 1
   if (output->size() != 1) {
-    std::cout << "Contraction did not complete; final tensor is ";
-    output->print();
-    assert(false);
+    throw ERROR_MSG("Contraction did not complete; final tensor is: ", output->tensor_to_string());
   }
   (*amplitudes_)[output_index] += (*output->data());
   return;
@@ -264,8 +259,7 @@ void ContractionData::ContractGrid(
 bool ordering_data_to_contraction_ordering(
     const QflexInput& input, std::list<ContractionOperation>* ordering) {
   if (ordering == nullptr) {
-    std::cout << "Ordering must be non-null." << std::endl;
-    assert(ordering != nullptr);
+    throw ERROR_MSG("Ordering must be non-null.");
   }
   static const std::regex cut_value_regex("\\([0-9,]*\\)");
   std::string line;
@@ -371,15 +365,14 @@ bool ordering_data_to_contraction_ordering(
     }
   }
   if (!error_msg.empty()) {
-    std::cout << "Parsing failed on line: \"" << line
+    std::cerr << "Parsing failed on line: \"" << line
               << "\" with error: " << error_msg << std::endl;
     return false;
   }
   // Ensure ordering generated is valid
   bool valid_ordering = IsOrderingValid(*ordering);
   if (!valid_ordering) {
-    std::cout << "Generated ordering must be valid." << std::endl;
-    assert(valid_ordering);
+    throw ERROR_MSG("Generated ordering must be valid.");
   }
 
   return true;
@@ -404,12 +397,13 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
     int len = snprintf(buffer, sizeof(buffer), "(%d,%d),(o)", p1[0], p1[1]);
     return std::string(buffer, len);
   }
-  std::cout
-      << "Failed to construct tensor name with the following vectors: p1 = "
-      << _int_vector_to_string(p1) << ", p2 = " << _int_vector_to_string(p2)
-      << "." << std::endl;
-  assert(false);
-  return "";
+  std::stringstream ss;
+  ss << "Failed to construct tensor name with the following vectors: p1 = [";
+  for(const auto &p: p1) ss << std::to_string(p) << ',';
+  ss << "] and p2 = [";
+  for(const auto &p: p2) ss << std::to_string(p) << ',';
+  ss << "].";
+  throw ERROR_MSG(ss.str());
 }
 
 std::string index_name(const std::vector<std::vector<int>>& tensors) {
@@ -419,10 +413,7 @@ std::string index_name(const std::vector<std::vector<int>>& tensors) {
   if (tensors.size() == 1) {
     return index_name(tensors.at(0), {});
   }
-  std::cout << "Failed to construct tensor name with input tensors size: "
-            << tensors.size() << std::endl;
-  assert(false);
-  return "";
+  throw ERROR_MSG("Failed to construct tensor name with input tensors size: ", tensors.size());
 }
 
 std::vector<int> get_qubit_coords(int q, int J) {
@@ -509,7 +500,7 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
 
   if (std::empty(error_msg)) return true;
 
-  std::cout << error_msg << std::endl;
+  std::cerr << error_msg << std::endl;
   return false;
 }
 
@@ -517,12 +508,10 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
                   std::vector<std::vector<Tensor>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes) {
   if (tensor_grid == nullptr) {
-    std::cout << "Tensor grid must be non-null." << std::endl;
-    assert(tensor_grid != nullptr);
+    throw ERROR_MSG("Tensor grid must be non-null.");
   }
   if (amplitudes == nullptr) {
-    std::cout << "Amplitude return vector must be non-null." << std::endl;
-    assert(amplitudes != nullptr);
+    throw ERROR_MSG("Amplitude return vector must be non-null.");
   }
 
   // Populate ContractionData and perform grid contraction.
