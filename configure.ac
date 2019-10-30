@@ -9,12 +9,70 @@ AC_PREFIX_DEFAULT([$HOME/local])
 # Default CXXFLAGS.
 : ${CXXFLAGS="-O3  -std=c++17  -march=native"}
 
-# Checks for programs.
+AC_CONFIG_FILES([Makefile
+                 src/Makefile
+                 tests/src/Makefile
+                 tests/python/Makefile])
+
+# Skip all checks
+AC_ARG_ENABLE([all_checks], 
+  AS_HELP_STRING([--disable-all_checks],[Disable Python checks.]), 
+  [case "${enableval}" in
+      yes) all_checks=true  ;;
+       no) all_checks=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-all_checks])
+   esac], [all_checks=true]
+)
+
+# Skip python checks
+AC_ARG_ENABLE([python_checks], 
+  AS_HELP_STRING([--disable-python_checks],[Disable Python checks.]), 
+  [case "${enableval}" in
+      yes) python_checks=true  ;;
+       no) python_checks=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_checks])
+   esac], [python_checks=true]
+)
+
+# Add extra param for cirq
+AC_ARG_ENABLE([python_tests], 
+  AS_HELP_STRING([--disable-python_tests],[Disable Python tests.]), 
+  [case "${enableval}" in
+      yes) python_tests=true  ;;
+       no) python_tests=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_tests])
+   esac], [python_tests=true]
+)
+
+# Add extra param for pybind11
+AC_ARG_ENABLE([pybind11], 
+  AS_HELP_STRING([--disable-pybind11],[Disable pybind11 extension of qFlex.]), 
+  [case "${enableval}" in
+      yes) pybind11=true  ;;
+       no) pybind11=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_tests])
+   esac], [pybind11=true]
+)
+
+# Add extra param for OpenMP
+AC_ARG_ENABLE([openmp], 
+  AS_HELP_STRING([--enable-openmp],[(Experimental) Enable OpenMP.]), 
+  [case "${enableval}" in
+      yes) openmp=true  ;;
+       no) openmp=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --enable-openmp])
+   esac], [openmp=false]
+)
+
 AC_LANG(C++)
-AC_PROG_AWK
 AC_PROG_CXX
+
+if test ${all_checks} != "false"; then
+
+# Checks for programs.
 AC_PROG_CC
 AC_PROG_CPP
+AC_PROG_AWK
 AC_PROG_MAKE_SET
 
 # Check for functions.
@@ -57,51 +115,6 @@ AS_IF([test x${CXX} == x"icpc"],
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
 AC_TYPE_SIZE_T
-
-AC_CONFIG_FILES([Makefile
-                 src/Makefile
-                 tests/src/Makefile
-                 tests/python/Makefile])
-
-# Skip python checks
-AC_ARG_ENABLE([python_checks], 
-  AS_HELP_STRING([--disable-python_checks],[Disable Python checks.]), 
-  [case "${enableval}" in
-      yes) python_checks=true  ;;
-       no) python_checks=false ;; 
-        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_checks])
-   esac], [python_checks=true]
-)
-
-# Add extra param for cirq
-AC_ARG_ENABLE([python_tests], 
-  AS_HELP_STRING([--disable-python_tests],[Disable Python tests.]), 
-  [case "${enableval}" in
-      yes) python_tests=true  ;;
-       no) python_tests=false ;; 
-        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_tests])
-   esac], [python_tests=true]
-)
-
-# Add extra param for pybind11
-AC_ARG_ENABLE([pybind11], 
-  AS_HELP_STRING([--disable-pybind11],[Disable pybind11 extension of qFlex.]), 
-  [case "${enableval}" in
-      yes) pybind11=true  ;;
-       no) pybind11=false ;; 
-        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_tests])
-   esac], [pybind11=true]
-)
-
-# Add extra param for OpenMP
-AC_ARG_ENABLE([openmp], 
-  AS_HELP_STRING([--enable-openmp],[(Experimental) Enable OpenMP.]), 
-  [case "${enableval}" in
-      yes) openmp=true  ;;
-       no) openmp=false ;; 
-        *) AC_MSG_ERROR([bad value ${enableval} for --enable-openmp])
-   esac], [openmp=false]
-)
 
 AS_IF([test ${openmp} == "true"], 
   AC_CHECK_HEADER([omp.h], [], [AC_MSG_ERROR([Please install omp.h before configuring.])])
@@ -168,7 +181,9 @@ fi
 # If --disable-pybind11, switch off everything
 AS_IF([test ${pybind11} == "false"],
   python_tests=false
-)
+) 
+
+fi
 
 AC_SUBST(openmp, ${openmp})
 AC_SUBST(pybind11, ${pybind11})
