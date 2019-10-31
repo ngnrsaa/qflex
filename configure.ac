@@ -112,7 +112,8 @@ AS_IF([test ${openmp} == "true"],
 REQ_PYTHON_VERSION="3.5"
 if test ${pybind11} == "true" && ${python_checks} == "true"; then
   AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],, 
-    AC_MSG_ERROR([Please install Python >= ${REQ_PYTHON_VERSION} before configuring.]))
+    pybind11=false
+    AC_MSG_WARN([Please install Python >= ${REQ_PYTHON_VERSION} to enable Python porting of qFlex.]))
 fi
 
 python_check_module() {
