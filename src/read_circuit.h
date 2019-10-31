@@ -17,7 +17,6 @@
 #define READ_CIRCUIT_
 
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <complex>
 #include <ctime>
