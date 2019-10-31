@@ -161,7 +161,7 @@ PYTEST_ERR_FLAG=python_tests
 # Check python modules. If --disable-pybind11, no reasons to activate python
 if test ${pybind11} == "true" && ${python_checks} == "true"; then
 
-  if test $(python_check_module cirqq     ${CIRQ_REQ_VERSION}     ${CIRQ_ERR_FLAG})    == "false"; then
+  if test $(python_check_module cirq     ${CIRQ_REQ_VERSION}     ${CIRQ_ERR_FLAG})    == "false"; then
     pybind11="false"
   fi
 
