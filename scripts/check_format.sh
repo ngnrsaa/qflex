@@ -7,7 +7,7 @@
 ROOT_DIR="$(realpath $(dirname $0))/../"
 
 # Space separated folders in $ROOT_DIR
-EXCLUDED_FOLDERS=".env"
+EXCLUDED_FOLDERS=".env .mypy_cache"
 
 function find_cmd() {
 
