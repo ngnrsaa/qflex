@@ -112,7 +112,8 @@ AS_IF([test ${openmp} == "true"],
 REQ_PYTHON_VERSION="3.5"
 if test ${pybind11} == "true" && ${python_checks} == "true"; then
   AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],, 
-    AC_MSG_ERROR([Please install Python >= ${REQ_PYTHON_VERSION} before configuring.]))
+    pybind11=false
+    AC_MSG_WARN([Please install Python >= ${REQ_PYTHON_VERSION} to enable Python porting of qFlex.]))
 fi
 
 python_check_module() {
@@ -139,9 +140,11 @@ except:
 assert(version.parse(${module}.__version__) >= version.parse('${version}'))
 " 2>/dev/null; then
     AC_MSG_RESULT([yes])
+    echo "true"
   else
     AC_MSG_RESULT([no])
-    AC_MSG_ERROR([Please install ${module} >= '${version}' before configuring (or --disable-${disable}).])
+    AC_MSG_WARN([Please install ${module} >= '${version}' to enable Python porting of qFlex.])
+    echo "false"
   fi
 
 }
@@ -159,9 +162,17 @@ PYTEST_ERR_FLAG=python_tests
 # Check python modules. If --disable-pybind11, no reasons to activate python
 if test ${pybind11} == "true" && ${python_checks} == "true"; then
 
-  python_check_module cirq     ${CIRQ_REQ_VERSION}     ${CIRQ_ERR_FLAG}
-  python_check_module pybind11 ${PYBIND11_REQ_VERSION} ${PYBIND11_ERR_FLAG}
-  python_check_module pytest   ${PYTEST_REQ_VERSION}   ${PYTEST_ERR_FLAG}
+  if test $(python_check_module cirq     ${CIRQ_REQ_VERSION}     ${CIRQ_ERR_FLAG})    == "false"; then
+    pybind11="false"
+  fi
+
+  if test $(python_check_module pybind11 ${PYBIND11_REQ_VERSION} ${PYBIND11_ERR_FLAG}) == "false"; then
+    pybind11="false"
+  fi
+
+  if test $(python_check_module pytest   ${PYTEST_REQ_VERSION}   ${PYTEST_ERR_FLAG})   == "false"; then
+    pybind11="false"
+  fi
 
 fi
 
