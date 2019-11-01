@@ -387,7 +387,8 @@ TEST(OrderingParserTest, ParserFailures) {
 
 TEST(OrderingParserExceptionTest, InvalidInput) {
   // Ordering cannot be null pointer.
-  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(QflexInput(), nullptr));
+  EXPECT_ANY_THROW(
+      ordering_data_to_contraction_ordering(QflexInput(), nullptr));
 }
 
 constexpr char kInvalidOrdering[] = R"(# test comment
@@ -426,7 +427,8 @@ TEST(ContractionExceptionTest, InitializeInvalidInput) {
   EXPECT_ANY_THROW(ContractionData::Initialize(ordering, nullptr, &amplitudes));
 
   // Amplitudes cannot be null pointer.
-  EXPECT_ANY_THROW(ContractionData::Initialize(ordering, &tensor_grid, nullptr));
+  EXPECT_ANY_THROW(
+      ContractionData::Initialize(ordering, &tensor_grid, nullptr));
 }
 
 }  // namespace

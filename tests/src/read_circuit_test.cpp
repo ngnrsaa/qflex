@@ -25,12 +25,12 @@ TEST(ReadCircuitExceptionTest, InvalidNumberOfQubits) {
 
   QflexCircuit circuit;
   circuit.load(std::stringstream(kMissingNumQubitsCircuit));
-  EXPECT_ANY_THROW(circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {},
-                                              grid_of_tensors, scratch));
+  EXPECT_ANY_THROW(circuit_data_to_tensor_network(
+      circuit, 2, 1, "00", "01", {}, {}, grid_of_tensors, scratch));
 
   circuit.load(std::stringstream(kWrongNumQubitsCircuit));
-  EXPECT_ANY_THROW(circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {},
-                                              grid_of_tensors, scratch));
+  EXPECT_ANY_THROW(circuit_data_to_tensor_network(
+      circuit, 2, 1, "00", "01", {}, {}, grid_of_tensors, scratch));
 }
 
 // This circuit has an invalid one-qubit gate.
@@ -45,8 +45,8 @@ TEST(ReadCircuitExceptionTest, BadOneQubitGate) {
 
   QflexCircuit circuit;
   circuit.load(std::stringstream(kBadCircuit));
-  EXPECT_ANY_THROW(circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {},
-                                              grid_of_tensors, scratch));
+  EXPECT_ANY_THROW(circuit_data_to_tensor_network(
+      circuit, 2, 1, "00", "01", {}, {}, grid_of_tensors, scratch));
 }
 
 // This circuit has an invalid fsim-type gate.
@@ -61,8 +61,8 @@ TEST(ReadCircuitExceptionTest, BadFsimGate) {
 
   QflexCircuit circuit;
   circuit.load(std::stringstream(kBadFsimCircuit));
-  EXPECT_ANY_THROW(circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {},
-                                              grid_of_tensors, scratch));
+  EXPECT_ANY_THROW(circuit_data_to_tensor_network(
+      circuit, 2, 1, "00", "01", {}, {}, grid_of_tensors, scratch));
 }
 
 // These circuits reference inactive qubits.
@@ -83,27 +83,23 @@ TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
   // One qubit gate must be on active qubit.
   QflexCircuit circuit;
   circuit.load(std::stringstream(kBadTGate));
-  EXPECT_ANY_THROW(
-      circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits,
-                                     grid_of_tensors, scratch));
+  EXPECT_ANY_THROW(circuit_data_to_tensor_network(
+      circuit, 2, 1, "0", "1", {}, off_qubits, grid_of_tensors, scratch));
 
   // Two qubit gate must have active qubit as first qubit input.
   circuit.load(std::stringstream(kBadCzGate));
-  EXPECT_ANY_THROW(
-      circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits,
-                                     grid_of_tensors, scratch));
+  EXPECT_ANY_THROW(circuit_data_to_tensor_network(
+      circuit, 2, 1, "0", "1", {}, off_qubits, grid_of_tensors, scratch));
 
   // Two qubit gate must have active qubit as first qubit input.
   circuit.load(std::stringstream(kBadCxGate));
-  EXPECT_ANY_THROW(
-      circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits,
-                                     grid_of_tensors, scratch));
+  EXPECT_ANY_THROW(circuit_data_to_tensor_network(
+      circuit, 2, 1, "0", "1", {}, off_qubits, grid_of_tensors, scratch));
 
   // Two qubit gate must have active qubit as second qubit input.
   off_qubits = {{1, 0}};
-  EXPECT_ANY_THROW(
-      circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits,
-                                     grid_of_tensors, scratch));
+  EXPECT_ANY_THROW(circuit_data_to_tensor_network(
+      circuit, 2, 1, "0", "1", {}, off_qubits, grid_of_tensors, scratch));
 }
 
 constexpr char kBadCycle1[] = R"(4
@@ -295,16 +291,16 @@ TEST(ReadCircuitExceptionTest, CircuitDataToGridOfTensorsInvalidInput) {
   circuit.load(std::stringstream(kNullCircuit));
 
   // Scratch cannot be null pointer.
-  EXPECT_ANY_THROW(circuit_data_to_tensor_network(circuit, 2, 1, "01", "01", {}, {},
-                                              grid_of_tensors, nullptr));
+  EXPECT_ANY_THROW(circuit_data_to_tensor_network(
+      circuit, 2, 1, "01", "01", {}, {}, grid_of_tensors, nullptr));
 
   // Input configuration length must be equal to the number of qubits.
-  EXPECT_ANY_THROW(circuit_data_to_tensor_network(circuit, 2, 1, "001", "01", {},
-                                              {}, grid_of_tensors, scratch));
+  EXPECT_ANY_THROW(circuit_data_to_tensor_network(
+      circuit, 2, 1, "001", "01", {}, {}, grid_of_tensors, scratch));
 
   // Output configuration length must be equal to the number of qubits.
-  EXPECT_ANY_THROW(circuit_data_to_tensor_network(circuit, 2, 1, "00", "011", {},
-                                              {}, grid_of_tensors, scratch));
+  EXPECT_ANY_THROW(circuit_data_to_tensor_network(
+      circuit, 2, 1, "00", "011", {}, {}, grid_of_tensors, scratch));
 }
 
 TEST(ReadCircuitExceptionTest, GridOfTensors3DTo2DInvalidInput) {
@@ -315,8 +311,8 @@ TEST(ReadCircuitExceptionTest, GridOfTensors3DTo2DInvalidInput) {
   std::list<ContractionOperation> ordering;
 
   // Scratch cannot be null pointer.
-  EXPECT_ANY_THROW(flatten_grid_of_tensors(grid_of_tensors_3D, grid_of_tensors_2D,
-                                       A, off, ordering, nullptr));
+  EXPECT_ANY_THROW(flatten_grid_of_tensors(
+      grid_of_tensors_3D, grid_of_tensors_2D, A, off, ordering, nullptr));
 }
 
 }  // namespace

@@ -94,7 +94,7 @@ std::string get_output_states(const QflexInput* input,
     char c = output_states->at(0)[i];
     if (c != '0' && c != '1') {
       throw ERROR_MSG("Final state has non-binary character ", c, " at index ",
-                i, "despite having no terminal cut there.");
+                      i, "despite having no terminal cut there.");
     }
   }
   return base_state;

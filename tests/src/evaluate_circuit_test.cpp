@@ -104,10 +104,12 @@ TEST(GetOutputStatesExceptionTest, InvalidInput) {
   std::vector<std::string> output_states;
 
   // Input cannot be null pointer.
-  EXPECT_ANY_THROW(get_output_states(nullptr, ordering, &final_qubits, &output_states));
+  EXPECT_ANY_THROW(
+      get_output_states(nullptr, ordering, &final_qubits, &output_states));
 
   // Final qubits cannot be null pointer.
-  EXPECT_ANY_THROW(get_output_states(&input, ordering, nullptr, &output_states));
+  EXPECT_ANY_THROW(
+      get_output_states(&input, ordering, nullptr, &output_states));
 
   // Output states cannot be null pointer.
   EXPECT_ANY_THROW(get_output_states(&input, ordering, &final_qubits, nullptr));

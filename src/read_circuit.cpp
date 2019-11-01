@@ -213,7 +213,8 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       op_num++;
     }
     if (lpos == -1) {
-      throw ERROR_MSG("Left hand side of pair not found: (", local[0], ',', local[1], "),(", lhs[0], ',', lhs[1], ").");
+      throw ERROR_MSG("Left hand side of pair not found: (", local[0], ',',
+                      local[1], "),(", lhs[0], ',', lhs[1], ").");
     }
 
     op_num = 0;
@@ -227,7 +228,8 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       op_num++;
     }
     if (rpos == -1) {
-      throw ERROR_MSG("Right hand side of pair not found: (", local[0], ',', local[1], "),(", rhs[0], ',', rhs[1], ").");
+      throw ERROR_MSG("Right hand side of pair not found: (", local[0], ',',
+                      local[1], "),(", rhs[0], ',', rhs[1], ").");
     }
     if (lpatch == rpatch) {
       // lhs and rhs are in the same patch.
@@ -270,7 +272,9 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
     }
     // Error in comparison - likely issue in contraction ordering.
     char error[200];
-    throw ERROR_MSG("Failed to compare (", lhs[0], ',', lhs[1], ") and (", rhs[0], ',', rhs[1], ") for local (", local[0], ',', local[1], ").");
+    throw ERROR_MSG("Failed to compare (", lhs[0], ',', lhs[1], ") and (",
+                    rhs[0], ',', rhs[1], ") for local (", local[0], ',',
+                    local[1], ").");
   };
 }
 
@@ -306,16 +310,14 @@ void circuit_data_to_tensor_network(
   {
     // size_t off_size = off.has_value() ? off.value().size() : 0;
     if (initial_conf.size() != num_active_qubits_from_grid) {
-      throw ERROR_MSG(
-                "Size of initial_conf: ", initial_conf.size(),
-                ", must be equal to the number of qubits: ", 
-                num_active_qubits_from_grid, ".");
+      throw ERROR_MSG("Size of initial_conf: ", initial_conf.size(),
+                      ", must be equal to the number of qubits: ",
+                      num_active_qubits_from_grid, ".");
     }
     if (final_conf.size() != initial_conf.size()) {
-      throw ERROR_MSG(
-                "Size of final_conf: ", final_conf.size(),
-                ", must be equal to size of initial_conf: ",
-               initial_conf.size(), ".");
+      throw ERROR_MSG("Size of final_conf: ", final_conf.size(),
+                      ", must be equal to size of initial_conf: ",
+                      initial_conf.size(), ".");
     }
   }
 
@@ -621,7 +623,8 @@ void read_wave_function_evolution(
 
   // Check for the number of qubits.
   if (num_qubits != I) {
-    throw ERROR_MSG("I: ", I, " must be equal to the number of qubits: ", num_qubits, ".");
+    throw ERROR_MSG(
+        "I: ", I, " must be equal to the number of qubits: ", num_qubits, ".");
   }
 
   std::string line;

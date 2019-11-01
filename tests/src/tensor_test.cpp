@@ -303,7 +303,7 @@ TEST(TensorExceptionTest, GenerateBinaryReorderingMapInvalidInput) {
 
   // Size of map must be equal to 2 ^ (number of indices).
   EXPECT_ANY_THROW(_generate_binary_reordering_map(map_old_to_new_idxpos,
-                                               map_old_to_new_position));
+                                                   map_old_to_new_position));
 }
 
 }  // namespace

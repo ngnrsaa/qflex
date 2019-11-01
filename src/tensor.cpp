@@ -79,8 +79,8 @@ void Tensor::_init(const std::vector<std::string>& indices,
                    const std::vector<size_t>& dimensions) {
   if (indices.size() != dimensions.size()) {
     throw ERROR_MSG("The number of indices: ", indices.size(),
-              ", and number of dimensions: ", dimensions.size(),
-              ", should be equal.");
+                    ", and number of dimensions: ", dimensions.size(),
+                    ", should be equal.");
   }
   _indices = indices;
   _dimensions = dimensions;
@@ -122,7 +122,7 @@ Tensor::Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
   size_t this_size = size();
   if (this_size != data.size()) {
     throw ERROR_MSG("The vector data size: ", data.size(),
-              ", has to match the size of the Tensor: ", this_size);
+                    ", has to match the size of the Tensor: ", this_size);
   }
   _capacity = this_size;
   // Fill in the _data.
@@ -133,7 +133,6 @@ Tensor::Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
                s_type* data) {
   if (data == nullptr) {
     throw ERROR_MSG("Data must be non-null.");
-
   }
 
   _init(indices, dimensions);
@@ -169,8 +168,8 @@ void Tensor::set_dimensions(const std::vector<size_t>& dimensions) {
     for (int i = 0; i < dimensions.size(); ++i) total_dim *= dimensions[i];
     if (capacity() < total_dim) {
       throw ERROR_MSG("The total allocated space: ", capacity(),
-                ", is insufficient for the requested tensor dimensions: ",
-                total_dim, ".");
+                      ", is insufficient for the requested tensor dimensions: ",
+                      total_dim, ".");
     }
   }
   _dimensions = dimensions;
@@ -208,12 +207,12 @@ const s_type* Tensor::data() const { return _data; }
 void Tensor::project(std::string index, size_t index_value,
                      Tensor& projection_tensor) const {
   if (index != _indices[0]) {
-    throw ERROR_MSG("Index: '", index,"' has to be equal to indices[0]: '",
-              _indices[0], "'." );
+    throw ERROR_MSG("Index: '", index, "' has to be equal to indices[0]: '",
+                    _indices[0], "'.");
   }
   if (index_value < 0 || index_value >= _dimensions[0]) {
     throw ERROR_MSG("index_value: ", index_value, " must be contained in [0, ",
-              _dimensions[0], ").");
+                    _dimensions[0], ").");
   }
   // Resize projection_tensor first.
   std::vector<std::string> projection_indices(_indices.begin() + 1,
@@ -254,20 +253,20 @@ void Tensor::bundle(std::vector<std::string> indices_to_bundle,
   bool indices_to_bundle_in_indices =
       _vector_s_in_vector_s(indices_to_bundle, _indices);
   if (!indices_to_bundle_in_indices) {
-    throw ERROR_MSG("indices_to_bundle: ",
-              _string_vector_to_string(indices_to_bundle),
-              " has to be contained in indices: ",
-              _string_vector_to_string(_indices), ".");
+    throw ERROR_MSG(
+        "indices_to_bundle: ", _string_vector_to_string(indices_to_bundle),
+        " has to be contained in indices: ", _string_vector_to_string(_indices),
+        ".");
   }
   std::vector<std::string> subtracted_indices(
       _vector_subtraction(_indices, indices_to_bundle));
   std::vector<std::string> indices_to_bundled_original_order(
       _vector_subtraction(_indices, subtracted_indices));
   if (indices_to_bundled_original_order != indices_to_bundle) {
-    throw ERROR_MSG("indices_to_bundle: ",
-              _string_vector_to_string(indices_to_bundle),
-              " must be in its original order: ",
-              _string_vector_to_string(indices_to_bundled_original_order), ".");
+    throw ERROR_MSG(
+        "indices_to_bundle: ", _string_vector_to_string(indices_to_bundle),
+        " must be in its original order: ",
+        _string_vector_to_string(indices_to_bundled_original_order), ".");
   }
 
   int bundled_dim = 1;
@@ -649,7 +648,7 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
                            const std::vector<std::string>& new_ordering,
                            int num_indices_right, s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
-        throw ERROR_MSG("Scratch copy must be non-null.");
+    throw ERROR_MSG("Scratch copy must be non-null.");
   }
 
   // Don't do anything if there is nothing to reorder.
@@ -721,10 +720,9 @@ void Tensor::reorder(std::vector<std::string> new_ordering,
   bool new_ordering_in_indices = _vector_s_in_vector_s(new_ordering, _indices);
   bool indices_in_new_ordering = _vector_s_in_vector_s(_indices, new_ordering);
   if (!new_ordering_in_indices || !indices_in_new_ordering) {
-    throw ERROR_MSG("new_ordering: ", 
-              _string_vector_to_string(new_ordering),
-              " must be a reordering of current indices: ",
-              _string_vector_to_string(_indices), ".");
+    throw ERROR_MSG("new_ordering: ", _string_vector_to_string(new_ordering),
+                    " must be a reordering of current indices: ",
+                    _string_vector_to_string(_indices), ".");
   }
   bool fast = true;
   for (int i = 0; i < _dimensions.size(); ++i) {
@@ -832,7 +830,7 @@ void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
   if (C_data == nullptr) {
     throw ERROR_MSG("Data from Tensor C must be non-null.");
   }
-  
+
   s_type alpha = 1.0;
   s_type beta = 0.0;
   cblas_cgemv(CblasRowMajor, CblasTrans, k, n, &alpha, A_data, std::max(1, n),
@@ -850,7 +848,7 @@ void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
   if (C_data == nullptr) {
     throw ERROR_MSG("Data from Tensor C must be non-null.");
   }
-  
+
   cblas_cdotu_sub(k, A_data, 1, B_data, 1, C_data);
 }
 
@@ -860,10 +858,12 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   }
 
   if (A.data() == C.data()) {
-    throw ERROR_MSG("A and C cannot be the same tensor: ", C.tensor_to_string());
+    throw ERROR_MSG("A and C cannot be the same tensor: ",
+                    C.tensor_to_string());
   }
   if (B.data() == C.data()) {
-    throw ERROR_MSG("B and C cannot be the same tensor: ",C.tensor_to_string());
+    throw ERROR_MSG("B and C cannot be the same tensor: ",
+                    C.tensor_to_string());
   }
 
   std::chrono::high_resolution_clock::time_point t0, t1;
@@ -902,8 +902,8 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   // Check.
   if (left_dim * right_dim > C.capacity()) {
     throw ERROR_MSG("C: ", C.capacity(),
-              " doesn't have enough space for the product of A*B: ",
-              (left_dim * right_dim), ".");
+                    " doesn't have enough space for the product of A*B: ",
+                    (left_dim * right_dim), ".");
   }
   // Reorder.
   t0 = std::chrono::high_resolution_clock::now();
@@ -1008,7 +1008,8 @@ void _generate_binary_reordering_map(
   // Check
   if ((size_t)pow(dim, num_indices) != map_old_to_new_position.size()) {
     throw ERROR_MSG("Size of map: ", map_old_to_new_position.size(),
-              " must be equal to 2^num_indices: ", pow(dim, num_indices), ".");
+                    " must be equal to 2^num_indices: ", pow(dim, num_indices),
+                    ".");
   }
 
   // Define super dimensions. See _naive_reorder().

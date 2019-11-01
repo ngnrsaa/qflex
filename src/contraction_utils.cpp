@@ -248,7 +248,8 @@ void ContractionData::ContractGrid(
   }
   // Check for an output of size larger than 1
   if (output->size() != 1) {
-    throw ERROR_MSG("Contraction did not complete; final tensor is: ", output->tensor_to_string());
+    throw ERROR_MSG("Contraction did not complete; final tensor is: ",
+                    output->tensor_to_string());
   }
   (*amplitudes_)[output_index] += (*output->data());
   return;
@@ -399,9 +400,9 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
   }
   std::stringstream ss;
   ss << "Failed to construct tensor name with the following vectors: p1 = [";
-  for(const auto &p: p1) ss << std::to_string(p) << ',';
+  for (const auto& p : p1) ss << std::to_string(p) << ',';
   ss << "] and p2 = [";
-  for(const auto &p: p2) ss << std::to_string(p) << ',';
+  for (const auto& p : p2) ss << std::to_string(p) << ',';
   ss << "].";
   throw ERROR_MSG(ss.str());
 }
@@ -413,7 +414,8 @@ std::string index_name(const std::vector<std::vector<int>>& tensors) {
   if (tensors.size() == 1) {
     return index_name(tensors.at(0), {});
   }
-  throw ERROR_MSG("Failed to construct tensor name with input tensors size: ", tensors.size());
+  throw ERROR_MSG("Failed to construct tensor name with input tensors size: ",
+                  tensors.size());
 }
 
 std::vector<int> get_qubit_coords(int q, int J) {
