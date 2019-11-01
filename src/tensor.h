@@ -29,6 +29,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "errors.h"
+
 namespace qflex {
 
 /**
@@ -242,9 +244,9 @@ class Tensor {
   size_t num_zeros() const;
 
   /**
-   * Prints information about the Tensor.
+   * Saves information about the Tensor to a string.
    */
-  void print() const;
+  std::string tensor_to_string() const;
 
   /**
    * Prints the data of the Tensor.
