@@ -9,12 +9,70 @@ AC_PREFIX_DEFAULT([$HOME/local])
 # Default CXXFLAGS.
 : ${CXXFLAGS="-O3  -std=c++17  -march=native"}
 
-# Checks for programs.
+AC_CONFIG_FILES([Makefile
+                 src/Makefile
+                 tests/src/Makefile
+                 tests/python/Makefile])
+
+# Skip all checks
+AC_ARG_ENABLE([all_checks], 
+  AS_HELP_STRING([--disable-all_checks],[Disable Python checks.]), 
+  [case "${enableval}" in
+      yes) all_checks=true  ;;
+       no) all_checks=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-all_checks])
+   esac], [all_checks=true]
+)
+
+# Skip python checks
+AC_ARG_ENABLE([python_checks], 
+  AS_HELP_STRING([--disable-python_checks],[Disable Python checks.]), 
+  [case "${enableval}" in
+      yes) python_checks=true  ;;
+       no) python_checks=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_checks])
+   esac], [python_checks=true]
+)
+
+# Add extra param for cirq
+AC_ARG_ENABLE([python_tests], 
+  AS_HELP_STRING([--disable-python_tests],[Disable Python tests.]), 
+  [case "${enableval}" in
+      yes) python_tests=true  ;;
+       no) python_tests=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_tests])
+   esac], [python_tests=true]
+)
+
+# Add extra param for pybind11
+AC_ARG_ENABLE([pybind11], 
+  AS_HELP_STRING([--disable-pybind11],[Disable pybind11 extension of qFlex.]), 
+  [case "${enableval}" in
+      yes) pybind11=true  ;;
+       no) pybind11=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_tests])
+   esac], [pybind11=true]
+)
+
+# Add extra param for OpenMP
+AC_ARG_ENABLE([openmp], 
+  AS_HELP_STRING([--enable-openmp],[(Experimental) Enable OpenMP.]), 
+  [case "${enableval}" in
+      yes) openmp=true  ;;
+       no) openmp=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --enable-openmp])
+   esac], [openmp=false]
+)
+
 AC_LANG(C++)
-AC_PROG_AWK
 AC_PROG_CXX
+
+if test ${all_checks} != "false"; then
+
+# Checks for programs.
 AC_PROG_CC
 AC_PROG_CPP
+AC_PROG_AWK
 AC_PROG_MAKE_SET
 
 # Check for functions.
@@ -58,51 +116,6 @@ AS_IF([test x${CXX} == x"icpc"],
 AC_CHECK_HEADER_STDBOOL
 AC_TYPE_SIZE_T
 
-AC_CONFIG_FILES([Makefile
-                 src/Makefile
-                 tests/src/Makefile
-                 tests/python/Makefile])
-
-# Skip python checks
-AC_ARG_ENABLE([python_checks], 
-  AS_HELP_STRING([--disable-python_checks],[Disable Python checks.]), 
-  [case "${enableval}" in
-      yes) python_checks=true  ;;
-       no) python_checks=false ;; 
-        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_checks])
-   esac], [python_checks=true]
-)
-
-# Add extra param for cirq
-AC_ARG_ENABLE([python_tests], 
-  AS_HELP_STRING([--disable-python_tests],[Disable Python tests.]), 
-  [case "${enableval}" in
-      yes) python_tests=true  ;;
-       no) python_tests=false ;; 
-        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_tests])
-   esac], [python_tests=true]
-)
-
-# Add extra param for pybind11
-AC_ARG_ENABLE([pybind11], 
-  AS_HELP_STRING([--disable-pybind11],[Disable pybind11 extension of qFlex.]), 
-  [case "${enableval}" in
-      yes) pybind11=true  ;;
-       no) pybind11=false ;; 
-        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_tests])
-   esac], [pybind11=true]
-)
-
-# Add extra param for OpenMP
-AC_ARG_ENABLE([openmp], 
-  AS_HELP_STRING([--enable-openmp],[(Experimental) Enable OpenMP.]), 
-  [case "${enableval}" in
-      yes) openmp=true  ;;
-       no) openmp=false ;; 
-        *) AC_MSG_ERROR([bad value ${enableval} for --enable-openmp])
-   esac], [openmp=false]
-)
-
 AS_IF([test ${openmp} == "true"], 
   AC_CHECK_HEADER([omp.h], [], [AC_MSG_ERROR([Please install omp.h before configuring.])])
   AC_MSG_WARN([OpenMP is still experimental with potential memory leak.])
@@ -112,7 +125,8 @@ AS_IF([test ${openmp} == "true"],
 REQ_PYTHON_VERSION="3.5"
 if test ${pybind11} == "true" && ${python_checks} == "true"; then
   AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],, 
-    AC_MSG_ERROR([Please install Python >= ${REQ_PYTHON_VERSION} before configuring.]))
+    pybind11=false
+    AC_MSG_WARN([Please install Python >= ${REQ_PYTHON_VERSION} to enable Python porting of qFlex.]))
 fi
 
 python_check_module() {
@@ -139,9 +153,11 @@ except:
 assert(version.parse(${module}.__version__) >= version.parse('${version}'))
 " 2>/dev/null; then
     AC_MSG_RESULT([yes])
+    echo "true"
   else
     AC_MSG_RESULT([no])
-    AC_MSG_ERROR([Please install ${module} >= '${version}' before configuring (or --disable-${disable}).])
+    AC_MSG_WARN([Please install ${module} >= '${version}' to enable Python porting of qFlex.])
+    echo "false"
   fi
 
 }
@@ -159,16 +175,26 @@ PYTEST_ERR_FLAG=python_tests
 # Check python modules. If --disable-pybind11, no reasons to activate python
 if test ${pybind11} == "true" && ${python_checks} == "true"; then
 
-  python_check_module cirq     ${CIRQ_REQ_VERSION}     ${CIRQ_ERR_FLAG}
-  python_check_module pybind11 ${PYBIND11_REQ_VERSION} ${PYBIND11_ERR_FLAG}
-  python_check_module pytest   ${PYTEST_REQ_VERSION}   ${PYTEST_ERR_FLAG}
+  if test $(python_check_module cirq     ${CIRQ_REQ_VERSION}     ${CIRQ_ERR_FLAG})    == "false"; then
+    pybind11="false"
+  fi
+
+  if test $(python_check_module pybind11 ${PYBIND11_REQ_VERSION} ${PYBIND11_ERR_FLAG}) == "false"; then
+    pybind11="false"
+  fi
+
+  if test $(python_check_module pytest   ${PYTEST_REQ_VERSION}   ${PYTEST_ERR_FLAG})   == "false"; then
+    pybind11="false"
+  fi
 
 fi
 
 # If --disable-pybind11, switch off everything
 AS_IF([test ${pybind11} == "false"],
   python_tests=false
-)
+) 
+
+fi
 
 AC_SUBST(openmp, ${openmp})
 AC_SUBST(pybind11, ${pybind11})
