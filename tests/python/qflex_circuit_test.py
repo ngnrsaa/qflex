@@ -13,6 +13,42 @@ from python.cirq_interface.qflex_circuit import QFlexCircuit
 # Used to include a class which does not exist in Cirq 0.5.0
 import python.cirq_interface.fsim_gate as cirqtmp
 
+def test_qflexcircuit_equality():
+    qubit_1 = cirq.GridQubit(0, 0)
+    qubit_2 = cirq.GridQubit(0, 1)
+
+
+    from python.cirq_interface.qflex_virtual_device import QFlexVirtualDevice
+    dummy_device_1 = QFlexVirtualDevice()
+    dummy_device_1.get_grid_qubits_as_keys = lambda: {qubit_1: 1, qubit_2: 2}
+
+    from python.cirq_interface.qflex_order import QFlexOrder
+    dummy_order = QFlexOrder("This is dummy order")
+
+    circuit = cirq.Circuit()
+    circuit.append(cirq.Moment([cirq.ops.SWAP.on(qubit_1, qubit_2)]))
+
+    qflexcirc1 = QFlexCircuit(circuit,
+                             dummy_device_1,
+                             dummy_order,
+                             allow_decomposition=True)
+
+    qflexcirc2 = QFlexCircuit(circuit,
+                             dummy_device_1,
+                             dummy_order,
+                             allow_decomposition=True)
+
+    # should be ok
+    assert(qflexcirc1 == qflexcirc2)
+
+    circuit = cirq.Circuit()
+    circuit.append(cirq.Moment([cirq.ops.CNOT.on(qubit_1, qubit_2)]))
+    qflexcirc3 = QFlexCircuit(circuit,
+                              dummy_device_1,
+                              dummy_order,
+                              allow_decomposition=True)
+    # should be ok
+    assert (qflexcirc1 != qflexcirc3)
 
 def test_constructor_decomposition():
 
@@ -24,7 +60,6 @@ def test_constructor_decomposition():
 
     from python.cirq_interface.qflex_virtual_device import QFlexVirtualDevice
     dummy_device_1 = QFlexVirtualDevice()
-    # Override the function to accept anything
     dummy_device_1.get_grid_qubits_as_keys = lambda: {qubit_1: 1, qubit_2: 2}
 
     from python.cirq_interface.qflex_order import QFlexOrder

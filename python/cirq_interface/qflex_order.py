@@ -1,7 +1,6 @@
-import tempfile
-import os
-
 import cirq
+
+import python.cirq_interface.data_storage_interface as tmpi
 
 from python.ordering import order_circuit_simulation as auto_order
 
@@ -37,31 +36,15 @@ class QFlexOrder():
         _local_order_string = '\n'.join([x.strip() for x in ord_list])
 
         # Behind the scene, this class creates a temporary file for each object
-        self._file_handle = tempfile.mkstemp()
+        self.temp_file_if = tmpi.DataStorageInterface()
 
-        with open(self._file_handle[1], "w") as f:
+        with open(self.temp_file_if._file_handle[1], "w") as f:
             # I do have the file handle anyway...
             print(_local_order_string, file=f)
 
-    def __del__(self):
-        # The destructor removes the temporary file
-
-        # if open, close the file handle
-        try:
-            os.close(self._file_handle[0])
-        except OSError as e:
-            if e.errno == 9:
-                # if it was closed before
-                pass
-            else:
-                raise e
-
-        # remove the temporary file from disk
-        os.remove(self._file_handle[1])
-
     @property
     def order_data(self):
-        return self._file_handle[1]
+        return self.temp_file_if._file_handle[1]
 
     @staticmethod
     def from_existing_file(file_path):
