@@ -19,18 +19,18 @@ inline PyObject* simulate(PyObject *, PyObject *arg) {
         data.load(GetStream(PyCPP::As<PyCPP::Sequence>(q), argument));
       else
         throw PyCPP::SetError("'" + argument + "' must be a list of strings.");
-    } else if(auto w = options.find(PyCPP::String(argument + "-filename")); w != std::end(options)) {
+    } else if(auto w = options.find(PyCPP::String(argument + "_filename")); w != std::end(options)) {
       const auto &q = std::get<1>(*w);
       if(PyCPP::Is<PyCPP::String>(q))
         data.load(PyCPP::As<PyCPP::String>(q));
       else
-        throw PyCPP::SetError("'" + argument + "-filename' must be a string.");
+        throw PyCPP::SetError("'" + argument + "_filename' must be a string.");
     }
   };
 
   auto LoadStates = [](const auto &options, const std::string &argument, const std::size_t num_active_qubits = 0) {
     std::vector<std::string> states;
-    if(auto w = options.find(PyCPP::String(argument + "-states")); w != std::end(options)) {
+    if(auto w = options.find(PyCPP::String(argument + "_states")); w != std::end(options)) {
       const auto &q = std::get<1>(*w);
       if(PyCPP::Is<PyCPP::String>(q)) { 
         states.push_back(PyCPP::As<PyCPP::String>(q));
@@ -38,7 +38,12 @@ inline PyObject* simulate(PyObject *, PyObject *arg) {
         for(const auto &x: PyCPP::As<PyCPP::Sequence>(q))
           if(PyCPP::Is<PyCPP::String>(x)) states.push_back(PyCPP::As<PyCPP::String>(x));
           else throw PyCPP::SetError("states must be strings.");
-      } else throw PyCPP::SetError(argument + "-states must be a list of strings.");
+      } else throw PyCPP::SetError(argument + "_states must be a list of strings.");
+    } else if(auto w = options.find(PyCPP::String(argument + "_state")); w != std::end(options)) {
+      const auto &q = std::get<1>(*w);
+      if(PyCPP::Is<PyCPP::String>(q)) { 
+        states.push_back(PyCPP::As<PyCPP::String>(q));
+      } else throw PyCPP::SetError("states must be strings.");
     } else {
       if(argument == "initial") states.push_back(std::string(num_active_qubits, '0'));
       else states.push_back("");
@@ -80,7 +85,10 @@ inline PyObject* simulate(PyObject *, PyObject *arg) {
       }
     }
 
-    return PyCPP::Build(amplitudes);
+    if(std::size(initial_states) == 1 and std::size(final_states) == 1)
+      return PyCPP::Build(std::get<1>(amplitudes[0]));
+    else
+      return PyCPP::Build(amplitudes);
 
   } catch(...) {
 
