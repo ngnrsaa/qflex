@@ -6,7 +6,7 @@ inline PyObject* simulate(PyObject *, PyObject *arg) {
     std::stringstream out;
     for(const auto &line: data)
       if(PyCPP::Is<PyCPP::String>(line))
-        out << line;
+        out << line << std::endl;
       else
         throw PyCPP::SetError(caller + " must be a list of strings.");
     return out;
