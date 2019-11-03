@@ -4,3 +4,6 @@
 [submodule "docopt.cpp"]
 	path = src/docopt
 	url = https://github.com/docopt/docopt.cpp.git
+[submodule "src/pycpp"]
+	path = src/pycpp
+	url = git@github.com:ngnrsaa/pycpp.git

@@ -1,23 +1,33 @@
 #ifndef __PYBIND_MAIN
 #define __PYBIND_MAIN
 
-#include <pybind11/complex.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-namespace py = pybind11;
+#include <Python.h>
+#include "PyCPP/py.h"
+#include "PyCPP/py_parse.h"
+#include "PyCPP/py_build.h"
+#include "input.h"
 
-#include <vector>
+namespace qflex {
+  extern std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(QflexInput*);
+}
 
-#include "evaluate_circuit.h"
-#include "read_circuit.h"
+inline PyObject* simulate(PyObject *, PyObject *q);
 
-std::vector<std::pair<std::string, std::complex<double>>> simulate(
-    const py::dict &options);
+static PyMethodDef methods[] = {
+    { "simulate", (PyCFunction)simulate, METH_O, "Simulate circuit using qFlex." },
+    { nullptr, nullptr, 0, nullptr }
+};
 
-PYBIND11_MODULE(qflex, m) {
-  m.doc() = "pybind11 plugin";  // optional module docstring
+static PyModuleDef module = {
+    PyModuleDef_HEAD_INIT,
+    "qFlex",
+    "qFlex porting to Python.",
+    0,
+    methods
+};
 
-  m.def("simulate", &simulate, "Call the simulator with the normal parameters");
+PyMODINIT_FUNC PyInit_qflex() {
+    return PyModule_Create(&module);
 }
 
 #endif

@@ -41,6 +41,7 @@ qflex:
 
 .PHONY: pybind
 pybind: qflex
+	git submodule update --init --recursive src/pycpp
 	$(MAKE) -C src/ pybind
 
 .PHONY: tests
