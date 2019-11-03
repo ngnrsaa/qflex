@@ -1,7 +1,7 @@
 language: cpp
 
 before_install:
-  - sudo apt-get -y install yapf3 clang-format
+  - sudo apt-get -y install yapf clang-format
 
 services:
   - docker
