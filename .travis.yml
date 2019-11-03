@@ -3,6 +3,9 @@ language: cpp
 os:
   - linux
 
+dist:
+  - bionic
+
 services:
   - docker
 
