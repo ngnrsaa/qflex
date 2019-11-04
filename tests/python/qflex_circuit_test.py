@@ -38,7 +38,6 @@ def test_qflexcircuit_equality():
                              dummy_order,
                              allow_decomposition=True)
 
-    # should be ok
     assert(qflexcirc1 == qflexcirc2)
 
     circuit = cirq.Circuit()
@@ -47,7 +46,6 @@ def test_qflexcircuit_equality():
                               dummy_device_1,
                               dummy_order,
                               allow_decomposition=True)
-    # should be ok
     assert (qflexcirc1 != qflexcirc3)
 
 def test_constructor_decomposition():

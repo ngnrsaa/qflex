@@ -594,8 +594,6 @@ def test_simulation_with_fsim_gates(x):
         'final_state': final_conf
     }
 
-    # print(options)
-
     # Pybind: Get output from qFlex
     qflex_amplitude1 = qflex.simulate(options)[0][1]
 
