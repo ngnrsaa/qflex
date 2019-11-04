@@ -47,6 +47,8 @@ The following options for `configure` are also available:
 --disable-pybind11 in this step. Construction of the python wrappers with ICPC
 is currently unsupported.*
 
+## Installation on Mac OSX
+
 ## Compile qFlex
 
 To compile qFlex, it suffices to run:
