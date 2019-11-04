@@ -1,3 +1,6 @@
+# yapf@0.28.0
+# yapf --style google --style-help > .style.yapf
+
 [style]
 # Align closing bracket with visual indentation.
 align_closing_bracket_with_visual_indent=False
