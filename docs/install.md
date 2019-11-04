@@ -49,6 +49,22 @@ is currently unsupported.*
 
 ## Installation on Mac OSX
 
+qFlex can be natively compiled on Mac OSX by installing few dependencies through
+`brew` and `pip3`. More precisely, the following libraries must be installed
+using `brew`:
+```
+brew install coreutils gsl autoconf libomp pybind11
+```
+and through `pip3`:
+```
+pip3 install pybind11 pytest cirq
+```
+After the installation of the required libraries, qFlex can be compiled on Mac
+OSX systems as:
+```
+autoreconf -i && autoconf && CXX=clang++ CPPFLAGS="-I$(brew --prefix)/include/ -L$(brew --prefix)/lib/" ./configure && make -j8 && make -j8 run-tests
+```
+
 ## Compile qFlex
 
 To compile qFlex, it suffices to run:
