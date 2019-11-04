@@ -63,8 +63,7 @@ After the installation of the required libraries, qFlex can be compiled on Mac
 OS X as:
 ```
 autoreconf -i && autoconf && \
-    CXX=clang++ CPPFLAGS="-I$(brew --prefix)/include/ -L$(brew --prefix)/lib/" ./configure && \
-    make -j8 && make -j8 run-tests
+    CXX=clang++ CPPFLAGS="-I$(brew --prefix)/include/ -L$(brew --prefix)/lib/" ./configure
 ```
 
 ## Compile qFlex
