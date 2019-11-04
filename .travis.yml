@@ -3,20 +3,11 @@ language: cpp
 os:
   - linux
 
-dist:
-  - bionic
-
 services:
   - docker
 
-addons:
-  apt:
-    packages:
-    - yapf3
-    - clang-format
-
 before_script:
-  - bash scripts/check_format.sh
+  - docker run -ti --rm -v $PWD:/qflex:ro debian:bullseye /bin/bash -c "apt update && apt install -y yapf3 clang-format && bash /qflex/scripts/check_format.sh"
   - docker-compose build
 
 script:
