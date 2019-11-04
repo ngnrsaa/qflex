@@ -14,8 +14,8 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     return out;
   };
 
-  auto LoadData = [&GetStream](const py::dict &options, const std::string &argument,
-                               auto &data) {
+  auto LoadData = [&GetStream](const py::dict &options,
+                               const std::string &argument, auto &data) {
     if (options.contains(argument)) {
       const auto &q = options[argument.c_str()];
       if (py::isinstance<py::iterable>(q))
@@ -62,7 +62,6 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
   };
 
   try {
-
     // Get qFlex input
     qflex::QflexInput input;
 
@@ -87,7 +86,7 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     };
 
     // TODO:
-    if(std::size(initial_states) != 1 or std::size(final_states) != 1)
+    if (std::size(initial_states) != 1 or std::size(final_states) != 1)
       throw std::string("Not yet supported");
 
     for (const auto &is : initial_states) {
@@ -100,11 +99,10 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
       return std::get<1>(amplitudes[0]);
     else {
       return {};
-      //return amplitudes;
+      // return amplitudes;
     }
 
   } catch (...) {
     return {};
   }
-  
 }
