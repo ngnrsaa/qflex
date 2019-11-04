@@ -59,7 +59,7 @@ for filename in $(find_cmd ${ROOT_DIR}/ -type f -iname "*.h" -or -iname "*.cpp")
   filename=$(realpath $(dirname $filename))/$(basename $filename)
   echo "Checking: $filename" >&2
   # ...check if there are any changes required.
-  if ${CXX_CHECKER} --style=Google --output-replacements-xml "$filename" | grep -q "<replacement "; then
+  if ${CXX_CHECKER} --style=file --output-replacements-xml "$filename" | grep -q "<replacement "; then
     # This file requires changes, add it to the list.
     malformed_files=("$filename" ${malformed_files[@]})
   fi
@@ -69,7 +69,7 @@ for filename in $(find_cmd ${ROOT_DIR}/ -type f -iname "*.py"); do
   filename=$(realpath $(dirname $filename))/$(basename $filename)
   echo "Checking: $filename" >&2
   # ...check if there are any changes required.
-  if [[ $(${PY_CHECKER} --style=Google -d "$filename" | wc -l) > 0 ]]; then
+  if [[ $(${PY_CHECKER} -d "$filename" | wc -l) > 0 ]]; then
     # This file requires changes, add it to the list.
     malformed_py_files=("$filename" ${malformed_py_files[@]})
   fi
@@ -83,7 +83,7 @@ if ! [ ${#malformed_files[@]} -eq 0 ]; then
   echo "C++ files require formatting: ${malformed_files[@]}"    >&2
   echo                                                          >&2
   echo "Run the following command to auto-format these files:"  >&2
-  echo "${CXX_CHECKER} --style=Google -i ${malformed_files[@]}"   >&2
+  echo "${CXX_CHECKER} --style=file -i ${malformed_files[@]}"   >&2
   echo                                                          >&2
   status=1
 else
@@ -95,7 +95,7 @@ if ! [ ${#malformed_py_files[@]} -eq 0 ]; then
   echo "Python files require formatting: ${malformed_py_files[@]}"  >&2
   echo                                                              >&2
   echo "Run the following command to auto-format these files:"      >&2
-  echo "${PY_CHECKER} --style=Google -i ${malformed_py_files[@]}"           >&2
+  echo "${PY_CHECKER} -i ${malformed_py_files[@]}"                  >&2
   echo                                                              >&2
   status=1
 else
