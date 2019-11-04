@@ -6,8 +6,10 @@
 namespace qflex {
 namespace {
 
-TEST(ContractionTest, IndexNaming) { // Standard two-qubit index.
-  std::vector<std::vector<int>> index = {{1, 2}, {3, 4}}; EXPECT_EQ(index_name(index), "(1,2),(3,4)");
+TEST(ContractionTest, IndexNaming) {
+  // Standard two-qubit index.
+  std::vector<std::vector<int>> index = {{1, 2}, {3, 4}};
+  EXPECT_EQ(index_name(index), "(1,2),(3,4)");
 
   // Virtual index.
   index = {{1, 2, 3}, {4, 5, 6}};
