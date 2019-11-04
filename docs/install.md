@@ -62,7 +62,9 @@ pip3 install pybind11 pytest cirq
 After the installation of the required libraries, qFlex can be compiled on Mac
 OSX systems as:
 ```
-autoreconf -i && autoconf && CXX=clang++ CPPFLAGS="-I$(brew --prefix)/include/ -L$(brew --prefix)/lib/" ./configure && make -j8 && make -j8 run-tests
+autoreconf -i && autoconf && \
+    CXX=clang++ CPPFLAGS="-I$(brew --prefix)/include/ -L$(brew --prefix)/lib/" ./configure && \
+    make -j8 && make -j8 run-tests
 ```
 
 ## Compile qFlex
