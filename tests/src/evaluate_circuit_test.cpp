@@ -110,6 +110,7 @@ TEST(GetOutputStatesExceptionTest, InvalidInput) {
   } catch (std::string msg) {
     EXPECT_THAT(msg, testing::HasSubstr("Input must be non-null."));
   }
+  
   // Final qubits cannot be null pointer.
   try {
     get_output_states(&input, ordering, nullptr, &output_states);

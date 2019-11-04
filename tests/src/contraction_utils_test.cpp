@@ -23,23 +23,48 @@ TEST(ContractionTest, IndexNaming) {
 TEST(ContractionExceptionTest, IndexNamingFailures) {
   // Empty input.
   std::vector<std::vector<int>> index = {};
-  EXPECT_ANY_THROW(index_name(index));
+  try {
+    index_name(index);
+    FAIL() << "Expected index() to fail.";
+  } catch (std::string msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Failed to construct tensor name with input tensors size: 0."));
+  }
 
   // Size mismatch.
   index = {{1, 2}, {3, 4, 5}};
-  EXPECT_ANY_THROW(index_name(index));
+  try {
+    index_name(index);
+    FAIL() << "Expected index() to fail.";
+  } catch (std::string msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Failed to construct tensor name with the following vectors: p1 = [1,2,] and p2 = [3,4,5,]."));
+  }
 
   // Invalid size.
   index = {{1, 2, 3, 4}, {5, 6, 7, 8}};
-  EXPECT_ANY_THROW(index_name(index));
+  try {
+    index_name(index);
+    FAIL() << "Expected index() to fail.";
+  } catch (std::string msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Failed to construct tensor name with the following vectors: p1 = [1,2,3,4,] and p2 = [5,6,7,8,]."));
+  }
 
   // Wrong number of tensor positions.
   index = {{1, 2}, {3, 4}, {5, 6}};
-  EXPECT_ANY_THROW(index_name(index));
+  try {
+    index_name(index);
+    FAIL() << "Expected index() to fail.";
+  } catch (std::string msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Failed to construct tensor name with input tensors size: 3."));
+  }
 
   // Wrong-size terminal index.
   index = {{1, 2, 3}};
-  EXPECT_ANY_THROW(index_name(index));
+  try {
+    index_name(index);
+    FAIL() << "Expected index() to fail.";
+  } catch (std::string msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Failed to construct tensor name with the following vectors: p1 = [1,2,3,] and p2 = []."));
+  }
 }
 
 TEST(ContractionTest, OperationHandling) {
@@ -387,8 +412,12 @@ TEST(OrderingParserTest, ParserFailures) {
 
 TEST(OrderingParserExceptionTest, InvalidInput) {
   // Ordering cannot be null pointer.
-  EXPECT_ANY_THROW(
-      ordering_data_to_contraction_ordering(QflexInput(), nullptr));
+  try {
+    ordering_data_to_contraction_ordering(QflexInput(), nullptr);
+    FAIL() << "Expected ordering_data_to_contration_ordering() to fail.";
+  } catch (std::string msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Ordering must be non-null."));
+  }
 }
 
 constexpr char kInvalidOrdering[] = R"(# test comment
@@ -403,7 +432,12 @@ TEST(OrderingParserExceptionTest, InvalidOrderingGenerated) {
   input.grid.J = 2;
 
   std::list<ContractionOperation> ordering;
-  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
+  try {
+    ordering_data_to_contraction_ordering(QflexInput(), nullptr);
+    FAIL() << "Expected ordering_data_to_contration_ordering() to fail.";
+  } catch (std::string msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Ordering must be non-null."));
+  }
 }
 
 TEST(ContractionExceptionTest, ContractGridInvalidInput) {
@@ -412,10 +446,20 @@ TEST(ContractionExceptionTest, ContractGridInvalidInput) {
   std::vector<std::complex<double>> amplitudes;
 
   // Tensor grid cannot be null pointer.
-  EXPECT_ANY_THROW(ContractGrid(ordering, nullptr, &amplitudes));
+  try {
+    ContractGrid(ordering, nullptr, &amplitudes);
+    FAIL() << "Expected ContractGrid() to fail.";
+  } catch (std::string msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Tensor grid must be non-null."));
+  }
 
   // Amplitudes cannot be null pointer.
-  EXPECT_ANY_THROW(ContractGrid(ordering, &tensor_grid, nullptr));
+  try {
+    ContractGrid(ordering, &tensor_grid, nullptr);
+    FAIL() << "Expected ContractGrid() to fail.";
+  } catch (std::string msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Amplitude return vector must be non-null."));
+  }
 }
 
 TEST(ContractionExceptionTest, InitializeInvalidInput) {
@@ -424,11 +468,20 @@ TEST(ContractionExceptionTest, InitializeInvalidInput) {
   std::vector<std::complex<double>> amplitudes;
 
   // Tensor grid cannot be null pointer.
-  EXPECT_ANY_THROW(ContractionData::Initialize(ordering, nullptr, &amplitudes));
+  try {
+    ContractionData::Initialize(ordering, nullptr, &amplitudes);
+    FAIL() << "Expected ContractionData::Initialize() to fail.";
+  } catch (std::string msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Tensor grid must be non-null."));
+  }
 
   // Amplitudes cannot be null pointer.
-  EXPECT_ANY_THROW(
-      ContractionData::Initialize(ordering, &tensor_grid, nullptr));
+  try {
+    ContractionData::Initialize(ordering, &tensor_grid, nullptr);
+    FAIL() << "Expected ContractionData::Initialize() to fail.";
+  } catch (std::string msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Amplitude return vector must be non-null."));
+  }
 }
 
 }  // namespace
