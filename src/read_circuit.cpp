@@ -27,12 +27,22 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
      {"delta_0", std::vector<s_type>({1.0, 0.0})},
      {"delta_1", std::vector<s_type>({0.0, 1.0})},
      // For one-qubit gates, the first index is input an second is output.
-     {"h", std::vector<s_type>({static_cast<s_type::value_type>(_INV_SQRT_2), static_cast<s_type::value_type>(_INV_SQRT_2), static_cast<s_type::value_type>(_INV_SQRT_2),
-                                -static_cast<s_type::value_type>(_INV_SQRT_2)})},
+     {"h",
+      std::vector<s_type>({static_cast<s_type::value_type>(_INV_SQRT_2),
+                           static_cast<s_type::value_type>(_INV_SQRT_2),
+                           static_cast<s_type::value_type>(_INV_SQRT_2),
+                           -static_cast<s_type::value_type>(_INV_SQRT_2)})},
      {"hz_1_2",
-      std::vector<s_type>(
-          {{0.5, 0.5}, {static_cast<s_type::value_type>(_INV_SQRT_2), 0}, {0., -static_cast<s_type::value_type>(_INV_SQRT_2)}, {0.5, 0.5}})},
-     {"t", std::vector<s_type>({1.0, 0., 0., {static_cast<s_type::value_type>(_INV_SQRT_2), static_cast<s_type::value_type>(_INV_SQRT_2)}})},
+      std::vector<s_type>({{0.5, 0.5},
+                           {static_cast<s_type::value_type>(_INV_SQRT_2), 0},
+                           {0., -static_cast<s_type::value_type>(_INV_SQRT_2)},
+                           {0.5, 0.5}})},
+     {"t",
+      std::vector<s_type>({1.0,
+                           0.,
+                           0.,
+                           {static_cast<s_type::value_type>(_INV_SQRT_2),
+                            static_cast<s_type::value_type>(_INV_SQRT_2)}})},
      {"x_1_2",
       std::vector<s_type>({{0.5, 0.5}, {0.5, -0.5}, {0.5, -0.5}, {0.5, 0.5}})},
      {"y_1_2",
@@ -92,12 +102,13 @@ std::vector<s_type> gate_array(const std::string& gate_name,
  * row major storage and order (input, virtual, output) for indices on both
  * tensors.
  */
-std::vector<std::vector<s_type>> fSim(s_type::value_type theta_rads, s_type::value_type phi_rads) {
+std::vector<std::vector<s_type>> fSim(s_type::value_type theta_rads,
+                                      s_type::value_type phi_rads) {
   s_type c1, c2, c3, c4, d;
-  c1 = s_type(0.5) *
-       (std::exp(s_type(0.0, -1 * phi_rads / 2)) + s_type(std::cos(theta_rads), 0.0));
-  c2 = s_type(0.5) *
-       (std::exp(s_type(0.0, -1 * phi_rads / 2)) - s_type(std::cos(theta_rads), 0.0));
+  c1 = s_type(0.5) * (std::exp(s_type(0.0, -1 * phi_rads / 2)) +
+                      s_type(std::cos(theta_rads), 0.0));
+  c2 = s_type(0.5) * (std::exp(s_type(0.0, -1 * phi_rads / 2)) -
+                      s_type(std::cos(theta_rads), 0.0));
   c3 = s_type(0.0, -1 / 2.) * s_type(std::sin(theta_rads), 0.0);
   c4 = c3;
   s_type s1, s2, s3, s4;
