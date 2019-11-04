@@ -47,9 +47,9 @@ The following options for `configure` are also available:
 --disable-pybind11 in this step. Construction of the python wrappers with ICPC
 is currently unsupported.*
 
-## Installation on Mac OSX
+## Installation on Mac OS X
 
-qFlex can be natively compiled on Mac OSX by installing few dependencies through
+qFlex can be natively compiled on Mac OS X by installing few dependencies through
 `brew` and `pip3`. More precisely, the following libraries must be installed
 using `brew`:
 ```
@@ -60,7 +60,7 @@ and through `pip3`:
 pip3 install pybind11 pytest cirq
 ```
 After the installation of the required libraries, qFlex can be compiled on Mac
-OSX systems as:
+OS X as:
 ```
 autoreconf -i && autoconf && \
     CXX=clang++ CPPFLAGS="-I$(brew --prefix)/include/ -L$(brew --prefix)/lib/" ./configure && \
