@@ -1,3 +1,5 @@
+#include <array>
+
 #include "tensor.h"
 
 #include "gmock/gmock.h"
