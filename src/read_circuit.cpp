@@ -364,7 +364,7 @@ void circuit_data_to_tensor_network(
       used_qubits.clear();
     }
 
-    // Check that qubit hasn't been used in cycle yet
+    // Check that qubits haven't been used in cycle yet
     for (const auto& q : gate.qubits)
       if (used_qubits.find(q) != std::end(used_qubits))
         throw ERROR_MSG("Qubit ", q,
