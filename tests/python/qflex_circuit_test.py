@@ -151,7 +151,7 @@ def test_translate_cirq_to_qflex():
         ]))
     circuit.append(
         cirq.Moment(
-            [cirqtmp.FSimGate(np.pi / 2, np.pi / 16).on(qubit_2, qubit_1)]))
+            [cirq.ops.FSimGate(np.pi / 2, np.pi / 16).on(qubit_2, qubit_1)]))
 
     file_lines = [
         "2", "0 h 1", "1 t 1", "2 x_1_2 1", "3 y_1_2 1", "4 cx 1 2", "5 cz 1 2",
@@ -208,7 +208,7 @@ def test_supported_gate_set():
         ]))
     my_circuit.append(
         cirq.Moment(
-            [cirqtmp.FSimGate(np.pi / 2, np.pi / 16).on(qubits[0], qubits[1])]))
+            [cirq.ops.FSimGate(np.pi / 2, np.pi / 16).on(qubits[0], qubits[1])]))
 
     # Parameterized gates
     import sympy
@@ -217,7 +217,7 @@ def test_supported_gate_set():
     my_circuit.append(
         cirq.Moment([cirq.ops.ZPowGate(exponent=s1).on(qubits[0])]))
     my_circuit.append(
-        cirq.Moment([cirqtmp.FSimGate(s1, s2).on(qubits[0], qubits[1])]))
+        cirq.Moment([cirq.ops.FSimGate(s1, s2).on(qubits[0], qubits[1])]))
 
     # Should fail
     with pytest.raises(ValueError):
