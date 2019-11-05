@@ -65,7 +65,7 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     // Get qFlex input
     qflex::QflexInput input;
 
-    //// Load grid, circuit and ordering
+    // Load grid, circuit and ordering
     LoadData(options, "grid", input.grid);
     LoadData(options, "circuit", input.circuit);
     LoadData(options, "ordering", input.ordering);
@@ -102,7 +102,16 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
       // return amplitudes;
     }
 
+    return {};
+
+  } catch (std::string err_msg) {
+    std::cerr << err_msg << std::endl;
+    return {};
+  } catch (const char *err_msg) {
+    std::cerr << err_msg << std::endl;
+    return {};
   } catch (...) {
+    std::cerr << "Something went wrong" << std::endl;
     return {};
   }
 }
