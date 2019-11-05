@@ -10,10 +10,6 @@ sys.path.insert(1, '../../')
 
 from python.cirq_interface.qflex_circuit import QFlexCircuit
 
-# Used to include a class which does not exist in Cirq 0.5.0
-import python.cirq_interface.fsim_gate as cirqtmp
-
-
 def test_qflexcircuit_equality():
     qubit_1 = cirq.GridQubit(0, 0)
     qubit_2 = cirq.GridQubit(0, 1)
@@ -94,7 +90,7 @@ def test_resolve_parameters():
     operation1 = cirq.Z.on(cirq.GridQubit(0, 0))**s1
     circuit.append(operation1)
 
-    operation2 = cirqtmp.FSimGate(s1, s2).on(cirq.GridQubit(0, 0),
+    operation2 = cirq.FSimGate(s1, s2).on(cirq.GridQubit(0, 0),
                                              cirq.GridQubit(0, 1))
     circuit.append(operation2)
 
