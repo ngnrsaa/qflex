@@ -424,7 +424,8 @@ TEST(TensorExceptionTest, GenerateBinaryReorderingMapInvalidInput) {
   try {
     _generate_binary_reordering_map(map_old_to_new_idxpos,
                                     map_old_to_new_position);
-    FAIL() << "Expected _generate_binary_reordering_map() to throw an exception.";
+    FAIL()
+        << "Expected _generate_binary_reordering_map() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(msg, testing::HasSubstr(
                          "Size of map: 3 must be equal to 2^num_indices: 4."));

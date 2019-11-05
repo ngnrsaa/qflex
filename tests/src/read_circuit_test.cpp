@@ -187,7 +187,7 @@ TEST(ReadCircuitExceptionTest, MultipleGatesPerQubitPerCycle) {
   s_type scratch[256];
 
   // TODO: fix tests, currently these tests do not test if a qubit is
-  // being reused in a cycle. 
+  // being reused in a cycle.
   QflexCircuit circuit;
   EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle1)));
   EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle2)));
