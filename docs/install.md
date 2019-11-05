@@ -47,7 +47,7 @@ The following options for `configure` are also available:
 --disable-pybind11 in this step. Construction of the python wrappers with ICPC
 is currently unsupported.*
 
-## Installation on Mac OS X
+## Prerequisites on Mac OS X
 
 qFlex can be natively compiled on Mac OS X by installing few dependencies through
 `brew` and `pip3`. More precisely, the following libraries must be installed
