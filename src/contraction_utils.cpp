@@ -415,7 +415,7 @@ std::string index_name(const std::vector<std::vector<int>>& tensors) {
     return index_name(tensors.at(0), {});
   }
   throw ERROR_MSG("Failed to construct tensor name with input tensors size: ",
-                  tensors.size());
+                  tensors.size(), ".");
 }
 
 std::vector<int> get_qubit_coords(int q, int J) {
