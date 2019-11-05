@@ -7,6 +7,7 @@ from python import qflex
 import python.cirq_interface.qflex_virtual_device as qdevice
 import python.cirq_interface.qflex_circuit as qcirc
 
+
 class QFlexSimulator(SimulatesAmplitudes):
 
     def __init__(self):

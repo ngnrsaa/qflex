@@ -10,6 +10,7 @@ sys.path.insert(1, '../../')
 
 from python.cirq_interface.qflex_circuit import QFlexCircuit
 
+
 def test_qflexcircuit_equality():
     qubit_1 = cirq.GridQubit(0, 0)
     qubit_2 = cirq.GridQubit(0, 1)
@@ -91,7 +92,7 @@ def test_resolve_parameters():
     circuit.append(operation1)
 
     operation2 = cirq.FSimGate(s1, s2).on(cirq.GridQubit(0, 0),
-                                             cirq.GridQubit(0, 1))
+                                          cirq.GridQubit(0, 1))
     circuit.append(operation2)
 
     from python.cirq_interface.qflex_virtual_device import QFlexVirtualDevice
@@ -208,7 +209,8 @@ def test_supported_gate_set():
         ]))
     my_circuit.append(
         cirq.Moment(
-            [cirq.ops.FSimGate(np.pi / 2, np.pi / 16).on(qubits[0], qubits[1])]))
+            [cirq.ops.FSimGate(np.pi / 2, np.pi / 16).on(qubits[0],
+                                                         qubits[1])]))
 
     # Parameterized gates
     import sympy
