@@ -48,8 +48,8 @@ def test_cirquit_without_qubits():
     :return:
     """
     with pytest.raises(ValueError):
-        assert QFlexOrder(
-            qflex_order_strings=None, cirq_circuit=cirq.Circuit.from_ops([]))
+        assert QFlexOrder(qflex_order_strings=None,
+                          cirq_circuit=cirq.Circuit.from_ops([]))
 
 
 def test_automatic_ordering():
@@ -62,10 +62,9 @@ def test_automatic_ordering():
     order = order_lib.circuit_to_ordering(test_circuit)
 
     # Now I am creating a QFlexOrder
-    qorder = QFlexOrder(
-        qflex_order_strings=None,
-        cirq_circuit=test_circuit,
-        qubits=list(range(test_size**2)))
+    qorder = QFlexOrder(qflex_order_strings=None,
+                        cirq_circuit=test_circuit,
+                        qubits=list(range(test_size**2)))
 
     read_contents = None
     with open(qorder.order_data, "r") as file:

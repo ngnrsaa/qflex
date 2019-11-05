@@ -398,8 +398,8 @@ qubits = utils.GetGridQubits(StringIO(grid_test))
 circuit = utils.GetCircuit(StringIO(circuit_test), qubits)
 circuit_no_h_and_sparse = utils.GetCircuit(
     StringIO(circuit_no_h_and_sparse_test), qubits)
-auto_ordering = auto_order.circuit_to_ordering(
-    circuit, qubit_names=sorted(qubits))
+auto_ordering = auto_order.circuit_to_ordering(circuit,
+                                               qubit_names=sorted(qubits))
 results = cirq.Simulator().simulate(circuit)
 results_no_h_and_sparse = cirq.Simulator().simulate(circuit_no_h_and_sparse)
 

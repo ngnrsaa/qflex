@@ -28,8 +28,8 @@ class QFlexCircuit(cirq.Circuit):
             # No order was specified.
             # Construct and order from a circuit
             qubits = device.get_indexed_grid_qubits()
-            self._own_order = qorder.QFlexOrder(
-                cirq_circuit=cirq_circuit, qubits=qubits)
+            self._own_order = qorder.QFlexOrder(cirq_circuit=cirq_circuit,
+                                                qubits=qubits)
         elif isinstance(qflex_order, qorder.QFlexOrder):
             self._own_order = qflex_order
         else:
@@ -51,9 +51,9 @@ class QFlexCircuit(cirq.Circuit):
         with open(self.temp_file_if._file_handle[1], "w") as f:
             # The cirq_circuit has QFlexVirtualDevice
             qubit_to_index_dict = self.device.get_grid_qubits_as_keys()
-            print(
-                QFlexCircuit.translate_cirq_to_qflex(self, qubit_to_index_dict),
-                file=f)
+            print(QFlexCircuit.translate_cirq_to_qflex(self,
+                                                       qubit_to_index_dict),
+                  file=f)
 
     def __eq__(self, other):
         if not isinstance(other, QFlexCircuit):
