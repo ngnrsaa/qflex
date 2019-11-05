@@ -1,10 +1,9 @@
 from typing import Union, Sequence
 
-from cirq import study, schedules, ops, circuits
+from cirq import study, schedules, ops, circuits, SimulatesAmplitudes
 
 from python import qflex
 
-from python.cirq_interface.cirq_amplitudes_sim import SimulatesAmplitudes
 import python.cirq_interface.qflex_virtual_device as qdevice
 import python.cirq_interface.qflex_circuit as qcirc
 

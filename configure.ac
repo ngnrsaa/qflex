@@ -163,7 +163,7 @@ assert(version.parse(${module}.__version__) >= version.parse('${version}'))
 }
 
 # Check for Python version
-CIRQ_REQ_VERSION="0.5"
+CIRQ_REQ_VERSION="0.6"
 CIRQ_ERR_FLAG=pybind11
 
 PYBIND11_REQ_VERSION="2.2.4"

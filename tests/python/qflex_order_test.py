@@ -78,19 +78,17 @@ def generate_circuit(size=4):
     for x in range(size):
         qubits.append([cirq.GridQubit(x, y) for y in range(size)])
 
-    import python.cirq_interface.fsim_gate as cirqtmp
-
     moments = ()
     for x in range(size - 1):
         for y in range(size):
             for _ in range(random.randint(2, 5)):
                 moments += (cirq.Moment(
-                    [cirqtmp.FSimGate(1, 2)(qubits[x][y], qubits[x + 1][y])]),)
+                    [cirq.FSimGate(1, 2)(qubits[x][y], qubits[x + 1][y])]),)
     for y in range(size - 1):
         for x in range(size):
             for _ in range(random.randint(2, 5)):
                 moments += (cirq.Moment(
-                    [cirqtmp.FSimGate(1, 2)(qubits[x][y], qubits[x][y + 1])]),)
+                    [cirq.FSimGate(1, 2)(qubits[x][y], qubits[x][y + 1])]),)
 
     circuit = cirq.Circuit(moments)
 
