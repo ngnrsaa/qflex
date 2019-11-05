@@ -1,13 +1,5 @@
 version: "3"
 services:
-  qflex-base:
-    image: qflex-base
-    container_name: qflex-base
-    build:
-      context: ./
-      dockerfile: Dockerfile
-    environment:
-      - OMP_NUM_THREADS=8
   qflex:
     image: qflex
     container_name: qflex
@@ -16,8 +8,6 @@ services:
       dockerfile: src/Dockerfile
     environment:
       - OMP_NUM_THREADS=8
-    depends_on:
-      - qflex-base
   qflex-tests:
     image: qflex-tests
     container_name: qflex-tests
