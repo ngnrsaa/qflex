@@ -20,7 +20,7 @@ class DataStorageInterface:
 
         try:
             # https://stackoverflow.com/questions/36069102/pytest-fixture-finalizer-typeerror-nonetype-object-is-not-callable
-            yield
+            # yield
             os.close(self._file_handle[0])
         except OSError as e:
             if e.errno == 9:
