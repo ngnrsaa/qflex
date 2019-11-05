@@ -7,6 +7,7 @@ import numpy as np
 import cirq
 import re
 
+
 def ComputeSchmidtRank(gate):
 
     if len(gate.qubits) == 1:
