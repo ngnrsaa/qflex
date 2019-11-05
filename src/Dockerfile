@@ -1,5 +1,5 @@
 # Base OS
-FROM dagart/cirq-alpine:latest
+FROM ngnrsaa/cirq-alpine:latest
 
 # Install baseline
 RUN apk update
@@ -14,6 +14,6 @@ WORKDIR /qflex/
 RUN autoreconf -i && autoconf && ./configure --disable-all_checks
 
 # Compile qflex
-RUN make -j${OMP_NUM_THREADS}
+RUN make -j${OMP_NUM_THREADS:-1}
 
 ENTRYPOINT ["/qflex/src/qflex.x"]
