@@ -25,7 +25,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   std::vector<std::vector<int>> index = {};
   try {
     index_name(index);
-    FAIL() << "Expected index() to throw an exception.";
+    FAIL() << "Expected index_name() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(
         msg,
@@ -37,7 +37,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   index = {{1, 2}, {3, 4, 5}};
   try {
     index_name(index);
-    FAIL() << "Expected index() to throw an exception.";
+    FAIL() << "Expected index_name() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(msg, testing::HasSubstr(
                          "Failed to construct tensor name with the following "
@@ -48,7 +48,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   index = {{1, 2, 3, 4}, {5, 6, 7, 8}};
   try {
     index_name(index);
-    FAIL() << "Expected index() to throw an exception.";
+    FAIL() << "Expected index_name() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(msg, testing::HasSubstr(
                          "Failed to construct tensor name with the following "
@@ -59,7 +59,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   index = {{1, 2}, {3, 4}, {5, 6}};
   try {
     index_name(index);
-    FAIL() << "Expected index() to throw an exception.";
+    FAIL() << "Expected index_name() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(
         msg,
@@ -71,7 +71,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   index = {{1, 2, 3}};
   try {
     index_name(index);
-    FAIL() << "Expected index() to throw an exception.";
+    FAIL() << "Expected index_name() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(msg, testing::HasSubstr(
                          "Failed to construct tensor name with the following "

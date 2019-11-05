@@ -308,7 +308,7 @@ TEST(TensorExceptionTest, InvalidInput) {
   // Renaming an existing index to another existing index.
   try {
     tensor_abc.rename_index("a", "b");
-    FAIL() << "Expected project() to throw an exception.";
+    FAIL() << "Expected rename_index() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(
         msg, testing::HasSubstr("new_name: b, cannot be an existing index."));
@@ -424,7 +424,7 @@ TEST(TensorExceptionTest, GenerateBinaryReorderingMapInvalidInput) {
   try {
     _generate_binary_reordering_map(map_old_to_new_idxpos,
                                     map_old_to_new_position);
-    FAIL() << "Expected multiply() to throw an exception.";
+    FAIL() << "Expected _generate_binary_reordering_map() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(msg, testing::HasSubstr(
                          "Size of map: 3 must be equal to 2^num_indices: 4."));

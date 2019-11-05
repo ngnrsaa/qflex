@@ -186,7 +186,8 @@ TEST(ReadCircuitExceptionTest, MultipleGatesPerQubitPerCycle) {
   std::vector<std::vector<int>> off_qubits = {{0, 0}};
   s_type scratch[256];
 
-  // Need to fix these tests.
+  // TODO: fix tests, currently these tests do not test if a qubit is
+  // being reused in a cycle. 
   QflexCircuit circuit;
   EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle1)));
   EXPECT_ANY_THROW(circuit.load(std::stringstream(kBadCycle2)));
