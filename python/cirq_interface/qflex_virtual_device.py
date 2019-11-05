@@ -3,8 +3,6 @@ import cirq.ops as ops
 
 from python.cirq_interface.qflex_grid import QFlexGrid
 
-import python.cirq_interface.fsim_gate as cirqtmp
-
 
 class QFlexVirtualDevice(cirq.Device):
 
@@ -93,7 +91,7 @@ class QFlexVirtualDevice(cirq.Device):
                         (op.gate.exponent == 0.5) and
                         (op.gate.phase_exponent == 0.25))
 
-        keep = keep or (isinstance(op.gate, cirqtmp.FSimGate))
+        keep = keep or (isinstance(op.gate, cirq.ops.FSimGate))
 
         return keep
 

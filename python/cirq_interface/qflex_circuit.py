@@ -8,9 +8,6 @@ import python.cirq_interface.data_storage_interface as tmpi
 
 import python.utils as qflexutils
 
-# Used to include a class which does not exist in Cirq 0.5.0
-import python.cirq_interface.fsim_gate as cirqtmp
-
 
 class QFlexCircuit(cirq.Circuit):
 
@@ -124,7 +121,7 @@ class QFlexCircuit(cirq.Circuit):
                     qflex_gate = "hz_1_2"
                 elif isinstance(op.gate, cirq.ops.ZPowGate):
                     qflex_gate = "rz({})".format(op.gate.exponent)
-                elif isinstance(op.gate, cirqtmp.FSimGate):
+                elif isinstance(op.gate, cirq.ops.FSimGate):
                     # qFlex uses fractions of pi instead of radians
                     exponent1 = op.gate.theta / np.pi
                     exponent2 = op.gate.phi / np.pi
