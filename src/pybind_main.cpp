@@ -16,13 +16,13 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
 
   auto LoadData = [&GetStream](const py::dict &options,
                                const std::string &argument, auto &data) {
-    if (options.contains(argument)) {
+    if (options.contains(argument.c_str())) {
       const auto &q = options[argument.c_str()];
       if (py::isinstance<py::iterable>(q))
         data.load(GetStream(q.cast<py::iterable>(), argument));
       else
         throw "'" + argument + "' must be a list of strings.";
-    } else if (options.contains(argument + "_filename")) {
+    } else if (options.contains((argument + "_filename").c_str())) {
       const auto &q = options[(argument + "_filename").c_str()];
       if (py::isinstance<py::str>(q))
         data.load(q.cast<std::string>());
@@ -34,7 +34,7 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
   auto LoadStates = [](const py::dict &options, const std::string &argument,
                        const std::size_t num_active_qubits = 0) {
     std::vector<std::string> states;
-    if (options.contains(argument + "_states")) {
+    if (options.contains((argument + "_states").c_str())) {
       const auto &q = options[(argument + "_states").c_str()];
       if (py::isinstance<py::str>(q)) {
         states.push_back(q.cast<std::string>());
@@ -46,7 +46,7 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
             throw "states must be strings.";
       } else
         throw argument + "_states must be a list of strings.";
-    } else if (options.contains(argument + "_state")) {
+    } else if (options.contains((argument + "_state").c_str())) {
       const auto &q = options[(argument + "_state").c_str()];
       if (py::isinstance<py::str>(q)) {
         states.push_back(q.cast<std::string>());
