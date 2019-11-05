@@ -20,8 +20,8 @@ def ComputeSchmidtRank(gate):
 
     V, S, W = np.linalg.svd(
         np.reshape(
-            np.einsum('abcd->acbd', np.reshape(cirq.unitary(gate),
-                                               [2, 2, 2, 2])), [4, 4]))
+            np.einsum('abcd->acbd', np.reshape(
+                cirq.unitary(gate), [2, 2, 2, 2])), [4, 4]))
 
     return sum(S != 0)
 

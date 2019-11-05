@@ -1,8 +1,10 @@
 import tempfile
 import os
 
+
 class DataStorageInterface:
-    def __init__(self, use_temp_files = True):
+
+    def __init__(self, use_temp_files=True):
 
         self.use_files = use_temp_files
 

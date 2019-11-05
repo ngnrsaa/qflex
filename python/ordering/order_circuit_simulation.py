@@ -61,8 +61,8 @@ class Bond:
 
     def swap_nodes(self, old_nodes, new_nodes):
         """Removes old_nodes from, and adds new_nodes to, this bond."""
-        self.nodes = frozenset([n for n in self.nodes if n not in old_nodes] +
-                               new_nodes)
+        self.nodes = frozenset([n for n in self.nodes
+                                if n not in old_nodes] + new_nodes)
 
     def get_remote_bonds(self):
         """Returns all bonds with nodes connected to this bond."""
@@ -362,8 +362,8 @@ def circuit_to_ordering(circuit: cirq.circuits.Circuit,
             break
     order_data = []
     for cut in cut_indices:
-        order_data.append('cut () %d %d' %
-                          tuple(qubit_names[qubit_order.index(c)] for c in cut))
+        order_data.append('cut () %d %d' % tuple(
+            qubit_names[qubit_order.index(c)] for c in cut))
     order_data += create_ordering_data(min_steps, qubit_names, qubit_order)
     return order_data
 

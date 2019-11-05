@@ -2,10 +2,7 @@
 This file is extracted from a future version of Cirq
 """
 
-from typing import (
-    Sequence,
-    Union
-)
+from typing import (Sequence, Union)
 
 import abc
 

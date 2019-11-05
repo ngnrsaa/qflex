@@ -56,15 +56,14 @@ def run_qflex_simulator(config):
 
     my_order = qorder.QFlexOrder.from_existing_file(config["ordering_filename"])
 
-    circuit_on_device = qcirc.QFlexCircuit(cirq_circuit=my_circuit,
-                                           device=my_device,
-                                           qflex_order=my_order)
+    circuit_on_device = qcirc.QFlexCircuit(
+        cirq_circuit=my_circuit, device=my_device, qflex_order=my_order)
 
     print("\nRunning QFlex simulation\n")
 
     my_sim = qsim.QFlexSimulator()
-    myres = my_sim.compute_amplitudes(program=circuit_on_device,
-                                      bitstrings=[config['final_state']])
+    myres = my_sim.compute_amplitudes(
+        program=circuit_on_device, bitstrings=[config['final_state']])
     print(myres)
 
 

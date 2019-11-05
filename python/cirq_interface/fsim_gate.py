@@ -110,8 +110,8 @@ class FSimGate(gate_features.TwoQubitGate,
             'YY': b / 2,
         })
 
-    def _resolve_parameters_(self, param_resolver: 'cirq.ParamResolver'
-                            ) -> 'cirq.FSimGate':
+    def _resolve_parameters_(
+            self, param_resolver: 'cirq.ParamResolver') -> 'cirq.FSimGate':
         return FSimGate(
             protocols.resolve_parameters(self.theta, param_resolver),
             protocols.resolve_parameters(self.phi, param_resolver))
@@ -124,10 +124,11 @@ class FSimGate(gate_features.TwoQubitGate,
             inner_matrix = protocols.unitary(cirq.Rx(2 * self.theta))
             oi = args.subspace_index(0b01)
             io = args.subspace_index(0b10)
-            out = cirq.apply_matrix_to_slices(args.target_tensor,
-                                              inner_matrix,
-                                              slices=[oi, io],
-                                              out=args.available_buffer)
+            out = cirq.apply_matrix_to_slices(
+                args.target_tensor,
+                inner_matrix,
+                slices=[oi, io],
+                out=args.available_buffer)
         else:
             out = args.target_tensor
         if self.phi != 0:
@@ -152,8 +153,8 @@ class FSimGate(gate_features.TwoQubitGate,
         return FSimGate(cirq.mul(self.theta, power), cirq.mul(self.phi, power))
 
     def __repr__(self):
-        return 'cirq.FSimGate(theta={}, phi={})'.format(proper_repr(self.theta),
-                                                        proper_repr(self.phi))
+        return 'cirq.FSimGate(theta={}, phi={})'.format(
+            proper_repr(self.theta), proper_repr(self.phi))
 
     def _json_dict_(self):
         return protocols.obj_to_dict_helper(self, ['theta', 'phi'])

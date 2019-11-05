@@ -50,8 +50,8 @@ class QFlexVirtualDevice(cirq.Device):
             TODO: Test how this works for different circuits
         """
         if not self.is_qflex_virt_dev_op(operation):
-            decomposition = cirq.decompose(operation,
-                                           keep=self.is_qflex_virt_dev_op)
+            decomposition = cirq.decompose(
+                operation, keep=self.is_qflex_virt_dev_op)
 
         for dec in decomposition:
             if not self.is_qflex_virt_dev_op(dec):

@@ -174,8 +174,8 @@ class PseudoRandomCircuitGenerator:
         circuit = Circuit()
         for _ in range(depth):
             circuit.append(self._generate_local_operations_cycle(prggs))
-            circuit.append(self._generate_interaction_cycle(
-                next(pattern_names)))
+            circuit.append(
+                self._generate_interaction_cycle(next(pattern_names)))
         circuit.append(self._generate_local_operations_cycle(prggs))
 
         random.setstate(prng_state)
@@ -215,10 +215,8 @@ def main(args):
 if __name__ == '__main__':
 
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument('--pattern-file',
-                            type=str,
-                            required=True,
-                            help=f'pattern filename')
+    arg_parser.add_argument(
+        '--pattern-file', type=str, required=True, help=f'pattern filename')
     arg_parser.add_argument(
         '--sequence',
         type=str,
@@ -236,10 +234,11 @@ if __name__ == '__main__':
         type=str,
         required=True,
         help='name of the two-qubit gate known to qsim, e.g. cz, fs')
-    arg_parser.add_argument('--depth',
-                            type=int,
-                            required=True,
-                            help='number of layers of two-qubit gates')
+    arg_parser.add_argument(
+        '--depth',
+        type=int,
+        required=True,
+        help='number of layers of two-qubit gates')
     arg_parser.add_argument(
         '--seed',
         type=int,

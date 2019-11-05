@@ -1,5 +1,6 @@
 import python.cirq_interface.data_storage_interface as tmpi
 
+
 class QFlexGrid():
     BRISTLECONE48 = """000001100000
                     000011110000
@@ -50,8 +51,6 @@ class QFlexGrid():
             # I do have the file handle anyway...
             for line in self._grid_data:
                 print(line.strip(), file=f)
-
-
 
     def get_grid_qubits(self):
         import python.utils as qflexutils
