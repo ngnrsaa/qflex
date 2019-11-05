@@ -57,7 +57,7 @@ brew install coreutils gsl autoconf automake libomp pybind11
 ```
 and through `pip3`:
 ```
-pip3 install pybind11 pytest cirq
+pip3 install docopt pybind11 pytest cirq
 ```
 After the installation of the required libraries, qFlex can be compiled on Mac
 OS X as:
