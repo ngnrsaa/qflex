@@ -7,10 +7,6 @@ import numpy as np
 import cirq
 import re
 
-# Used to include a class which does not exist in Cirq 0.5.0
-# import python.cirq_interface.fsim_gate as cirqtmp
-
-
 def ComputeSchmidtRank(gate):
 
     if len(gate.qubits) == 1:
