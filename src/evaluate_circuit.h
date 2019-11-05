@@ -30,27 +30,11 @@
 #include <vector>
 
 #include "contraction_utils.h"
+#include "input.h"
 #include "read_circuit.h"
-#include "circuit.h"
 #include "tensor.h"
 
 namespace qflex {
-
-struct QflexGrid {
-  int I{0}, J{0};
-  std::vector<std::vector<int>> qubits_off;
-  void load(std::istream& istream);
-  void load(const std::string& filename);
-};
-
-struct QflexInput {
-  std::istream* ordering_data;
-  QflexCircuit circuit;
-  QflexGrid grid;
-  std::string initial_state;
-  std::string final_state;
-  bool enable_timing_logs = false;
-};
 
 /**
  * Reads in grid layout from a file, which should be formatted as an I x J grid

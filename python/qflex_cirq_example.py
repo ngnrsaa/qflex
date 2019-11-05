@@ -41,7 +41,7 @@ config_sycamore = {
 def run_qflex_simulator(config):
 
     my_grid = qgrid.QFlexGrid.from_existing_file(config['grid_filename'])
-    my_device = qdevice.QFlexVirtualDevice(qflex_grid = my_grid)
+    my_device = qdevice.QFlexVirtualDevice(qflex_grid=my_grid)
 
     # The qubits are collected and indexed from the underlying grid_string
     # that was passed as constructor to the Device
@@ -51,18 +51,19 @@ def run_qflex_simulator(config):
     # The Cirq circuit will be afterwards transformed into a Qflex circuit
     # You can construct a Cirq circuit from an existing QFlex circuit
     # Note that circuits provided in files were designed for a specific arrangement
-    my_circuit = qflexutils.GetCircuitOfMoments(config["circuit_filename"], my_qubits)
+    my_circuit = qflexutils.GetCircuitOfMoments(config["circuit_filename"],
+                                                my_qubits)
 
     my_order = qorder.QFlexOrder.from_existing_file(config["ordering_filename"])
 
-    circuit_on_device = qcirc.QFlexCircuit(cirq_circuit = my_circuit,
-                                     device = my_device,
-                                     qflex_order = my_order)
+    circuit_on_device = qcirc.QFlexCircuit(cirq_circuit=my_circuit,
+                                           device=my_device,
+                                           qflex_order=my_order)
 
     print("\nRunning QFlex simulation\n")
 
     my_sim = qsim.QFlexSimulator()
-    myres = my_sim.compute_amplitudes(program = circuit_on_device,
+    myres = my_sim.compute_amplitudes(program=circuit_on_device,
                                       bitstrings=[config['final_state']])
     print(myres)
 
@@ -96,4 +97,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

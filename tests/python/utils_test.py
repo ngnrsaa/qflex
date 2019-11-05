@@ -27,4 +27,4 @@ def test_GetNrQubits():
     nrq2 = len(circuit.all_qubits())
     assert (nrq2 == 3)
 
-    assert(nrq == 3)
+    assert (nrq == 3)

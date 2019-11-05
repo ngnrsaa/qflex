@@ -47,14 +47,7 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
 
   // Get ordering
   if (options.contains("ordering_filename")) {
-    fs_ordering_data.open(options["ordering_filename"].cast<std::string>());
-    if (not fs_ordering_data.good()) {
-      std::cerr << "ERROR: cannot open file: "
-                << options["ordering_filename"].cast<std::string>() << "."
-                << std::endl;
-      return {};
-    }
-    input.ordering_data = &fs_ordering_data;
+    input.ordering.load(options["ordering_filename"].cast<std::string>());
   } else {
     std::cerr << "ERROR: not yet implemented." << std::endl;
     return {};

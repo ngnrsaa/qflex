@@ -15,7 +15,7 @@ print_help() {
   echo -e "\t\t-j <p>    Number of parallel processes."                        >&2
   echo -e "\t\t-x        Do not install qFlex (just create container)."        >&2
   echo -e "\t\t-r        Run rootless container immediately after creation."   >&2
-  echo -e "\t\t-c        Install Cirq."                                        >&2
+  echo -e "\t\t-c        Disable installation of Cirq."                        >&2
   echo                                                                         >&2
 }
 
@@ -33,7 +33,7 @@ num_par_processes=1
 user_root=""
 no_inst=""
 run_immediately=""
-cirq=""
+cirq=1
 num_args=$#
 
 # Check that args are given
@@ -63,7 +63,7 @@ for((idx=1; idx<=$num_args; ++idx)); do
           num_args=$((num_args-1))
           ;;
         -c)
-          cirq=1
+          cirq=""
           ;;
         -x)
           no_inst=1
@@ -202,7 +202,7 @@ cat >> $root/install_qflex.sh << EOF
 cd /qflex
 
 # Run autoconf
-autoreconf -i && autoconf && ./configure $(if [[ $cirq != "1" ]]; then echo "--disable-cirq"; fi)
+autoreconf -i && autoconf && ./configure $(if [[ $cirq != "1" ]]; then echo "--disable-python_tests"; fi)
 
 # Make qFlex
 make -j\$num_par_processes

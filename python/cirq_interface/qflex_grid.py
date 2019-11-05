@@ -1,6 +1,7 @@
 import tempfile
 import os
 
+
 class QFlexGrid():
     BRISTLECONE48 = """000001100000
                     000011110000
@@ -38,7 +39,7 @@ class QFlexGrid():
                     000011110000
                     000001100000"""#11 lines of 12 cols
 
-    def __init__(self, qflex_grid_strings = BRISTLECONE70):
+    def __init__(self, qflex_grid_strings=BRISTLECONE70):
         # TODO: Check if already in correct format
         gdata = qflex_grid_strings.replace("0", "0 ").replace("1", "1 ")
 
@@ -49,8 +50,8 @@ class QFlexGrid():
 
         with open(self._file_handle[1], "w") as f:
             # I do have the file handle anyway...
-            for line in self._grid_data :
-                print(line.strip(), file = f)
+            for line in self._grid_data:
+                print(line.strip(), file=f)
 
     def __del__(self):
         # The destructor removes the temporary file
@@ -65,10 +66,8 @@ class QFlexGrid():
             else:
                 raise e
 
-
         # remove the temporary file from disk
         os.remove(self._file_handle[1])
-
 
     def get_grid_qubits(self):
         import python.utils as qflexutils
@@ -82,7 +81,7 @@ class QFlexGrid():
         for x in range(sizex):
             line = "1" * sizey
 
-            if x > 0 :
+            if x > 0:
                 regular += "\n"
 
             regular += line

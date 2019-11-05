@@ -21,6 +21,9 @@ todo.txt
 __pycache__
 .ipynb_checkpoints
 
+# mypy typechecker
+.mypy_cache/
+
 # Autotools
 Makefile
 aclocal.m4

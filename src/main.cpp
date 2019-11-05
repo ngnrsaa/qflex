@@ -1,6 +1,9 @@
-#include "docopt.h"
 #include "circuit.h"
+#include "docopt.h"
 #include "evaluate_circuit.h"
+#include "grid.h"
+#include "input.h"
+#include "ordering.h"
 
 static const char VERSION[] = "qFlex v0.1";
 static const char USAGE[] =
@@ -30,9 +33,7 @@ tensor network, CPU-based simulator of large quantum circuits.
 //               config/grid/bristlecone_48.txt
 //
 int main(int argc, char** argv) {
-
   try {
-
     std::map<std::string, docopt::value> args =
         docopt::docopt(USAGE, {argv + 1, argv + argc}, true, VERSION);
 
@@ -54,23 +55,18 @@ int main(int argc, char** argv) {
     std::string circuit_filename = bool(args["--circuit"])
                                        ? args["--circuit"].asString()
                                        : args["<circuit_filename>"].asString();
-    std::string ordering_filename = bool(args["--ordering"])
-                                        ? args["--ordering"].asString()
-                                        : args["<ordering_filename>"].asString();
+    std::string ordering_filename =
+        bool(args["--ordering"]) ? args["--ordering"].asString()
+                                 : args["<ordering_filename>"].asString();
     std::string grid_filename = bool(args["--grid"])
                                     ? args["--grid"].asString()
                                     : args["<grid_filename>"].asString();
 
-    // Read the circuit
+    // Load circuit
     input.circuit.load(std::ifstream(circuit_filename));
 
-    auto ordering_data = std::ifstream(ordering_filename);
-    if (!ordering_data.good()) {
-      std::cout << "Cannot open ordering data file: " << ordering_filename
-                << std::endl;
-      assert(ordering_data.good());
-    }
-    input.ordering_data = &ordering_data;
+    // Load ordering
+    input.ordering.load(std::ifstream(ordering_filename));
 
     // Load grid
     input.grid.load(grid_filename);
@@ -88,16 +84,13 @@ int main(int argc, char** argv) {
                 << std::endl;
     }
 
-  } catch (const std::exception &ex) {
-
+  } catch (const std::exception& ex) {
     std::cerr << ex.what() << std::endl;
     return 1;
 
-  } catch (const std::string &msg) {
-
+  } catch (const std::string& msg) {
     std::cerr << msg << std::endl;
     return 2;
-
   }
 
   return 0;
