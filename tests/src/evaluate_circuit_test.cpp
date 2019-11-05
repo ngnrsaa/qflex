@@ -106,15 +106,17 @@ TEST(GetOutputStatesExceptionTest, InvalidInput) {
   // Input cannot be null pointer.
   try {
     get_output_states(nullptr, ordering, &final_qubits, &output_states);
-    FAIL() << "Expected get_output_states() to throw an exception, but it didn't";
+    FAIL()
+        << "Expected get_output_states() to throw an exception, but it didn't";
   } catch (std::string msg) {
     EXPECT_THAT(msg, testing::HasSubstr("Input must be non-null."));
   }
-  
+
   // Final qubits cannot be null pointer.
   try {
     get_output_states(&input, ordering, nullptr, &output_states);
-    FAIL() << "Expected get_output_states() to throw an exception, but it didn't";
+    FAIL()
+        << "Expected get_output_states() to throw an exception, but it didn't";
   } catch (std::string msg) {
     EXPECT_THAT(msg, testing::HasSubstr("Final qubits must be non-null"));
   }
@@ -122,7 +124,8 @@ TEST(GetOutputStatesExceptionTest, InvalidInput) {
   // Output states cannot be null pointer.
   try {
     get_output_states(&input, ordering, &final_qubits, nullptr);
-    FAIL() << "Expected get_output_states() to throw an exception, but it didn't";
+    FAIL()
+        << "Expected get_output_states() to throw an exception, but it didn't";
   } catch (std::string msg) {
     EXPECT_THAT(msg, testing::HasSubstr("Output states must be non-null"));
   }

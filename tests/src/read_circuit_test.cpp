@@ -26,18 +26,28 @@ TEST(ReadCircuitExceptionTest, InvalidNumberOfQubits) {
   QflexCircuit circuit;
   circuit.load(std::stringstream(kMissingNumQubitsCircuit));
   try {
-    circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {}, grid_of_tensors, scratch);
-    FAIL() << "Expected circuit_data_to_tensor_network() to throw an exception.";
+    circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {},
+                                   grid_of_tensors, scratch);
+    FAIL()
+        << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("The number of active qubits read from the file: 0, does not match the number of active qubits read from the grid: 2."));
+    EXPECT_THAT(
+        msg, testing::HasSubstr(
+                 "The number of active qubits read from the file: 0, does not "
+                 "match the number of active qubits read from the grid: 2."));
   }
 
   circuit.load(std::stringstream(kWrongNumQubitsCircuit));
   try {
-    circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {}, grid_of_tensors, scratch);
-    FAIL() << "Expected circuit_data_to_tensor_network() to throw an exception.";
+    circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {},
+                                   grid_of_tensors, scratch);
+    FAIL()
+        << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("The number of active qubits read from the file: 3, does not match the number of active qubits read from the grid: 2."));
+    EXPECT_THAT(
+        msg, testing::HasSubstr(
+                 "The number of active qubits read from the file: 3, does not "
+                 "match the number of active qubits read from the grid: 2."));
   }
 }
 
@@ -54,8 +64,10 @@ TEST(ReadCircuitExceptionTest, BadOneQubitGate) {
   QflexCircuit circuit;
   circuit.load(std::stringstream(kBadCircuit));
   try {
-    circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {}, grid_of_tensors, scratch);
-    FAIL() << "Expected circuit_data_to_tensor_network() to throw an exception.";
+    circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {},
+                                   grid_of_tensors, scratch);
+    FAIL()
+        << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(msg, testing::HasSubstr("Invalid gate name provided: badgate"));
   }
@@ -74,10 +86,13 @@ TEST(ReadCircuitExceptionTest, BadFsimGate) {
   QflexCircuit circuit;
   circuit.load(std::stringstream(kBadFsimCircuit));
   try {
-    circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {}, grid_of_tensors, scratch);
-    FAIL() << "Expected circuit_data_to_tensor_network() to throw an exception.";
+    circuit_data_to_tensor_network(circuit, 2, 1, "00", "01", {}, {},
+                                   grid_of_tensors, scratch);
+    FAIL()
+        << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Invalid gate name provided: fsimbadgate"));
+    EXPECT_THAT(msg,
+                testing::HasSubstr("Invalid gate name provided: fsimbadgate"));
   }
 }
 
@@ -100,37 +115,49 @@ TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
   QflexCircuit circuit;
   circuit.load(std::stringstream(kBadTGate));
   try {
-    circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits, grid_of_tensors, scratch);
-    FAIL() << "Expected circuit_data_to_tensor_network() to throw an exception.";
+    circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits,
+                                   grid_of_tensors, scratch);
+    FAIL()
+        << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Qubit 0 must correspond to an active qubit."));
+    EXPECT_THAT(
+        msg, testing::HasSubstr("Qubit 0 must correspond to an active qubit."));
   }
 
   // Two qubit gate must have active qubit as first qubit input.
   circuit.load(std::stringstream(kBadCzGate));
   try {
-    circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits, grid_of_tensors, scratch);
-    FAIL() << "Expected circuit_data_to_tensor_network() to throw an exception.";
+    circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits,
+                                   grid_of_tensors, scratch);
+    FAIL()
+        << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Qubit 0 must correspond to an active qubit."));
+    EXPECT_THAT(
+        msg, testing::HasSubstr("Qubit 0 must correspond to an active qubit."));
   }
 
   // Two qubit gate must have active qubit as first qubit input.
   circuit.load(std::stringstream(kBadCxGate));
   try {
-    circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits, grid_of_tensors, scratch);
-    FAIL() << "Expected circuit_data_to_tensor_network() to throw an exception.";
+    circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits,
+                                   grid_of_tensors, scratch);
+    FAIL()
+        << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Qubit 0 must correspond to an active qubit."));
+    EXPECT_THAT(
+        msg, testing::HasSubstr("Qubit 0 must correspond to an active qubit."));
   }
 
   // Two qubit gate must have active qubit as second qubit input.
   off_qubits = {{1, 0}};
   try {
-    circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits, grid_of_tensors, scratch);
-    FAIL() << "Expected circuit_data_to_tensor_network() to throw an exception.";
+    circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits,
+                                   grid_of_tensors, scratch);
+    FAIL()
+        << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Qubit 0 has been used twice in the same cycle: 1"));
+    EXPECT_THAT(msg, testing::HasSubstr(
+                         "Qubit 0 has been used twice in the same cycle: 1"));
   }
 }
 
@@ -325,26 +352,34 @@ TEST(ReadCircuitExceptionTest, CircuitDataToGridOfTensorsInvalidInput) {
 
   // Scratch cannot be null pointer.
   try {
-    circuit_data_to_tensor_network(circuit, 2, 1, "01", "01", {}, {}, grid_of_tensors, nullptr);
-    FAIL() << "Expected circuit_data_to_tensor_network() to throw an exception.";
+    circuit_data_to_tensor_network(circuit, 2, 1, "01", "01", {}, {},
+                                   grid_of_tensors, nullptr);
+    FAIL()
+        << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(msg, testing::HasSubstr("Scratch must be non-null."));
   }
 
   // Input configuration length must be equal to the number of qubits.
   try {
-    circuit_data_to_tensor_network(circuit, 2, 1, "001", "01", {}, {}, grid_of_tensors, scratch);
-    FAIL() << "Expected circuit_data_to_tensor_network() to throw an exception.";
+    circuit_data_to_tensor_network(circuit, 2, 1, "001", "01", {}, {},
+                                   grid_of_tensors, scratch);
+    FAIL()
+        << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Size of initial_conf: 3, must be equal to the number of qubits: 2."));
+    EXPECT_THAT(msg, testing::HasSubstr("Size of initial_conf: 3, must be "
+                                        "equal to the number of qubits: 2."));
   }
 
   // Output configuration length must be equal to the number of qubits.
   try {
-    circuit_data_to_tensor_network(circuit, 2, 1, "01", "011", {}, {}, grid_of_tensors, scratch);
-    FAIL() << "Expected circuit_data_to_tensor_network() to throw an exception.";
+    circuit_data_to_tensor_network(circuit, 2, 1, "01", "011", {}, {},
+                                   grid_of_tensors, scratch);
+    FAIL()
+        << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Size of final_conf: 3, must be equal to size of initial_conf: 2."));
+    EXPECT_THAT(msg, testing::HasSubstr("Size of final_conf: 3, must be equal "
+                                        "to size of initial_conf: 2."));
   }
 }
 
@@ -357,7 +392,8 @@ TEST(ReadCircuitExceptionTest, GridOfTensors3DTo2DInvalidInput) {
 
   // Scratch cannot be null pointer.
   try {
-    flatten_grid_of_tensors(grid_of_tensors_3D, grid_of_tensors_2D, A, off, ordering, nullptr);
+    flatten_grid_of_tensors(grid_of_tensors_3D, grid_of_tensors_2D, A, off,
+                            ordering, nullptr);
     FAIL() << "Expected flatten_grid_of_tensors() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(msg, testing::HasSubstr("Scratch must be non-null."));

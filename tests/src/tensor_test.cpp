@@ -227,7 +227,9 @@ TEST(TensorExceptionTest, Capacity) {
     tensor = Tensor({"f", "g"}, {16, 16});
     FAIL() << "Expected Tensor() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("The total allocated space: 64, is insufficient for the requested tensor dimensions: 256."));
+    EXPECT_THAT(msg, testing::HasSubstr(
+                         "The total allocated space: 64, is insufficient for "
+                         "the requested tensor dimensions: 256."));
   }
 }
 
@@ -238,7 +240,8 @@ TEST(TensorExceptionTest, InvalidInput) {
     Tensor({"a", "b", "c"}, {2, 2});
     FAIL() << "Expected Tensor() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("The number of indices: 3, and number of dimensions: 2, should be equal."));
+    EXPECT_THAT(msg, testing::HasSubstr("The number of indices: 3, and number "
+                                        "of dimensions: 2, should be equal."));
   }
 
   // Data vector size mismatch.
@@ -247,7 +250,10 @@ TEST(TensorExceptionTest, InvalidInput) {
     Tensor({"a", "b"}, {2, 2}, data);
     FAIL() << "Expected Tensor() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("The vector data size: 8, has to match the size of the Tensor: 4"));
+    EXPECT_THAT(
+        msg,
+        testing::HasSubstr(
+            "The vector data size: 8, has to match the size of the Tensor: 4"));
   }
 
   // Data passed into Tensor cannot be null pointer.
@@ -266,7 +272,8 @@ TEST(TensorExceptionTest, InvalidInput) {
     tensor_abc.project("b", 0, tensor_ac);
     FAIL() << "Expected project() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Index: 'b' has to be equal to indices[0]: 'a'."));
+    EXPECT_THAT(msg, testing::HasSubstr(
+                         "Index: 'b' has to be equal to indices[0]: 'a'."));
   }
 
   // Projecting to bad index_value.
@@ -274,7 +281,8 @@ TEST(TensorExceptionTest, InvalidInput) {
     tensor_abc.project("a", 2, tensor_ac);
     FAIL() << "Expected project() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("index_value: 2 must be contained in [0, 2)."));
+    EXPECT_THAT(
+        msg, testing::HasSubstr("index_value: 2 must be contained in [0, 2)."));
   }
 
   // Projecting to too-small tensor.
@@ -283,7 +291,9 @@ TEST(TensorExceptionTest, InvalidInput) {
     tensor_abc.project("a", 0, tensor_ac_small);
     FAIL() << "Expected project() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("The total allocated space: 2, is insufficient for the requested tensor dimensions: 4."));
+    EXPECT_THAT(
+        msg, testing::HasSubstr("The total allocated space: 2, is insufficient "
+                                "for the requested tensor dimensions: 4."));
   }
 
   // Renaming a non-existent index.
@@ -291,7 +301,8 @@ TEST(TensorExceptionTest, InvalidInput) {
     tensor_abc.rename_index("x", "y");
     FAIL() << "Expected rename_index() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("old_name: x, has to be a valid index."));
+    EXPECT_THAT(msg,
+                testing::HasSubstr("old_name: x, has to be a valid index."));
   }
 
   // Renaming an existing index to another existing index.
@@ -299,7 +310,8 @@ TEST(TensorExceptionTest, InvalidInput) {
     tensor_abc.rename_index("a", "b");
     FAIL() << "Expected project() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("new_name: b, cannot be an existing index."));
+    EXPECT_THAT(
+        msg, testing::HasSubstr("new_name: b, cannot be an existing index."));
   }
 
   // Bundling on a partially-invalid set of indices.
@@ -307,7 +319,8 @@ TEST(TensorExceptionTest, InvalidInput) {
     tensor_abc.bundle({"a", "x"}, "ax");
     FAIL() << "Expected bundle() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("indices_to_bundle: {a, x} has to be contained in indices: {a, b, c}."));
+    EXPECT_THAT(msg, testing::HasSubstr("indices_to_bundle: {a, x} has to be "
+                                        "contained in indices: {a, b, c}."));
   }
 
   // Bundling a valid but reordered set of indices.
@@ -315,7 +328,8 @@ TEST(TensorExceptionTest, InvalidInput) {
     tensor_abc.bundle({"b", "a"}, "ba");
     FAIL() << "Expected bundle() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("indices_to_bundle: {b, a} must be in its original order: {a, b}."));
+    EXPECT_THAT(msg, testing::HasSubstr("indices_to_bundle: {b, a} must be in "
+                                        "its original order: {a, b}."));
   }
 
   // Reordering to too few indices.
@@ -324,7 +338,9 @@ TEST(TensorExceptionTest, InvalidInput) {
     tensor_abc.reorder({"b", "a"}, scratch.data());
     FAIL() << "Expected reorder() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("new_ordering: {b, a} must be a reordering of current indices: {a, b, c}."));
+    EXPECT_THAT(msg,
+                testing::HasSubstr("new_ordering: {b, a} must be a reordering "
+                                   "of current indices: {a, b, c}."));
   }
 
   // Reordering to non-existent indices.
@@ -332,7 +348,9 @@ TEST(TensorExceptionTest, InvalidInput) {
     tensor_abc.reorder({"b", "y", "x"}, scratch.data());
     FAIL() << "Expected reorder() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("new_ordering: {b, y, x} must be a reordering of current indices: {a, b, c}."));
+    EXPECT_THAT(
+        msg, testing::HasSubstr("new_ordering: {b, y, x} must be a reordering "
+                                "of current indices: {a, b, c}."));
   }
 
   // Scratch copy passed to reordering cannot be null pointer.
@@ -351,13 +369,16 @@ TEST(TensorExceptionTest, InvalidInput) {
     multiply(tensor_abc, tensor_cd, tensor_abc, scratch.data());
     FAIL() << "Expected multiply() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("A and C cannot be the same tensor: Tensor of rank 3: a -> 2, b -> 2, c -> 2"));
+    EXPECT_THAT(msg,
+                testing::HasSubstr("A and C cannot be the same tensor: Tensor "
+                                   "of rank 3: a -> 2, b -> 2, c -> 2"));
   }
   try {
     multiply(tensor_abc, tensor_cd, tensor_cd, scratch.data());
     FAIL() << "Expected multiply() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("B and C cannot be the same tensor: Tensor of rank 2: c -> 2, d -> 2"));
+    EXPECT_THAT(msg, testing::HasSubstr("B and C cannot be the same tensor: "
+                                        "Tensor of rank 2: c -> 2, d -> 2"));
   }
 
   Tensor tensor_cd_large({"c", "d"}, {4, 4});
@@ -367,7 +388,9 @@ TEST(TensorExceptionTest, InvalidInput) {
     multiply(tensor_abc, tensor_cd_large, tensor_abd, scratch.data());
     FAIL() << "Expected multiply() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Common indices must have matching dimensions, but at index: 0, the dimensions are A: 2, B: 4."));
+    EXPECT_THAT(msg, testing::HasSubstr(
+                         "Common indices must have matching dimensions, but at "
+                         "index: 0, the dimensions are A: 2, B: 4."));
   }
 
   Tensor tensor_x({"x"}, {2});
@@ -377,7 +400,9 @@ TEST(TensorExceptionTest, InvalidInput) {
     multiply(tensor_abc, tensor_cd, tensor_x, scratch.data());
     FAIL() << "Expected multiply() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("C: 2 doesn't have enough space for the product of A*B: 8."));
+    EXPECT_THAT(
+        msg, testing::HasSubstr(
+                 "C: 2 doesn't have enough space for the product of A*B: 8."));
   }
 
   // Scratch copy passed to multiply cannot be null pointer.
@@ -397,10 +422,12 @@ TEST(TensorExceptionTest, GenerateBinaryReorderingMapInvalidInput) {
 
   // Size of map must be equal to 2 ^ (number of indices).
   try {
-    _generate_binary_reordering_map(map_old_to_new_idxpos, map_old_to_new_position);
+    _generate_binary_reordering_map(map_old_to_new_idxpos,
+                                    map_old_to_new_position);
     FAIL() << "Expected multiply() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Size of map: 3 must be equal to 2^num_indices: 4."));
+    EXPECT_THAT(msg, testing::HasSubstr(
+                         "Size of map: 3 must be equal to 2^num_indices: 4."));
   }
 }
 
