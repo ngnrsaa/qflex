@@ -18,6 +18,7 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install autoconf  ; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install libomp    ; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pybind11  ; fi
+  - pip3 install pybind11 pytest cirq
 
 before_script:
   - docker run -ti --rm -v $PWD:/qflex:ro alpine:3.10.3 /bin/sh -c "apk update && apk add bash py3-pip clang && pip3 install yapf && bash /qflex/scripts/check_format.sh"
