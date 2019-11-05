@@ -16,9 +16,7 @@ Options:
 """
 
 import itertools
-import docopt
 import math
-import re
 
 from typing import Iterable, Tuple
 
@@ -399,5 +397,5 @@ if __name__ == "__main__":
 
     ordering = circuit_to_ordering(circuit, qubit_names=sorted(qubits))
     with (stdout
-          if output_filename == None else open(output_filename, 'w')) as f:
+          if output_filename is None else open(output_filename, 'w')) as f:
         print('\n'.join(ordering), file=f)

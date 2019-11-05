@@ -122,7 +122,7 @@ def GetMomentAndGate(line, qubits):
         raise AssertionError(
             "ERROR: Gate {} not supported yet.".format(gate_name))
 
-    if params == None:
+    if params is None:
         return cycle, gates_map[gate_name](*[qubits[q] for q in gate_qubits])
     else:
         if gate_name == "fsim":

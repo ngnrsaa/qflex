@@ -2,24 +2,11 @@
 This file is extracted from a future version of Cirq
 """
 
-from typing import (
-    Any,
-    Dict,
-    Hashable,
-    Iterator,
-    List,
-    Sequence,
-    Tuple,
-    Union,
-    Optional,
-)
+from typing import (Sequence, Union)
 
 import abc
 
-import collections
-import numpy as np
-
-from cirq import circuits, ops, protocols, schedules, study, value
+from cirq import circuits, ops, schedules, study
 
 
 class SimulatesAmplitudes(metaclass=abc.ABCMeta):
