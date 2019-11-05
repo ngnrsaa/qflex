@@ -54,10 +54,10 @@ class QFlexSimulator(SimulatesAmplitudes):
                 amplitudes = qflex.simulate(options)
 
                 for amp in amplitudes:
-                    state = amp[0]
                     amplitude = complex(amp[1])
 
                     # For debugging purposes commented the following
+                    # state = amp[0]
                     # print(input_initial_state + " --> " + state + ": " + \
                     #       str(amplitude.real) + " " + str(amplitude.imag))
 
