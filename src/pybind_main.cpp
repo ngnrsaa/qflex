@@ -17,15 +17,15 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
   auto LoadData = [&GetStream](const py::dict &options,
                                const std::string &argument, auto &data) {
     if (options.contains(argument.c_str())) {
-      const auto &q = options[argument.c_str()];
-      if (py::isinstance<py::iterable>(q))
-        data.load(GetStream(q.cast<py::iterable>(), argument));
+      const auto &data_iterable = options[argument.c_str()];
+      if (py::isinstance<py::iterable>(data_iterable))
+        data.load(GetStream(data_iterable.cast<py::iterable>(), argument));
       else
         throw "'" + argument + "' must be a list of strings.";
     } else if (options.contains((argument + "_filename").c_str())) {
-      const auto &q = options[(argument + "_filename").c_str()];
-      if (py::isinstance<py::str>(q))
-        data.load(q.cast<std::string>());
+      const auto &filename = options[(argument + "_filename").c_str()];
+      if (py::isinstance<py::str>(filename))
+        data.load(filename.cast<std::string>());
       else
         throw "'" + argument + "_filename' must be a string.";
     }
@@ -35,11 +35,11 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
                        const std::size_t num_active_qubits = 0) {
     std::vector<std::string> states;
     if (options.contains((argument + "_states").c_str())) {
-      const auto &q = options[(argument + "_states").c_str()];
-      if (py::isinstance<py::str>(q)) {
-        states.push_back(q.cast<std::string>());
-      } else if (py::isinstance<py::iterable>(q)) {
-        for (const auto &x : q.cast<py::iterable>())
+      const auto &in_states = options[(argument + "_states").c_str()];
+      if (py::isinstance<py::str>(in_states)) {
+        states.push_back(in_states.cast<std::string>());
+      } else if (py::isinstance<py::iterable>(in_states)) {
+        for (const auto &x : in_states.cast<py::iterable>())
           if (py::isinstance<py::str>(x))
             states.push_back(x.cast<std::string>());
           else
@@ -47,9 +47,9 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
       } else
         throw argument + "_states must be a list of strings.";
     } else if (options.contains((argument + "_state").c_str())) {
-      const auto &q = options[(argument + "_state").c_str()];
-      if (py::isinstance<py::str>(q)) {
-        states.push_back(q.cast<std::string>());
+      const auto &in_state = options[(argument + "_state").c_str()];
+      if (py::isinstance<py::str>(in_state)) {
+        states.push_back(in_state.cast<std::string>());
       } else
         throw "states must be strings.";
     } else {
