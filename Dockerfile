@@ -5,8 +5,12 @@ FROM ngnrsaa/cirq-alpine:latest
 RUN apk update
 RUN apk add git g++ make gsl-dev git autoconf automake python3-dev py3-pybind11 py3-packaging py3-pytest py3-docopt
 
+# Arguments from docker-compose
+ARG OMP_NUM_THREADS
+ARG QFLEX_BRANCH
+
 # Clone qflex
-RUN git clone --depth 1 --shallow-submodules https://github.com/ngnrsaa/qflex.git /qflex/
+RUN git clone --depth 1 --branch ${QFLEX_BRANCH:-master} --shallow-submodules ${QFLEX_REPO:-https://github.com/ngnrsaa/qflex.git} /qflex/
 
 WORKDIR /qflex/
 
@@ -14,6 +18,6 @@ WORKDIR /qflex/
 RUN autoreconf -i && autoconf && ./configure --disable-all_checks
 
 # Compile qflex
-RUN make -j${OMP_NUM_THREADS:-4}
+RUN make -j${OMP_NUM_THREADS:-8}
 
 ENTRYPOINT ["/qflex/src/qflex.x"]

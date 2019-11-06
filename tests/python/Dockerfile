@@ -1,11 +1,11 @@
 # Use qFlex as baseline
 FROM qflex
 
-# Copy qflex tests
-COPY ./python/ /qflex/python/
-COPY ./tests/python/ /qflex/tests/python/
+# Arguments from docker-compose
+ARG OMP_NUM_THREADS
+ARG QFLEX_BRANCH
 
 # Compile tests
 WORKDIR /qflex/
 
-ENTRYPOINT make -j${OMP_NUM_THREADS:-4} run-py-tests
+ENTRYPOINT make -j${OMP_NUM_THREADS:-8} run-py-tests
