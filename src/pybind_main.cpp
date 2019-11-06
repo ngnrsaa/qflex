@@ -5,7 +5,8 @@
  * @param data to create the stream from.
  * @param caller string representing the name of the iterable.
  */
-std::stringstream GetStream(const py::iterable &data, const std::string &caller = "") {
+std::stringstream GetStream(const py::iterable &data,
+                            const std::string &caller = "") {
   std::stringstream out;
   for (const auto &line : data)
     if (py::isinstance<py::str>(line))
@@ -16,13 +17,15 @@ std::stringstream GetStream(const py::iterable &data, const std::string &caller 
 }
 
 /**
- * Given options in pybind11::dict format, load the corresponding data to data_type.
+ * Given options in pybind11::dict format, load the corresponding data to
+ * data_type.
  * @param options in pybind11::dict format.
  * @param argument key corresponding to the desired option.
  * @param data object where to upload the option to.
  */
-template<typename data_type> void LoadData(const py::dict &options,
-    const std::string &argument, data_type &data) {
+template <typename data_type>
+void LoadData(const py::dict &options, const std::string &argument,
+              data_type &data) {
   if (options.contains(argument.c_str())) {
     const auto &data_iterable = options[argument.c_str()];
     if (py::isinstance<py::iterable>(data_iterable))
@@ -43,7 +46,8 @@ template<typename data_type> void LoadData(const py::dict &options,
  * @param options in pybind11::dict format.
  * @param argument key corresponding to the desired option.
  */
-std::vector<std::string> LoadStates(const py::dict &options, const std::string &argument) {
+std::vector<std::string> LoadStates(const py::dict &options,
+                                    const std::string &argument) {
   std::vector<std::string> states;
   if (options.contains((argument + "_states").c_str())) {
     const auto &in_states = options[(argument + "_states").c_str()];
@@ -63,7 +67,8 @@ std::vector<std::string> LoadStates(const py::dict &options, const std::string &
       states.push_back(in_state.cast<std::string>());
     } else
       throw ERROR_MSG("states must be strings.");
-  } else states.push_back("");
+  } else
+    states.push_back("");
   return states;
 }
 
@@ -101,7 +106,8 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
 
     return std::get<1>(amplitudes[0]);
 
-  // Gently return an error msg if exception is known. Otherwise, rethrow exception.
+    // Gently return an error msg if exception is known. Otherwise, rethrow
+    // exception.
   } catch (std::string err_msg) {
     std::cerr << err_msg << std::endl;
   } catch (const char *err_msg) {
