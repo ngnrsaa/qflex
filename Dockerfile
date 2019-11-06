@@ -14,6 +14,6 @@ WORKDIR /qflex/
 RUN autoreconf -i && autoconf && ./configure --disable-all_checks
 
 # Compile qflex
-RUN make -j${OMP_NUM_THREADS:-1}
+RUN make -j${OMP_NUM_THREADS:-4}
 
 ENTRYPOINT ["/qflex/src/qflex.x"]
