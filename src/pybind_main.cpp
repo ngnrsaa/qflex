@@ -42,10 +42,8 @@ template<typename data_type> void LoadData(const py::dict &options,
  * Given options in pybind11::dict format, load states.
  * @param options in pybind11::dict format.
  * @param argument key corresponding to the desired option.
- * @param number of active qubits.
  */
-std::vector<std::string> LoadStates(const py::dict &options, const std::string &argument,
-    const std::size_t num_active_qubits = 0) {
+std::vector<std::string> LoadStates(const py::dict &options, const std::string &argument) {
   std::vector<std::string> states;
   if (options.contains((argument + "_states").c_str())) {
     const auto &in_states = options[(argument + "_states").c_str()];
@@ -65,12 +63,7 @@ std::vector<std::string> LoadStates(const py::dict &options, const std::string &
       states.push_back(in_state.cast<std::string>());
     } else
       throw ERROR_MSG("states must be strings.");
-  } else {
-    if (argument == "initial")
-      states.push_back(std::string(num_active_qubits, '0'));
-    else
-      states.push_back("");
-  }
+  } else states.push_back("");
   return states;
 }
 
@@ -86,8 +79,7 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     LoadData(options, "grid", input.grid);
     LoadData(options, "circuit", input.circuit);
     LoadData(options, "ordering", input.ordering);
-    const auto initial_states =
-        LoadStates(options, "initial", input.circuit.num_active_qubits);
+    const auto initial_states = LoadStates(options, "initial");
     const auto final_states = LoadStates(options, "final");
 
     // Define container for amplitudes
@@ -107,12 +99,7 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
       }
     }
 
-    if (std::size(initial_states) == 1 and std::size(final_states) == 1)
-      return std::get<1>(amplitudes[0]);
-    else {
-      return {};
-      // return amplitudes;
-    }
+    return std::get<1>(amplitudes[0]);
 
   } catch (std::string err_msg) {
     std::cerr << err_msg << std::endl;
