@@ -8,4 +8,4 @@ COPY ./tests/python/ /qflex/tests/python/
 # Compile tests
 WORKDIR /qflex/
 
-ENTRYPOINT make -j${OMP_NUM_THREADS} run-py-tests
+ENTRYPOINT make -j${OMP_NUM_THREADS:-4} run-py-tests
