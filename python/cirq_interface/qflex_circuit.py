@@ -1,17 +1,12 @@
-import tempfile
-import os
-
 import numpy as np
 
 import cirq
 
 import python.cirq_interface.qflex_virtual_device as qdevice
 import python.cirq_interface.qflex_order as qorder
+import python.cirq_interface.data_storage_interface as tmpi
 
 import python.utils as qflexutils
-
-# Used to include a class which does not exist in Cirq 0.5.0
-import python.cirq_interface.fsim_gate as cirqtmp
 
 
 class QFlexCircuit(cirq.Circuit):
@@ -48,22 +43,28 @@ class QFlexCircuit(cirq.Circuit):
             super().__init__(cirq_circuit, device)
 
         # Behind the scene, this class creates a temporary file for each object
-        self._file_handle = tempfile.mkstemp()
+        self.temp_file_if = tmpi.DataStorageInterface()
 
-        with open(self._file_handle[1], "w") as f:
+        with open(self.temp_file_if._file_handle[1], "w") as f:
             # The cirq_circuit has QFlexVirtualDevice
             qubit_to_index_dict = self.device.get_grid_qubits_as_keys()
             print(QFlexCircuit.translate_cirq_to_qflex(self,
                                                        qubit_to_index_dict),
                   file=f)
 
+    def __eq__(self, other):
+        if not isinstance(other, QFlexCircuit):
+            return False
+        # equality is tested, for the moment, for cirq.Circuit
+        return super().__eq__(other)
+
     @property
     def circuit_data(self):
-        return self._file_handle[1]
+        return self.temp_file_if._file_handle[1]
 
     @property
     def ordering_data(self):
-        return self._own_order._file_handle[1]
+        return self._own_order.temp_file_if._file_handle[1]
 
     def _resolve_parameters_(self, param_resolver: cirq.study.ParamResolver):
 
@@ -73,21 +74,6 @@ class QFlexCircuit(cirq.Circuit):
         qflex_circuit._own_order = self._own_order
 
         return qflex_circuit
-
-    def __del__(self):
-        # The destructor removes the temporary file
-
-        try:
-            os.close(self._file_handle[0])
-        except OSError as e:
-            if e.errno == 9:
-                # if it was closed before
-                pass
-            else:
-                raise e
-
-        # remove the temporary file from disk
-        os.remove(self._file_handle[1])
 
     @staticmethod
     def translate_cirq_to_qflex(cirq_circuit, qubit_to_index_dict):
@@ -135,7 +121,7 @@ class QFlexCircuit(cirq.Circuit):
                     qflex_gate = "hz_1_2"
                 elif isinstance(op.gate, cirq.ops.ZPowGate):
                     qflex_gate = "rz({})".format(op.gate.exponent)
-                elif isinstance(op.gate, cirqtmp.FSimGate):
+                elif isinstance(op.gate, cirq.ops.FSimGate):
                     # qFlex uses fractions of pi instead of radians
                     exponent1 = op.gate.theta / np.pi
                     exponent2 = op.gate.phi / np.pi

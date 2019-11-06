@@ -558,8 +558,6 @@ mycirc = qflexutils.GetCircuitOfMoments(circuit_fsim_filename[1],
                                         qdev.get_indexed_grid_qubits())
 qcir = qcirc.QFlexCircuit(cirq_circuit=mycirc, device=qdev, qflex_order=qord)
 
-sim = qsim.QFlexSimulator()
-
 results_fsim = cirq.Simulator().simulate(mycirc)
 
 
@@ -581,13 +579,11 @@ def test_simulation_with_fsim_gates(x):
         'final_state': final_conf
     }
 
-    print(options)
-
     # Pybind: Get output from qFlex
     qflex_amplitude1 = qflex.simulate(options)[0][1]
 
     # Cirq: Get output from qFlex
-
+    sim = qsim.QFlexSimulator()
     qflex_amplitude2 = sim.compute_amplitudes(qcir, bitstrings=[final_conf])
 
     # Compare the amplitudes

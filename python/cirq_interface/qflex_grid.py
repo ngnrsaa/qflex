@@ -1,5 +1,4 @@
-import tempfile
-import os
+import python.cirq_interface.data_storage_interface as tmpi
 
 
 class QFlexGrid():
@@ -46,28 +45,12 @@ class QFlexGrid():
         self._grid_data = [x.strip() for x in gdata.split("\n")]
 
         # Behind the scene, this class creates a temporary file for each object
-        self._file_handle = tempfile.mkstemp()
+        self.temp_file_if = tmpi.DataStorageInterface()
 
-        with open(self._file_handle[1], "w") as f:
+        with open(self.temp_file_if._file_handle[1], "w") as f:
             # I do have the file handle anyway...
             for line in self._grid_data:
                 print(line.strip(), file=f)
-
-    def __del__(self):
-        # The destructor removes the temporary file
-
-        # if open, close the file handle
-        try:
-            os.close(self._file_handle[0])
-        except OSError as e:
-            if e.errno == 9:
-                # if it was closed before
-                pass
-            else:
-                raise e
-
-        # remove the temporary file from disk
-        os.remove(self._file_handle[1])
 
     def get_grid_qubits(self):
         import python.utils as qflexutils
