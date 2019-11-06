@@ -30,7 +30,7 @@ expand D 76
 # EXPAND PATCH E
 expand E 61
 expand E 62
-expand E 73
+expand E 71
 expand E 80
 expand E 79
 # MERGE E B
@@ -74,7 +74,7 @@ expand M 21
 expand M 22
 expand M 23
 # EXPAND PATCH N
-expand L 24
+expand N 24
 #
 # MERGE PATCHES
 merge A D
@@ -84,7 +84,7 @@ merge D F
 merge H F
 merge F I
 merge J I
-merge H I
+merge K I
 merge M L
 merge I L
 merge N L
@@ -100,12 +100,12 @@ cut (0) 15
 #
 # EXPAND PATCH O
 expand O 11
-expand O 12
+expand O 2
 expand O 3
 expand O 4
 expand O 5
 expand O 6
 expand O 15
 #
-# MERGE PATCHES L C
-merge L C
+# MERGE PATCHES L O
+merge L O
