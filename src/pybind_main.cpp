@@ -101,14 +101,16 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
 
     return std::get<1>(amplitudes[0]);
 
+  // Gently return an error msg if exception is known. Otherwise, rethrow exception.
   } catch (std::string err_msg) {
     std::cerr << err_msg << std::endl;
-    return {};
   } catch (const char *err_msg) {
     std::cerr << err_msg << std::endl;
-    return {};
+  } catch (const std::exception &e) {
+    std::cerr << e.what() << std::endl;
   } catch (...) {
-    std::cerr << "Something went wrong" << std::endl;
-    return {};
+    std::rethrow_exception(std::current_exception());
   }
+
+  return {};
 }
