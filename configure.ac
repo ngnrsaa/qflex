@@ -24,7 +24,7 @@ AC_ARG_ENABLE([all_checks],
    esac], [all_checks=true]
 )
 
-# Skip python checks
+# Check for additional Mac OSX dependencies
 if test $(uname) == "Darwin"; then
   AC_ARG_ENABLE([brew], 
     AS_HELP_STRING([--disable-brew],[Disable Brew.]), 
