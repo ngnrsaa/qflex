@@ -5,7 +5,7 @@ services:
     container_name: qflex
     build:
       context: ./
-      dockerfile: src/Dockerfile
+      dockerfile: Dockerfile
     environment:
       - OMP_NUM_THREADS=8
   qflex-tests:
