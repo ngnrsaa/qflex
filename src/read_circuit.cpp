@@ -498,7 +498,7 @@ void circuit_data_to_tensor_network(
       try {
         grid_of_tensors[i][j].back().rename_index(last_name, output_name);
       } catch (std::string err_msg) {
-        throw ERROR_MSG("Failed to call rename_index. Error: ", err_msg);
+        throw ERROR_MSG("Failed to call rename_index(). Error: ", err_msg);
       }
     } else {
       std::string delta_gate = (final_conf[idx] == '0') ? "delta_0" : "delta_1";
