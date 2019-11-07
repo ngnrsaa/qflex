@@ -12,14 +12,8 @@ ARG QFLEX_BRANCH
 # Copy qflex
 COPY ./ /qflex
 
-## Clone qflex
-#RUN git clone --depth 1 --branch ${QFLEX_BRANCH:-master} --shallow-submodules ${QFLEX_REPO:-https://github.com/ngnrsaa/qflex.git} /qflex/
-
 # Move to the right folder
 WORKDIR /qflex/
-
-# Init submodules
-RUN git submodule init
 
 # Install dependences
 RUN autoreconf -i && autoconf && ./configure --disable-all_checks
