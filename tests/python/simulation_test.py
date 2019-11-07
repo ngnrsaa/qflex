@@ -384,6 +384,7 @@ auto_ordering = auto_order.circuit_to_ordering(circuit,
 results = cirq.Simulator().simulate(circuit)
 results_no_h_and_sparse = cirq.Simulator().simulate(circuit_no_h_and_sparse)
 
+
 @pytest.mark.parametrize(
     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
 def test_simulation(x):
