@@ -1,8 +1,7 @@
 # The interface between Cirq and the Python interface to the C++ QFlex
 import sys, os
 sys.path.insert(
-    1,
-    os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../'))
+    1, os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../'))
 import python.cirq_interface.qflex_simulator as qsim
 import python.cirq_interface.qflex_virtual_device as qdevice
 import python.cirq_interface.qflex_grid as qgrid
