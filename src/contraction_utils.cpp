@@ -141,7 +141,7 @@ ContractionData ContractionData::Initialize(
   for (const auto& copy_rank_pair : cut_copy_rank) {
     const long unsigned int size =
         (long unsigned int)pow(bond_dim, copy_rank_pair.second);
-    try }
+    try {
       data.scratch_.push_back(Tensor({""}, {size}));
     } catch (std::string err_msg) {
     throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
