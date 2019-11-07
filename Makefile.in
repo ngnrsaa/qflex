@@ -40,6 +40,7 @@ all: $(TARGETS)
 .PHONY: qflex
 qflex:
 	git submodule init src/docopt
+	git submodule update src/docopt
 	$(MAKE) -C src/
 
 .PHONY: pybind
@@ -49,6 +50,7 @@ pybind: qflex
 .PHONY: tests
 tests:
 	git submodule init tests/src/googletest
+	git submodule update tests/src/googletest
 	$(MAKE) -C tests/src/
 
 .PHONY: run-py-tests
