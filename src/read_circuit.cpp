@@ -495,7 +495,11 @@ void circuit_data_to_tensor_network(
     if (find_grid_coord_in_list(final_qubit_region, i, j)) {
       std::string output_name =
           "(" + std::to_string(i_j[0]) + "," + std::to_string(i_j[1]) + "),(o)";
-      grid_of_tensors[i][j].back().rename_index(last_name, output_name);
+      try {
+        grid_of_tensors[i][j].back().rename_index(last_name, output_name);
+      } catch (std::string err_msg) {
+        throw ERROR_MSG("Failed to call rename_index. Error: ", err_msg);
+      }
     } else {
       std::string delta_gate = (final_conf[idx] == '0') ? "delta_0" : "delta_1";
       try {
@@ -538,7 +542,11 @@ void flatten_grid_of_tensors(
         Tensor B(grid_of_tensors[i][j][k + 1]);
         size_t result_dimension = result_size(A, B);
         Tensor C({""}, {result_dimension});
-        multiply(A, B, C, scratch);
+        try {
+          multiply(A, B, C, scratch);
+        } catch (std::string err_msg) {
+          throw ERROR_MSG("Failed to call multiply(). Error: ", err_msg);
+        }
         column_of_tensors[k + 1] = Tensor(C);
       }
       grid_of_tensors_2D[i][j] = Tensor(column_of_tensors.back());
@@ -623,7 +631,11 @@ void flatten_grid_of_tensors(
       }
 
       // Reorder.
-      grid_of_tensors_2D[i][j].reorder(ordered_indices_2D, scratch);
+      try {
+        grid_of_tensors_2D[i][j].reorder(ordered_indices_2D, scratch);
+      } catch (std::string err_msg) {
+        throw ERROR_MSG("Failed to call reorder(). Error:", err_msg);
+      }
     }
   }
 }
