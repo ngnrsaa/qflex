@@ -39,7 +39,7 @@ all: $(TARGETS)
 
 .PHONY: qflex
 qflex:
-	git submodule update --init --recursive src/docopt
+	-git submodule update --init --recursive src/docopt
 	$(MAKE) -C src/
 
 .PHONY: pybind
@@ -48,7 +48,7 @@ pybind: qflex
 
 .PHONY: tests
 tests:
-	git submodule update --init --recursive tests/src/googletest
+	-git submodule update --init --recursive tests/src/googletest
 	$(MAKE) -C tests/src/
 
 .PHONY: run-py-tests
