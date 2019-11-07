@@ -11,7 +11,7 @@ extraction:
       command:
         - autoreconf -i
         - autoconf
-        - CXX=g++7 ./configure
+        - ./configure
     index:
       build_command:
         - make -j8
