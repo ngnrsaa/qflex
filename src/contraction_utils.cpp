@@ -116,8 +116,8 @@ ContractionData ContractionData::Initialize(
     try {
       data.scratch_.push_back(Tensor({""}, {size}));
     } catch (std::string err_msg) {
-    throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
-  }
+      throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
+    }
     data.scratch_map_[result_space(rank)] = rank;
     allocated_space += size;
   }
@@ -126,11 +126,11 @@ ContractionData ContractionData::Initialize(
   for (const auto& patch_rank_pair : data.patch_rank_) {
     const long unsigned int size =
         (long unsigned int)pow(bond_dim, patch_rank_pair.second);
-    try { 
+    try {
       data.scratch_.push_back(Tensor({""}, {size}));
     } catch (std::string err_msg) {
-    throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
-  }
+      throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
+    }
     data.scratch_map_[patch_rank_pair.first] = patch_pos++;
     allocated_space += size;
   }
@@ -144,8 +144,8 @@ ContractionData ContractionData::Initialize(
     try {
       data.scratch_.push_back(Tensor({""}, {size}));
     } catch (std::string err_msg) {
-    throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
-  }
+      throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
+    }
     data.scratch_map_[copy_rank_pair.first] = patch_pos++;
     allocated_space += size;
   }

@@ -98,12 +98,13 @@ void Tensor::_copy(const Tensor& other) {
     _capacity = other.size();
     _data = new s_type[_capacity];
   } else {
-    // The line "set_dimensions(other.get_dimensions());" takes care of the total size of the dimensions.
+    // The line "set_dimensions(other.get_dimensions());" takes care of the
+    // total size of the dimensions.
     try {
       set_dimensions(other.get_dimensions());
     } catch (std::string err_msg) {
-    throw ERROR_MSG("Failed to call set_dimensions(). Error: ", err_msg);
-  }
+      throw ERROR_MSG("Failed to call set_dimensions(). Error: ", err_msg);
+    }
   }
   try {
     _init(other.get_indices(), other.get_dimensions());
@@ -119,7 +120,7 @@ Tensor::Tensor() { _data = NULL; }
 
 Tensor::Tensor(std::vector<std::string> indices,
                std::vector<size_t> dimensions) {
- try {
+  try {
     _init(indices, dimensions);
   } catch (std::string err_msg) {
     throw ERROR_MSG("Failed to call _init(). Error: ", err_msg);
@@ -147,7 +148,7 @@ Tensor::Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
   if (data == nullptr) {
     throw ERROR_MSG("Data must be non-null.");
   }
-  try { 
+  try {
     _init(indices, dimensions);
   } catch (std::string err_msg) {
     throw ERROR_MSG("Failed to call _init(). Error: ", err_msg);
@@ -492,7 +493,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
   // Change _indices and _dimensions, as well as _index_to_dimension.
   // This is common to all cases, special or default (worst case).
   try {
-   _init(new_ordering, new_dimensions);
+    _init(new_ordering, new_dimensions);
   } catch (std::string err_msg) {
     throw ERROR_MSG("Failed to call _init(). Error: ", err_msg);
   }
@@ -660,7 +661,8 @@ void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
       _generate_binary_reordering_map(map_old_to_new_idxpos,
                                       _REORDER_MAPS.at(name));
     } catch (std::string err_msg) {
-      throw ERROR_MSG("Failed to call _generate_binary_reordering_map(). Error: ", err_msg);
+      throw ERROR_MSG(
+          "Failed to call _generate_binary_reordering_map(). Error: ", err_msg);
     }
   }
   const std::vector<int>& map_old_to_new_position = _REORDER_MAPS.at(name);
@@ -735,7 +737,8 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
       _generate_binary_reordering_map(map_old_to_new_idxpos,
                                       _REORDER_MAPS.at(name));
     } catch (std::string err_msg) {
-      throw ERROR_MSG("Failed to call _generate_binary_reordering_map(). Error: ", err_msg);
+      throw ERROR_MSG(
+          "Failed to call _generate_binary_reordering_map(). Error: ", err_msg);
     }
   }
   const std::vector<int>& map_old_to_new_position = _REORDER_MAPS.at(name);
@@ -1000,12 +1003,13 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   t0 = std::chrono::high_resolution_clock::now();
   if (left_indices.size() > 0 && right_indices.size() > 0) {
     try {
-      _multiply_MM(A.data(), B.data(), C.data(), left_dim, right_dim, common_dim);
+      _multiply_MM(A.data(), B.data(), C.data(), left_dim, right_dim,
+                   common_dim);
     } catch (std::string err_msg) {
       throw ERROR_MSG("Failed to call _multiply_MM(). Error: ", err_msg);
     }
   } else if (left_indices.size() > 0 && right_indices.size() == 0) {
-    try {  
+    try {
       _multiply_Mv(A.data(), B.data(), C.data(), left_dim, common_dim);
     } catch (std::string err_msg) {
       throw ERROR_MSG("Failed to call _multiply_Mv(). Error: ", err_msg);
@@ -1042,7 +1046,7 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
         B.get_index_to_dimension().at(right_indices[i]);
   C.set_indices(C_indices);
   try {
-   C.set_dimensions(C_dimensions);
+    C.set_dimensions(C_dimensions);
   } catch (std::string err_msg) {
     throw ERROR_MSG("Failed to call set_dimensions(). Error: ", err_msg);
   }
@@ -1083,7 +1087,7 @@ void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
       _vector_union(left_indices, common_indices);
   std::vector<std::string> B_new_ordering =
       _vector_union(common_indices, right_indices);
-  try {  
+  try {
     A.reorder(A_new_ordering, scratch_copy);
   } catch (std::string err_msg) {
     throw ERROR_MSG("Failed to call reorder(). Error: ", err_msg);
