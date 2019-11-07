@@ -227,12 +227,12 @@ void ContractionData::ContractGrid(
             try {
               copy_a.project(index, val, tensor_a);
             } catch (std::string err_msg) {
-              throw ERROR_MSG("Failed to perform project(). Error: ", err_msg);
+              throw ERROR_MSG("Failed to call project(). Error: ", err_msg);
             }
             try {
               copy_b.project(index, val, tensor_b);
             } catch (std::string err_msg) {
-              throw ERROR_MSG("Failed to perform project(). Error: ", err_msg);
+              throw ERROR_MSG("Failed to call project(). Error: ", err_msg);
             }
             ContractGrid(ordering, output_index, active_patches);
           }
@@ -245,7 +245,7 @@ void ContractionData::ContractGrid(
             try {
               copy_a.project(index, val, tensor_a);
             } catch (std::string err_msg) {
-              throw ERROR_MSG("Failed to perform project(). Error: ", err_msg);
+              throw ERROR_MSG("Failed to call project(). Error: ", err_msg);
             }
             ContractGrid(ordering, output_index, active_patches);
             output_index++;
