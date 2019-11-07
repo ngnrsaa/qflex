@@ -357,8 +357,12 @@ void circuit_data_to_tensor_network(
     std::string output_name = "(" + std::to_string(i_j[0]) + "," +
                               std::to_string(i_j[1]) + "),(" +
                               std::to_string(grid_of_counters[i][j]) + ")";
-    grid_of_tensors[i][j].push_back(
-        Tensor({output_name}, {2}, gate_array(delta_gate, {})));
+    try {
+      grid_of_tensors[i][j].push_back(
+          Tensor({output_name}, {2}, gate_array(delta_gate, {})));
+    } catch (std::string err_msg) {
+      throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
+    }
     idx += 1;
   }
 
@@ -400,9 +404,13 @@ void circuit_data_to_tensor_network(
       std::string output_name =
           "(" + std::to_string(i_j_1[0]) + "," + std::to_string(i_j_1[1]) +
           "),(" + std::to_string(grid_of_counters[i_j_1[0]][i_j_1[1]]) + ")";
+      try {
       grid_of_tensors[i_j_1[0]][i_j_1[1]].push_back(
           Tensor({input_name, output_name}, {2, 2},
                  gate_array(gate.name, gate.params)));
+      } catch (std::string err_msg) {
+        throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
+      }
 
     } else if (num_qubits == 2) {
       // Get qubits
@@ -454,11 +462,18 @@ void circuit_data_to_tensor_network(
       std::string output_name_2 =
           "(" + std::to_string(i_j_2[0]) + "," + std::to_string(i_j_2[1]) +
           "),(" + std::to_string(grid_of_counters[i_j_2[0]][i_j_2[1]]) + ")";
-      grid_of_tensors[i_j_1[0]][i_j_1[1]].push_back(Tensor(
-          {input_name_1, virtual_name, output_name_1}, dimensions, gate_q1));
-      grid_of_tensors[i_j_2[0]][i_j_2[1]].push_back(Tensor(
-          {input_name_2, virtual_name, output_name_2}, dimensions, gate_q2));
-
+      try { 
+        grid_of_tensors[i_j_1[0]][i_j_1[1]].push_back(Tensor(
+            {input_name_1, virtual_name, output_name_1}, dimensions, gate_q1));
+      } catch (std::string err_msg) {
+        throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
+      }
+      try {
+        grid_of_tensors[i_j_2[0]][i_j_2[1]].push_back(Tensor(
+            {input_name_2, virtual_name, output_name_2}, dimensions, gate_q2));
+      } catch (std::string err_msg) {
+        throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
+      }
     } else
       throw ERROR_MSG("k-qubit gates with k > 2 not yet implemented.");
   }
@@ -483,8 +498,12 @@ void circuit_data_to_tensor_network(
       grid_of_tensors[i][j].back().rename_index(last_name, output_name);
     } else {
       std::string delta_gate = (final_conf[idx] == '0') ? "delta_0" : "delta_1";
-      grid_of_tensors[i][j].push_back(
-          Tensor({last_name}, {2}, gate_array(delta_gate, {})));
+      try {
+        grid_of_tensors[i][j].push_back(
+            Tensor({last_name}, {2}, gate_array(delta_gate, {})));
+      } catch (std::string err_msg) {
+        throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
+      }
     }
   }
 
@@ -659,8 +678,12 @@ void read_wave_function_evolution(
       if (q2 < 0) {
         std::string input_index = std::to_string(q1) + ",i";
         std::string output_index = std::to_string(q1) + ",o";
-        gates.push_back(Tensor({input_index, output_index}, {DIM, DIM},
-                               gate_array(gate, {})));
+        try {
+          gates.push_back(Tensor({input_index, output_index}, {DIM, DIM},
+                                gate_array(gate, {})));
+        } catch (std::string err_msg) {
+         throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
+        }   
         inputs.push_back({input_index});
         outputs.push_back({output_index});
       }
@@ -671,9 +694,13 @@ void read_wave_function_evolution(
         std::string output_index2 = std::to_string(q2) + ",o";
         inputs.push_back({input_index1, input_index2});
         outputs.push_back({output_index1, output_index2});
-        gates.push_back(
-            Tensor({input_index1, input_index2, output_index1, output_index2},
-                   {DIM, DIM, DIM, DIM}, gate_array(gate, {})));
+        try {
+          gates.push_back(
+              Tensor({input_index1, input_index2, output_index1, output_index2},
+                    {DIM, DIM, DIM, DIM}, gate_array(gate, {})));
+        } catch (std::string err_msg) {
+          throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
+        }
       }
     }
 

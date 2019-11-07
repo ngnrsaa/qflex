@@ -102,14 +102,22 @@ ContractionData ContractionData::Initialize(
   long unsigned int max_size = (long unsigned int)pow(bond_dim, max_rank);
 
   // General-purpose scratch space (primarily used for tensor reordering).
-  data.scratch_.push_back(Tensor({""}, {max_size}));
+  try {
+    data.scratch_.push_back(Tensor({""}, {max_size}));
+  } catch (std::string err_msg) {
+    throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
+  }
   data.scratch_map_[kGeneralSpace] = 0;
   allocated_space += max_size;
 
   // "Swap tensor" space, used to store operation results.
   for (int rank = 1; rank <= max_rank; ++rank) {
     const long unsigned int size = (long unsigned int)pow(bond_dim, rank);
-    data.scratch_.push_back(Tensor({""}, {size}));
+    try {
+      data.scratch_.push_back(Tensor({""}, {size}));
+    } catch (std::string err_msg) {
+    throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
+  }
     data.scratch_map_[result_space(rank)] = rank;
     allocated_space += size;
   }
@@ -118,7 +126,11 @@ ContractionData ContractionData::Initialize(
   for (const auto& patch_rank_pair : data.patch_rank_) {
     const long unsigned int size =
         (long unsigned int)pow(bond_dim, patch_rank_pair.second);
-    data.scratch_.push_back(Tensor({""}, {size}));
+    try { 
+      data.scratch_.push_back(Tensor({""}, {size}));
+    } catch (std::string err_msg) {
+    throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
+  }
     data.scratch_map_[patch_rank_pair.first] = patch_pos++;
     allocated_space += size;
   }
@@ -129,7 +141,11 @@ ContractionData ContractionData::Initialize(
   for (const auto& copy_rank_pair : cut_copy_rank) {
     const long unsigned int size =
         (long unsigned int)pow(bond_dim, copy_rank_pair.second);
-    data.scratch_.push_back(Tensor({""}, {size}));
+    try }
+      data.scratch_.push_back(Tensor({""}, {size}));
+    } catch (std::string err_msg) {
+    throw ERROR_MSG("Failed to call Tensor(). Error: ", err_msg);
+  }
     data.scratch_map_[copy_rank_pair.first] = patch_pos++;
     allocated_space += size;
   }
