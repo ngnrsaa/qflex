@@ -2,6 +2,7 @@ TARGETS = qflex
 
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@
+CPPFLAGS = @CPPFLAGS@
 PREFIX = @prefix@
 PYBIND11 = @pybind11@
 PYTHON_TESTS = @python_tests@
@@ -27,6 +28,8 @@ ifeq ($(PYBIND11), true)
   TARGETS += pybind
 endif
 
+CXXFLAGS += $(CPPFLAGS)
+
 export CXX
 export CXXFLAGS
 export FLAGS
@@ -36,7 +39,7 @@ all: $(TARGETS)
 
 .PHONY: qflex
 qflex:
-	git submodule update --init --recursive src/docopt
+	-git submodule update --init --recursive src/docopt
 	$(MAKE) -C src/
 
 .PHONY: pybind
@@ -45,7 +48,7 @@ pybind: qflex
 
 .PHONY: tests
 tests:
-	git submodule update --init --recursive tests/src/googletest
+	-git submodule update --init --recursive tests/src/googletest
 	$(MAKE) -C tests/src/
 
 .PHONY: run-py-tests
