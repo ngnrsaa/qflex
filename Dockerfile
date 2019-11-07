@@ -7,7 +7,6 @@ RUN apk add git g++ make gsl-dev git autoconf automake python3-dev py3-pybind11 
 
 # Arguments from docker-compose
 ARG OMP_NUM_THREADS
-ARG QFLEX_BRANCH
 
 # Copy qflex
 COPY ./ /qflex

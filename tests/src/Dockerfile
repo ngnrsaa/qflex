@@ -3,7 +3,6 @@ FROM qflex
 
 # Arguments from docker-compose
 ARG OMP_NUM_THREADS
-ARG QFLEX_BRANCH
 
 # Compile tests
 WORKDIR /qflex/
