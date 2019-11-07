@@ -1,0 +1,18 @@
+path_classifiers:
+  test:
+    - "tests/src/*_test.cpp"
+
+extraction:
+  cpp:
+    prepare:
+      packages:
+        - g++-7
+    configure:
+      command:
+        - autoreconf -i
+        - autoconf
+        - CXX=g++7 ./configure
+    index:
+      build_command:
+        - make -j8
+        - make -j8 run-tests
