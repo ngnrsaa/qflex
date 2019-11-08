@@ -1,18 +1,16 @@
 language: cpp
 
+os:
+  - linux
+
 services:
   - docker
 
-addons:
-  apt:
-    packages:
-    - clang-format
-
 before_script:
-  - bash scripts/check_format.sh
+  - docker run -ti --rm -v $PWD:/qflex:ro alpine:3.10.3 /bin/sh -c "apk update && apk add bash py3-pip clang && pip3 install yapf && bash /qflex/scripts/check_format.sh"
   - docker-compose build
 
 script:
-  - docker run -ti --rm qflex-tests:latest
+  - docker run -ti --rm qflex-cxx-tests:latest
   - docker run -ti --rm qflex-py-tests:latest
   - docker run -ti --rm qflex:latest /qflex/config/circuits/bristlecone_48_1-24-1_0.txt /qflex/config/ordering/bristlecone_48.txt /qflex/config/grid/bristlecone_48.txt

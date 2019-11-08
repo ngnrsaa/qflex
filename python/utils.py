@@ -7,9 +7,6 @@ import numpy as np
 import cirq
 import re
 
-# Used to include a class which does not exist in Cirq 0.5.0
-import python.cirq_interface.fsim_gate as cirqtmp
-
 
 def ComputeSchmidtRank(gate):
 
@@ -70,7 +67,7 @@ def GetMomentAndGate(line, qubits):
     gates_map['cx'] = cirq.CNOT
     gates_map['rz'] = cirq.ZPowGate
     gates_map['hz_1_2'] = cirq.PhasedXPowGate(phase_exponent=0.25, exponent=0.5)
-    gates_map['fsim'] = cirqtmp.FSimGate
+    gates_map['fsim'] = cirq.FSimGate
 
     # Remove last cr
     line = line.strip()
@@ -122,7 +119,7 @@ def GetMomentAndGate(line, qubits):
         raise AssertionError(
             "ERROR: Gate {} not supported yet.".format(gate_name))
 
-    if params == None:
+    if params is None:
         return cycle, gates_map[gate_name](*[qubits[q] for q in gate_qubits])
     else:
         if gate_name == "fsim":

@@ -16,7 +16,7 @@ ifeq ($(CXX), icpc)
 endif
 
 # The flags for the compilation of the Pybind11 interface
-PYBINDFLAGS = -shared `python3 -m pybind11 --includes`
+PYBINDFLAGS = -shared `python3 -m pybind11 --includes` `python3-config --ldflags`
 
 # commented out because pip install pybind11
 #-Ipybind11/include
@@ -24,7 +24,7 @@ PYBINDFLAGS = -shared `python3 -m pybind11 --includes`
 $(TARGET1): main.cpp $(OBJS1)
 	$(CXX) -o $(@).x $< $(OBJS1) $(CXXFLAGS)
 
-pybind: $(OBJS1) 
+pybind: $(OBJS1)
 	$(CXX) pybind_main.cpp -o $(QFLEXLIB) $^ $(CXXFLAGS) $(PYBINDFLAGS)
 
 %.o: %.cpp %.h

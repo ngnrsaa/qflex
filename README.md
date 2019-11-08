@@ -74,6 +74,12 @@ without having to worry about managing dependencies.
 
 To build qFlex with Docker, see [the Docker guide](/docs/docker.md).
 
+An automated qFlex Docker container, synced with the `master` branch, can be
+pulled from Docker Hub as:
+```
+$ docker pull ngnrsaa/qflex
+```
+
 ### Build Using Rootless Containers
 
 Rootless containers are an alternative to Docker targeted at users who may not

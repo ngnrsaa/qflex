@@ -1,10 +1,9 @@
 from typing import Union, Sequence
 
-from cirq import study, schedules, ops, circuits
+from cirq import study, schedules, ops, circuits, SimulatesAmplitudes
 
 from python import qflex
 
-from python.cirq_interface.cirq_amplitudes_sim import SimulatesAmplitudes
 import python.cirq_interface.qflex_virtual_device as qdevice
 import python.cirq_interface.qflex_circuit as qcirc
 
@@ -54,10 +53,10 @@ class QFlexSimulator(SimulatesAmplitudes):
                 amplitudes = qflex.simulate(options)
 
                 for amp in amplitudes:
-                    state = amp[0]
                     amplitude = complex(amp[1])
 
                     # For debugging purposes commented the following
+                    # state = amp[0]
                     # print(input_initial_state + " --> " + state + ": " + \
                     #       str(amplitude.real) + " " + str(amplitude.imag))
 
