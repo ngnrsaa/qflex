@@ -52,10 +52,10 @@ class Tensor {
    * Creates a Tensor. New space is allocated.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
-   * @param dimensions std::vector<size_t> with the ordered dimensions of the
+   * @param dimensions std::vector<std::size_t> with the ordered dimensions of the
    * indices.
    */
-  Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions);
+  Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions);
 
   /**
    * Creates a Tensor. New space is allocated and filled with a copy of
@@ -63,13 +63,13 @@ class Tensor {
    * negligible.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
-   * @param dimensions std::vector<size_t> with the ordered dimensions of the
+   * @param dimensions std::vector<std::size_t> with the ordered dimensions of the
    * indices.
    * @param data std::vector<s_type> with the data to be copied. It has to
    * match in length the dimension of the Tensor, as given by the
    * dimensions.
    */
-  Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
+  Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions,
          const std::vector<s_type>& data);
 
   /**
@@ -81,7 +81,7 @@ class Tensor {
    * @param data pointer to the data of the tensor. It is responsibility of
    * the user to provide enough allocated memory to store the Tensor.
    */
-  Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
+  Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions,
          s_type* data);
 
   /**
@@ -125,14 +125,14 @@ class Tensor {
    * Get dimensions.
    * @return const reference to std::vector<int> of dimensions.
    */
-  const std::vector<size_t>& get_dimensions() const;
+  const std::vector<std::size_t>& get_dimensions() const;
 
   /**
    * Set dimensions. This function is deprecated. Use rename_index() or
    * set_dimensions_and_indices().
    * @param const reference to std::vector<int> of dimensions.
    */
-  void set_dimensions(const std::vector<size_t>& dimensions);
+  void set_dimensions(const std::vector<std::size_t>& dimensions);
 
   /**
    * Set dimensions and indices.
@@ -140,13 +140,13 @@ class Tensor {
    * @param const reference to std::vector<int> of dimensions.
    */
   void set_indices_and_dimensions(const std::vector<std::string>& indices,
-                                  const std::vector<size_t>& dimensions);
+                                  const std::vector<std::size_t>& dimensions);
 
   /**
    * Get index_to_dimension dictionary (or unordered_map).
    * @return const reference to unordered_map of index to dimensions.
    */
-  const std::unordered_map<std::string, size_t>& get_index_to_dimension() const;
+  const std::unordered_map<std::string, std::size_t>& get_index_to_dimension() const;
 
   /**
    * Generate index_to_dimension map from the object's indices and
@@ -158,14 +158,14 @@ class Tensor {
    * Get size (total dimension) of the Tensor.
    * @return int with the number of elements in the Tensor.
    */
-  size_t size() const;
+  std::size_t size() const;
 
   /**
    * Get the allocated space of the Tensor. This tensor can be resized to
    * any shape with total dimension less than this value.
    * @return int with the capacity of the Tensor.
    */
-  size_t capacity() const;
+  std::size_t capacity() const;
 
   /**
    * Get data.
@@ -192,7 +192,7 @@ class Tensor {
    * with the right amount of allocated space can be passed. The indices and
    * dimensions will be initialized correctly from the project() function.
    */
-  void project(std::string index, size_t index_value,
+  void project(std::string index, std::size_t index_value,
                Tensor& projection_tensor) const;
 
   /**
@@ -241,7 +241,7 @@ class Tensor {
    * to debug contractions that zero out entries due to the range of values
    * s_type admits.
    */
-  size_t num_zeros() const;
+  std::size_t num_zeros() const;
 
   /**
    * Saves information about the Tensor to a string.
@@ -256,12 +256,12 @@ class Tensor {
  private:
   // Storage.
   std::vector<std::string> _indices;
-  std::vector<size_t> _dimensions;
-  std::unordered_map<std::string, size_t> _index_to_dimension;
+  std::vector<std::size_t> _dimensions;
+  std::unordered_map<std::string, std::size_t> _index_to_dimension;
   s_type* _data;
 
   // Allocated data space. This value does not change after initialization.
-  size_t _capacity;
+  std::size_t _capacity;
 
   // Private helper functions.
   /**
@@ -274,7 +274,7 @@ class Tensor {
    * indices.
    */
   void _init(const std::vector<std::string>& indices,
-             const std::vector<size_t>& dimensions);
+             const std::vector<std::size_t>& dimensions);
 
   /**
    * Helper function for the destructor. Clear memory.
@@ -414,10 +414,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy);
  * Returns the size of the tensor product of A and B.
  * @param A Reference to Tensor A.
  * @param B Reference to Tensor B.
- * @return size_t with the size of the tensor resulting from the multiplication
+ * @return std::size_t with the size of the tensor resulting from the multiplication
  * of A and B.
  */
-size_t result_size(Tensor& A, Tensor& B);
+std::size_t result_size(Tensor& A, Tensor& B);
 
 /**
  * Bundle indices shared by tensors A and B.
@@ -472,7 +472,7 @@ std::string _string_vector_to_string(std::vector<std::string> input);
  * @return std::string with the standard name of the ordering.
  */
 std::string _reordering_to_string(const std::vector<int>& map_old_to_new_idxpos,
-                                  const std::vector<size_t>& old_dimensions);
+                                  const std::vector<std::size_t>& old_dimensions);
 
 /**
  * Checks whether a particular std::string is in a std::vector<std::string>.
