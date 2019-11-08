@@ -30,22 +30,22 @@ std::string index_name(const std::vector<std::vector<int>>& tensors);
 
 /**
  * Returns spatial coordinates on the grid for the given qubit q.
- * @param q int with the qubit number.
- * @param J int with the second spatial dimension of the grid of qubits.
+ * @param q std::size_t with the qubit number.
+ * @param J std::size_t with the second spatial dimension of the grid of qubits.
  * @return vector<int> with the spatial coordinates of qubit q on the grid.
  */
-std::vector<int> get_qubit_coords(int q, int J);
+std::vector<int> get_qubit_coords(std::size_t q, std::size_t J);
 
 /**
  * Helper function to find a grid coordinate in a list of coordinates.
  * @param coord_list optional vector of qubit positions.
- * @param i int with the first spatial dimension of the target position.
- * @param j int with the second spatial dimension of the target position.
+ * @param i std::size_t with the first spatial dimension of the target position.
+ * @param j std::size_t with the second spatial dimension of the target position.
  * @return true if (i, j) is in coord_list.
  */
 bool find_grid_coord_in_list(
-    const std::optional<std::vector<std::vector<int>>>& coord_list, const int i,
-    const int j);
+    const std::optional<std::vector<std::vector<int>>>& coord_list, const std::size_t i,
+    const std::size_t j);
 
 struct ExpandPatch {
   ExpandPatch() {}
@@ -129,10 +129,10 @@ class ContractionData {
    * calls itself recursively on each "cut" operation.
    * @param ordering std::list<ContractionOperation> listing operations to
    * perform.
-   * @param output_index int marking which amplitude will be updated next.
+   * @param output_index std::size_t marking which amplitude will be updated next.
    * @param active_patches list of patches already created in scratch space.
    */
-  void ContractGrid(std::list<ContractionOperation> ordering, int output_index,
+  void ContractGrid(std::list<ContractionOperation> ordering, std::size_t output_index,
                     std::unordered_map<std::string, bool> active_patches);
 
   Tensor& get_scratch(std::string id) { return scratch_[scratch_map_[id]]; }
@@ -144,18 +144,18 @@ class ContractionData {
    * @return the key used for this cut-copy.
    */
   static std::string cut_copy_name(std::vector<std::vector<int>> index,
-                                   int side) {
+                                   std::size_t side) {
     std::string base = index_name(index);
     char buffer[64];
-    int len =
-        snprintf(buffer, sizeof(buffer), "cut-%s:side-%d", base.c_str(), side);
+    std::size_t len =
+        snprintf(buffer, sizeof(buffer), "cut-%s:side-%ld", base.c_str(), side);
     return std::string(buffer, len);
   }
 
   // Gets the index of result scratch space of the given rank.
-  static std::string result_space(int rank) {
+  static std::string result_space(std::size_t rank) {
     char buffer[64];
-    int len = snprintf(buffer, sizeof(buffer), "%s%d", kResultSpace, rank);
+    std::size_t len = snprintf(buffer, sizeof(buffer), "%s%ld", kResultSpace, rank);
     return std::string(buffer, len);
   }
 

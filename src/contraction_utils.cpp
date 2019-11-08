@@ -28,17 +28,17 @@ ContractionData ContractionData::Initialize(
   data.amplitudes_ = amplitudes;
 
   // Maximum bond dimension in the tensor grid.
-  int bond_dim = 0;
+  std::size_t bond_dim = 0;
 
   // Indices of tensor_grid elements during the contraction.
   std::vector<std::vector<std::vector<std::string>>> grid_indices(
       tensor_grid->size());
-  for (int i = 0; i < tensor_grid->size(); ++i) {
+  for (std::size_t i = 0; i < tensor_grid->size(); ++i) {
     grid_indices[i] =
         std::vector<std::vector<std::string>>((*tensor_grid)[i].size());
-    for (int j = 0; j < (*tensor_grid)[i].size(); ++j) {
+    for (std::size_t j = 0; j < (*tensor_grid)[i].size(); ++j) {
       grid_indices[i][j] = (*tensor_grid)[i][j].get_indices();
-      for (const int dim : (*tensor_grid)[i][j].get_dimensions()) {
+      for (const std::size_t dim : (*tensor_grid)[i][j].get_dimensions()) {
         bond_dim = std::max(bond_dim, dim);
       }
     }
@@ -66,7 +66,7 @@ ContractionData ContractionData::Initialize(
       }
       case ContractionOperation::CUT: {
         const std::string cut_index = index_name(op.cut.tensors);
-        int side = 0;
+        std::size_t side = 0;
         for (auto& tensor : op.cut.tensors) {
           auto& indices = grid_indices[tensor[0]][tensor[1]];
           const std::string copy_name = cut_copy_name(op.cut.tensors, side);
@@ -99,7 +99,7 @@ ContractionData ContractionData::Initialize(
   for (const auto& patch_rank_pair : data.patch_rank_) {
     max_rank = std::max(patch_rank_pair.second, max_rank);
   }
-  long unsigned int max_size = (long unsigned int)pow(bond_dim, max_rank);
+  std::size_t max_size = (std::size_t)pow(bond_dim, max_rank);
 
   // General-purpose scratch space (primarily used for tensor reordering).
   data.scratch_.push_back(Tensor({""}, {max_size}));
@@ -107,17 +107,17 @@ ContractionData ContractionData::Initialize(
   allocated_space += max_size;
 
   // "Swap tensor" space, used to store operation results.
-  for (int rank = 1; rank <= max_rank; ++rank) {
-    const long unsigned int size = (long unsigned int)pow(bond_dim, rank);
+  for (std::size_t rank = 1; rank <= max_rank; ++rank) {
+    const std::size_t size = (std::size_t)pow(bond_dim, rank);
     data.scratch_.push_back(Tensor({""}, {size}));
     data.scratch_map_[result_space(rank)] = rank;
     allocated_space += size;
   }
 
-  int patch_pos = data.scratch_map_.size();
+  std::size_t patch_pos = data.scratch_map_.size();
   for (const auto& patch_rank_pair : data.patch_rank_) {
-    const long unsigned int size =
-        (long unsigned int)pow(bond_dim, patch_rank_pair.second);
+    const std::size_t size =
+        (std::size_t)pow(bond_dim, patch_rank_pair.second);
     data.scratch_.push_back(Tensor({""}, {size}));
     data.scratch_map_[patch_rank_pair.first] = patch_pos++;
     allocated_space += size;
@@ -125,10 +125,10 @@ ContractionData ContractionData::Initialize(
 
   // TODO(martinop): minor optimizations possible: When consecutive cuts apply
   // to the same grid tensor, only one copy needs to be stored.
-  int cut_copy_pos = data.scratch_map_.size();
+  //std::size_t cut_copy_pos = data.scratch_map_.size();
   for (const auto& copy_rank_pair : cut_copy_rank) {
-    const long unsigned int size =
-        (long unsigned int)pow(bond_dim, copy_rank_pair.second);
+    const std::size_t size =
+        (std::size_t)pow(bond_dim, copy_rank_pair.second);
     data.scratch_.push_back(Tensor({""}, {size}));
     data.scratch_map_[copy_rank_pair.first] = patch_pos++;
     allocated_space += size;
@@ -137,13 +137,13 @@ ContractionData ContractionData::Initialize(
   // Log how much space is allocated for this operation. This includes all
   // tensors allocated during contraction; total memory usage should not vary
   // significantly from this value.
-  int scale = 0;
+  std::size_t scale = 0;
   double alloc_size = allocated_space * sizeof(std::complex<double>);
   while (alloc_size > (1 << 10)) {
     ++scale;
     alloc_size /= (1 << 10);
   }
-  int old_precision = std::cerr.precision(6);
+  std::size_t old_precision = std::cerr.precision(6);
   std::string suffix[] = {"B", "kB", "MB", "GB"};
   std::cerr << alloc_size << suffix[scale] << " allocated." << std::endl;
   std::cerr.precision(old_precision);
@@ -151,9 +151,9 @@ ContractionData ContractionData::Initialize(
 }
 
 void ContractionData::ContractGrid(
-    std::list<ContractionOperation> ordering, int output_index,
+    std::list<ContractionOperation> ordering, std::size_t output_index,
     std::unordered_map<std::string, bool> active_patches) {
-  Tensor* output;
+  Tensor* output{nullptr};
   while (!ordering.empty()) {
     const ContractionOperation op = ordering.front();
     ordering.pop_front();
@@ -176,7 +176,7 @@ void ContractionData::ContractGrid(
           output = &result;
           continue;
         }
-        int temp = scratch_map_[op.expand.id];
+        std::size_t temp = scratch_map_[op.expand.id];
         scratch_map_[op.expand.id] = scratch_map_[result_id];
         scratch_map_[result_id] = temp;
         continue;
@@ -191,8 +191,8 @@ void ContractionData::ContractGrid(
         // List of values to evaluate on the cut.
         std::vector<int> values = op.cut.values;
         if (values.empty()) {
-          int num_values = tensor_a.get_index_to_dimension().at(index);
-          for (int i = 0; i < num_values; ++i) {
+          std::size_t num_values = tensor_a.get_index_to_dimension().at(index);
+          for (std::size_t i = 0; i < num_values; ++i) {
             values.push_back(i);
           }
         }
@@ -203,7 +203,7 @@ void ContractionData::ContractGrid(
           Tensor& copy_b =
               get_scratch(cut_copy_name(op.cut.tensors, /*side = */ 1));
           copy_b = tensor_b;
-          for (int val : values) {
+          for (std::size_t val : values) {
             copy_a.project(index, val, tensor_a);
             copy_b.project(index, val, tensor_b);
             ContractGrid(ordering, output_index, active_patches);
@@ -213,7 +213,7 @@ void ContractionData::ContractGrid(
         } else {
           // This is a terminal cut; each value adds to a different amplitude.
           output_index *= values.size();
-          for (int val : values) {
+          for (std::size_t val : values) {
             copy_a.project(index, val, tensor_a);
             ContractGrid(ordering, output_index, active_patches);
             output_index++;
@@ -239,7 +239,7 @@ void ContractionData::ContractGrid(
           output = &result;
           continue;
         }
-        int temp = scratch_map_[op.merge.target_id];
+        std::size_t temp = scratch_map_[op.merge.target_id];
         scratch_map_[op.merge.target_id] = scratch_map_[result_id];
         scratch_map_[result_id] = temp;
         continue;
@@ -274,7 +274,7 @@ bool ordering_data_to_contraction_ordering(
     ss >> operation;
     if (operation == "expand") {
       std::string patch;
-      int index;
+      std::size_t index;
       ss >> patch;
       ss >> index;
       if (index < 0) {
@@ -313,7 +313,7 @@ bool ordering_data_to_contraction_ordering(
         }
         values.push_back(atoi(values_str.substr(start, end).c_str()));
       }
-      int index_1, index_2;
+      std::size_t index_1, index_2;
       ss >> index_1;
       if (index_1 < 0) {
         error_msg = "Index 1 cannot be negative.";
@@ -383,19 +383,19 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
   char buffer[64];
   if (p1.size() == 2 && p2.size() == 2) {
     // Two-qubit contraction.
-    int len = snprintf(buffer, sizeof(buffer), "(%d,%d),(%d,%d)", p1[0], p1[1],
+    std::size_t len = snprintf(buffer, sizeof(buffer), "(%d,%d),(%d,%d)", p1[0], p1[1],
                        p2[0], p2[1]);
     return std::string(buffer, len);
   }
   if (p1.size() == 3 && p2.size() == 3) {
     // Single-qubit contraction, or virtual index.
-    int len = snprintf(buffer, sizeof(buffer), "(%d,%d,%d),(%d,%d,%d)", p1[0],
+    std::size_t len = snprintf(buffer, sizeof(buffer), "(%d,%d,%d),(%d,%d,%d)", p1[0],
                        p1[1], p1[2], p2[0], p2[1], p2[2]);
     return std::string(buffer, len);
   }
   // Final qubit output value assignment.
   if (p1.size() == 2 && p2.empty()) {
-    int len = snprintf(buffer, sizeof(buffer), "(%d,%d),(o)", p1[0], p1[1]);
+    std::size_t len = snprintf(buffer, sizeof(buffer), "(%d,%d),(o)", p1[0], p1[1]);
     return std::string(buffer, len);
   }
   std::stringstream ss;
@@ -418,14 +418,14 @@ std::string index_name(const std::vector<std::vector<int>>& tensors) {
                   tensors.size(), ".");
 }
 
-std::vector<int> get_qubit_coords(int q, int J) {
-  int i = q / J;
+std::vector<int> get_qubit_coords(std::size_t q, std::size_t J) {
+  std::size_t i = q / J;
   return std::vector<int>({i, q - i * J});
 }
 
 bool find_grid_coord_in_list(
-    const std::optional<std::vector<std::vector<int>>>& coord_list, const int i,
-    const int j) {
+    const std::optional<std::vector<std::vector<int>>>& coord_list, const std::size_t i,
+    const std::size_t j) {
   return coord_list.has_value() &&
          find(coord_list.value().begin(), coord_list.value().end(),
               std::vector<int>({i, j})) != coord_list.value().end();
