@@ -38,10 +38,11 @@ $ autoreconf -i && autoconf && ./configure --help
 
 The following options for `configure` are also available:
 ```
---enable-openmp           Enable experimental support for OpenMP
---disable-python_checks   Disable python checks while configuring
---disable-pybind11        Disable installation of Python porting of qFlex
---disable-python_tests    Disable python tests
+--enable-openmp               Enable experimental support for OpenMP
+--disable-python_checks       Disable python checks while configuring
+--disable-pybind11            Disable installation of Python porting of qFlex
+--disable-python_tests        Disable python tests
+--disable-error_on_warnings   Warnings are not considered as errors
 ```
 *Note: If you are using ICPC to build qFlex, you **must** specify
 --disable-pybind11 in this step. Construction of the python wrappers with ICPC

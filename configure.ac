@@ -24,6 +24,16 @@ AC_ARG_ENABLE([all_checks],
    esac], [all_checks=true]
 )
 
+# Skip error on warning
+AC_ARG_ENABLE([error_on_warnings], 
+  AS_HELP_STRING([--disable-error_on_warnings],[Disable error on warnings.]), 
+  [case "${enableval}" in
+      yes) error_on_warnings=true  ;;
+       no) error_on_warnings=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-error_on_warnings])
+   esac], [error_on_warnings=true]
+)
+
 # Check for additional Mac OSX dependencies
 if test $(uname) == "Darwin"; then
   AC_ARG_ENABLE([brew], 
@@ -233,5 +243,6 @@ fi
 AC_SUBST(openmp, ${openmp})
 AC_SUBST(pybind11, ${pybind11})
 AC_SUBST(python_tests, ${python_tests})
+AC_SUBST(error_on_warnings, ${error_on_warnings})
 
 AC_OUTPUT
