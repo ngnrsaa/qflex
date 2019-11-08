@@ -156,14 +156,14 @@ class Tensor {
 
   /**
    * Get size (total dimension) of the Tensor.
-   * @return int with the number of elements in the Tensor.
+   * @return std::size_t with the number of elements in the Tensor.
    */
   std::size_t size() const;
 
   /**
    * Get the allocated space of the Tensor. This tensor can be resized to
    * any shape with total dimension less than this value.
-   * @return int with the capacity of the Tensor.
+   * @return std::size_t with the capacity of the Tensor.
    */
   std::size_t capacity() const;
 
@@ -185,7 +185,7 @@ class Tensor {
    * the user to follow efficient practices, and be aware of the costs
    * involved in operations.
    * @param index std::string with the name of the index to fix.
-   * @param index_value int with the value to which the index is fixed.
+   * @param index_value std::size_t with the value to which the index is fixed.
    * @param projection_tensor Reference to the Tensor to which the current
    * Tensor will be projected. It is responsibility of the user to provide
    * enough allocated space to store the projected Tensor. A trivial tensor
@@ -320,7 +320,7 @@ class Tensor {
    */
   void _right_reorder(const std::vector<std::string>& old_ordering,
                       const std::vector<std::string>& new_ordering,
-                      int num_indices_right);
+                      std::size_t num_indices_right);
 
   /**
    * Helper function for reorder(). Only left moves are taken. As oposed
@@ -337,7 +337,7 @@ class Tensor {
    */
   void _left_reorder(const std::vector<std::string>& old_ordering,
                      const std::vector<std::string>& new_ordering,
-                     int num_indices_right, s_type* scratch_copy);
+                     std::size_t num_indices_right, s_type* scratch_copy);
 };
 
 /**
@@ -346,12 +346,12 @@ class Tensor {
  * @param A_data const pointer to s_type array with the data of matrix A.
  * @param B_data const pointer to s_type array with the data of matrix B.
  * @param C_data pointer to s_type array with the data of matrix C.
- * @param m int with the left dimension of A.
- * @param n int with the right dimension of B.
- * @param k int with the left dimension of C.
+ * @param m std::size_t with the left dimension of A.
+ * @param n std::size_t with the right dimension of B.
+ * @param k std::size_t with the left dimension of C.
  */
 void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
-                  int m, int n, int k);
+                  std::size_t m, std::size_t n, std::size_t k);
 
 /**
  * Call matrix x vector multiplication C = A * B, or self-written if the
@@ -359,11 +359,11 @@ void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
  * @param A_data const pointer to s_type array with the data of matrix A.
  * @param B_data const pointer to s_type array with the data of vector B.
  * @param C_data pointer to s_type array with the data of vector C.
- * @param m int with the left dimension of A.
- * @param k int with the left dimension of C.
+ * @param m std::size_t with the left dimension of A.
+ * @param k std::size_t with the left dimension of C.
  */
 void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
-                  int m, int k);
+                  std::size_t m, std::size_t k);
 
 /**
  * Call vector x matrix multiplication C = A * B, or self-written if the
@@ -371,11 +371,11 @@ void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
  * @param A_data const pointer to s_type array with the data of vector A.
  * @param B_data const pointer to s_type array with the data of matrix B.
  * @param C_data pointer to s_type array with the data of vector C.
- * @param n int with the right dimension of B.
- * @param k int with the left dimension of C.
+ * @param n std::size_t with the right dimension of B.
+ * @param k std::size_t with the left dimension of C.
  */
 void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
-                  int n, int k);
+                  std::size_t n, std::size_t k);
 
 /**
  * Call vector x vector multiplication C = A * B, or self-written if the
@@ -383,10 +383,10 @@ void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
  * @param A_data const pointer to s_type array with the data of vector A.
  * @param B_data const pointer to s_type array with the data of vector B.
  * @param C_data pointer to s_type with the data of scalar C.
- * @param k int with the left dimension of C.
+ * @param k std::size_t with the left dimension of C.
  */
 void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
-                  int k);
+                  std::size_t k);
 
 /**
  * Implement the tensor multiplication C = A * B. The ordering of the incides of

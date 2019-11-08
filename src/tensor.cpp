@@ -226,7 +226,7 @@ void Tensor::project(std::string index, std::size_t index_value,
   // Fill projection_tensor with result of projection.
   s_type* projection_data = projection_tensor.data();
   std::size_t projection_size = projection_tensor.size();
-  int projection_begin = projection_size * index_value;
+  std::size_t projection_begin = projection_size * index_value;
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
   for (std::size_t p = 0; p < projection_size; ++p)
     *(projection_data + p) = *(_data + projection_begin + p);
@@ -269,13 +269,13 @@ void Tensor::bundle(std::vector<std::string> indices_to_bundle,
         _string_vector_to_string(indices_to_bundled_original_order), ".");
   }
 
-  int bundled_dim = 1;
+  std::size_t bundled_dim = 1;
   for (std::size_t i = 0; i < indices_to_bundle.size(); ++i) {
     bundled_dim *= _index_to_dimension[indices_to_bundle[i]];
     _index_to_dimension.erase(indices_to_bundle[i]);
   }
   _index_to_dimension[bundled_index] = bundled_dim;
-  int bundled_idxpos = 0;
+  std::size_t bundled_idxpos = 0;
   for (std::size_t i = 0; i < _indices.size(); ++i) {
     if (_string_in_vector(_indices[i], indices_to_bundle)) {
       bundled_idxpos = i;
@@ -344,14 +344,14 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
   // Define i and j once for the whole iteration.
   int i, j;
   // Position old and new.
-  int po = 0, pn;
+  std::size_t po = 0, pn;
   // Counter of the values of each indices in the iteration (old ordering).
   std::vector<std::size_t> old_counter(num_indices, 0);
   // offset is important when doing this in blocks, as it's indeed implemented.
-  int offset = 0;
+  std::size_t offset = 0;
   // internal_po keeps track of interations within a block.
   // Blocks have size MAX_RIGHT_DIM.
-  int internal_po = 0;
+  std::size_t internal_po = 0;
   // External loop loops over blocks.
   while (true) {
     // If end of entire opration, break.
@@ -405,14 +405,14 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
   // Create binary orderings.
   std::vector<std::string> old_ordering(_indices);
   std::vector<std::size_t> old_dimensions(_dimensions);
-  int num_indices = old_ordering.size();
+  std::size_t num_indices = old_ordering.size();
   std::size_t total_dim = 1;
-  for (int i = 0; i < num_indices; ++i) total_dim *= old_dimensions[i];
+  for (std::size_t i = 0; i < num_indices; ++i) total_dim *= old_dimensions[i];
   // Create map_old_to_new_idxpos from old to new indices, and new_dimensions.
   std::vector<int> map_old_to_new_idxpos(num_indices);
   std::vector<std::size_t> new_dimensions(num_indices);
-  for (int i = 0; i < num_indices; ++i) {
-    for (int j = 0; j < num_indices; ++j) {
+  for (std::size_t i = 0; i < num_indices; ++i) {
+    for (std::size_t j = 0; j < num_indices; ++j) {
       if (old_ordering[i] == new_ordering[j]) {
         map_old_to_new_idxpos[i] = j;
         new_dimensions[j] = old_dimensions[i];
@@ -422,16 +422,16 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
   }
   // Create binary orderings:
   std::vector<int> old_logs(num_indices);
-  for (int i = 0; i < num_indices; ++i) {
+  for (std::size_t i = 0; i < num_indices; ++i) {
     old_logs[i] = _LOG_2.at(old_dimensions[i]);
   }
-  int num_binary_indices = _LOG_2.at(total_dim);
+  std::size_t num_binary_indices = _LOG_2.at(total_dim);
   // Create map from old letter to new group of letters.
   std::unordered_map<std::string, std::vector<std::string>> binary_groups;
-  int alphabet_position = 0;
-  for (int i = 0; i < num_indices; ++i) {
+  std::size_t alphabet_position = 0;
+  for (std::size_t i = 0; i < num_indices; ++i) {
     std::vector<std::string> group(old_logs[i]);
-    for (int j = 0; j < old_logs[i]; ++j) {
+    for (std::size_t j = 0; j < old_logs[i]; ++j) {
       group[j] = _ALPHABET[alphabet_position];
       ++alphabet_position;
     }
@@ -440,8 +440,8 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
   // Create old and new binary ordering in letters.
   std::vector<std::string> old_binary_ordering(num_binary_indices);
   std::vector<std::string> new_binary_ordering(num_binary_indices);
-  int binary_position = 0;
-  for (int i = 0; i < num_indices; ++i) {
+  std::size_t binary_position = 0;
+  for (std::size_t i = 0; i < num_indices; ++i) {
     std::string old_index = old_ordering[i];
     for (std::size_t j = 0; j < binary_groups[old_index].size(); ++j) {
       old_binary_ordering[binary_position] = binary_groups[old_index][j];
@@ -449,7 +449,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
     }
   }
   binary_position = 0;
-  for (int i = 0; i < num_indices; ++i) {
+  for (std::size_t i = 0; i < num_indices; ++i) {
     std::string new_index = new_ordering[i];
     for (std::size_t j = 0; j < binary_groups[new_index].size(); ++j) {
       new_binary_ordering[binary_position] = binary_groups[new_index][j];
@@ -580,21 +580,21 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
 // old_ordering and new_ordering refer to the right.
 void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
                             const std::vector<std::string>& new_ordering,
-                            int num_indices_right) {
+                            std::size_t num_indices_right) {
   // Don't do anything if there is nothing to reorder.
   if (new_ordering == old_ordering) return;
 
   // Create dim, num_indices, map_old_to_new_idxpos from old to new indices,
   // old_dimensions, new_dimensions, and total_dim.
-  int dim = 2;
-  int num_indices = old_ordering.size();
+  std::size_t dim = 2;
+  std::size_t num_indices = old_ordering.size();
   std::vector<int> map_old_to_new_idxpos(num_indices);
   std::vector<std::size_t> old_dimensions(num_indices, dim);
   std::vector<std::size_t> new_dimensions(num_indices, dim);
   std::size_t total_dim = 1;
-  for (int i = 0; i < num_indices; ++i) total_dim *= old_dimensions[i];
-  for (int i = 0; i < num_indices; ++i) {
-    for (int j = 0; j < num_indices; ++j) {
+  for (std::size_t i = 0; i < num_indices; ++i) total_dim *= old_dimensions[i];
+  for (std::size_t i = 0; i < num_indices; ++i) {
+    for (std::size_t j = 0; j < num_indices; ++j) {
       if (old_ordering[i] == new_ordering[j]) {
         map_old_to_new_idxpos[i] = j;
         new_dimensions[j] = old_dimensions[i];
@@ -616,8 +616,8 @@ void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
 
   // With the map_old_to_new_position, we are ready to reorder within
   // small chuncks.
-  int dim_right = total_dim;
-  int dim_left = size() / dim_right;  // Remember, it's all powers of 2, so OK.
+  std::size_t dim_right = total_dim;
+  std::size_t dim_left = size() / dim_right;  // Remember, it's all powers of 2, so OK.
 #pragma omp parallel
   {
     // For some reason, allocating these spaces and using them is about 2
@@ -629,10 +629,10 @@ void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
 #ifdef _OPENMP
       int current_thread = omp_get_thread_num();
 #endif
-      int offset = pl * dim_right;
-      for (int pr = 0; pr < dim_right; ++pr)
+      std::size_t offset = pl * dim_right;
+      for (std::size_t pr = 0; pr < dim_right; ++pr)
         *(temp_data + pr) = *(_data + offset + pr);
-      for (int pr = 0; pr < dim_right; ++pr)
+      for (std::size_t pr = 0; pr < dim_right; ++pr)
         *(_data + offset + map_old_to_new_position[pr]) = *(temp_data + pr);
     }
     delete[] temp_data;
@@ -644,7 +644,7 @@ void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
 // old_ordering and new_ordering refer to the left.
 void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
                            const std::vector<std::string>& new_ordering,
-                           int num_indices_right, s_type* scratch_copy) {
+                           std::size_t num_indices_right, s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
     throw ERROR_MSG("Scratch copy must be non-null.");
   }
@@ -654,15 +654,15 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
 
   // Create dim, num_indices, map_old_to_new_idxpos from old to new indices,
   // old_dimensions, new_dimensions, and total_dim.
-  int dim = 2;
-  int num_indices = old_ordering.size();
+  std::size_t dim = 2;
+  std::size_t num_indices = old_ordering.size();
   std::vector<int> map_old_to_new_idxpos(num_indices);
   std::vector<std::size_t> old_dimensions(num_indices, dim);
   std::vector<std::size_t> new_dimensions(num_indices, dim);
   std::size_t total_dim = 1;
-  for (int i = 0; i < num_indices; ++i) total_dim *= old_dimensions[i];
-  for (int i = 0; i < num_indices; ++i) {
-    for (int j = 0; j < num_indices; ++j) {
+  for (std::size_t i = 0; i < num_indices; ++i) total_dim *= old_dimensions[i];
+  for (std::size_t i = 0; i < num_indices; ++i) {
+    for (std::size_t j = 0; j < num_indices; ++j) {
       if (old_ordering[i] == new_ordering[j]) {
         map_old_to_new_idxpos[i] = j;
         new_dimensions[j] = old_dimensions[i];
@@ -684,9 +684,9 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
   const std::vector<int>& map_old_to_new_position = _REORDER_MAPS.at(name);
 
   // With the map_old_to_new_position, we are ready to move small chunks.
-  int dim_left = total_dim;
+  std::size_t dim_left = total_dim;
   std::size_t tensor_dim = size();
-  int dim_right = tensor_dim / dim_left;  // Remember, it's all powers of 2,
+  std::size_t dim_right = tensor_dim / dim_left;  // Remember, it's all powers of 2,
                                           // so OK.
 // Copy.
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
@@ -697,10 +697,10 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
 #pragma omp parallel
   {
 #pragma omp for schedule(static)
-    for (int pl = 0; pl < dim_left; ++pl) {
-      int old_offset = pl * dim_right;
-      int new_offset = map_old_to_new_position[pl] * dim_right;
-      for (int pr = 0; pr < dim_right; ++pr) {
+    for (std::size_t pl = 0; pl < dim_left; ++pl) {
+      std::size_t old_offset = pl * dim_right;
+      std::size_t new_offset = map_old_to_new_position[pl] * dim_right;
+      for (std::size_t pr = 0; pr < dim_right; ++pr) {
         *(_data + new_offset + pr) = *(scratch_copy + old_offset + pr);
       }
     }
@@ -783,7 +783,7 @@ void Tensor::print_data() const {
 
 // use  if complexity < some value.
 void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
-                  int m, int n, int k) {
+                  std::size_t m, std::size_t n, std::size_t k) {
   if (A_data == nullptr) {
     throw ERROR_MSG("Data from Tensor A must be non-null.");
   }
@@ -796,12 +796,12 @@ void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
   s_type alpha = 1.0;
   s_type beta = 0.0;
   cblas_cgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, &alpha,
-              A_data, std::max(1, k), B_data, std::max(1, n), &beta, C_data,
-              std::max(1, n));
+              A_data, std::max(1ul, k), B_data, std::max(1ul, n), &beta, C_data,
+              std::max(1ul, n));
 }
 
 void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
-                  int m, int k) {
+                  std::size_t m, std::size_t k) {
   if (A_data == nullptr) {
     throw ERROR_MSG("Data from Tensor A must be non-null.");
   }
@@ -813,12 +813,12 @@ void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
   }
   s_type alpha = 1.0;
   s_type beta = 0.0;
-  cblas_cgemv(CblasRowMajor, CblasNoTrans, m, k, &alpha, A_data, std::max(1, k),
+  cblas_cgemv(CblasRowMajor, CblasNoTrans, m, k, &alpha, A_data, std::max(1ul, k),
               B_data, 1, &beta, C_data, 1);
 }
 
 void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
-                  int n, int k) {
+                  std::size_t n, std::size_t k) {
   if (A_data == nullptr) {
     throw ERROR_MSG("Data from Tensor A must be non-null.");
   }
@@ -831,12 +831,12 @@ void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
 
   s_type alpha = 1.0;
   s_type beta = 0.0;
-  cblas_cgemv(CblasRowMajor, CblasTrans, k, n, &alpha, A_data, std::max(1, n),
+  cblas_cgemv(CblasRowMajor, CblasTrans, k, n, &alpha, A_data, std::max(1ul, n),
               B_data, 1, &beta, C_data, 1);
 }
 
 void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
-                  int k) {
+                  std::size_t k) {
   if (A_data == nullptr) {
     throw ERROR_MSG("Data from Tensor A must be non-null.");
   }
@@ -875,7 +875,7 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
       _vector_subtraction(B.get_indices(), A.get_indices());
   std::vector<std::string> common_indices =
       _vector_intersection(A.get_indices(), B.get_indices());
-  int left_dim = 1, right_dim = 1, common_dim = 1;
+  std::size_t left_dim = 1, right_dim = 1, common_dim = 1;
   for (std::size_t i = 0; i < left_indices.size(); ++i) {
     left_dim *= A.get_index_to_dimension().at(left_indices[i]);
   }
@@ -883,7 +883,7 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     right_dim *= B.get_index_to_dimension().at(right_indices[i]);
   }
   for (std::size_t i = 0; i < common_indices.size(); ++i) {
-    int a_dim = A.get_index_to_dimension().at(common_indices[i]);
+    std::size_t a_dim = A.get_index_to_dimension().at(common_indices[i]);
     if (a_dim != B.get_index_to_dimension().at(common_indices[i])) {
       throw ERROR_MSG(
           "Common indices must have matching dimensions, but at index: ", i,
@@ -1001,8 +1001,8 @@ void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
 void _generate_binary_reordering_map(
     const std::vector<int>& map_old_to_new_idxpos,
     std::vector<int>& map_old_to_new_position) {
-  int dim = 2;  // Hard coded!
-  int num_indices = map_old_to_new_idxpos.size();
+  std::size_t dim = 2;  // Hard coded!
+  std::size_t num_indices = map_old_to_new_idxpos.size();
   // Check
   if ((std::size_t)pow(dim, num_indices) != map_old_to_new_position.size()) {
     throw ERROR_MSG("Size of map: ", map_old_to_new_position.size(),
@@ -1076,13 +1076,13 @@ std::string _string_vector_to_string(std::vector<std::string> input) {
 
 std::string _reordering_to_string(const std::vector<int>& map_old_to_new_idxpos,
                                   const std::vector<std::size_t>& old_dimensions) {
-  int num_indices = map_old_to_new_idxpos.size();
+  std::size_t num_indices = map_old_to_new_idxpos.size();
   std::string name("");
-  for (int i = 0; i < num_indices; ++i) name += _ALPHABET[i];
+  for (std::size_t i = 0; i < num_indices; ++i) name += _ALPHABET[i];
   name += "->";
-  for (int i = 0; i < num_indices; ++i)
+  for (std::size_t i = 0; i < num_indices; ++i)
     name += _ALPHABET[map_old_to_new_idxpos[i]];
-  for (int i = 0; i < num_indices; ++i)
+  for (std::size_t i = 0; i < num_indices; ++i)
     name += "," + std::to_string(old_dimensions[i]);
   return name;
 }
