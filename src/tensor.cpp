@@ -69,9 +69,9 @@ const std::unordered_map<std::size_t, std::size_t> _LOG_2(
 // clang-format on
 
 /**
- * Global unordered_map<string,vector<int>> of reordering maps.
+ * Global unordered_map<string,vector<std::size_t>> of reordering maps.
  */
-std::unordered_map<std::string, std::vector<int>> _REORDER_MAPS;
+std::unordered_map<std::string, std::vector<std::size_t>> _REORDER_MAPS;
 
 ///////////////////////////// CLASS FUNCTIONS /////////////////////////////////
 
@@ -306,7 +306,7 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
   std::size_t total_dim = size();
 
   // Create map_old_to_new_idxpos from old to new indices, and new_dimensions.
-  std::vector<int> map_old_to_new_idxpos(num_indices);
+  std::vector<std::size_t> map_old_to_new_idxpos(num_indices);
   std::vector<std::size_t> new_dimensions(num_indices);
   for (std::size_t i = 0; i < num_indices; ++i) {
     for (std::size_t j = 0; j < num_indices; ++j) {
@@ -409,7 +409,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
   std::size_t total_dim = 1;
   for (std::size_t i = 0; i < num_indices; ++i) total_dim *= old_dimensions[i];
   // Create map_old_to_new_idxpos from old to new indices, and new_dimensions.
-  std::vector<int> map_old_to_new_idxpos(num_indices);
+  std::vector<std::size_t> map_old_to_new_idxpos(num_indices);
   std::vector<std::size_t> new_dimensions(num_indices);
   for (std::size_t i = 0; i < num_indices; ++i) {
     for (std::size_t j = 0; j < num_indices; ++j) {
@@ -421,7 +421,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
     }
   }
   // Create binary orderings:
-  std::vector<int> old_logs(num_indices);
+  std::vector<std::size_t> old_logs(num_indices);
   for (std::size_t i = 0; i < num_indices; ++i) {
     old_logs[i] = _LOG_2.at(old_dimensions[i]);
   }
@@ -597,7 +597,7 @@ void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
   // old_dimensions, new_dimensions, and total_dim.
   std::size_t dim = 2;
   std::size_t num_indices = old_ordering.size();
-  std::vector<int> map_old_to_new_idxpos(num_indices);
+  std::vector<std::size_t> map_old_to_new_idxpos(num_indices);
   std::vector<std::size_t> old_dimensions(num_indices, dim);
   std::vector<std::size_t> new_dimensions(num_indices, dim);
   std::size_t total_dim = 1;
@@ -617,11 +617,11 @@ void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
   std::string name =
       _reordering_to_string(map_old_to_new_idxpos, old_dimensions);
   if (_REORDER_MAPS.find(name) == _REORDER_MAPS.end()) {
-    _REORDER_MAPS[name] = std::vector<int>(total_dim);
+    _REORDER_MAPS[name] = std::vector<std::size_t>(total_dim);
     _generate_binary_reordering_map(map_old_to_new_idxpos,
                                     _REORDER_MAPS.at(name));
   }
-  const std::vector<int>& map_old_to_new_position = _REORDER_MAPS.at(name);
+  const std::vector<std::size_t>& map_old_to_new_position = _REORDER_MAPS.at(name);
 
   // With the map_old_to_new_position, we are ready to reorder within
   // small chuncks.
@@ -665,7 +665,7 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
   // old_dimensions, new_dimensions, and total_dim.
   std::size_t dim = 2;
   std::size_t num_indices = old_ordering.size();
-  std::vector<int> map_old_to_new_idxpos(num_indices);
+  std::vector<std::size_t> map_old_to_new_idxpos(num_indices);
   std::vector<std::size_t> old_dimensions(num_indices, dim);
   std::vector<std::size_t> new_dimensions(num_indices, dim);
   std::size_t total_dim = 1;
@@ -686,11 +686,11 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
   std::string name =
       _reordering_to_string(map_old_to_new_idxpos, old_dimensions);
   if (_REORDER_MAPS.find(name) == _REORDER_MAPS.end()) {
-    _REORDER_MAPS[name] = std::vector<int>(total_dim);
+    _REORDER_MAPS[name] = std::vector<std::size_t>(total_dim);
     _generate_binary_reordering_map(map_old_to_new_idxpos,
                                     _REORDER_MAPS.at(name));
   }
-  const std::vector<int>& map_old_to_new_position = _REORDER_MAPS.at(name);
+  const std::vector<std::size_t>& map_old_to_new_position = _REORDER_MAPS.at(name);
 
   // With the map_old_to_new_position, we are ready to move small chunks.
   std::size_t dim_left = total_dim;
@@ -1008,8 +1008,8 @@ void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
 // Split it in parts, as before? Nah, it was all about generating small maps.
 // Here I am generating THE map. This is done only once per map anyway.
 void _generate_binary_reordering_map(
-    const std::vector<int>& map_old_to_new_idxpos,
-    std::vector<int>& map_old_to_new_position) {
+    const std::vector<std::size_t>& map_old_to_new_idxpos,
+    std::vector<std::size_t>& map_old_to_new_position) {
   std::size_t dim = 2;  // Hard coded!
   std::size_t num_indices = map_old_to_new_idxpos.size();
   // Check
@@ -1020,10 +1020,10 @@ void _generate_binary_reordering_map(
   }
 
   // Define super dimensions. See _naive_reorder().
-  std::vector<int> old_dimensions(num_indices, dim);
-  std::vector<int> new_dimensions(num_indices, dim);
-  std::vector<int> old_super_dimensions(num_indices);
-  std::vector<int> new_super_dimensions(num_indices);
+  std::vector<std::size_t> old_dimensions(num_indices, dim);
+  std::vector<std::size_t> new_dimensions(num_indices, dim);
+  std::vector<std::size_t> old_super_dimensions(num_indices);
+  std::vector<std::size_t> new_super_dimensions(num_indices);
   old_super_dimensions[num_indices - 1] = 1;
   new_super_dimensions[num_indices - 1] = 1;
   for (long int i = num_indices - 2; i >= 0; --i) {
@@ -1032,7 +1032,7 @@ void _generate_binary_reordering_map(
   }
 
   // Iterate and generate map.
-  std::vector<int> old_counter(num_indices, 0);
+  std::vector<std::size_t> old_counter(num_indices, 0);
   std::size_t po, pn;  // Position of the data, old and new.
   long int i, j;
   while (true) {
@@ -1054,12 +1054,12 @@ void _generate_binary_reordering_map(
 }
 
 // convert int vector to string
-std::string _int_vector_to_string(std::vector<int> input) {
+std::string _int_vector_to_string(std::vector<std::size_t> input) {
   std::ostringstream temp;
   std::string output;
   if (!input.empty()) {
     std::copy(input.begin(), input.end() - 1,
-              std::ostream_iterator<int>(temp, ", "));
+              std::ostream_iterator<std::size_t>(temp, ", "));
     temp << input.back();
   }
   output = "{" + temp.str() + "}";
@@ -1083,7 +1083,7 @@ std::string _string_vector_to_string(std::vector<std::string> input) {
   return output;
 }
 
-std::string _reordering_to_string(const std::vector<int>& map_old_to_new_idxpos,
+std::string _reordering_to_string(const std::vector<std::size_t>& map_old_to_new_idxpos,
                                   const std::vector<std::size_t>& old_dimensions) {
   std::size_t num_indices = map_old_to_new_idxpos.size();
   std::string name("");

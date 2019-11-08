@@ -184,15 +184,15 @@ gate_arrays(const std::string& gate_name, const std::vector<double>& params) {
  * reordering of tensor indices.
  * @param ordering std::list<ContractionOperation> providing the steps required
  * to contract the tensor grid.
- * @param local vector<int> of the target qubit coordinates.
+ * @param local vector<std::size_t> of the target qubit coordinates.
  * @return function for use as a comparator in std::sort.
  */
-std::function<bool(std::vector<int>, std::vector<int>)> order_func(
-    const std::list<ContractionOperation>& ordering, std::vector<int> local) {
-  return [&ordering, local](const std::vector<int> lhs,
-                            const std::vector<int> rhs) {
+std::function<bool(std::vector<std::size_t>, std::vector<std::size_t>)> order_func(
+    const std::list<ContractionOperation>& ordering, std::vector<std::size_t> local) {
+  return [&ordering, local](const std::vector<std::size_t> lhs,
+                            const std::vector<std::size_t> rhs) {
     // Cuts are projected early and should be ordered first.
-    std::vector<std::vector<int>> lhs_pair, rhs_pair;
+    std::vector<std::vector<std::size_t>> lhs_pair, rhs_pair;
     if (local[0] < lhs[0] || local[1] < lhs[1]) {
       lhs_pair = {local, lhs};
     } else {
@@ -294,15 +294,15 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
 void circuit_data_to_tensor_network(
     const QflexCircuit& circuit, std::size_t I, std::size_t J, const std::string initial_conf,
     const std::string final_conf,
-    const std::optional<std::vector<std::vector<int>>>& final_qubit_region,
-    const std::optional<std::vector<std::vector<int>>>& off,
+    const std::optional<std::vector<std::vector<std::size_t>>>& final_qubit_region,
+    const std::optional<std::vector<std::vector<std::size_t>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch) {
   if (scratch == nullptr) {
     throw ERROR_MSG("Scratch must be non-null.");
   }
   // Useful for plugging into the tensor network:
-  std::vector<int> i_j_1, i_j_2;
+  std::vector<std::size_t> i_j_1, i_j_2;
   // Calculated from input.
   const std::size_t grid_size = I * J;
   const std::size_t off_size = off.has_value() ? off.value().size() : 0;
@@ -333,11 +333,11 @@ void circuit_data_to_tensor_network(
 
   // Creating grid variables.
   grid_of_tensors = std::vector<std::vector<std::vector<Tensor>>>(I);
-  std::vector<std::vector<int>> grid_of_counters(I);
+  std::vector<std::vector<std::size_t>> grid_of_counters(I);
   std::unordered_map<std::string, int> link_counters;
   for (std::size_t i = 0; i < I; ++i) {
     grid_of_tensors[i] = std::vector<std::vector<Tensor>>(J);
-    grid_of_counters[i] = std::vector<int>(J);
+    grid_of_counters[i] = std::vector<std::size_t>(J);
     for (std::size_t j = 0; j < J; ++j) {
       grid_of_tensors[i][j] = std::vector<Tensor>();
       grid_of_counters[i][j] = 0;
@@ -347,7 +347,7 @@ void circuit_data_to_tensor_network(
   // Insert deltas to first layer.
   std::size_t idx = 0;
   for (std::size_t q = 0; q < grid_size; ++q) {
-    std::vector<int> i_j = get_qubit_coords(q, J);
+    std::vector<std::size_t> i_j = get_qubit_coords(q, J);
     std::size_t i = i_j[0], j = i_j[1];
     if (find_grid_coord_in_list(off, i, j)) {
       continue;
@@ -361,7 +361,7 @@ void circuit_data_to_tensor_network(
     idx += 1;
   }
 
-  std::unordered_set<int> used_qubits;
+  std::unordered_set<std::size_t> used_qubits;
   std::size_t last_cycle{0};
   for (auto gate : circuit.gates) {
     // gate.name = gate name
@@ -419,11 +419,13 @@ void circuit_data_to_tensor_network(
       if (second_qubit_off)
         throw ERROR_MSG("Qubit ", q2, " must correspond to an active qubit.");
 
-      bool nearest_neighbors =
-          (std::abs(i_j_1[0] - i_j_2[0]) + std::abs(i_j_1[1] - i_j_2[1])) == 1;
-      if (!nearest_neighbors)
-        throw ERROR_MSG("Qubits ", q1, " and ", q2,
+      {
+        std::size_t x_dist = std::max(i_j_1[0], i_j_2[0]) - std::min(i_j_1[0], i_j_2[0]);
+        std::size_t y_dist = std::max(i_j_1[1], i_j_2[1]) - std::min(i_j_1[1], i_j_2[1]);
+        if(x_dist + y_dist != 1)
+          throw ERROR_MSG("Qubits ", q1, " and ", q2,
                         " are not nearest neighbors.");
+      }
 
       std::vector<s_type> gate_q1;
       std::vector<s_type> gate_q2;
@@ -467,7 +469,7 @@ void circuit_data_to_tensor_network(
   // "(i,j),(o)".
   idx = 0;
   for (std::size_t q = 0; q < grid_size; ++q) {
-    std::vector<int> i_j = get_qubit_coords(q, J);
+    std::vector<std::size_t> i_j = get_qubit_coords(q, J);
     std::size_t i = i_j[0], j = i_j[1];
     if (find_grid_coord_in_list(off, i, j)) {
       continue;
@@ -497,8 +499,8 @@ void circuit_data_to_tensor_network(
 void flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
-    const std::optional<std::vector<std::vector<int>>>& final_qubit_region,
-    const std::optional<std::vector<std::vector<int>>>& off,
+    const std::optional<std::vector<std::vector<std::size_t>>>& final_qubit_region,
+    const std::optional<std::vector<std::vector<std::size_t>>>& off,
     const std::list<ContractionOperation>& ordering, s_type* scratch) {
   if (scratch == nullptr) {
     throw ERROR_MSG("Scratch must be non-null.");
@@ -533,8 +535,8 @@ void flatten_grid_of_tensors(
       }
 
       // Positions of connected active qubits.
-      std::vector<int> local({i, j});
-      std::vector<std::vector<int>> pairs;
+      std::vector<std::size_t> local({i, j});
+      std::vector<std::vector<std::size_t>> pairs;
 
       if (i < I - 1 && !find_grid_coord_in_list(off, i + 1, j)) {
         pairs.push_back({i + 1, j});
@@ -563,7 +565,7 @@ void flatten_grid_of_tensors(
       std::vector<std::string> ordered_indices_2D;
 
       // Positions of connected active qubits.
-      std::vector<std::vector<int>> pairs;
+      std::vector<std::vector<std::size_t>> pairs;
 
       if (i > 0 && !find_grid_coord_in_list(off, i - 1, j)) {
         pairs.push_back({i - 1, j});
@@ -585,12 +587,12 @@ void flatten_grid_of_tensors(
         //fr_buffer = 1;
       }
 
-      std::vector<int> local = {i, j};
+      std::vector<std::size_t> local = {i, j};
       auto order_fn = order_func(ordering, local);
       std::sort(pairs.begin(), pairs.end(), order_fn);
 
       for (const auto& pair : pairs) {
-        std::vector<int> q1, q2;
+        std::vector<std::size_t> q1, q2;
         if (pair[0] < i || pair[1] < j) {
           q1 = pair;
           q2 = local;
@@ -627,7 +629,7 @@ void read_wave_function_evolution(
   std::size_t num_qubits, cycle, q1, q2;
   std::string gate;
   // Useful for plugging into the tensor network:
-  std::vector<int> i_j_1, i_j_2;
+  std::vector<std::size_t> i_j_1, i_j_2;
 
   // The first element should be the number of qubits
   io >> num_qubits;

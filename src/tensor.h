@@ -76,7 +76,7 @@ class Tensor {
    * Creates a Tensor. A pointer to the data is passed.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
-   * @param dimensions std::vector<int> with the ordered dimensions of the
+   * @param dimensions std::vector<std::size_t> with the ordered dimensions of the
    * indices.
    * @param data pointer to the data of the tensor. It is responsibility of
    * the user to provide enough allocated memory to store the Tensor.
@@ -123,21 +123,21 @@ class Tensor {
 
   /**
    * Get dimensions.
-   * @return const reference to std::vector<int> of dimensions.
+   * @return const reference to std::vector<std::size_t> of dimensions.
    */
   const std::vector<std::size_t>& get_dimensions() const;
 
   /**
    * Set dimensions. This function is deprecated. Use rename_index() or
    * set_dimensions_and_indices().
-   * @param const reference to std::vector<int> of dimensions.
+   * @param const reference to std::vector<std::size_t> of dimensions.
    */
   void set_dimensions(const std::vector<std::size_t>& dimensions);
 
   /**
    * Set dimensions and indices.
    * @param const reference to std::vector<std::string> of indices.
-   * @param const reference to std::vector<int> of dimensions.
+   * @param const reference to std::vector<std::size_t> of dimensions.
    */
   void set_indices_and_dimensions(const std::vector<std::string>& indices,
                                   const std::vector<std::size_t>& dimensions);
@@ -270,7 +270,7 @@ class Tensor {
    * to the pointer to the data.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
-   * @param dimensions std::vector<int> with the ordered dimensions of the
+   * @param dimensions std::vector<std::size_t> with the ordered dimensions of the
    * indices.
    */
   void _init(const std::vector<std::string>& indices,
@@ -435,7 +435,7 @@ void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
  * between old_ordering and new_ordering.
  * @param map_old_to_new_idxpos const reference to a std::vector<std::string> of
  * new indices.
- * @param map_old_to_new_position Reference to a std::vector<int> where the map
+ * @param map_old_to_new_position Reference to a std::vector<std::size_t> where the map
  * will be stored. The size of the vector has to be equal to
  * 2^(old_indices.size()). \todo Think about passing some scratch space to store
  * small maps. Probably not worth it, since they are small, and the big ones
@@ -445,15 +445,15 @@ void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
  * argument.
  */
 void _generate_binary_reordering_map(
-    const std::vector<int>& map_old_to_new_idxpos,
-    std::vector<int>& map_old_to_new_position);
+    const std::vector<std::size_t>& map_old_to_new_idxpos,
+    std::vector<std::size_t>& map_old_to_new_position);
 
 /**
  * Converts an int vector into a string
- * @param input vector<int> int vector to convert.
+ * @param input vector<std::size_t> int vector to convert.
  * @return string containing input vector contents
  **/
-std::string _int_vector_to_string(std::vector<int> input);
+std::string _int_vector_to_string(std::vector<std::size_t> input);
 
 /**
  * Converts a string vector into a string
@@ -465,13 +465,13 @@ std::string _string_vector_to_string(std::vector<std::string> input);
 /**
  * Generates the standard name of the reordering as a std::string:
  * "abc...->fbe...,dim_a,dim_b,...".
- * @param map_old_to_new_idxpos const reference to a std::vector<int> index
+ * @param map_old_to_new_idxpos const reference to a std::vector<std::size_t> index
  * mapping (old to new).
- * @param old_dimensions const reference to a std::vector<int> with the old
+ * @param old_dimensions const reference to a std::vector<std::size_t> with the old
  * dimensions.
  * @return std::string with the standard name of the ordering.
  */
-std::string _reordering_to_string(const std::vector<int>& map_old_to_new_idxpos,
+std::string _reordering_to_string(const std::vector<std::size_t>& map_old_to_new_idxpos,
                                   const std::vector<std::size_t>& old_dimensions);
 
 /**

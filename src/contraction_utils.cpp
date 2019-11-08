@@ -189,7 +189,7 @@ void ContractionData::ContractGrid(
             get_scratch(cut_copy_name(op.cut.tensors, /*side = */ 0));
         copy_a = tensor_a;
         // List of values to evaluate on the cut.
-        std::vector<int> values = op.cut.values;
+        std::vector<std::size_t> values = op.cut.values;
         if (values.empty()) {
           std::size_t num_values = tensor_a.get_index_to_dimension().at(index);
           for (std::size_t i = 0; i < num_values; ++i) {
@@ -285,7 +285,7 @@ bool ordering_data_to_contraction_ordering(
         error_msg = "Index must be within grid boundaries.";
         break;
       }
-      std::vector<int> position = get_qubit_coords(index, input.grid.J);
+      std::vector<std::size_t> position = get_qubit_coords(index, input.grid.J);
       if (find_grid_coord_in_list(input.grid.qubits_off, position[0],
                                   position[1])) {
         error_msg = "Index must specify an active qubit.";
@@ -293,7 +293,7 @@ bool ordering_data_to_contraction_ordering(
       }
       ordering->emplace_back(ExpandPatch(patch, position));
     } else if (operation == "cut") {
-      std::vector<int> values;
+      std::vector<std::size_t> values;
       std::string values_str;
       std::smatch match;
       ss >> values_str;
@@ -323,7 +323,7 @@ bool ordering_data_to_contraction_ordering(
         error_msg = "Index 1 must be within grid boundaries.";
         break;
       }
-      std::vector<int> position_1 = get_qubit_coords(index_1, input.grid.J);
+      std::vector<std::size_t> position_1 = get_qubit_coords(index_1, input.grid.J);
       if (find_grid_coord_in_list(input.grid.qubits_off, position_1[0],
                                   position_1[1])) {
         error_msg = "Index 1 must specify an active qubit.";
@@ -341,7 +341,7 @@ bool ordering_data_to_contraction_ordering(
           error_msg = "Index 2 must be within grid boundaries.";
           break;
         }
-        std::vector<int> position_2 = get_qubit_coords(index_2, input.grid.J);
+        std::vector<std::size_t> position_2 = get_qubit_coords(index_2, input.grid.J);
         if (find_grid_coord_in_list(input.grid.qubits_off, position_2[0],
                                     position_2[1])) {
           error_msg = "Index 2 must specify an active qubit.";
@@ -379,23 +379,23 @@ bool ordering_data_to_contraction_ordering(
   return true;
 }
 
-std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
+std::string index_name(const std::vector<std::size_t>& p1, const std::vector<std::size_t>& p2) {
   char buffer[64];
   if (p1.size() == 2 && p2.size() == 2) {
     // Two-qubit contraction.
-    std::size_t len = snprintf(buffer, sizeof(buffer), "(%d,%d),(%d,%d)", p1[0], p1[1],
+    std::size_t len = snprintf(buffer, sizeof(buffer), "(%ld,%ld),(%ld,%ld)", p1[0], p1[1],
                        p2[0], p2[1]);
     return std::string(buffer, len);
   }
   if (p1.size() == 3 && p2.size() == 3) {
     // Single-qubit contraction, or virtual index.
-    std::size_t len = snprintf(buffer, sizeof(buffer), "(%d,%d,%d),(%d,%d,%d)", p1[0],
+    std::size_t len = snprintf(buffer, sizeof(buffer), "(%ld,%ld,%ld),(%ld,%ld,%ld)", p1[0],
                        p1[1], p1[2], p2[0], p2[1], p2[2]);
     return std::string(buffer, len);
   }
   // Final qubit output value assignment.
   if (p1.size() == 2 && p2.empty()) {
-    std::size_t len = snprintf(buffer, sizeof(buffer), "(%d,%d),(o)", p1[0], p1[1]);
+    std::size_t len = snprintf(buffer, sizeof(buffer), "(%ld,%ld),(o)", p1[0], p1[1]);
     return std::string(buffer, len);
   }
   std::stringstream ss;
@@ -407,7 +407,7 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
   throw ERROR_MSG(ss.str());
 }
 
-std::string index_name(const std::vector<std::vector<int>>& tensors) {
+std::string index_name(const std::vector<std::vector<std::size_t>>& tensors) {
   if (tensors.size() == 2) {
     return index_name(tensors.at(0), tensors.at(1));
   }
@@ -418,17 +418,17 @@ std::string index_name(const std::vector<std::vector<int>>& tensors) {
                   tensors.size(), ".");
 }
 
-std::vector<int> get_qubit_coords(std::size_t q, std::size_t J) {
+std::vector<std::size_t> get_qubit_coords(std::size_t q, std::size_t J) {
   std::size_t i = q / J;
-  return std::vector<int>({i, q - i * J});
+  return std::vector<std::size_t>({i, q - i * J});
 }
 
 bool find_grid_coord_in_list(
-    const std::optional<std::vector<std::vector<int>>>& coord_list, const std::size_t i,
+    const std::optional<std::vector<std::vector<std::size_t>>>& coord_list, const std::size_t i,
     const std::size_t j) {
   return coord_list.has_value() &&
          find(coord_list.value().begin(), coord_list.value().end(),
-              std::vector<int>({i, j})) != coord_list.value().end();
+              std::vector<std::size_t>({i, j})) != coord_list.value().end();
 }
 
 bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
@@ -459,7 +459,7 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
                      op.expand.id.c_str(), " after a cut.");
 
         char tensor_name[20];
-        snprintf(tensor_name, sizeof(tensor_name), "(%d,%d)",
+        snprintf(tensor_name, sizeof(tensor_name), "(%ld,%ld)",
                  op.expand.tensor[0], op.expand.tensor[1]);
         if (used_tensors.find(tensor_name) != used_tensors.end())
           error_msg = concat(error_msg, "\nTensor ", tensor_name,

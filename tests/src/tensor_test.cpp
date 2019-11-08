@@ -419,8 +419,8 @@ TEST(TensorExceptionTest, InvalidInput) {
 // Testing this function by direct call because too nested to test by calling
 // Tensor::reorder
 TEST(TensorExceptionTest, GenerateBinaryReorderingMapInvalidInput) {
-  const std::vector<int> map_old_to_new_idxpos = {1, 2};
-  std::vector<int> map_old_to_new_position = {1, 2, 3};
+  const std::vector<std::size_t> map_old_to_new_idxpos = {1, 2};
+  std::vector<std::size_t> map_old_to_new_position = {1, 2, 3};
 
   // Size of map must be equal to 2 ^ (number of indices).
   try {

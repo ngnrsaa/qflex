@@ -108,7 +108,7 @@ constexpr char kBadCxGate[] = R"(1
 
 TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
   std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
-  std::vector<std::vector<int>> off_qubits = {{0, 0}};
+  std::vector<std::vector<std::size_t>> off_qubits = {{0, 0}};
   s_type scratch[256];
 
   // One qubit gate must be on active qubit.
@@ -183,7 +183,7 @@ constexpr char kBadCycle5[] = R"(4
 
 TEST(ReadCircuitExceptionTest, MultipleGatesPerQubitPerCycle) {
   std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
-  std::vector<std::vector<int>> off_qubits = {{0, 0}};
+  std::vector<std::vector<std::size_t>> off_qubits = {{0, 0}};
   s_type scratch[256];
 
   // TODO: fix tests, currently these tests do not test if a qubit is
@@ -280,8 +280,8 @@ constexpr char kSimpleCircuit[] = R"(5
 // expected.
 TEST(ReadCircuitTest, CondenseToGrid) {
   std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
-  std::vector<std::vector<int>> qubits_A = {{2, 1}};
-  std::vector<std::vector<int>> qubits_off = {{2, 0}};
+  std::vector<std::vector<std::size_t>> qubits_A = {{2, 1}};
+  std::vector<std::vector<std::size_t>> qubits_off = {{2, 0}};
   s_type *scratch = new s_type[256];
 
   QflexCircuit circuit;
@@ -387,8 +387,8 @@ TEST(ReadCircuitExceptionTest, CircuitDataToGridOfTensorsInvalidInput) {
 TEST(ReadCircuitExceptionTest, GridOfTensors3DTo2DInvalidInput) {
   std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors_3D;
   std::vector<std::vector<Tensor>> grid_of_tensors_2D;
-  std::optional<std::vector<std::vector<int>>> A;
-  std::optional<std::vector<std::vector<int>>> off;
+  std::optional<std::vector<std::vector<std::size_t>>> A;
+  std::optional<std::vector<std::vector<std::size_t>>> off;
   std::list<ContractionOperation> ordering;
 
   // Scratch cannot be null pointer.

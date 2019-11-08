@@ -16,7 +16,7 @@ class GetOutputStatesTest : public testing::Test {
 
  protected:
   QflexInput input_;
-  std::vector<std::vector<int>> final_qubits_, expected_final_qubits_;
+  std::vector<std::vector<std::size_t>> final_qubits_, expected_final_qubits_;
   std::vector<std::string> output_states_, expected_output_states_;
   std::list<ContractionOperation> ordering_;
 };
@@ -100,7 +100,7 @@ TEST_F(GetOutputStatesTest, OnlyUseTerminalCuts) {
 TEST(GetOutputStatesExceptionTest, InvalidInput) {
   QflexInput input;
   std::list<ContractionOperation> ordering;
-  std::vector<std::vector<int>> final_qubits;
+  std::vector<std::vector<std::size_t>> final_qubits;
   std::vector<std::string> output_states;
 
   // Input cannot be null pointer.
@@ -147,7 +147,7 @@ TEST(ReadGridTest, ValidGrid3x4) {
   std::stringstream stream(kTestGrid_3x4);
   QflexGrid grid;
   grid.load(stream);
-  std::vector<std::vector<int>> expected_off = {
+  std::vector<std::vector<std::size_t>> expected_off = {
       {0, 0}, {0, 3}, {2, 0}, {2, 2}, {2, 3}};
   EXPECT_EQ(grid.qubits_off, expected_off);
 }
@@ -156,7 +156,7 @@ TEST(ReadGridTest, ValidGrid6x2) {
   std::stringstream stream(kTestGrid_6x2);
   QflexGrid grid;
   grid.load(stream);
-  std::vector<std::vector<int>> expected_off = {
+  std::vector<std::vector<std::size_t>> expected_off = {
       {0, 0}, {1, 1}, {4, 0}, {5, 0}, {5, 1}};
   EXPECT_EQ(grid.qubits_off, expected_off);
 }

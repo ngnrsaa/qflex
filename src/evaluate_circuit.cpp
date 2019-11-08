@@ -17,7 +17,7 @@
 namespace qflex {
 
 // Gets the position in the output state vector of the qubit at tensor_pos.
-std::size_t find_output_pos(const QflexInput* input, std::vector<int> tensor_pos) {
+std::size_t find_output_pos(const QflexInput* input, std::vector<std::size_t> tensor_pos) {
   if (input == nullptr) {
     throw ERROR_MSG("Input must be non-null.");
   }
@@ -34,7 +34,7 @@ std::size_t find_output_pos(const QflexInput* input, std::vector<int> tensor_pos
 
 std::string get_output_states(const QflexInput* input,
                               const std::list<ContractionOperation>& ordering,
-                              std::vector<std::vector<int>>* final_qubits,
+                              std::vector<std::vector<std::size_t>>* final_qubits,
                               std::vector<std::string>* output_states) {
   if (input == nullptr) {
     throw ERROR_MSG("Input must be non-null.");
@@ -45,8 +45,8 @@ std::string get_output_states(const QflexInput* input,
   if (output_states == nullptr) {
     throw ERROR_MSG("Output states must be non-null");
   }
-  std::vector<int> output_pos_map;
-  std::vector<std::vector<int>> output_values_map;
+  std::vector<std::size_t> output_pos_map;
+  std::vector<std::vector<std::size_t>> output_values_map;
   std::string base_state = input->final_state;
   // If the final state isn't provided, it should be all zeroes except for
   // qubits with terminal cuts (which should have 'x').
@@ -137,7 +137,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
   // Get a list of qubits and output states for the final region, and set the
   // final_state if one wasn't provided.
-  std::vector<std::vector<int>> final_qubits;
+  std::vector<std::vector<std::size_t>> final_qubits;
   std::vector<std::string> output_states;
   input->final_state =
       get_output_states(input, ordering, &final_qubits, &output_states);

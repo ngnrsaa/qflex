@@ -44,7 +44,7 @@ namespace qflex {
  * @param J std::size_t with the second spatial dimension of the grid of qubits.
  * @return a list of coordinates for "off" qubits in the I x J grid provided.
  */
-std::vector<std::vector<int>> read_grid_layout_from_stream(
+std::vector<std::vector<std::size_t>> read_grid_layout_from_stream(
     std::istream* grid_data, std::size_t I, std::size_t J);
 
 /**
@@ -59,7 +59,7 @@ std::vector<std::vector<int>> read_grid_layout_from_stream(
  */
 std::string get_output_states(const QflexInput* input,
                               const std::list<ContractionOperation>& ordering,
-                              std::vector<std::vector<int>>* final_qubits,
+                              std::vector<std::vector<std::size_t>>* final_qubits,
                               std::vector<std::string>* output_states);
 
 /**
