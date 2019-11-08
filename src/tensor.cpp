@@ -355,6 +355,11 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
   // internal_po keeps track of interations within a block.
   // Blocks have size MAX_RIGHT_DIM.
   std::size_t internal_po = 0;
+
+  // Check that num_indices can be converted to the same type of 'i'
+  if(static_cast<std::size_t>(static_cast<decltype(i)>(num_indices)) != num_indices)
+    throw ERROR_MSG("Too many indices.");
+
   // External loop loops over blocks.
   while (true) {
     // If end of entire opration, break.
@@ -366,7 +371,7 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
     while (true) {
       po = 0;
       pn = 0;
-      for (i = 0; i < num_indices; ++i) {
+      for (i = 0; i < static_cast<decltype(i)>(num_indices); ++i) {
         po += old_super_dimensions[i] * old_counter[i];
         pn += new_super_dimensions[map_old_to_new_idxpos[i]] * old_counter[i];
       }
@@ -1038,10 +1043,15 @@ void _generate_binary_reordering_map(
   std::vector<std::size_t> old_counter(num_indices, 0);
   std::size_t po, pn;  // Position of the data, old and new.
   long int i, j;
+
+  // Check that num_indices can be converted to the same type of 'i'
+  if(static_cast<std::size_t>(static_cast<decltype(i)>(num_indices)) != num_indices)
+    throw ERROR_MSG("Too many indices.");
+
   while (true) {
     po = 0;
     pn = 0;
-    for (i = 0; i < num_indices; ++i) {
+    for (i = 0; i < static_cast<decltype(i)>(num_indices); ++i) {
       po += old_super_dimensions[i] * old_counter[i];
       pn += new_super_dimensions[map_old_to_new_idxpos[i]] * old_counter[i];
     }
