@@ -7,7 +7,7 @@ AC_CONFIG_SRCDIR([src/main.cpp])
 AC_PREFIX_DEFAULT([$HOME/local])
 
 # Default CXXFLAGS.
-: ${CXXFLAGS="-O3  -std=c++17  -march=native"}
+: ${CXXFLAGS="-O3  -std=c++17  -march=native -Wall -Wpedantic"}
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
