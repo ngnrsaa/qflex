@@ -384,12 +384,6 @@ auto_ordering = auto_order.circuit_to_ordering(circuit,
 results = cirq.Simulator().simulate(circuit)
 results_no_h_and_sparse = cirq.Simulator().simulate(circuit_no_h_and_sparse)
 
-# Save circuit and grid on temporary files
-circuit_filename = mkstemp()
-circuit_no_h_and_sparse_filename = mkstemp()
-grid_filename = mkstemp()
-ordering_filename = mkstemp()
-
 
 @pytest.mark.parametrize(
     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
@@ -538,6 +532,9 @@ merge A B
 """
 
 circuit_fsim_filename = mkstemp()
+grid_2x2_filename = mkstemp()
+ordering_2x2_filename = mkstemp()
+
 with open(circuit_fsim_filename[1], 'w') as f:
     print(circuit_test_fsim, file=f)
 with open(grid_2x2_filename[1], 'w') as f:
