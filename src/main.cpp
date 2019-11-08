@@ -27,11 +27,13 @@ tensor network, CPU-based simulator of large quantum circuits.
 
 )";
 
-// Example:
-// $ src/qflex.x config/circuits/bristlecone_48_1-24-1_0.txt \
-//               config/ordering/bristlecone_48.txt \
-//               config/grid/bristlecone_48.txt
-//
+/*
+ * Example:
+ * $ src/qflex.x config/circuits/bristlecone_48_1-24-1_0.txt \
+ *               config/ordering/bristlecone_48.txt \
+ *               config/grid/bristlecone_48.txt
+ *
+ */
 int main(int argc, char** argv) {
   try {
     std::map<std::string, docopt::value> args =
@@ -76,7 +78,7 @@ int main(int argc, char** argv) {
         qflex::EvaluateCircuit(&input);
 
     // Printing output.
-    for (int c = 0; c < amplitudes.size(); ++c) {
+    for (std::size_t c = 0; c < amplitudes.size(); ++c) {
       const auto& state = amplitudes[c].first;
       const auto& amplitude = amplitudes[c].second;
       std::cout << input.initial_state << " --> " << state << ": "

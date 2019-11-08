@@ -8,7 +8,8 @@
 namespace qflex {
 
 struct QflexGrid {
-  int I{0}, J{0};
+  std::size_t I{0}, J{0};
+  #warning FIX HERE
   std::vector<std::vector<int>> qubits_off;
   void load(std::istream& istream);
   void load(std::istream&& istream);
