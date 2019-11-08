@@ -124,8 +124,7 @@ ContractionData ContractionData::Initialize(
 
   std::size_t patch_pos = data.scratch_map_.size();
   for (const auto& patch_rank_pair : data.patch_rank_) {
-    const std::size_t size =
-        (std::size_t)pow(bond_dim, patch_rank_pair.second);
+    const std::size_t size = (std::size_t)pow(bond_dim, patch_rank_pair.second);
     try {
       data.scratch_.push_back(Tensor({""}, {size}));
     } catch (std::string err_msg) {
@@ -139,8 +138,7 @@ ContractionData ContractionData::Initialize(
   // to the same grid tensor, only one copy needs to be stored.
   // std::size_t cut_copy_pos = data.scratch_map_.size();
   for (const auto& copy_rank_pair : cut_copy_rank) {
-    const std::size_t size =
-        (std::size_t)pow(bond_dim, copy_rank_pair.second);
+    const std::size_t size = (std::size_t)pow(bond_dim, copy_rank_pair.second);
     try {
       data.scratch_.push_back(Tensor({""}, {size}));
     } catch (std::string err_msg) {

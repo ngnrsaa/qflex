@@ -613,7 +613,8 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
     std::vector<std::string> Rl_first_step =
         _vector_concatenation(Rl_old_not_in_Rr_new, Rr_new_in_Rl_old);
     std::vector<std::string> Rl_zeroth_step(Rl);
-    for (std::size_t i = 0; i < Rl; ++i) Rl_zeroth_step[i] = old_binary_ordering[i];
+    for (std::size_t i = 0; i < Rl; ++i)
+      Rl_zeroth_step[i] = old_binary_ordering[i];
     try {
       _left_reorder(Rl_zeroth_step, Rl_first_step, Rr, scratch_copy);
     } catch (std::string err_msg) {
@@ -1159,10 +1160,11 @@ void _generate_binary_reordering_map(
   std::size_t dim = 2;  // Hard coded!
   std::size_t num_indices = map_old_to_new_idxpos.size();
   // Check
-  if ((std::size_t)std::pow(dim, num_indices) != map_old_to_new_position.size()) {
-    throw ERROR_MSG("Size of map: ", map_old_to_new_position.size(),
-                    " must be equal to 2^num_indices: ", std::pow(dim, num_indices),
-                    ".");
+  if ((std::size_t)std::pow(dim, num_indices) !=
+      map_old_to_new_position.size()) {
+    throw ERROR_MSG(
+        "Size of map: ", map_old_to_new_position.size(),
+        " must be equal to 2^num_indices: ", std::pow(dim, num_indices), ".");
   }
 
   // Define super dimensions. See _naive_reorder().
