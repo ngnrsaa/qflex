@@ -17,7 +17,8 @@
 namespace qflex {
 
 // Gets the position in the output state vector of the qubit at tensor_pos.
-std::size_t find_output_pos(const QflexInput* input, std::vector<std::size_t> tensor_pos) {
+std::size_t find_output_pos(const QflexInput* input,
+                            std::vector<std::size_t> tensor_pos) {
   if (input == nullptr) {
     throw ERROR_MSG("Input must be non-null.");
   }
@@ -32,10 +33,10 @@ std::size_t find_output_pos(const QflexInput* input, std::vector<std::size_t> te
   return pos;
 }
 
-std::string get_output_states(const QflexInput* input,
-                              const std::list<ContractionOperation>& ordering,
-                              std::vector<std::vector<std::size_t>>* final_qubits,
-                              std::vector<std::string>* output_states) {
+std::string get_output_states(
+    const QflexInput* input, const std::list<ContractionOperation>& ordering,
+    std::vector<std::vector<std::size_t>>* final_qubits,
+    std::vector<std::string>* output_states) {
   if (input == nullptr) {
     throw ERROR_MSG("Input must be non-null.");
   }
@@ -147,7 +148,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // This scratch space is used for reading circuit and building tensor
   // network. At most we need super_dim * 4 for square grids, and times 2
   // when qubits are cut on the output index.
-  s_type* scratch = new s_type[static_cast<std::size_t>(std::pow(super_dim, 4) * 2)];
+  s_type* scratch =
+      new s_type[static_cast<std::size_t>(std::pow(super_dim, 4) * 2)];
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);

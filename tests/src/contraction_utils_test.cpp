@@ -268,7 +268,8 @@ TEST(ContractionTest, ExampleOrdering) {
   for (const auto& coord : order_ppD) {
     ordering.emplace_back(ExpandPatch("ppD", coord));
   }
-  const std::vector<std::vector<std::vector<std::size_t>>> cuts_1 = {{{6, 2}, {6, 3}}};
+  const std::vector<std::vector<std::vector<std::size_t>>> cuts_1 = {
+      {{6, 2}, {6, 3}}};
   for (const auto& cut : cuts_1) {
     ordering.emplace_back(CutIndex(cut));
   }
@@ -282,16 +283,18 @@ TEST(ContractionTest, ExampleOrdering) {
   ordering.emplace_back(MergePatches("A", "B"));
   // Copies tensor "ppD" to "pD" for reuse.
   ordering.emplace_back(MergePatches("ppD", "pD"));
-  const std::vector<std::vector<std::size_t>> order_pD = {{6, 3}, {5, 3}, {4, 3}};
+  const std::vector<std::vector<std::size_t>> order_pD = {
+      {6, 3}, {5, 3}, {4, 3}};
   for (const auto& coord : order_pD) {
     ordering.emplace_back(ExpandPatch("pD", coord));
   }
-  const std::vector<std::vector<std::size_t>> order_pC = {{0, 6}, {1, 6}, {2, 6},
-                                                  {0, 5}, {1, 5}, {2, 5}};
+  const std::vector<std::vector<std::size_t>> order_pC = {
+      {0, 6}, {1, 6}, {2, 6}, {0, 5}, {1, 5}, {2, 5}};
   for (const auto& coord : order_pC) {
     ordering.emplace_back(ExpandPatch("pC", coord));
   }
-  const std::vector<std::vector<std::vector<std::size_t>>> cuts_2 = {{{2, 6}, {3, 6}}};
+  const std::vector<std::vector<std::vector<std::size_t>>> cuts_2 = {
+      {{2, 6}, {3, 6}}};
   for (const auto& cut : cuts_2) {
     ordering.emplace_back(CutIndex(cut));
   }
@@ -303,8 +306,8 @@ TEST(ContractionTest, ExampleOrdering) {
     ordering.emplace_back(ExpandPatch("D", coord));
   }
   ordering.emplace_back(MergePatches("B", "D"));
-  const std::vector<std::vector<std::size_t>> order_C = {{0, 4}, {1, 4}, {2, 4},
-                                                 {0, 3}, {1, 3}, {2, 3}};
+  const std::vector<std::vector<std::size_t>> order_C = {
+      {0, 4}, {1, 4}, {2, 4}, {0, 3}, {1, 3}, {2, 3}};
   // These are "terminal cuts" for fast sampling over output values of C.
   for (const auto& tensor : order_C) {
     ordering.emplace_back(CutIndex({tensor}));

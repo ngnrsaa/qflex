@@ -116,8 +116,7 @@ ContractionData ContractionData::Initialize(
 
   std::size_t patch_pos = data.scratch_map_.size();
   for (const auto& patch_rank_pair : data.patch_rank_) {
-    const std::size_t size =
-        (std::size_t)pow(bond_dim, patch_rank_pair.second);
+    const std::size_t size = (std::size_t)pow(bond_dim, patch_rank_pair.second);
     data.scratch_.push_back(Tensor({""}, {size}));
     data.scratch_map_[patch_rank_pair.first] = patch_pos++;
     allocated_space += size;
@@ -125,10 +124,9 @@ ContractionData ContractionData::Initialize(
 
   // TODO(martinop): minor optimizations possible: When consecutive cuts apply
   // to the same grid tensor, only one copy needs to be stored.
-  //std::size_t cut_copy_pos = data.scratch_map_.size();
+  // std::size_t cut_copy_pos = data.scratch_map_.size();
   for (const auto& copy_rank_pair : cut_copy_rank) {
-    const std::size_t size =
-        (std::size_t)pow(bond_dim, copy_rank_pair.second);
+    const std::size_t size = (std::size_t)pow(bond_dim, copy_rank_pair.second);
     data.scratch_.push_back(Tensor({""}, {size}));
     data.scratch_map_[copy_rank_pair.first] = patch_pos++;
     allocated_space += size;
@@ -323,7 +321,8 @@ bool ordering_data_to_contraction_ordering(
         error_msg = "Index 1 must be within grid boundaries.";
         break;
       }
-      std::vector<std::size_t> position_1 = get_qubit_coords(index_1, input.grid.J);
+      std::vector<std::size_t> position_1 =
+          get_qubit_coords(index_1, input.grid.J);
       if (find_grid_coord_in_list(input.grid.qubits_off, position_1[0],
                                   position_1[1])) {
         error_msg = "Index 1 must specify an active qubit.";
@@ -341,7 +340,8 @@ bool ordering_data_to_contraction_ordering(
           error_msg = "Index 2 must be within grid boundaries.";
           break;
         }
-        std::vector<std::size_t> position_2 = get_qubit_coords(index_2, input.grid.J);
+        std::vector<std::size_t> position_2 =
+            get_qubit_coords(index_2, input.grid.J);
         if (find_grid_coord_in_list(input.grid.qubits_off, position_2[0],
                                     position_2[1])) {
           error_msg = "Index 2 must specify an active qubit.";
@@ -379,23 +379,26 @@ bool ordering_data_to_contraction_ordering(
   return true;
 }
 
-std::string index_name(const std::vector<std::size_t>& p1, const std::vector<std::size_t>& p2) {
+std::string index_name(const std::vector<std::size_t>& p1,
+                       const std::vector<std::size_t>& p2) {
   char buffer[64];
   if (p1.size() == 2 && p2.size() == 2) {
     // Two-qubit contraction.
-    std::size_t len = snprintf(buffer, sizeof(buffer), "(%ld,%ld),(%ld,%ld)", p1[0], p1[1],
-                       p2[0], p2[1]);
+    std::size_t len = snprintf(buffer, sizeof(buffer), "(%ld,%ld),(%ld,%ld)",
+                               p1[0], p1[1], p2[0], p2[1]);
     return std::string(buffer, len);
   }
   if (p1.size() == 3 && p2.size() == 3) {
     // Single-qubit contraction, or virtual index.
-    std::size_t len = snprintf(buffer, sizeof(buffer), "(%ld,%ld,%ld),(%ld,%ld,%ld)", p1[0],
-                       p1[1], p1[2], p2[0], p2[1], p2[2]);
+    std::size_t len =
+        snprintf(buffer, sizeof(buffer), "(%ld,%ld,%ld),(%ld,%ld,%ld)", p1[0],
+                 p1[1], p1[2], p2[0], p2[1], p2[2]);
     return std::string(buffer, len);
   }
   // Final qubit output value assignment.
   if (p1.size() == 2 && p2.empty()) {
-    std::size_t len = snprintf(buffer, sizeof(buffer), "(%ld,%ld),(o)", p1[0], p1[1]);
+    std::size_t len =
+        snprintf(buffer, sizeof(buffer), "(%ld,%ld),(o)", p1[0], p1[1]);
     return std::string(buffer, len);
   }
   std::stringstream ss;
@@ -424,8 +427,8 @@ std::vector<std::size_t> get_qubit_coords(std::size_t q, std::size_t J) {
 }
 
 bool find_grid_coord_in_list(
-    const std::optional<std::vector<std::vector<std::size_t>>>& coord_list, const std::size_t i,
-    const std::size_t j) {
+    const std::optional<std::vector<std::vector<std::size_t>>>& coord_list,
+    const std::size_t i, const std::size_t j) {
   return coord_list.has_value() &&
          find(coord_list.value().begin(), coord_list.value().end(),
               std::vector<std::size_t>({i, j})) != coord_list.value().end();

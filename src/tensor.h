@@ -52,8 +52,8 @@ class Tensor {
    * Creates a Tensor. New space is allocated.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
-   * @param dimensions std::vector<std::size_t> with the ordered dimensions of the
-   * indices.
+   * @param dimensions std::vector<std::size_t> with the ordered dimensions of
+   * the indices.
    */
   Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions);
 
@@ -63,8 +63,8 @@ class Tensor {
    * negligible.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
-   * @param dimensions std::vector<std::size_t> with the ordered dimensions of the
-   * indices.
+   * @param dimensions std::vector<std::size_t> with the ordered dimensions of
+   * the indices.
    * @param data std::vector<s_type> with the data to be copied. It has to
    * match in length the dimension of the Tensor, as given by the
    * dimensions.
@@ -76,8 +76,8 @@ class Tensor {
    * Creates a Tensor. A pointer to the data is passed.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
-   * @param dimensions std::vector<std::size_t> with the ordered dimensions of the
-   * indices.
+   * @param dimensions std::vector<std::size_t> with the ordered dimensions of
+   * the indices.
    * @param data pointer to the data of the tensor. It is responsibility of
    * the user to provide enough allocated memory to store the Tensor.
    */
@@ -146,7 +146,8 @@ class Tensor {
    * Get index_to_dimension dictionary (or unordered_map).
    * @return const reference to unordered_map of index to dimensions.
    */
-  const std::unordered_map<std::string, std::size_t>& get_index_to_dimension() const;
+  const std::unordered_map<std::string, std::size_t>& get_index_to_dimension()
+      const;
 
   /**
    * Generate index_to_dimension map from the object's indices and
@@ -270,8 +271,8 @@ class Tensor {
    * to the pointer to the data.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
-   * @param dimensions std::vector<std::size_t> with the ordered dimensions of the
-   * indices.
+   * @param dimensions std::vector<std::size_t> with the ordered dimensions of
+   * the indices.
    */
   void _init(const std::vector<std::string>& indices,
              const std::vector<std::size_t>& dimensions);
@@ -414,8 +415,8 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy);
  * Returns the size of the tensor product of A and B.
  * @param A Reference to Tensor A.
  * @param B Reference to Tensor B.
- * @return std::size_t with the size of the tensor resulting from the multiplication
- * of A and B.
+ * @return std::size_t with the size of the tensor resulting from the
+ * multiplication of A and B.
  */
 std::size_t result_size(Tensor& A, Tensor& B);
 
@@ -435,8 +436,8 @@ void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
  * between old_ordering and new_ordering.
  * @param map_old_to_new_idxpos const reference to a std::vector<std::string> of
  * new indices.
- * @param map_old_to_new_position Reference to a std::vector<std::size_t> where the map
- * will be stored. The size of the vector has to be equal to
+ * @param map_old_to_new_position Reference to a std::vector<std::size_t> where
+ * the map will be stored. The size of the vector has to be equal to
  * 2^(old_indices.size()). \todo Think about passing some scratch space to store
  * small maps. Probably not worth it, since they are small, and the big ones
  * will be memoized anyway. If the NO_MEMO_MAPS flag is passed, then it might
@@ -465,14 +466,15 @@ std::string _string_vector_to_string(std::vector<std::string> input);
 /**
  * Generates the standard name of the reordering as a std::string:
  * "abc...->fbe...,dim_a,dim_b,...".
- * @param map_old_to_new_idxpos const reference to a std::vector<std::size_t> index
- * mapping (old to new).
- * @param old_dimensions const reference to a std::vector<std::size_t> with the old
- * dimensions.
+ * @param map_old_to_new_idxpos const reference to a std::vector<std::size_t>
+ * index mapping (old to new).
+ * @param old_dimensions const reference to a std::vector<std::size_t> with the
+ * old dimensions.
  * @return std::string with the standard name of the ordering.
  */
-std::string _reordering_to_string(const std::vector<std::size_t>& map_old_to_new_idxpos,
-                                  const std::vector<std::size_t>& old_dimensions);
+std::string _reordering_to_string(
+    const std::vector<std::size_t>& map_old_to_new_idxpos,
+    const std::vector<std::size_t>& old_dimensions);
 
 /**
  * Checks whether a particular std::string is in a std::vector<std::string>.

@@ -158,7 +158,8 @@ gate_arrays(const std::string& gate_name, const std::vector<double>& params) {
     const double phi_rads = _PI * params[1];
     std::vector<std::vector<s_type>> ret_val = fSim(theta_rads, phi_rads);
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
-                      std::vector<std::size_t>>(ret_val[0], ret_val[1], {2, 4, 2});
+                      std::vector<std::size_t>>(ret_val[0], ret_val[1],
+                                                {2, 4, 2});
   }
   throw ERROR_MSG("Invalid gate name provided: ", gate_name);
 }
@@ -187,8 +188,9 @@ gate_arrays(const std::string& gate_name, const std::vector<double>& params) {
  * @param local vector<std::size_t> of the target qubit coordinates.
  * @return function for use as a comparator in std::sort.
  */
-std::function<bool(std::vector<std::size_t>, std::vector<std::size_t>)> order_func(
-    const std::list<ContractionOperation>& ordering, std::vector<std::size_t> local) {
+std::function<bool(std::vector<std::size_t>, std::vector<std::size_t>)>
+order_func(const std::list<ContractionOperation>& ordering,
+           std::vector<std::size_t> local) {
   return [&ordering, local](const std::vector<std::size_t> lhs,
                             const std::vector<std::size_t> rhs) {
     // Cuts are projected early and should be ordered first.
@@ -292,9 +294,10 @@ std::function<bool(std::vector<std::size_t>, std::vector<std::size_t>)> order_fu
 // function for all index names used here. Use smart pointers where possible.
 // Add depth functionality to read a circuit up to a certain cycle.
 void circuit_data_to_tensor_network(
-    const QflexCircuit& circuit, std::size_t I, std::size_t J, const std::string initial_conf,
-    const std::string final_conf,
-    const std::optional<std::vector<std::vector<std::size_t>>>& final_qubit_region,
+    const QflexCircuit& circuit, std::size_t I, std::size_t J,
+    const std::string initial_conf, const std::string final_conf,
+    const std::optional<std::vector<std::vector<std::size_t>>>&
+        final_qubit_region,
     const std::optional<std::vector<std::vector<std::size_t>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch) {
@@ -420,11 +423,13 @@ void circuit_data_to_tensor_network(
         throw ERROR_MSG("Qubit ", q2, " must correspond to an active qubit.");
 
       {
-        std::size_t x_dist = std::max(i_j_1[0], i_j_2[0]) - std::min(i_j_1[0], i_j_2[0]);
-        std::size_t y_dist = std::max(i_j_1[1], i_j_2[1]) - std::min(i_j_1[1], i_j_2[1]);
-        if(x_dist + y_dist != 1)
+        std::size_t x_dist =
+            std::max(i_j_1[0], i_j_2[0]) - std::min(i_j_1[0], i_j_2[0]);
+        std::size_t y_dist =
+            std::max(i_j_1[1], i_j_2[1]) - std::min(i_j_1[1], i_j_2[1]);
+        if (x_dist + y_dist != 1)
           throw ERROR_MSG("Qubits ", q1, " and ", q2,
-                        " are not nearest neighbors.");
+                          " are not nearest neighbors.");
       }
 
       std::vector<s_type> gate_q1;
@@ -499,7 +504,8 @@ void circuit_data_to_tensor_network(
 void flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
-    const std::optional<std::vector<std::vector<std::size_t>>>& final_qubit_region,
+    const std::optional<std::vector<std::vector<std::size_t>>>&
+        final_qubit_region,
     const std::optional<std::vector<std::vector<std::size_t>>>& off,
     const std::list<ContractionOperation>& ordering, s_type* scratch) {
   if (scratch == nullptr) {
@@ -581,10 +587,10 @@ void flatten_grid_of_tensors(
       }
 
       // If this qubit is in the final region, bundling must be adjusted.
-      //std::size_t fr_buffer = 0;
+      // std::size_t fr_buffer = 0;
       if (find_grid_coord_in_list(final_qubit_region, i, j)) {
         ordered_indices_2D.push_back(index_name({i, j}, {}));
-        //fr_buffer = 1;
+        // fr_buffer = 1;
       }
 
       std::vector<std::size_t> local = {i, j};

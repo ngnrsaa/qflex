@@ -62,16 +62,18 @@ const std::size_t DIM = 2;
  * @param final_conf string with 0s and 1s with the output configuration on B.
  * @param final_qubit_region vector<vector<std::size_t>> with the coords. of the
  * qubits in qubits with terminal cuts.
- * @param off vector<vector<std::size_t>> with the coords. of the qubits turned off.
+ * @param off vector<vector<std::size_t>> with the coords. of the qubits turned
+ * off.
  * @param grid_of_tensors referenced to a vector<vector<vector<Tensor>>> with
  * tensors (gates) at each position of the grid.
  * @param scratch pointer to s_type array with scratch space for all operations
  * performed in this function.
  */
 void circuit_data_to_tensor_network(
-    const QflexCircuit& circuit, std::size_t I, std::size_t J, const std::string initial_conf,
-    const std::string final_conf,
-    const std::optional<std::vector<std::vector<std::size_t>>>& final_qubit_region,
+    const QflexCircuit& circuit, std::size_t I, std::size_t J,
+    const std::string initial_conf, const std::string final_conf,
+    const std::optional<std::vector<std::vector<std::size_t>>>&
+        final_qubit_region,
     const std::optional<std::vector<std::vector<std::size_t>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch);
@@ -86,10 +88,10 @@ void circuit_data_to_tensor_network(
  * @param grid_of_tensors_2D reference to a vector<vector<Tensor>> where the
  * 2D grid of tensors will be stored. The typical names for the indices will
  * be used.
- * @param final_qubit_region optional<vector<vector<std::size_t>>> with the coords.
- * of the qubits in qubits with terminal cuts.
- * @param off optional<vector<vector<std::size_t>>> with the coords. of the qubits
- * turned off.
+ * @param final_qubit_region optional<vector<vector<std::size_t>>> with the
+ * coords. of the qubits in qubits with terminal cuts.
+ * @param off optional<vector<vector<std::size_t>>> with the coords. of the
+ * qubits turned off.
  * @param ordering std::list<ContractionOperation> providing the steps required
  * to contract the tensor grid.
  * @param scratch pointer to s_type array with enough space for all scratch
@@ -98,7 +100,8 @@ void circuit_data_to_tensor_network(
 void flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
-    const std::optional<std::vector<std::vector<std::size_t>>>& final_qubit_region,
+    const std::optional<std::vector<std::vector<std::size_t>>>&
+        final_qubit_region,
     const std::optional<std::vector<std::vector<std::size_t>>>& off,
     const std::list<ContractionOperation>& ordering, s_type* scratch);
 
