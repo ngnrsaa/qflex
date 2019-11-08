@@ -1,5 +1,6 @@
 [![Travis-CI](https://travis-ci.org/ngnrsaa/qflex.svg?branch=master "Travis-CI")](https://travis-ci.org/ngnrsaa/qflex)
-[![Code Coverage](https://img.shields.io/lgtm/grade/python/github/ngnrsaa/qflex.svg)](https://lgtm.com/projects/g/ngnrsaa/qflex)<br>
+[![Code Coverage](https://img.shields.io/lgtm/grade/python/github/ngnrsaa/qflex.svg)](https://lgtm.com/projects/g/ngnrsaa/qflex)
+[![Code Coverage](https://img.shields.io/lgtm/grade/cpp/github/ngnrsaa/qflex.svg)](https://lgtm.com/projects/g/ngnrsaa/qflex)<br>
 [![Nature](https://img.shields.io/static/v1?label=Nature&message=doi:10.5061/dryad.k6t1rj8&color=success)](https://www.nature.com/articles/s41586-019-1666-5)
 [![NPJ Quantum Information](https://img.shields.io/static/v1?label=NPJ-QI&message=doi:10.1038/s41534-019-0196-1&color=success)](https://doi.org/10.1038/s41534-019-0196-1)
 [![arXiv](https://img.shields.io/static/v1?label=arXiv&message=1905.00444&color=inactive)](https://arxiv.org/abs/1905.00444)
