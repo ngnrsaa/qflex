@@ -260,6 +260,20 @@ bool ordering_data_to_contraction_ordering(
   if (ordering == nullptr) {
     throw ERROR_MSG("Ordering must be non-null.");
   }
+
+  // Lambda function to check if indexes as in the right range
+  auto check_index = [&input](auto index, auto &error_msg) {
+    using index_type = std::remove_reference_t<std::remove_cv_t<decltype(index)>>;
+    const std::size_t grid_size = input.grid.I * input.grid.J;
+    if(static_cast<std::size_t>(static_cast<index_type>(grid_size)) != grid_size) {
+      error_msg = "Grid is too big.";
+      return false;
+    } else if(index < 0 or index >= static_cast<index_type>(grid_size)) {
+      error_msg = "Index must be within grid boundaries.";
+      return false;
+    } else return true;
+  };
+
   static const std::regex cut_value_regex("\\([0-9,]*\\)");
   std::string line;
   std::string error_msg;
@@ -275,14 +289,7 @@ bool ordering_data_to_contraction_ordering(
       long int index;
       ss >> patch;
       ss >> index;
-      if (index < 0) {
-        error_msg = "Index cannot be negative.";
-        break;
-      }
-      if (index >= input.grid.I * input.grid.J) {
-        error_msg = "Index must be within grid boundaries.";
-        break;
-      }
+      if(not check_index(index, error_msg)) break;
       std::vector<std::size_t> position = get_qubit_coords(index, input.grid.J);
       if (find_grid_coord_in_list(input.grid.qubits_off, position[0],
                                   position[1])) {
@@ -313,14 +320,7 @@ bool ordering_data_to_contraction_ordering(
       }
       long int index_1, index_2;
       ss >> index_1;
-      if (index_1 < 0) {
-        error_msg = "Index 1 cannot be negative.";
-        break;
-      }
-      if (index_1 >= input.grid.I * input.grid.J) {
-        error_msg = "Index 1 must be within grid boundaries.";
-        break;
-      }
+      if(not check_index(index_1, error_msg)) break;
       std::vector<std::size_t> position_1 =
           get_qubit_coords(index_1, input.grid.J);
       if (find_grid_coord_in_list(input.grid.qubits_off, position_1[0],
@@ -332,14 +332,7 @@ bool ordering_data_to_contraction_ordering(
         ordering->emplace_back(CutIndex({position_1}, values));
       } else {
         ss >> index_2;
-        if (index_2 < 0) {
-          error_msg = "Index 2 cannot be negative";
-          break;
-        }
-        if (index_2 >= input.grid.I * input.grid.J) {
-          error_msg = "Index 2 must be within grid boundaries.";
-          break;
-        }
+        if(not check_index(index_2, error_msg)) break;
         std::vector<std::size_t> position_2 =
             get_qubit_coords(index_2, input.grid.J);
         if (find_grid_coord_in_list(input.grid.qubits_off, position_2[0],
