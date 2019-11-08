@@ -362,12 +362,13 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
   std::vector<std::size_t> new_super_dimensions(num_indices);
   old_super_dimensions[num_indices - 1] = 1;
   new_super_dimensions[num_indices - 1] = 1;
-  for (long int i = old_dimensions.size() - 2; i >= 0; --i) {
-    old_super_dimensions[i] =
-        old_super_dimensions[i + 1] * old_dimensions[i + 1];
-    new_super_dimensions[i] =
-        new_super_dimensions[i + 1] * new_dimensions[i + 1];
-  }
+  if (std::size_t size = old_dimensions.size(); size >= 2)
+    for (std::size_t i = size; --i; ) {
+      old_super_dimensions[i - 1] =
+          old_super_dimensions[i] * old_dimensions[i];
+      new_super_dimensions[i - 1] =
+          new_super_dimensions[i] * new_dimensions[i];
+    }
 
   // Allocating small_map_old_to_new_position.
   std::vector<unsigned short int> small_map_old_to_new_position(MAX_RIGHT_DIM);
@@ -1159,6 +1160,11 @@ void _generate_binary_reordering_map(
     std::vector<std::size_t>& map_old_to_new_position) {
   std::size_t dim = 2;  // Hard coded!
   std::size_t num_indices = map_old_to_new_idxpos.size();
+
+  // Check
+  if (num_indices == 0) 
+    throw ERROR_MSG("Number of indices cannot be zero.");
+
   // Check
   if ((std::size_t)std::pow(dim, num_indices) !=
       map_old_to_new_position.size()) {
@@ -1174,10 +1180,12 @@ void _generate_binary_reordering_map(
   std::vector<std::size_t> new_super_dimensions(num_indices);
   old_super_dimensions[num_indices - 1] = 1;
   new_super_dimensions[num_indices - 1] = 1;
-  for (long int i = num_indices - 2; i >= 0; --i) {
-    old_super_dimensions[i] = old_super_dimensions[i + 1] * dim;
-    new_super_dimensions[i] = new_super_dimensions[i + 1] * dim;
-  }
+
+  if (num_indices >= 2)
+    for (std::size_t i = num_indices; --i; ) {
+      old_super_dimensions[i - 1] = old_super_dimensions[i] * dim;
+      new_super_dimensions[i - 1] = new_super_dimensions[i] * dim;
+    }
 
   // Iterate and generate map.
   std::vector<std::size_t> old_counter(num_indices, 0);
