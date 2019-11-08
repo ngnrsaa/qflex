@@ -1159,9 +1159,9 @@ void _generate_binary_reordering_map(
   std::size_t dim = 2;  // Hard coded!
   std::size_t num_indices = map_old_to_new_idxpos.size();
   // Check
-  if ((std::size_t)pow(dim, num_indices) != map_old_to_new_position.size()) {
+  if ((std::size_t)std::pow(dim, num_indices) != map_old_to_new_position.size()) {
     throw ERROR_MSG("Size of map: ", map_old_to_new_position.size(),
-                    " must be equal to 2^num_indices: ", pow(dim, num_indices),
+                    " must be equal to 2^num_indices: ", std::pow(dim, num_indices),
                     ".");
   }
 
