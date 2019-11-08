@@ -57,7 +57,7 @@ const std::vector<std::string> _ALPHABET(
  * unordered_map<int,int> with the log2 of powers of 2 up to 2^30, in order to
  * quickly switch to smart reordering and look up the logs.
  */
-const std::unordered_map<int, int> _LOG_2(
+const std::unordered_map<std::size_t, std::size_t> _LOG_2(
     {{2, 1},          {4, 2},           {8, 3},          {16, 4},
      {32, 5},         {64, 6},          {128, 7},        {256, 8},
      {512, 9},        {1024, 10},       {2048, 11},      {4096, 12},
@@ -323,7 +323,7 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
   std::vector<std::size_t> new_super_dimensions(num_indices);
   old_super_dimensions[num_indices - 1] = 1;
   new_super_dimensions[num_indices - 1] = 1;
-  for (int i = old_dimensions.size() - 2; i >= 0; --i) {
+  for (long int i = old_dimensions.size() - 2; i >= 0; --i) {
     old_super_dimensions[i] =
         old_super_dimensions[i + 1] * old_dimensions[i + 1];
     new_super_dimensions[i] =
@@ -475,10 +475,13 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
   // up to L10. Computation times are L4>L5>L6>...>L10. I'll consider
   // all of these cases.
   {
-    int Lr = _LOG_2.at(MAX_RIGHT_DIM);
-    int Ll = new_binary_ordering.size() - Lr;
-    int Rr = _LOG_2.at(MIN_RIGHT_DIM);
-    //int Rl = new_binary_ordering.size() - Rr;
+    if(new_binary_ordering.size() < _LOG_2.at(MAX_RIGHT_DIM))
+      throw ERROR_MSG("Something wrong with the _fast_reorder routine.");
+
+    std::size_t Lr = _LOG_2.at(MAX_RIGHT_DIM);
+    std::size_t Ll = new_binary_ordering.size() - Lr;
+    std::size_t Rr = _LOG_2.at(MIN_RIGHT_DIM);
+    //std::size_t Rl = new_binary_ordering.size() - Rr;
     std::vector<std::string> Ll_old_indices(old_binary_ordering.begin(),
                                             old_binary_ordering.begin() + Ll);
     std::vector<std::string> Ll_new_indices(new_binary_ordering.begin(),
@@ -494,8 +497,8 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
       return;
     }
     // Only one L\nu move.
-    for (int i = 5; i >= -1; --i) {
-      int extended_Rr = Rr + i;
+    for (long int i = 5; i >= -1; --i) {
+      long int extended_Rr = Rr + i;
       std::vector<std::string> Rr_old_indices(
           old_binary_ordering.end() - extended_Rr, old_binary_ordering.end());
       std::vector<std::string> Rr_new_indices(
@@ -529,15 +532,21 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
     // Add conditional to _left_reorder and _right_reorder, so that they don't
     // do anything when not needed.
     // Debug from here!
-    int Lr = _LOG_2.at(MAX_RIGHT_DIM);
-    int Ll = new_binary_ordering.size() - Lr;
-    int Rr = _LOG_2.at(MIN_RIGHT_DIM);
-    int Rl = new_binary_ordering.size() - Rr;
+
+    if(new_binary_ordering.size() < _LOG_2.at(MAX_RIGHT_DIM))
+      throw ERROR_MSG("Something wrong with the _fast_reorder routine.");
+    if(new_binary_ordering.size() < _LOG_2.at(MIN_RIGHT_DIM))
+      throw ERROR_MSG("Something wrong with the _fast_reorder routine.");
+
+    std::size_t Lr = _LOG_2.at(MAX_RIGHT_DIM);
+    std::size_t Ll = new_binary_ordering.size() - Lr;
+    std::size_t Rr = _LOG_2.at(MIN_RIGHT_DIM);
+    std::size_t Rl = new_binary_ordering.size() - Rr;
     // Helper vectors that can be reused.
     std::vector<std::string> Lr_indices(Lr), Ll_indices(Ll), Rr_indices(Rr),
         Rl_indices(Rl);
-    for (int i = 0; i < Rr; ++i) Rr_indices[i] = new_binary_ordering[i + Rl];
-    for (int i = 0; i < Rl; ++i) Rl_indices[i] = old_binary_ordering[i];
+    for (std::size_t i = 0; i < Rr; ++i) Rr_indices[i] = new_binary_ordering[i + Rl];
+    for (std::size_t i = 0; i < Rl; ++i) Rl_indices[i] = old_binary_ordering[i];
     std::vector<std::string> Rr_new_in_Rl_old =
         _vector_intersection(Rl_indices, Rr_indices);
     std::vector<std::string> Rl_old_not_in_Rr_new =
@@ -545,7 +554,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
     std::vector<std::string> Rl_first_step =
         _vector_concatenation(Rl_old_not_in_Rr_new, Rr_new_in_Rl_old);
     std::vector<std::string> Rl_zeroth_step(Rl);
-    for (int i = 0; i < Rl; ++i) Rl_zeroth_step[i] = old_binary_ordering[i];
+    for (std::size_t i = 0; i < Rl; ++i) Rl_zeroth_step[i] = old_binary_ordering[i];
     _left_reorder(Rl_zeroth_step, Rl_first_step, Rr, scratch_copy);
     // Done with 1).
     // Let's go with 2).
@@ -625,9 +634,9 @@ void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
     // different chunks of it.
     s_type* temp_data = new s_type[dim_right];
 #pragma omp for schedule(static)
-    for (int pl = 0; pl < dim_left; ++pl) {
+    for (std::size_t pl = 0; pl < dim_left; ++pl) {
 #ifdef _OPENMP
-      int current_thread = omp_get_thread_num();
+      std::size_t current_thread = omp_get_thread_num();
 #endif
       std::size_t offset = pl * dim_right;
       for (std::size_t pr = 0; pr < dim_right; ++pr)
@@ -1017,7 +1026,7 @@ void _generate_binary_reordering_map(
   std::vector<int> new_super_dimensions(num_indices);
   old_super_dimensions[num_indices - 1] = 1;
   new_super_dimensions[num_indices - 1] = 1;
-  for (int i = num_indices - 2; i >= 0; --i) {
+  for (long int i = num_indices - 2; i >= 0; --i) {
     old_super_dimensions[i] = old_super_dimensions[i + 1] * dim;
     new_super_dimensions[i] = new_super_dimensions[i + 1] * dim;
   }
@@ -1025,7 +1034,7 @@ void _generate_binary_reordering_map(
   // Iterate and generate map.
   std::vector<int> old_counter(num_indices, 0);
   std::size_t po, pn;  // Position of the data, old and new.
-  int i, j;
+  long int i, j;
   while (true) {
     po = 0;
     pn = 0;
