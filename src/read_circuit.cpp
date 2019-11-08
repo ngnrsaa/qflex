@@ -498,7 +498,8 @@ void circuit_data_to_tensor_network(
       try {
         grid_of_tensors[i][j].back().rename_index(last_name, output_name);
       } catch (std::string err_msg) {
-        throw ERROR_MSG("Failed to call rename_index(). Error:\n\t[", err_msg, "]");
+        throw ERROR_MSG("Failed to call rename_index(). Error:\n\t[", err_msg,
+                        "]");
       }
     } else {
       std::string delta_gate = (final_conf[idx] == '0') ? "delta_0" : "delta_1";
@@ -545,7 +546,8 @@ void flatten_grid_of_tensors(
         try {
           multiply(A, B, C, scratch);
         } catch (std::string err_msg) {
-          throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg, "]");
+          throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
+                          "]");
         }
         column_of_tensors[k + 1] = Tensor(C);
       }

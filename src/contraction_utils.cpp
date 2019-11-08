@@ -190,7 +190,8 @@ void ContractionData::ContractGrid(
         try {
           multiply(prev, next, result, get_scratch(kGeneralSpace).data());
         } catch (std::string err_msg) {
-          throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg, "]");
+          throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
+                          "]");
         }
         if (ordering.empty()) {
           output = &result;
@@ -227,12 +228,14 @@ void ContractionData::ContractGrid(
             try {
               copy_a.project(index, val, tensor_a);
             } catch (std::string err_msg) {
-              throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg, "]");
+              throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
+                              "]");
             }
             try {
               copy_b.project(index, val, tensor_b);
             } catch (std::string err_msg) {
-              throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg, "]");
+              throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
+                              "]");
             }
             ContractGrid(ordering, output_index, active_patches);
           }
@@ -245,7 +248,8 @@ void ContractionData::ContractGrid(
             try {
               copy_a.project(index, val, tensor_a);
             } catch (std::string err_msg) {
-              throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg, "]");
+              throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
+                              "]");
             }
             ContractGrid(ordering, output_index, active_patches);
             output_index++;
@@ -269,7 +273,8 @@ void ContractionData::ContractGrid(
         try {
           multiply(patch_1, patch_2, result, get_scratch(kGeneralSpace).data());
         } catch (std::string err_msg) {
-          throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg, "]");
+          throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
+                          "]");
         }
         if (ordering.empty()) {
           output = &result;
