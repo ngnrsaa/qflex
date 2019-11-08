@@ -305,6 +305,9 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
   std::size_t num_indices = old_ordering.size();
   std::size_t total_dim = size();
 
+  if(num_indices == 0)
+    throw ERROR_MSG("Something went wrong.");
+
   // Create map_old_to_new_idxpos from old to new indices, and new_dimensions.
   std::vector<std::size_t> map_old_to_new_idxpos(num_indices);
   std::vector<std::size_t> new_dimensions(num_indices);
@@ -342,7 +345,7 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
   // copies in memory, all in small cache friendly (for old data, not new,
   // which could be very scattered) blocks.
   // Define i and j once for the whole iteration.
-  int i, j;
+  long int i, j;
   // Position old and new.
   std::size_t po = 0, pn;
   // Counter of the values of each indices in the iteration (old ordering).
@@ -476,7 +479,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
   // all of these cases.
   {
     if(new_binary_ordering.size() < _LOG_2.at(MAX_RIGHT_DIM))
-      throw ERROR_MSG("Something wrong with the _fast_reorder routine.");
+      throw ERROR_MSG("Something went wrong.");
 
     std::size_t Lr = _LOG_2.at(MAX_RIGHT_DIM);
     std::size_t Ll = new_binary_ordering.size() - Lr;
