@@ -184,7 +184,6 @@ constexpr char kBadCycle5[] = R"(4
 TEST(ReadCircuitExceptionTest, MultipleGatesPerQubitPerCycle) {
   std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
   std::vector<std::vector<std::size_t>> off_qubits = {{0, 0}};
-  s_type scratch[256];
 
   // TODO: fix tests, currently these tests do not test if a qubit is
   // being reused in a cycle.
@@ -219,20 +218,20 @@ TEST(ReadCircuitTest, NullCircuit) {
                                        std::complex<float>(0, 0)};
 
   // Resulting tensor grid should be 2x1 (IxJ) ..
-  ASSERT_EQ(std::size(grid_of_tensors), 2);
+  ASSERT_EQ(std::size(grid_of_tensors), 2ul);
   for (std::size_t i = 0; i < 2; ++i) {
     const auto &tensor = grid_of_tensors[i];
-    ASSERT_EQ(std::size(tensor), 1);
+    ASSERT_EQ(std::size(tensor), 1ul);
 
     // .. and each qubit tensor should have 4 tensors ..
     for (const auto &t : tensor) {
-      ASSERT_EQ(std::size(t), 4);
+      ASSERT_EQ(std::size(t), 4ul);
 
       // .. of size 1, 2, 2, 1 (x2, because of complex numbers) respectively
-      ASSERT_EQ(std::size(t[0]), 1 * 2);
-      ASSERT_EQ(std::size(t[1]), 2 * 2);
-      ASSERT_EQ(std::size(t[2]), 2 * 2);
-      ASSERT_EQ(std::size(t[3]), 1 * 2);
+      ASSERT_EQ(std::size(t[0]), 1ul * 2ul);
+      ASSERT_EQ(std::size(t[1]), 2ul * 2ul);
+      ASSERT_EQ(std::size(t[2]), 2ul * 2ul);
+      ASSERT_EQ(std::size(t[3]), 1ul * 2ul);
 
       // Each qubit tensor should have 4 elements (delta_0, h, h, delta_0)
       // and (delta_0, h, h, delta_1) respectively
@@ -289,8 +288,8 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   circuit_data_to_tensor_network(circuit, 3, 2, "00000", "0000x", qubits_A,
                                  qubits_off, tensor_grid_3D, scratch);
 
-  ASSERT_EQ(tensor_grid_3D.size(), 3);
-  for (const auto &tensor : tensor_grid_3D) ASSERT_EQ(tensor.size(), 2);
+  ASSERT_EQ(tensor_grid_3D.size(), 3ul);
+  for (const auto &tensor : tensor_grid_3D) ASSERT_EQ(tensor.size(), 2ul);
 
   // TODO Add check on tensors
 

@@ -229,7 +229,7 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
   std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
       EvaluateCircuit(&input);
 
-  ASSERT_EQ(amplitudes.size(), 2);
+  ASSERT_EQ(amplitudes.size(), 2ul);
   EXPECT_EQ(amplitudes[0].first, "11000");
   EXPECT_EQ(amplitudes[1].first, "11001");
   EXPECT_NEAR(amplitudes[0].second.real(), 0.10669, 1e-5);

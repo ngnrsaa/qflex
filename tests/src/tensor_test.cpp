@@ -20,20 +20,20 @@ TEST(TensorTest, EmptyTensor) {
   Tensor tensor(indices, dimensions);
   ASSERT_EQ(tensor.get_indices(), indices);
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
-  ASSERT_EQ(tensor.size(), 8);
-  ASSERT_EQ(tensor.num_zeros(), 8);
+  ASSERT_EQ(tensor.size(), 8ul);
+  ASSERT_EQ(tensor.num_zeros(), 8ul);
 
   // Verify that data is initialized to zero.
   std::vector<std::complex<float>> read_data(tensor.data(),
                                              tensor.data() + tensor.size());
-  for (int i = 0; i < read_data.size(); ++i) {
+  for (std::size_t i = 0; i < read_data.size(); ++i) {
     ASSERT_FLOAT_EQ(read_data[i].real(), 0);
     ASSERT_FLOAT_EQ(read_data[i].imag(), 0);
   }
 
   const auto dict = tensor.get_index_to_dimension();
-  ASSERT_EQ(dict.at("a"), 2);
-  ASSERT_EQ(dict.at("b"), 4);
+  ASSERT_EQ(dict.at("a"), 2ul);
+  ASSERT_EQ(dict.at("b"), 4ul);
 
   // Test index renaming as well.
   tensor.rename_index("a", "c");
@@ -54,13 +54,13 @@ TEST(TensorTest, LoadData) {
   Tensor tensor(indices, dimensions, data);
   ASSERT_EQ(tensor.get_indices(), indices);
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
-  ASSERT_EQ(tensor.size(), 4);
-  ASSERT_EQ(tensor.num_zeros(), 0);
+  ASSERT_EQ(tensor.size(), 4ul);
+  ASSERT_EQ(tensor.num_zeros(), 0ul);
 
   // Verify that data is read in from vector as expected.
   std::vector<std::complex<float>> read_data(tensor.data(),
                                              tensor.data() + tensor.size());
-  for (int i = 0; i < read_data.size(); ++i) {
+  for (std::size_t i = 0; i < read_data.size(); ++i) {
     ASSERT_FLOAT_EQ(read_data[i].real(), data[i].real());
     ASSERT_FLOAT_EQ(read_data[i].imag(), data[i].imag());
   }
@@ -69,7 +69,7 @@ TEST(TensorTest, LoadData) {
   tensor.scalar_multiply(std::complex<float>(0, 1));
   read_data = std::vector<std::complex<float>>(tensor.data(),
                                                tensor.data() + tensor.size());
-  for (int i = 0; i < read_data.size(); ++i) {
+  for (std::size_t i = 0; i < read_data.size(); ++i) {
     ASSERT_FLOAT_EQ(read_data[i].real(), -1 * data[i].imag());
     ASSERT_FLOAT_EQ(read_data[i].imag(), data[i].real());
   }
@@ -81,7 +81,7 @@ TEST(TensorTest, TensorProjection) {
   std::vector<std::string> indices = {"a", "b", "c"};
   std::vector<size_t> dimensions = {2, 2, 2};
   std::vector<std::complex<float>> data;
-  for (int i = 0; i < 8; i++) {
+  for (std::size_t i = 0; i < 8; i++) {
     data.push_back(std::complex<float>(i, 0));
   }
 
@@ -99,13 +99,13 @@ TEST(TensorTest, TensorProjection) {
   ASSERT_EQ(projection_tensor_2.get_indices(), expected_indices);
   ASSERT_EQ(projection_tensor_2.get_dimensions(), expected_dimensions);
 
-  const int psize = projection_tensor_1.size();
+  const std::size_t psize = projection_tensor_1.size();
 
   const std::vector<std::complex<float>> proj_data_1(
       projection_tensor_1.data(), projection_tensor_1.data() + psize);
   const std::vector<std::complex<float>> proj_data_2(
       projection_tensor_2.data(), projection_tensor_2.data() + psize);
-  for (int i = 0; i < psize; ++i) {
+  for (std::size_t i = 0; i < psize; ++i) {
     ASSERT_FLOAT_EQ(proj_data_1[i].real(), data[i + psize].real());
     ASSERT_FLOAT_EQ(proj_data_2[i].real(), data[i + psize].real());
   }
@@ -117,7 +117,7 @@ TEST(TensorTest, IndexBundling) {
   std::vector<std::string> indices = {"a", "b", "c", "d"};
   std::vector<size_t> dimensions = {2, 2, 2, 2};
   std::vector<std::complex<float>> data;
-  for (int i = 0; i < 16; i++) {
+  for (std::size_t i = 0; i < 16; i++) {
     data.push_back(std::complex<float>(i, 0));
   }
 
@@ -130,7 +130,7 @@ TEST(TensorTest, IndexBundling) {
 
   std::vector<std::complex<float>> read_data(tensor.data(),
                                              tensor.data() + tensor.size());
-  for (int i = 0; i < read_data.size(); ++i) {
+  for (std::size_t i = 0; i < read_data.size(); ++i) {
     ASSERT_FLOAT_EQ(read_data[i].real(), data[i].real());
   }
 }
@@ -140,7 +140,7 @@ TEST(TensorTest, IndexReordering) {
   std::vector<std::string> indices = {"a", "b", "c"};
   std::vector<size_t> dimensions = {2, 2, 2};
   std::vector<std::complex<float>> data;
-  for (int i = 0; i < 8; i++) {
+  for (std::size_t i = 0; i < 8; i++) {
     data.push_back(std::complex<float>(i, 0));
   }
 
@@ -159,7 +159,7 @@ TEST(TensorTest, IndexReordering) {
       std::complex<float>(2, 0), std::complex<float>(6, 0),
       std::complex<float>(3, 0), std::complex<float>(7, 0),
   };
-  for (int i = 0; i < read_data.size(); ++i) {
+  for (std::size_t i = 0; i < read_data.size(); ++i) {
     ASSERT_FLOAT_EQ(read_data[i].real(), expected_data[i].real());
   }
 }
@@ -169,7 +169,7 @@ TEST(TensorTest, Multiply) {
   std::vector<std::string> indices_a = {"a", "b", "c"};
   std::vector<size_t> dimensions_a = {2, 2, 2};
   std::vector<std::complex<float>> data_a;
-  for (int i = 0; i < 8; i++) {
+  for (std::size_t i = 0; i < 8; i++) {
     data_a.push_back(std::complex<float>(i, 0));
   }
   Tensor tensor_a(indices_a, dimensions_a, data_a);
@@ -177,7 +177,7 @@ TEST(TensorTest, Multiply) {
   std::vector<std::string> indices_b = {"b", "c", "d"};
   std::vector<size_t> dimensions_b = {2, 2, 2};
   std::vector<std::complex<float>> data_b;
-  for (int i = 8; i > 0; i--) {
+  for (std::size_t i = 8; i > 0; i--) {
     data_b.push_back(std::complex<float>(i, 0));
   }
   Tensor tensor_b(indices_b, dimensions_b, data_b);
@@ -196,7 +196,7 @@ TEST(TensorTest, Multiply) {
   std::vector<std::complex<float>> expected_data = {20, 14, 100, 78};
   std::vector<std::complex<float>> read_data(tensor_c.data(),
                                              tensor_c.data() + tensor_c.size());
-  for (int i = 0; i < read_data.size(); ++i) {
+  for (std::size_t i = 0; i < read_data.size(); ++i) {
     ASSERT_FLOAT_EQ(read_data[i].real(), expected_data[i].real());
   }
 }

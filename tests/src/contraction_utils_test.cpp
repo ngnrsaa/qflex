@@ -239,7 +239,7 @@ TEST(ContractionTest, SimpleInitializeData) {
     active_patches[patch] = false;
   }
   data.ContractGrid(ordering, /*output_index=*/0, active_patches);
-  ASSERT_EQ(amplitudes.size(), 2);
+  ASSERT_EQ(amplitudes.size(), 2ul);
   // amplitudes[0] represents <00000|U|00000>, and should return 1.
   EXPECT_FLOAT_EQ(amplitudes[0].real(), 1.0);
   EXPECT_FLOAT_EQ(amplitudes[0].imag(), 0.0);
@@ -348,9 +348,9 @@ TEST(OrderingParserTest, ParseSimpleOrdering) {
   expected_ordering.emplace_back(ExpandPatch("b", {1, 1}));
   expected_ordering.emplace_back(MergePatches("a", "b"));
 
-  int op_count = expected_ordering.size();
+  std::size_t op_count = expected_ordering.size();
   ASSERT_EQ(ordering.size(), op_count);
-  for (int i = 0; i < op_count; ++i) {
+  for (std::size_t i = 0; i < op_count; ++i) {
     const auto op = ordering.front();
     const auto expected_op = expected_ordering.front();
     ASSERT_EQ(op.op_type, expected_op.op_type);
@@ -386,7 +386,7 @@ TEST(OrderingParserTest, ParseCutReordering) {
 
   ContractionOperation expected_op(CutIndex({{0, 0}, {0, 1}}, {1, 2}));
 
-  ASSERT_EQ(ordering.size(), 1);
+  ASSERT_EQ(ordering.size(), 1ul);
   const auto& op = ordering.front();
   EXPECT_EQ(op.cut.tensors, expected_op.cut.tensors);
   EXPECT_EQ(op.cut.values, expected_op.cut.values);
