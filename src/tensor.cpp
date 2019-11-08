@@ -54,7 +54,7 @@ const std::vector<std::string> _ALPHABET(
      "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"});
 
 /**
- * unordered_map<int,int> with the log2 of powers of 2 up to 2^30, in order to
+ * unordered_map<std::size_t,std::size_t> with the log2 of powers of 2 up to 2^30, in order to
  * quickly switch to smart reordering and look up the logs.
  */
 const std::unordered_map<std::size_t, std::size_t> _LOG_2(
