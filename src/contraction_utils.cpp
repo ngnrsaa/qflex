@@ -272,7 +272,7 @@ bool ordering_data_to_contraction_ordering(
     ss >> operation;
     if (operation == "expand") {
       std::string patch;
-      std::size_t index;
+      long int index;
       ss >> patch;
       ss >> index;
       if (index < 0) {
@@ -311,7 +311,7 @@ bool ordering_data_to_contraction_ordering(
         }
         values.push_back(atoi(values_str.substr(start, end).c_str()));
       }
-      std::size_t index_1, index_2;
+      long int index_1, index_2;
       ss >> index_1;
       if (index_1 < 0) {
         error_msg = "Index 1 cannot be negative.";
