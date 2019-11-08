@@ -49,14 +49,14 @@ namespace qflex {
 const double _SQRT_2 = 1.41421356237309504880168872;
 const double _INV_SQRT_2 = 1. / _SQRT_2;
 const double _PI = 3.14159265358979323846264338;
-const int SUPER_CYCLE_DEPTH = 8;
-const int DIM = 2;
+const std::size_t SUPER_CYCLE_DEPTH = 8;
+const std::size_t DIM = 2;
 
 /**
  * Read circuit from stream and fill in a 2D grid of vectors of tensors.
  * @param qflex::QflexCircuit containing circuit information.
- * @param I int with the first spatial dimension of the grid of qubits.
- * @param J int with the second spatial dimension of the grid of qubits.
+ * @param I std::size_t with the first spatial dimension of the grid of qubits.
+ * @param J std::size_t with the second spatial dimension of the grid of qubits.
  * @param initial_conf string with 0s and 1s with the input configuration of
  * the circuit.
  * @param final_conf string with 0s and 1s with the output configuration on B.
@@ -69,7 +69,7 @@ const int DIM = 2;
  * performed in this function.
  */
 void circuit_data_to_tensor_network(
-    const QflexCircuit& circuit, int I, int J, const std::string initial_conf,
+    const QflexCircuit& circuit, std::size_t I, std::size_t J, const std::string initial_conf,
     const std::string final_conf,
     const std::optional<std::vector<std::vector<int>>>& final_qubit_region,
     const std::optional<std::vector<std::vector<int>>>& off,
@@ -107,7 +107,7 @@ void flatten_grid_of_tensors(
  * names of the input indices of the tensors and vector with the output indices
  * of the tensors.
  * @param filename string with the name of the circuit file.
- * @param I int with the number of qubits.
+ * @param I std::size_t with the number of qubits.
  * @param gates reference to a vector<Tensor> to be filled with the gates.
  * @param inputs reference to a vector<vector<string>> to be filled with the
  * input indexes of the gates.
@@ -118,7 +118,7 @@ void flatten_grid_of_tensors(
  *
  */
 void read_wave_function_evolution(
-    std::string filename, int I, std::vector<Tensor>& gates,
+    std::string filename, std::size_t I, std::vector<Tensor>& gates,
     std::vector<std::vector<std::string>>& inputs,
     std::vector<std::vector<std::string>>& outputs, s_type* scratch);
 

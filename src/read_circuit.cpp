@@ -143,22 +143,22 @@ std::vector<std::vector<s_type>> fSim(s_type::value_type theta_rads,
 // array handling into its own class.
 // TODO: make params optional.
 // TODO: implement c-phase, cpf(phi).
-std::tuple<std::vector<s_type>, std::vector<s_type>, std::vector<size_t>>
+std::tuple<std::vector<s_type>, std::vector<s_type>, std::vector<std::size_t>>
 gate_arrays(const std::string& gate_name, const std::vector<double>& params) {
   if (gate_name == "cz") {
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
-                      std::vector<size_t>>(
+                      std::vector<std::size_t>>(
         gate_array("cz_q1", params), gate_array("cz_q2", params), {2, 2, 2});
   } else if (gate_name == "cx") {
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
-                      std::vector<size_t>>(
+                      std::vector<std::size_t>>(
         gate_array("cx_q1", params), gate_array("cx_q2", params), {2, 2, 2});
   } else if (gate_name == "fsim") {
     const double theta_rads = _PI * params[0];
     const double phi_rads = _PI * params[1];
     std::vector<std::vector<s_type>> ret_val = fSim(theta_rads, phi_rads);
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
-                      std::vector<size_t>>(ret_val[0], ret_val[1], {2, 4, 2});
+                      std::vector<std::size_t>>(ret_val[0], ret_val[1], {2, 4, 2});
   }
   throw ERROR_MSG("Invalid gate name provided: ", gate_name);
 }
@@ -211,9 +211,9 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
 
     std::string lpatch = "null";
     std::string rpatch = "null";
-    int lpos = -1;
-    int rpos = -1;
-    int op_num = 0;
+    std::size_t lpos = std::numeric_limits<std::size_t>::max();
+    std::size_t rpos = std::numeric_limits<std::size_t>::max();
+    std::size_t op_num = 0;
     for (const auto& op : ordering) {
       if (op.op_type != ContractionOperation::EXPAND) continue;
       if (lhs == op.expand.tensor) {
@@ -223,7 +223,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       }
       op_num++;
     }
-    if (lpos == -1) {
+    if (lpos == std::numeric_limits<std::size_t>::max()) {
       throw ERROR_MSG("Left hand side of pair not found: (", local[0], ',',
                       local[1], "),(", lhs[0], ',', lhs[1], ").");
     }
@@ -238,7 +238,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       }
       op_num++;
     }
-    if (rpos == -1) {
+    if (rpos == std::numeric_limits<std::size_t>::max()) {
       throw ERROR_MSG("Right hand side of pair not found: (", local[0], ',',
                       local[1], "),(", rhs[0], ',', rhs[1], ").");
     }
@@ -282,7 +282,6 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       }
     }
     // Error in comparison - likely issue in contraction ordering.
-    char error[200];
     throw ERROR_MSG("Failed to compare (", lhs[0], ',', lhs[1], ") and (",
                     rhs[0], ',', rhs[1], ") for local (", local[0], ',',
                     local[1], ").");
@@ -293,7 +292,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
 // function for all index names used here. Use smart pointers where possible.
 // Add depth functionality to read a circuit up to a certain cycle.
 void circuit_data_to_tensor_network(
-    const QflexCircuit& circuit, int I, int J, const std::string initial_conf,
+    const QflexCircuit& circuit, std::size_t I, std::size_t J, const std::string initial_conf,
     const std::string final_conf,
     const std::optional<std::vector<std::vector<int>>>& final_qubit_region,
     const std::optional<std::vector<std::vector<int>>>& off,
@@ -305,9 +304,9 @@ void circuit_data_to_tensor_network(
   // Useful for plugging into the tensor network:
   std::vector<int> i_j_1, i_j_2;
   // Calculated from input.
-  const int grid_size = I * J;
-  const int off_size = off.has_value() ? off.value().size() : 0;
-  const int num_active_qubits_from_grid = grid_size - off_size;
+  const std::size_t grid_size = I * J;
+  const std::size_t off_size = off.has_value() ? off.value().size() : 0;
+  const std::size_t num_active_qubits_from_grid = grid_size - off_size;
 
   if (circuit.num_active_qubits != num_active_qubits_from_grid) {
     throw ERROR_MSG(
@@ -319,7 +318,7 @@ void circuit_data_to_tensor_network(
 
   // Check for the length of initial_conf and final_conf.
   {
-    // size_t off_size = off.has_value() ? off.value().size() : 0;
+    // std::size_t off_size = off.has_value() ? off.value().size() : 0;
     if (initial_conf.size() != num_active_qubits_from_grid) {
       throw ERROR_MSG("Size of initial_conf: ", initial_conf.size(),
                       ", must be equal to the number of qubits: ",
@@ -336,20 +335,20 @@ void circuit_data_to_tensor_network(
   grid_of_tensors = std::vector<std::vector<std::vector<Tensor>>>(I);
   std::vector<std::vector<int>> grid_of_counters(I);
   std::unordered_map<std::string, int> link_counters;
-  for (int i = 0; i < I; ++i) {
+  for (std::size_t i = 0; i < I; ++i) {
     grid_of_tensors[i] = std::vector<std::vector<Tensor>>(J);
     grid_of_counters[i] = std::vector<int>(J);
-    for (int j = 0; j < J; ++j) {
+    for (std::size_t j = 0; j < J; ++j) {
       grid_of_tensors[i][j] = std::vector<Tensor>();
       grid_of_counters[i][j] = 0;
     }
   }
 
   // Insert deltas to first layer.
-  int idx = 0;
-  for (int q = 0; q < grid_size; ++q) {
+  std::size_t idx = 0;
+  for (std::size_t q = 0; q < grid_size; ++q) {
     std::vector<int> i_j = get_qubit_coords(q, J);
-    int i = i_j[0], j = i_j[1];
+    std::size_t i = i_j[0], j = i_j[1];
     if (find_grid_coord_in_list(off, i, j)) {
       continue;
     }
@@ -428,11 +427,11 @@ void circuit_data_to_tensor_network(
 
       std::vector<s_type> gate_q1;
       std::vector<s_type> gate_q2;
-      std::vector<size_t> dimensions;
+      std::vector<std::size_t> dimensions;
       tie(gate_q1, gate_q2, dimensions) = gate_arrays(gate.name, gate.params);
       std::string link_name = index_name(i_j_1, i_j_2);
       link_counters[link_name]++;
-      int counter = link_counters[link_name];
+      std::size_t counter = link_counters[link_name];
       std::string virtual_name =
           "(" + std::to_string(std::min(i_j_1[0], i_j_2[0])) + "," +
           std::to_string(std::min(i_j_1[1], i_j_2[1])) + "," +
@@ -466,14 +465,13 @@ void circuit_data_to_tensor_network(
   // Insert deltas to last layer on qubits that are in not in
   // final_qubit_region. Rename last index when in final_qubit_region to
   // "(i,j),(o)".
-  idx = -1;
-  for (int q = 0; q < grid_size; ++q) {
+  idx = 0;
+  for (std::size_t q = 0; q < grid_size; ++q) {
     std::vector<int> i_j = get_qubit_coords(q, J);
-    int i = i_j[0], j = i_j[1];
+    std::size_t i = i_j[0], j = i_j[1];
     if (find_grid_coord_in_list(off, i, j)) {
       continue;
     }
-    idx += 1;
     std::string last_name = "(" + std::to_string(i_j[0]) + "," +
                             std::to_string(i_j[1]) + "),(" +
                             std::to_string(grid_of_counters[i][j]) + ")";
@@ -486,6 +484,7 @@ void circuit_data_to_tensor_network(
       grid_of_tensors[i][j].push_back(
           Tensor({last_name}, {2}, gate_array(delta_gate, {})));
     }
+    idx += 1;
   }
 
   // Be proper about pointers.
@@ -506,18 +505,18 @@ void flatten_grid_of_tensors(
   }
 
   // Contract vertically and fill grid_of_tensors_2D.
-  int I = grid_of_tensors.size();
-  for (int i = 0; i < I; ++i) {
-    int J = grid_of_tensors[i].size();
-    for (int j = 0; j < J; ++j) {
+  std::size_t I = grid_of_tensors.size();
+  for (std::size_t i = 0; i < I; ++i) {
+    std::size_t J = grid_of_tensors[i].size();
+    for (std::size_t j = 0; j < J; ++j) {
       if (find_grid_coord_in_list(off, i, j)) continue;
-      int K = grid_of_tensors[i][j].size();
+      std::size_t K = grid_of_tensors[i][j].size();
       std::vector<Tensor> column_of_tensors(K);
       column_of_tensors[0] = Tensor(grid_of_tensors[i][j][0]);
-      for (int k = 0; k < K - 1; ++k) {
+      for (std::size_t k = 0; k < K - 1; ++k) {
         Tensor A(column_of_tensors[k]);
         Tensor B(grid_of_tensors[i][j][k + 1]);
-        size_t result_dimension = result_size(A, B);
+        std::size_t result_dimension = result_size(A, B);
         Tensor C({""}, {result_dimension});
         multiply(A, B, C, scratch);
         column_of_tensors[k + 1] = Tensor(C);
@@ -526,9 +525,9 @@ void flatten_grid_of_tensors(
     }
   }
 
-  for (int i = 0; i < I; ++i) {
-    int J = grid_of_tensors[i].size();
-    for (int j = 0; j < J; ++j) {
+  for (std::size_t i = 0; i < I; ++i) {
+    std::size_t J = grid_of_tensors[i].size();
+    for (std::size_t j = 0; j < J; ++j) {
       if (find_grid_coord_in_list(off, i, j)) {
         continue;
       }
@@ -554,9 +553,9 @@ void flatten_grid_of_tensors(
   }
 
   // Reorder.
-  for (int i = 0; i < I; ++i) {
-    int J = grid_of_tensors[i].size();
-    for (int j = 0; j < J; ++j) {
+  for (std::size_t i = 0; i < I; ++i) {
+    std::size_t J = grid_of_tensors[i].size();
+    for (std::size_t j = 0; j < J; ++j) {
       if (find_grid_coord_in_list(off, i, j)) {
         continue;
       }
@@ -580,10 +579,10 @@ void flatten_grid_of_tensors(
       }
 
       // If this qubit is in the final region, bundling must be adjusted.
-      int fr_buffer = 0;
+      //std::size_t fr_buffer = 0;
       if (find_grid_coord_in_list(final_qubit_region, i, j)) {
         ordered_indices_2D.push_back(index_name({i, j}, {}));
-        fr_buffer = 1;
+        //fr_buffer = 1;
       }
 
       std::vector<int> local = {i, j};
@@ -612,7 +611,7 @@ void flatten_grid_of_tensors(
 // This function is currently not being called.
 // TODO: Decide whether or not to deprecate function, also needs to be tested.
 void read_wave_function_evolution(
-    std::string filename, int I, std::vector<Tensor>& gates,
+    std::string filename, std::size_t I, std::vector<Tensor>& gates,
     std::vector<std::vector<std::string>>& inputs,
     std::vector<std::vector<std::string>>& outputs, s_type* scratch) {
   if (scratch == nullptr) {
@@ -625,7 +624,7 @@ void read_wave_function_evolution(
   }
 
   // Gotten from the file.
-  int num_qubits, cycle, q1, q2;
+  std::size_t num_qubits, cycle, q1, q2;
   std::string gate;
   // Useful for plugging into the tensor network:
   std::vector<int> i_j_1, i_j_2;
@@ -653,18 +652,17 @@ void read_wave_function_evolution(
       if (gate == "cz" || gate == "cx" || gate.rfind("fsim", 0) == 0)
         ss >> q2;
       else
-        q2 = -1;
+        q2 = std::numeric_limits<std::size_t>::max();
 
       // Fill in one-qubit gates.
-      if (q2 < 0) {
+      if (q2 == std::numeric_limits<std::size_t>::max()) {
         std::string input_index = std::to_string(q1) + ",i";
         std::string output_index = std::to_string(q1) + ",o";
         gates.push_back(Tensor({input_index, output_index}, {DIM, DIM},
                                gate_array(gate, {})));
         inputs.push_back({input_index});
         outputs.push_back({output_index});
-      }
-      if (q2 >= 0) {
+      } else {
         std::string input_index1 = std::to_string(q1) + ",i";
         std::string output_index1 = std::to_string(q1) + ",o";
         std::string input_index2 = std::to_string(q2) + ",i";
