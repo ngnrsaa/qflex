@@ -115,7 +115,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   std::chrono::duration<double> time_span;
 
   // Reading input.
-  const std::size_t super_dim = (int)pow(DIM, input->circuit.depth);
+  const std::size_t super_dim = std::pow(DIM, input->circuit.depth);
 
   // Create the ordering for this tensor contraction from file.
   t0 = std::chrono::high_resolution_clock::now();
@@ -147,7 +147,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // This scratch space is used for reading circuit and building tensor
   // network. At most we need super_dim * 4 for square grids, and times 2
   // when qubits are cut on the output index.
-  s_type* scratch = new s_type[(int)pow(super_dim, 4) * 2];
+  s_type* scratch = new s_type[static_cast<std::size_t>(std::pow(super_dim, 4) * 2)];
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);

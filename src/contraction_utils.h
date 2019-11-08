@@ -173,10 +173,10 @@ class ContractionData {
   std::vector<Tensor> scratch_;
 
   // Map of patch IDs/index names to scratch locations.
-  std::unordered_map<std::string, int> scratch_map_;
+  std::unordered_map<std::string, std::size_t> scratch_map_;
 
   // Max rank of each patch generated during contraction.
-  std::unordered_map<std::string, int> patch_rank_;
+  std::unordered_map<std::string, std::size_t> patch_rank_;
 
   // Contains the tensor grid produced by grid_of_tensors_3D_to_2D.
   std::vector<std::vector<Tensor>>* tensor_grid_;

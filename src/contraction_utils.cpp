@@ -47,7 +47,7 @@ ContractionData ContractionData::Initialize(
   // Indices of each patch.
   std::unordered_map<std::string, std::vector<std::string>> patch_indices;
   // Rank of cut-copy tensors.
-  std::unordered_map<std::string, int> cut_copy_rank;
+  std::unordered_map<std::string, std::size_t> cut_copy_rank;
 
   for (const auto& op : ordering) {
     switch (op.op_type) {
@@ -92,10 +92,10 @@ ContractionData ContractionData::Initialize(
     }
   }
 
-  long allocated_space = 0;
+  std::size_t allocated_space = 0;
 
   // Max rank/size of all patches.
-  int max_rank = 0;
+  std::size_t max_rank = 0;
   for (const auto& patch_rank_pair : data.patch_rank_) {
     max_rank = std::max(patch_rank_pair.second, max_rank);
   }

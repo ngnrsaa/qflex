@@ -334,7 +334,7 @@ void circuit_data_to_tensor_network(
   // Creating grid variables.
   grid_of_tensors = std::vector<std::vector<std::vector<Tensor>>>(I);
   std::vector<std::vector<std::size_t>> grid_of_counters(I);
-  std::unordered_map<std::string, int> link_counters;
+  std::unordered_map<std::string, std::size_t> link_counters;
   for (std::size_t i = 0; i < I; ++i) {
     grid_of_tensors[i] = std::vector<std::vector<Tensor>>(J);
     grid_of_counters[i] = std::vector<std::size_t>(J);
