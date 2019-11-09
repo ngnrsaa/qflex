@@ -6,9 +6,13 @@ any target folder. By default, qFlex installs to `$HOME/local`.
 
 ## Required software
 
-To install qFlex, `autoconf` must be installed in the system:
+To install qFlex on `Debian/Ubuntu` systems, the following packages must be installed in the system:
 ```
-$ sudo apt-get install autoconf
+$ sudo apt-get install autoconf automake make g++ libgsl-dev libgslcblas0
+```
+followed by the installation of required python modules:
+```
+# python3 -m pip install -r scripts/requirements.txt
 ```
 
 ## Check prerequisites
@@ -46,6 +50,23 @@ The following options for `configure` are also available:
 *Note: If you are using ICPC to build qFlex, you **must** specify
 --disable-pybind11 in this step. Construction of the python wrappers with ICPC
 is currently unsupported.*
+
+## Prerequisites on Mac OS X
+
+qFlex can be natively compiled on Mac OS X by installing few dependencies through
+`brew` and `pip3`. More precisely, the following libraries must be installed
+using `brew`:
+```
+$ brew install coreutils gsl autoconf automake libomp pybind11
+```
+and through `pip3`:
+```
+# python3 -m pip install -r scripts/requirements.txt
+```
+followed by:
+```
+$ autoreconf -i && autoconf && ./configure
+```
 
 ## Compile qFlex
 

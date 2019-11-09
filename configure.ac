@@ -24,6 +24,20 @@ AC_ARG_ENABLE([all_checks],
    esac], [all_checks=true]
 )
 
+# Check for additional Mac OSX dependencies
+if test $(uname) == "Darwin"; then
+  AC_ARG_ENABLE([brew], 
+    AS_HELP_STRING([--disable-brew],[Disable Brew.]), 
+    [case "${enableval}" in
+        yes) brew=true  ;;
+         no) brew=false ;; 
+          *) AC_MSG_ERROR([bad value ${enableval} for --disable-brew])
+     esac], [brew=true]
+  )
+else
+  brew=false
+fi
+
 # Skip python checks
 AC_ARG_ENABLE([python_checks], 
   AS_HELP_STRING([--disable-python_checks],[Disable Python checks.]), 
@@ -63,6 +77,26 @@ AC_ARG_ENABLE([openmp],
         *) AC_MSG_ERROR([bad value ${enableval} for --enable-openmp])
    esac], [openmp=false]
 )
+
+# Check for BREW.
+if test ${all_checks} != "false" && ${brew} != "false"; then
+  AC_CHECK_PROG(BREW_CHECK,brew,yes)
+  AS_IF([test x"$BREW_CHECK" != x"yes"], [AC_MSG_ERROR([Please install brew before configuring.])])
+
+  # Check if dependencies are installed
+  for pkg in coreutils gsl autoconf automake libomp pybind11; do
+    AC_MSG_CHECKING([for ${pkg}])
+    if brew ls --versions ${pkg} >/dev/null; then
+      AC_MSG_RESULT([yes])
+    else
+      AC_MSG_RESULT([no])
+      AC_MSG_ERROR([Please run 'brew install ${pkg}' to install qFlex.])
+    fi
+  done
+
+  # Update pre-processor flags
+  CPPFLAGS=${CPPFLAGS}" -I$(brew --prefix)/include/ -L$(brew --prefix)/lib/"
+fi
 
 AC_LANG(C++)
 AC_PROG_CXX
@@ -163,7 +197,7 @@ assert(version.parse(${module}.__version__) >= version.parse('${version}'))
 }
 
 # Check for Python version
-CIRQ_REQ_VERSION="0.5"
+CIRQ_REQ_VERSION="0.6"
 CIRQ_ERR_FLAG=pybind11
 
 PYBIND11_REQ_VERSION="2.2.4"
