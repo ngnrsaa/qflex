@@ -382,8 +382,7 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
   // No combined efficient mapping from old to new positions with actual
   // copies in memory, all in small cache friendly (for old data, not new,
   // which could be very scattered) blocks.
-  // Define i and j once for the whole iteration.
-  long int i, j;
+
   // Position old and new.
   std::size_t po = 0, pn;
   // Counter of the values of each indices in the iteration (old ordering).
@@ -393,11 +392,6 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
   // internal_po keeps track of interations within a block.
   // Blocks have size MAX_RIGHT_DIM.
   std::size_t internal_po = 0;
-
-  // Check that num_indices can be converted to the same type of 'i'
-  if (static_cast<std::size_t>(static_cast<decltype(i)>(num_indices)) !=
-      num_indices)
-    throw ERROR_MSG("Too many indices.");
 
   // External loop loops over blocks.
   while (true) {
@@ -410,21 +404,24 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
     while (true) {
       po = 0;
       pn = 0;
-      for (i = 0; i < static_cast<decltype(i)>(num_indices); ++i) {
+      for (std::size_t i = 0; i < num_indices; ++i) {
         po += old_super_dimensions[i] * old_counter[i];
         pn += new_super_dimensions[map_old_to_new_idxpos[i]] * old_counter[i];
       }
       small_map_old_to_new_position[po - offset] = pn;
-      for (j = num_indices - 1; j >= 0; --j) {
-        if (++old_counter[j] < old_dimensions[j])
+
+      bool complete{true};
+      for (std::size_t j = num_indices; j--; ) {
+        if (++old_counter[j] < old_dimensions[j]) {
+          complete = false;
           break;
-        else
+        } else
           old_counter[j] = 0;
       }
       // If end of block or end of entire operation, break.
       if ((++internal_po == MAX_RIGHT_DIM) || (po == total_dim - 1)) break;
       // If last index (0) was increased, then go back to fastest index.
-      if (j < 0) break;
+      if (complete) break;
     }
     // Copy data for this block, taking into account offset of small_map...
     // The following line is to avoid casting MAX_RIGHT_DIM to std::size_t
@@ -1189,29 +1186,25 @@ void _generate_binary_reordering_map(
 
   // Iterate and generate map.
   std::vector<std::size_t> old_counter(num_indices, 0);
-  std::size_t po, pn;  // Position of the data, old and new.
-  long int i, j;
-
-  // Check that num_indices can be converted to the same type of 'i'
-  if (static_cast<std::size_t>(static_cast<decltype(i)>(num_indices)) !=
-      num_indices)
-    throw ERROR_MSG("Too many indices.");
 
   while (true) {
-    po = 0;
-    pn = 0;
-    for (i = 0; i < static_cast<decltype(i)>(num_indices); ++i) {
+    std::size_t po{0}, pn{0};  // Position of the data, old and new.
+
+    for (std::size_t i = 0; i < num_indices; ++i) {
       po += old_super_dimensions[i] * old_counter[i];
       pn += new_super_dimensions[map_old_to_new_idxpos[i]] * old_counter[i];
     }
     map_old_to_new_position[po] = pn;
-    for (j = num_indices - 1; j >= 0; --j) {
-      if (++old_counter[j] < old_dimensions[j])
+
+    bool complete{true};
+    for (std::size_t j = num_indices; j--; ) {
+      if (++old_counter[j] < old_dimensions[j]) {
+        complete = false;
         break;
-      else
+      } else
         old_counter[j] = 0;
     }
-    if (j < 0) break;
+    if(complete) break;
   }
 }
 
