@@ -548,8 +548,11 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
       return;
     }
     // Only one L\nu move.
-    for (long int i = 5; i >= -1; --i) {
-      long int extended_Rr = Rr + i;
+    //for (long int i = 5; i >= -1; --i) {
+    //  long int extended_Rr = Rr + i;
+    #warning UNTESTED
+    for (std::size_t i = 7; i--; ) {
+      std::size_t extended_Rr = Rr + i - 1;
       std::vector<std::string> Rr_old_indices(
           old_binary_ordering.end() - extended_Rr, old_binary_ordering.end());
       std::vector<std::string> Rr_new_indices(
