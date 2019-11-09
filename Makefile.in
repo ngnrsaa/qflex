@@ -4,7 +4,7 @@ CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@
 PREFIX = @prefix@
-PYBIND11 = @pybind11@
+PYTHON_LIB = @python_lib@
 PYTHON_TESTS = @python_tests@
 OPENMP = @openmp@
 
@@ -24,8 +24,8 @@ else
   CXXFLAGS += -Wno-unknown-pragmas
 endif
 
-ifeq ($(PYBIND11), true)
-  TARGETS += pybind
+ifeq ($(PYTHON_LIB), true)
+  TARGETS += python_lib
 endif
 
 CXXFLAGS += $(CPPFLAGS)
@@ -42,10 +42,10 @@ qflex:
 	-git submodule update --init --recursive src/docopt
 	$(MAKE) -C src/
 
-.PHONY: pybind
-pybind: qflex
+.PHONY: python_lib
+python_lib: qflex
 	git submodule update --init --recursive src/pycpp
-	$(MAKE) -C src/ pybind
+	$(MAKE) -C src/ python_lib
 
 .PHONY: tests
 tests:
@@ -53,7 +53,7 @@ tests:
 	$(MAKE) -C tests/src/
 
 .PHONY: run-py-tests
-run-py-tests: pybind
+run-py-tests: python_lib
 	$(MAKE) -C tests/python/ run-all
 
 .PHONY: run-cxx-tests

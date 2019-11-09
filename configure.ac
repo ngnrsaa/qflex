@@ -58,14 +58,14 @@ AC_ARG_ENABLE([python_tests],
    esac], [python_tests=true]
 )
 
-# Add extra param for pybind11
-AC_ARG_ENABLE([pybind11], 
-  AS_HELP_STRING([--disable-pybind11],[Disable pybind11 extension of qFlex.]), 
+# Add extra param for python_lib
+AC_ARG_ENABLE([python_lib], 
+  AS_HELP_STRING([--disable-python_lib],[Disable python_lib extension of qFlex.]), 
   [case "${enableval}" in
-      yes) pybind11=true  ;;
-       no) pybind11=false ;; 
-        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_tests])
-   esac], [pybind11=true]
+      yes) python_lib=true  ;;
+       no) python_lib=false ;; 
+        *) AC_MSG_ERROR([bad value ${enableval} for --disable-python_lib])
+   esac], [python_lib=true]
 )
 
 # Add extra param for OpenMP
@@ -84,7 +84,7 @@ if test ${all_checks} != "false" && ${brew} != "false"; then
   AS_IF([test x"$BREW_CHECK" != x"yes"], [AC_MSG_ERROR([Please install brew before configuring.])])
 
   # Check if dependencies are installed
-  for pkg in coreutils gsl autoconf automake libomp pybind11; do
+  for pkg in coreutils gsl autoconf automake libomp; do
     AC_MSG_CHECKING([for ${pkg}])
     if brew ls --versions ${pkg} >/dev/null; then
       AC_MSG_RESULT([yes])
@@ -155,11 +155,11 @@ AS_IF([test ${openmp} == "true"],
   AC_MSG_WARN([OpenMP is still experimental with potential memory leak.])
 )
 
-# Check for python. If --disable-pybind11, no reasons to activate python
+# Check for python. If --disable-python_lib, no reasons to activate python
 REQ_PYTHON_VERSION="3.5"
-if test ${pybind11} == "true" && ${python_checks} == "true"; then
+if test ${python_lib} == "true" && ${python_checks} == "true"; then
   AM_PATH_PYTHON([${REQ_PYTHON_VERSION}],, 
-    pybind11=false
+    python_lib=false
     AC_MSG_WARN([Please install Python >= ${REQ_PYTHON_VERSION} to enable Python porting of qFlex.]))
 fi
 
@@ -198,40 +198,33 @@ assert(version.parse(${module}.__version__) >= version.parse('${version}'))
 
 # Check for Python version
 CIRQ_REQ_VERSION="0.6"
-CIRQ_ERR_FLAG=pybind11
-
-PYBIND11_REQ_VERSION="2.2.4"
-PYBIND11_ERR_FLAG=pybind11
+CIRQ_ERR_FLAG=cirq
 
 PYTEST_REQ_VERSION="4.5"
 PYTEST_ERR_FLAG=python_tests
 
-# Check python modules. If --disable-pybind11, no reasons to activate python
-if test ${pybind11} == "true" && ${python_checks} == "true"; then
+# Check python modules. If --disable-python_lib, no reasons to activate python
+if test ${python_lib} == "true" && ${python_checks} == "true"; then
 
   if test $(python_check_module cirq     ${CIRQ_REQ_VERSION}     ${CIRQ_ERR_FLAG})    == "false"; then
-    pybind11="false"
-  fi
-
-  if test $(python_check_module pybind11 ${PYBIND11_REQ_VERSION} ${PYBIND11_ERR_FLAG}) == "false"; then
-    pybind11="false"
+    python_lib="false"
   fi
 
   if test $(python_check_module pytest   ${PYTEST_REQ_VERSION}   ${PYTEST_ERR_FLAG})   == "false"; then
-    pybind11="false"
+    python_lib="false"
   fi
 
 fi
 
-# If --disable-pybind11, switch off everything
-AS_IF([test ${pybind11} == "false"],
+# If --disable-python_lib, switch off everything
+AS_IF([test ${python_lib} == "false"],
   python_tests=false
 ) 
 
 fi
 
 AC_SUBST(openmp, ${openmp})
-AC_SUBST(pybind11, ${pybind11})
+AC_SUBST(python_lib, ${python_lib})
 AC_SUBST(python_tests, ${python_tests})
 
 AC_OUTPUT

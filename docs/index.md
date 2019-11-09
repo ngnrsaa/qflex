@@ -16,7 +16,7 @@ Contains the core behavior of qFlex, written in C++.
   3D tensor network down to a 2D grid.
 - **tensor** contains the qFlex "Tensor" class, which is the basis for all
   operations performed in qFlex.
-- **pybind_main** uses [pybind](https://github.com/pybind/pybind11) to
+- **pycpp_main** uses [pycpp](https://github.com/ngnrsaa/pycpp) to
   provide a Python wrapper for qFlex. The resulting module is stored under
   [qflex/python](/python).
 
