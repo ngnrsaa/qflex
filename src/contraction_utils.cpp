@@ -102,14 +102,22 @@ ContractionData ContractionData::Initialize(
   long unsigned int max_size = (long unsigned int)pow(bond_dim, max_rank);
 
   // General-purpose scratch space (primarily used for tensor reordering).
-  data.scratch_.push_back(Tensor({""}, {max_size}));
+  try {
+    data.scratch_.push_back(Tensor({""}, {max_size}));
+  } catch (std::string err_msg) {
+    throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+  }
   data.scratch_map_[kGeneralSpace] = 0;
   allocated_space += max_size;
 
   // "Swap tensor" space, used to store operation results.
   for (int rank = 1; rank <= max_rank; ++rank) {
     const long unsigned int size = (long unsigned int)pow(bond_dim, rank);
-    data.scratch_.push_back(Tensor({""}, {size}));
+    try {
+      data.scratch_.push_back(Tensor({""}, {size}));
+    } catch (std::string err_msg) {
+      throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+    }
     data.scratch_map_[result_space(rank)] = rank;
     allocated_space += size;
   }
@@ -118,7 +126,11 @@ ContractionData ContractionData::Initialize(
   for (const auto& patch_rank_pair : data.patch_rank_) {
     const long unsigned int size =
         (long unsigned int)pow(bond_dim, patch_rank_pair.second);
-    data.scratch_.push_back(Tensor({""}, {size}));
+    try {
+      data.scratch_.push_back(Tensor({""}, {size}));
+    } catch (std::string err_msg) {
+      throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+    }
     data.scratch_map_[patch_rank_pair.first] = patch_pos++;
     allocated_space += size;
   }
@@ -129,7 +141,11 @@ ContractionData ContractionData::Initialize(
   for (const auto& copy_rank_pair : cut_copy_rank) {
     const long unsigned int size =
         (long unsigned int)pow(bond_dim, copy_rank_pair.second);
-    data.scratch_.push_back(Tensor({""}, {size}));
+    try {
+      data.scratch_.push_back(Tensor({""}, {size}));
+    } catch (std::string err_msg) {
+      throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+    }
     data.scratch_map_[copy_rank_pair.first] = patch_pos++;
     allocated_space += size;
   }
@@ -171,7 +187,12 @@ void ContractionData::ContractGrid(
         Tensor& prev = get_scratch(op.expand.id);
         std::string result_id = result_space(patch_rank_[op.expand.id]);
         Tensor& result = get_scratch(result_id);
-        multiply(prev, next, result, get_scratch(kGeneralSpace).data());
+        try {
+          multiply(prev, next, result, get_scratch(kGeneralSpace).data());
+        } catch (std::string err_msg) {
+          throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
+                          "]");
+        }
         if (ordering.empty()) {
           output = &result;
           continue;
@@ -204,8 +225,18 @@ void ContractionData::ContractGrid(
               get_scratch(cut_copy_name(op.cut.tensors, /*side = */ 1));
           copy_b = tensor_b;
           for (int val : values) {
-            copy_a.project(index, val, tensor_a);
-            copy_b.project(index, val, tensor_b);
+            try {
+              copy_a.project(index, val, tensor_a);
+            } catch (std::string err_msg) {
+              throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
+                              "]");
+            }
+            try {
+              copy_b.project(index, val, tensor_b);
+            } catch (std::string err_msg) {
+              throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
+                              "]");
+            }
             ContractGrid(ordering, output_index, active_patches);
           }
           tensor_a = copy_a;
@@ -214,7 +245,12 @@ void ContractionData::ContractGrid(
           // This is a terminal cut; each value adds to a different amplitude.
           output_index *= values.size();
           for (int val : values) {
-            copy_a.project(index, val, tensor_a);
+            try {
+              copy_a.project(index, val, tensor_a);
+            } catch (std::string err_msg) {
+              throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
+                              "]");
+            }
             ContractGrid(ordering, output_index, active_patches);
             output_index++;
           }
@@ -234,7 +270,12 @@ void ContractionData::ContractGrid(
         }
         std::string result_id = result_space(patch_rank_[op.merge.target_id]);
         Tensor& result = get_scratch(result_id);
-        multiply(patch_1, patch_2, result, get_scratch(kGeneralSpace).data());
+        try {
+          multiply(patch_1, patch_2, result, get_scratch(kGeneralSpace).data());
+        } catch (std::string err_msg) {
+          throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
+                          "]");
+        }
         if (ordering.empty()) {
           output = &result;
           continue;
