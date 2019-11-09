@@ -119,7 +119,8 @@ TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
         << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(
-        msg, testing::HasSubstr("Qubit '0' in '1 t 0' must correspond to an active qubit."));
+        msg, testing::HasSubstr(
+                 "Qubit '0' in '1 t 0' must correspond to an active qubit."));
   }
 
   // Two qubit gate must have active qubit as first qubit input.
@@ -131,7 +132,9 @@ TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
         << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(
-        msg, testing::HasSubstr("Qubit '0' in '1 cz 0 1' must correspond to an active qubit."));
+        msg,
+        testing::HasSubstr(
+            "Qubit '0' in '1 cz 0 1' must correspond to an active qubit."));
   }
 
   // Two qubit gate must have active qubit as second qubit input.
@@ -142,8 +145,9 @@ TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
     FAIL()
         << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr(
-                         "Qubit '1' in '1 cz 0 1' must correspond to an active qubit"));
+    EXPECT_THAT(
+        msg, testing::HasSubstr(
+                 "Qubit '1' in '1 cz 0 1' must correspond to an active qubit"));
   }
 }
 
