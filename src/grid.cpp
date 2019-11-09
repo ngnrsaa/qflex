@@ -9,7 +9,6 @@ void QflexGrid::clear() {
 }
 void QflexGrid::load(std::istream& istream) { this->load(std::move(istream)); }
 void QflexGrid::load(std::istream&& istream) {
-
   // Clear this grid
   this->clear();
 

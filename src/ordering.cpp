@@ -2,15 +2,12 @@
 
 namespace qflex {
 
-void QflexOrdering::clear() {
-  this->instructions.clear();
-}
+void QflexOrdering::clear() { this->instructions.clear(); }
 
 void QflexOrdering::load(std::istream& istream) {
   this->load(std::move(istream));
 }
 void QflexOrdering::load(std::istream&& istream) {
-
   // Strip everthing from a line that doesn't follow the right format
   auto strip_line = [](std::string line) {
     // Remove everything after '#'

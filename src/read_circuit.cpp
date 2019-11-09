@@ -368,9 +368,9 @@ void circuit_data_to_tensor_network(
 
   // Check if off contains valid qubits
   if (off.has_value())
-    for(const auto &w: off.value()) {
-      const auto &x = w[0];
-      const auto &y = w[1];
+    for (const auto& w : off.value()) {
+      const auto& x = w[0];
+      const auto& y = w[1];
       if (x < 0 or x >= I or y < 0 or y >= J)
         throw ERROR_MSG("Off qubit '(", x, ", ", y, ")' is outside the grid.");
     }

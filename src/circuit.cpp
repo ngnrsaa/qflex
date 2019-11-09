@@ -28,7 +28,6 @@ void QflexCircuit::load(std::istream &istream) {
   this->load(std::move(istream));
 }
 void QflexCircuit::load(std::istream &&istream) {
-
   // Check if token is a number
   auto is_number = [](const std::string &token) {
     try {
