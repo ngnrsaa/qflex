@@ -1,72 +1,88 @@
 #include "pybind_main.h"
 
+/**
+ * Given a PyCPP::iterable, return a stream.
+ * @param data to create the stream from.
+ * @param caller string representing the name of the iterable.
+ */
+template <typename data_type>
+std::stringstream GetStream(const data_type &data,
+                            const std::string &caller = "") {
+  std::stringstream out;
+  for (const auto &line : data)
+    if (PyCPP::Is<PyCPP::String>(line))
+      out << line << std::endl;
+    else
+      throw ERROR_MSG(caller, " must be a list of strings.");
+  return out;
+}
+
+/**
+ * Given options in PyCPP::Map format, load the corresponding data to
+ * data_type.
+ * @param options in PyCPP::Map format.
+ * @param argument key corresponding to the desired option.
+ * @param data object where to upload the option to.
+ */
+template <typename options_type, typename data_type>
+void LoadData(const options_type &options, const std::string &argument,
+              data_type &data) {
+  if (auto w = options.find(PyCPP::String(argument)); w != std::end(options)) {
+    const auto &data_iterable = std::get<1>(*w);
+    if (PyCPP::Is<PyCPP::Sequence>(data_iterable))
+      data.load(GetStream(PyCPP::As<PyCPP::Sequence>(data_iterable), argument));
+    else
+      throw ERROR_MSG("'", argument, "' must be a list of strings.");
+  } else if (auto w = options.find(PyCPP::String(argument + "_filename"));
+             w != std::end(options)) {
+    const auto &filename = std::get<1>(*w);
+    if (PyCPP::Is<PyCPP::String>(filename))
+      data.load(PyCPP::As<PyCPP::String>(filename));
+    else
+      throw ERROR_MSG("'", argument, "_filename' must be a string.");
+  }
+}
+
+/**
+ * Given options in pybind11::dict format, load states.
+ * @param options in pybind11::dict format.
+ * @param argument key corresponding to the desired option.
+ */
+template <typename options_type>
+std::vector<std::string> LoadStates(const options_type &options,
+                                    const std::string &argument) {
+  std::vector<std::string> states;
+  if (auto w = options.find(PyCPP::String(argument + "_states"));
+      w != std::end(options)) {
+    const auto &in_states = std::get<1>(*w);
+    if (PyCPP::Is<PyCPP::String>(in_states)) {
+      states.push_back(PyCPP::As<PyCPP::String>(in_states));
+    } else if (PyCPP::Is<PyCPP::Sequence>(in_states)) {
+      for (const auto &x : PyCPP::As<PyCPP::Sequence>(in_states))
+        if (PyCPP::Is<PyCPP::String>(x))
+          states.push_back(PyCPP::As<PyCPP::String>(x));
+        else
+          throw ERROR_MSG("states must be strings.");
+    } else
+      throw ERROR_MSG(argument, "_states must be a list of strings.");
+  } else if (auto w = options.find(PyCPP::String(argument + "_state"));
+             w != std::end(options)) {
+    const auto &in_state = std::get<1>(*w);
+    if (PyCPP::Is<PyCPP::String>(in_state)) {
+      states.push_back(PyCPP::As<PyCPP::String>(in_state));
+    } else
+      throw ERROR_MSG("states must be strings.");
+  } else
+    states.push_back("");
+  return states;
+}
+
 inline PyObject *simulate(PyObject *, PyObject *arg) {
-  auto GetStream = [](const auto &data, const std::string &caller) {
-    std::stringstream out;
-    for (const auto &line : data)
-      if (PyCPP::Is<PyCPP::String>(line))
-        out << line << std::endl;
-      else
-        throw PyCPP::SetError(caller + " must be a list of strings.");
-    return out;
-  };
-
-  auto LoadData = [&GetStream](const auto &options, const std::string &argument,
-                               auto &data) {
-    if (auto w = options.find(PyCPP::String(argument));
-        w != std::end(options)) {
-      const auto &q = std::get<1>(*w);
-      if (PyCPP::Is<PyCPP::Sequence>(q))
-        data.load(GetStream(PyCPP::As<PyCPP::Sequence>(q), argument));
-      else
-        throw PyCPP::SetError("'" + argument + "' must be a list of strings.");
-    } else if (auto w = options.find(PyCPP::String(argument + "_filename"));
-               w != std::end(options)) {
-      const auto &q = std::get<1>(*w);
-      if (PyCPP::Is<PyCPP::String>(q))
-        data.load(PyCPP::As<PyCPP::String>(q));
-      else
-        throw PyCPP::SetError("'" + argument + "_filename' must be a string.");
-    }
-  };
-
-  auto LoadStates = [](const auto &options, const std::string &argument,
-                       const std::size_t num_active_qubits = 0) {
-    std::vector<std::string> states;
-    if (auto w = options.find(PyCPP::String(argument + "_states"));
-        w != std::end(options)) {
-      const auto &q = std::get<1>(*w);
-      if (PyCPP::Is<PyCPP::String>(q)) {
-        states.push_back(PyCPP::As<PyCPP::String>(q));
-      } else if (PyCPP::Is<PyCPP::Sequence>(q)) {
-        for (const auto &x : PyCPP::As<PyCPP::Sequence>(q))
-          if (PyCPP::Is<PyCPP::String>(x))
-            states.push_back(PyCPP::As<PyCPP::String>(x));
-          else
-            throw PyCPP::SetError("states must be strings.");
-      } else
-        throw PyCPP::SetError(argument + "_states must be a list of strings.");
-    } else if (auto w = options.find(PyCPP::String(argument + "_state"));
-               w != std::end(options)) {
-      const auto &q = std::get<1>(*w);
-      if (PyCPP::Is<PyCPP::String>(q)) {
-        states.push_back(PyCPP::As<PyCPP::String>(q));
-      } else
-        throw PyCPP::SetError("states must be strings.");
-    } else {
-      if (argument == "initial")
-        states.push_back(std::string(num_active_qubits, '0'));
-      else
-        states.push_back("");
-    }
-    return states;
-  };
-
   try {
     // The passed argument must be a dictionary
     const auto v_options = PyCPP::Parse(arg);
     if (not PyCPP::Is<PyCPP::Map>(v_options[0])) {
-      throw PyCPP::SetError(
+      throw ERROR_MSG(
           "Simulation takes only one argument and it must be a dictionary");
     }
     const PyCPP::Map &options = PyCPP::As<PyCPP::Map>(v_options[0]);
@@ -78,8 +94,7 @@ inline PyObject *simulate(PyObject *, PyObject *arg) {
     LoadData(options, "grid", input.grid);
     LoadData(options, "circuit", input.circuit);
     LoadData(options, "ordering", input.ordering);
-    const auto initial_states =
-        LoadStates(options, "initial", input.circuit.num_active_qubits);
+    const auto initial_states = LoadStates(options, "initial");
     const auto final_states = LoadStates(options, "final");
 
     // Define container for amplitudes
@@ -87,16 +102,11 @@ inline PyObject *simulate(PyObject *, PyObject *arg) {
         std::string, std::vector<std::pair<std::string, std::complex<double>>>>>
         amplitudes;
 
-    auto run_simulation = [&](const std::string &initial_state = "",
-                              const std::string &final_state = "") {
-      input.initial_state = initial_state;
-      input.final_state = final_state;
-      return EvaluateCircuit(&input);
-    };
-
     for (const auto &is : initial_states) {
       for (const auto &fs : final_states) {
-        amplitudes.push_back({is, run_simulation(is, fs)});
+        input.initial_state = is;
+        input.final_state = fs;
+        amplitudes.push_back({is, EvaluateCircuit(&input)});
       }
     }
 
@@ -105,7 +115,17 @@ inline PyObject *simulate(PyObject *, PyObject *arg) {
     else
       return PyCPP::Build(amplitudes);
 
+    // Gently return an error msg if exception is known. Otherwise, rethrow
+    // exception.
+  } catch (std::string err_msg) {
+    std::cerr << err_msg << std::endl;
+  } catch (const char *err_msg) {
+    std::cerr << err_msg << std::endl;
+  } catch (const std::exception &e) {
+    std::cerr << e.what() << std::endl;
   } catch (...) {
-    return nullptr;
+    std::rethrow_exception(std::current_exception());
   }
+
+  return nullptr;
 }
