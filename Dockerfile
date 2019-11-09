@@ -15,7 +15,7 @@ COPY ./ /qflex
 WORKDIR /qflex/
 
 # Install dependences
-RUN autoreconf -i && autoconf && ./configure --disable-all_checks --disable-error_on_warnings
+RUN autoreconf -i && autoconf && ./configure --disable-all_checks
 
 # Make sure that there are no compiled libraries from the host
 RUN make clean
