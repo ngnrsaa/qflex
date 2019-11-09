@@ -363,11 +363,9 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
   old_super_dimensions[num_indices - 1] = 1;
   new_super_dimensions[num_indices - 1] = 1;
   if (std::size_t size = old_dimensions.size(); size >= 2)
-    for (std::size_t i = size; --i; ) {
-      old_super_dimensions[i - 1] =
-          old_super_dimensions[i] * old_dimensions[i];
-      new_super_dimensions[i - 1] =
-          new_super_dimensions[i] * new_dimensions[i];
+    for (std::size_t i = size; --i;) {
+      old_super_dimensions[i - 1] = old_super_dimensions[i] * old_dimensions[i];
+      new_super_dimensions[i - 1] = new_super_dimensions[i] * new_dimensions[i];
     }
 
   // Allocating small_map_old_to_new_position.
@@ -411,7 +409,7 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
       small_map_old_to_new_position[po - offset] = pn;
 
       bool complete{true};
-      for (std::size_t j = num_indices; j--; ) {
+      for (std::size_t j = num_indices; j--;) {
         if (++old_counter[j] < old_dimensions[j]) {
           complete = false;
           break;
@@ -548,17 +546,16 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
       return;
     }
 
-    if (Rr == 0)
-      throw ERROR_MSG("Something went wrong.");
+    if (Rr == 0) throw ERROR_MSG("Something went wrong.");
 
-    // TODO: This loop has been tested to make sure that extended_Rr is consistent
-    // with its previous implementation. However, no simulations so far seem to use
-    // this loop, so I cannot check it!
+    // TODO: This loop has been tested to make sure that extended_Rr is
+    // consistent with its previous implementation. However, no simulations so
+    // far seem to use this loop, so I cannot check it!
     //
     // Only one L\nu move.
-    //for (long int i = 5; i >= -1; --i) {
+    // for (long int i = 5; i >= -1; --i) {
     //  long int extended_Rr = Rr + i;
-    for (std::size_t i = 7; i--; ) {
+    for (std::size_t i = 7; i--;) {
       std::size_t extended_Rr = Rr + i - 1;
       std::vector<std::string> Rr_old_indices(
           old_binary_ordering.end() - extended_Rr, old_binary_ordering.end());
@@ -1169,8 +1166,7 @@ void _generate_binary_reordering_map(
   std::size_t num_indices = map_old_to_new_idxpos.size();
 
   // Check
-  if (num_indices == 0) 
-    throw ERROR_MSG("Number of indices cannot be zero.");
+  if (num_indices == 0) throw ERROR_MSG("Number of indices cannot be zero.");
 
   // Check
   if ((std::size_t)std::pow(dim, num_indices) !=
@@ -1189,7 +1185,7 @@ void _generate_binary_reordering_map(
   new_super_dimensions[num_indices - 1] = 1;
 
   if (num_indices >= 2)
-    for (std::size_t i = num_indices; --i; ) {
+    for (std::size_t i = num_indices; --i;) {
       old_super_dimensions[i - 1] = old_super_dimensions[i] * dim;
       new_super_dimensions[i - 1] = new_super_dimensions[i] * dim;
     }
@@ -1207,14 +1203,14 @@ void _generate_binary_reordering_map(
     map_old_to_new_position[po] = pn;
 
     bool complete{true};
-    for (std::size_t j = num_indices; j--; ) {
+    for (std::size_t j = num_indices; j--;) {
       if (++old_counter[j] < old_dimensions[j]) {
         complete = false;
         break;
       } else
         old_counter[j] = 0;
     }
-    if(complete) break;
+    if (complete) break;
   }
 }
 
