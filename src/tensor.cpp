@@ -547,10 +547,17 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
       scratch_copy = NULL;
       return;
     }
+
+    if (Rr == 0)
+      throw ERROR_MSG("Something went wrong.");
+
+    // TODO: This loop has been tested to make sure that extended_Rr is consistent
+    // with its previous implementation. However, no simulations so far seem to use
+    // this loop, so I cannot check it!
+    //
     // Only one L\nu move.
     //for (long int i = 5; i >= -1; --i) {
     //  long int extended_Rr = Rr + i;
-    #warning UNTESTED
     for (std::size_t i = 7; i--; ) {
       std::size_t extended_Rr = Rr + i - 1;
       std::vector<std::string> Rr_old_indices(
