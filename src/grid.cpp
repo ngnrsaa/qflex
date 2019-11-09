@@ -2,9 +2,17 @@
 
 namespace qflex {
 
+void QflexGrid::clear() {
+  this->I = 0;
+  this->J = 0;
+  qubits_off.clear();
+}
 void QflexGrid::load(std::istream& istream) { this->load(std::move(istream)); }
 void QflexGrid::load(std::istream&& istream) {
-  I = J = 0;
+
+  // Clear this grid
+  this->clear();
+
   std::string line;
   while (std::getline(istream, line))
     if (std::size(line) and line[0] != '#') {
