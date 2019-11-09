@@ -387,6 +387,7 @@ void circuit_data_to_tensor_network(
       else
         used_qubits.insert(q);
 
+    // One qubit gate
     if (std::size_t num_qubits = std::size(gate.qubits); num_qubits == 1) {
       // Get qubit
       std::size_t q1 = gate.qubits[0];
@@ -395,7 +396,8 @@ void circuit_data_to_tensor_network(
       // Check that position is an active qubit
       bool qubit_off = find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]);
       if (qubit_off)
-        throw ERROR_MSG("Qubit ", q1, " must correspond to an active qubit.");
+        throw ERROR_MSG("Qubit '", q1, "' in gate '", gate.cycle, " ", gate.name, " ",
+                          q1, "' must correspond to an active qubit.");
 
       std::string input_name =
           "(" + std::to_string(i_j_1[0]) + "," + std::to_string(i_j_1[1]) +
@@ -412,6 +414,7 @@ void circuit_data_to_tensor_network(
         throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
       }
 
+    // Two qubit gate
     } else if (num_qubits == 2) {
       // Get qubits
       std::size_t q1 = gate.qubits[0];
@@ -424,9 +427,11 @@ void circuit_data_to_tensor_network(
       bool second_qubit_off = find_grid_coord_in_list(off, i_j_2[0], i_j_2[1]);
 
       if (first_qubit_off)
-        throw ERROR_MSG("Qubit ", q1, " must correspond to an active qubit.");
+        throw ERROR_MSG("Qubit '", q1, "' in gate '", gate.cycle, " ", gate.name, " ", q1, " ", q2,
+                         "' must correspond to an active qubit.");
       if (second_qubit_off)
-        throw ERROR_MSG("Qubit ", q2, " must correspond to an active qubit.");
+        throw ERROR_MSG("Qubit '", q2, "' in gate '", gate.cycle, " ", gate.name, " ", q1, " ", q2,
+                         "' must correspond to an active qubit.");
 
       bool nearest_neighbors =
           (std::abs(i_j_1[0] - i_j_2[0]) + std::abs(i_j_1[1] - i_j_2[1])) == 1;

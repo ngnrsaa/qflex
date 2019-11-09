@@ -103,9 +103,6 @@ constexpr char kBadTGate[] = R"(1
 constexpr char kBadCzGate[] = R"(1
 1 cz 0 1)";
 
-constexpr char kBadCxGate[] = R"(1
-1 cx 0 1)";
-
 // Broken test
 TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
   std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
@@ -122,7 +119,7 @@ TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
         << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(
-        msg, testing::HasSubstr("Qubit 0 must correspond to an active qubit."));
+        msg, testing::HasSubstr("Qubit '0' in '1 t 0' must correspond to an active qubit."));
   }
 
   // Two qubit gate must have active qubit as first qubit input.
@@ -134,23 +131,11 @@ TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
         << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(
-        msg, testing::HasSubstr("Qubit 0 must correspond to an active qubit."));
-  }
-
-  // Two qubit gate must have active qubit as first qubit input.
-  circuit.load(std::stringstream(kBadCxGate));
-  try {
-    circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits,
-                                   grid_of_tensors, scratch);
-    FAIL()
-        << "Expected circuit_data_to_tensor_network() to throw an exception.";
-  } catch (std::string msg) {
-    EXPECT_THAT(
-        msg, testing::HasSubstr("Qubit 0 must correspond to an active qubit."));
+        msg, testing::HasSubstr("Qubit '0' in '1 cz 0 1' must correspond to an active qubit."));
   }
 
   // Two qubit gate must have active qubit as second qubit input.
-  off_qubits = {{1, 0}};
+  off_qubits = {{0, 1}};
   try {
     circuit_data_to_tensor_network(circuit, 2, 1, "0", "1", {}, off_qubits,
                                    grid_of_tensors, scratch);
@@ -158,7 +143,7 @@ TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
         << "Expected circuit_data_to_tensor_network() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(msg, testing::HasSubstr(
-                         "Qubit 0 has been used twice in the same cycle: 1"));
+                         "Qubit '1' in '1 cz 0 1' must correspond to an active qubit"));
   }
 }
 
