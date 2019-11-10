@@ -237,7 +237,7 @@ void Tensor::project(std::string index, size_t index_value,
     throw ERROR_MSG("Index: '", index, "' has to be equal to indices[0]: '",
                     _indices[0], "'.");
   }
-  if (index_value < 0 || index_value >= _dimensions[0]) {
+  if (index_value >= _dimensions[0]) {
     throw ERROR_MSG("index_value: ", index_value, " must be contained in [0, ",
                     _dimensions[0], ").");
   }
