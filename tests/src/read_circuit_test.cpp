@@ -103,7 +103,6 @@ constexpr char kBadTGate[] = R"(1
 constexpr char kBadCzGate[] = R"(1
 1 cz 0 1)";
 
-// Broken test
 TEST(ReadCircuitTest, CircuitReferencingInactiveQubits) {
   std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
   std::vector<std::vector<int>> off_qubits = {{0, 0}};
