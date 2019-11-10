@@ -126,6 +126,9 @@ void QflexCircuit::load(std::istream &&istream) {
         this->gates.emplace_back();
         auto &gate = gates.back();
 
+        // Add raw line to gate
+        gate.raw = line;
+
         // Check the first token is actually a number
         if (not is_integer(tokens[0]))
           throw error_msg("First token must be a valid cycle number.");
