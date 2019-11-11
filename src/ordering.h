@@ -10,6 +10,7 @@ namespace qflex {
 
 struct QflexOrdering {
   std::vector<std::string> instructions;
+  void clear();
   void load(std::istream& istream);
   void load(std::istream&& istream);
   void load(const std::string& filename);
