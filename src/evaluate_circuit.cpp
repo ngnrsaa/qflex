@@ -124,7 +124,11 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // Create the ordering for this tensor contraction from file.
   t0 = std::chrono::high_resolution_clock::now();
   std::list<ContractionOperation> ordering;
-  ordering_data_to_contraction_ordering(*input, &ordering);
+  try {
+    ordering_data_to_contraction_ordering(*input, &ordering);
+  } catch (const std::string& err_msg) {
+    throw ERROR_MSG("Failed to call ordering_data_to_contraction_ordering(). Error:\n\t[", err_msg, "]");
+  }
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
       std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
@@ -206,7 +210,11 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // Perform tensor grid contraction.
   std::vector<std::complex<double>> amplitudes(output_states.size());
   std::vector<std::pair<std::string, std::complex<double>>> result;
-  ContractGrid(ordering, &tensor_grid, &amplitudes);
+  try {
+    ContractGrid(ordering, &tensor_grid, &amplitudes);
+  } catch (const std::string& err_msg) {
+    throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[", err_msg, "]");
+  }
   for (int c = 0; c < amplitudes.size(); ++c) {
     result.push_back(std::make_pair(output_states[c], amplitudes[c]));
   }

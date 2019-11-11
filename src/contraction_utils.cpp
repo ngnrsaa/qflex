@@ -65,7 +65,11 @@ ContractionData ContractionData::Initialize(
         break;
       }
       case ContractionOperation::CUT: {
-        const std::string cut_index = index_name(op.cut.tensors);
+        try {
+          const std::string cut_index = index_name(op.cut.tensors);
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
+        }
         int side = 0;
         for (auto& tensor : op.cut.tensors) {
           auto& indices = grid_indices[tensor[0]][tensor[1]];
@@ -203,7 +207,11 @@ void ContractionData::ContractGrid(
         continue;
       }
       case ContractionOperation::CUT: {
-        const std::string index = index_name(op.cut.tensors);
+        try {
+          const std::string index = index_name(op.cut.tensors);
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
+        }
         Tensor& tensor_a =
             (*tensor_grid_)[op.cut.tensors[0][0]][op.cut.tensors[0][1]];
         Tensor& copy_a =
@@ -237,7 +245,11 @@ void ContractionData::ContractGrid(
               throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
                               "]");
             }
-            ContractGrid(ordering, output_index, active_patches);
+            try {
+              ContractGrid(ordering, output_index, active_patches);
+            } catch (const std::string& err_msg) {
+              throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[", err_msg, "]");
+            }
           }
           tensor_a = copy_a;
           tensor_b = copy_b;
@@ -251,7 +263,11 @@ void ContractionData::ContractGrid(
               throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
                               "]");
             }
-            ContractGrid(ordering, output_index, active_patches);
+            try {
+              ContractGrid(ordering, output_index, active_patches);
+            } catch (const std::string& err_msg) {
+              throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[", err_msg, "]");
+            }
             output_index++;
           }
           tensor_a = copy_a;
@@ -450,10 +466,18 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
 
 std::string index_name(const std::vector<std::vector<int>>& tensors) {
   if (tensors.size() == 2) {
-    return index_name(tensors.at(0), tensors.at(1));
+    try {
+      return index_name(tensors.at(0), tensors.at(1));
+    } catch (const std::string& err_msg) {
+      throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
+    }
   }
   if (tensors.size() == 1) {
-    return index_name(tensors.at(0), {});
+    try {
+      return index_name(tensors.at(0), {});
+    } catch (const std::string& err_msg) {
+      throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
+    }
   }
   throw ERROR_MSG("Failed to construct tensor name with input tensors size: ",
                   tensors.size(), ".");
@@ -516,7 +540,11 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
             patch_pair.second.is_used = true;
           }
         }
-        const std::string index = index_name(op.cut.tensors);
+        try {
+          const std::string index = index_name(op.cut.tensors);
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
+        }
         if (cut_indices.find(index) != cut_indices.end())
           error_msg = concat(error_msg, "\nIndex ", index.c_str(),
                              " is cut multiple times.");
@@ -558,13 +586,21 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
   }
 
   // Populate ContractionData and perform grid contraction.
-  ContractionData data =
-      ContractionData::Initialize(ordering, tensor_grid, amplitudes);
+  try {
+    ContractionData data =
+        ContractionData::Initialize(ordering, tensor_grid, amplitudes);
+  } catch (const std::string& err_msg) {
+    throw ERROR_MSG("Failed to call Initialize(). Error:\n\t[", err_msg, "]");
+  }
   std::unordered_map<std::string, bool> active_patches;
   for (const auto& patch : data.scratch_list()) {
     active_patches[patch] = false;
   }
-  data.ContractGrid(ordering, /*output_index = */ 0, active_patches);
+  try {
+    data.ContractGrid(ordering, /*output_index = */ 0, active_patches);
+  } catch (const std::string& err_msg) {
+    throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[", err_msg, "]");
+  }
 }
 
 }  // namespace qflex
