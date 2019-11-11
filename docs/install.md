@@ -6,9 +6,13 @@ any target folder. By default, qFlex installs to `$HOME/local`.
 
 ## Required software
 
-To install qFlex, `autoconf` must be installed in the system:
+To install qFlex on `Debian/Ubuntu` systems, the following packages must be installed in the system:
 ```
-$ sudo apt-get install autoconf
+$ sudo apt-get install autoconf automake make g++ libgsl-dev libgslcblas0
+```
+followed by the installation of required python modules:
+```
+# python3 -m pip install -r scripts/requirements.txt
 ```
 
 ## Check prerequisites

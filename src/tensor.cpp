@@ -102,14 +102,14 @@ void Tensor::_copy(const Tensor& other) {
     // total size of the dimensions.
     try {
       set_dimensions(other.get_dimensions());
-    } catch (std::string err_msg) {
+    } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call set_dimensions(). Error:\n\t[", err_msg,
                       "]");
     }
   }
   try {
     _init(other.get_indices(), other.get_dimensions());
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
   }
 
@@ -124,7 +124,7 @@ Tensor::Tensor(std::vector<std::string> indices,
                std::vector<std::size_t> dimensions) {
   try {
     _init(indices, dimensions);
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
   }
   _capacity = size();
@@ -153,7 +153,7 @@ Tensor::Tensor(std::vector<std::string> indices,
   }
   try {
     _init(indices, dimensions);
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
   }
   _capacity = size();
@@ -202,13 +202,13 @@ void Tensor::set_indices_and_dimensions(
   // The following line takes care of the total size of the dimensions.
   try {
     set_dimensions(dimensions);
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call set_dimensions(). Error:\n\t[", err_msg,
                     "]");
   }
   try {
     _init(indices, dimensions);
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
   }
 }
@@ -242,7 +242,7 @@ void Tensor::project(std::string index, std::size_t index_value,
     throw ERROR_MSG("Index: '", index, "' has to be equal to indices[0]: '",
                     _indices[0], "'.");
   }
-  if (index_value < 0 || index_value >= _dimensions[0]) {
+  if (index_value >= _dimensions[0]) {
     throw ERROR_MSG("index_value: ", index_value, " must be contained in [0, ",
                     _dimensions[0], ").");
   }
@@ -254,7 +254,7 @@ void Tensor::project(std::string index, std::size_t index_value,
   projection_tensor.set_indices(projection_indices);
   try {
     projection_tensor.set_dimensions(projection_dimensions);
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call set_dimensions(). Error:\n\t[", err_msg,
                     "]");
   }
@@ -434,7 +434,7 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
   }
   try {
     _init(new_ordering, new_dimensions);
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
   }
 
@@ -507,7 +507,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
   // This is common to all cases, special or default (worst case).
   try {
     _init(new_ordering, new_dimensions);
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
   }
 
@@ -571,7 +571,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
         try {
           _left_reorder(Rl_old_indices, Rl_new_indices, extended_Rr,
                         scratch_copy);
-        } catch (std::string err_msg) {
+        } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed to call _left_reorder(). Error:\n\t[",
                           err_msg, "]");
         }
@@ -622,7 +622,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
       Rl_zeroth_step[i] = old_binary_ordering[i];
     try {
       _left_reorder(Rl_zeroth_step, Rl_first_step, Rr, scratch_copy);
-    } catch (std::string err_msg) {
+    } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call _left_reorder(). Error:\n\t[", err_msg,
                       "]");
     }
@@ -650,7 +650,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
                                            new_binary_ordering.begin() + Rl);
     try {
       _left_reorder(Rl_second_step, Rl_thrid_step, Rr, scratch_copy);
-    } catch (std::string err_msg) {
+    } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call _left_reorder(). Error:\n\t[", err_msg,
                       "]");
     }
@@ -696,7 +696,7 @@ void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
     try {
       _generate_binary_reordering_map(map_old_to_new_idxpos,
                                       _REORDER_MAPS.at(name));
-    } catch (std::string err_msg) {
+    } catch (const std::string& err_msg) {
       throw ERROR_MSG(
           "Failed to call _generate_binary_reordering_map(). Error:\n\t[",
           err_msg, "]");
@@ -774,7 +774,7 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
     try {
       _generate_binary_reordering_map(map_old_to_new_idxpos,
                                       _REORDER_MAPS.at(name));
-    } catch (std::string err_msg) {
+    } catch (const std::string& err_msg) {
       throw ERROR_MSG(
           "Failed to call _generate_binary_reordering_map(). Error:\n\t[",
           err_msg, "]");
@@ -832,14 +832,14 @@ void Tensor::reorder(std::vector<std::string> new_ordering,
   if (fast) {
     try {
       _fast_reorder(new_ordering, scratch_copy);
-    } catch (std::string err_msg) {
+    } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call _fast_reorder(). Error:\n\t[", err_msg,
                       "]");
     }
   } else {
     try {
       _naive_reorder(new_ordering, scratch_copy);
-    } catch (std::string err_msg) {
+    } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call _naive_reorder(). Error:\n\t[", err_msg,
                       "]");
     }
@@ -1020,7 +1020,7 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
       _vector_union(left_indices, common_indices);
   try {
     A.reorder(A_new_ordering, scratch_copy);
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call reorder(). Error:\n\t[", err_msg, "]");
   }
   t1 = std::chrono::high_resolution_clock::now();
@@ -1033,7 +1033,7 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
       _vector_union(common_indices, right_indices);
   try {
     B.reorder(B_new_ordering, scratch_copy);
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call reorder(). Error:\n\t[", err_msg, "]");
   }
   t1 = std::chrono::high_resolution_clock::now();
@@ -1048,14 +1048,14 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     try {
       _multiply_MM(A.data(), B.data(), C.data(), left_dim, right_dim,
                    common_dim);
-    } catch (std::string err_msg) {
+    } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call _multiply_MM(). Error:\n\t[", err_msg,
                       "]");
     }
   } else if (left_indices.size() > 0 && right_indices.size() == 0) {
     try {
       _multiply_Mv(A.data(), B.data(), C.data(), left_dim, common_dim);
-    } catch (std::string err_msg) {
+    } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call _multiply_Mv(). Error:\n\t[", err_msg,
                       "]");
     }
@@ -1063,14 +1063,14 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     // Very import to switch A and B to use cgemv with transpose for this case.
     try {
       _multiply_vM(B.data(), A.data(), C.data(), right_dim, common_dim);
-    } catch (std::string err_msg) {
+    } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call _multiply_vM(). Error:\n\t[", err_msg,
                       "]");
     }
   } else if (left_indices.size() == 0 && right_indices.size() == 0) {
     try {
       _multiply_vv(A.data(), B.data(), C.data(), common_dim);
-    } catch (std::string err_msg) {
+    } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call _multiply_vv(). Error:\n\t[", err_msg,
                       "]");
     }
@@ -1094,7 +1094,7 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   C.set_indices(C_indices);
   try {
     C.set_dimensions(C_dimensions);
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call set_dimensions(). Error:\n\t[", err_msg,
                     "]");
   }
@@ -1137,22 +1137,22 @@ void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
       _vector_union(common_indices, right_indices);
   try {
     A.reorder(A_new_ordering, scratch_copy);
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call reorder(). Error:\n\t[", err_msg, "]");
   }
   try {
     B.reorder(B_new_ordering, scratch_copy);
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call reorder(). Error:\n\t[", err_msg, "]");
   }
   try {
     A.bundle(common_indices, bundled_index);
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call bundle(). Error:\n\t[", err_msg, "]");
   }
   try {
     B.bundle(common_indices, bundled_index);
-  } catch (std::string err_msg) {
+  } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call bundle(). Error:\n\t[", err_msg, "]");
   }
 }
