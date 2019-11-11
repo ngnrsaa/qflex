@@ -60,7 +60,11 @@ std::string get_output_states(const QflexInput* input,
     if (op.op_type != ContractionOperation::CUT) continue;
     // Any qubit with a terminal cut is in the final region.
     if (op.cut.tensors.size() != 1) continue;
-    const int pos = find_output_pos(input, op.cut.tensors[0]);
+    try {
+      const int pos = find_output_pos(input, op.cut.tensors[0]);
+    } catch (const std::string& err_msg) {
+      throw ERROR_MSG("Failed to call find_output_pos(). Error:\n\t[", err_msg, "]");
+    }
     const auto tensor_pos = op.cut.tensors[0];
     if (final_state_unspecified) {
       base_state[pos] = 'x';
@@ -139,9 +143,12 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // final_state if one wasn't provided.
   std::vector<std::vector<int>> final_qubits;
   std::vector<std::string> output_states;
-  input->final_state =
-      get_output_states(input, ordering, &final_qubits, &output_states);
-
+  try {
+    input->final_state =
+        get_output_states(input, ordering, &final_qubits, &output_states);
+  } catch (const std::string& err_msg) {
+    throw ERROR_MSG("Failed to call get_output_states(). Error:\n\t[", err_msg, "]");
+  }
   // Scratch space to be reused for operations.
   t0 = std::chrono::high_resolution_clock::now();
   // This scratch space is used for reading circuit and building tensor
