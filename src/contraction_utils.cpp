@@ -264,7 +264,7 @@ void ContractionData::ContractGrid(
             tensor_a = copy_a;
           }
         } catch (const std::string& err_msg) {
-          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+          throw ERROR_MSG("Failed to during CUT. Error:\n\t[", err_msg,
                           "]");
         }
         return;  // Post-cut contraction is handled recursively.
@@ -544,7 +544,7 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
 
           cut_indices.insert(index);
         } catch (const std::string& err_msg) {
-          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+          throw ERROR_MSG("Failed to during CUT. Error:\n\t[", err_msg,
                           "]");
         }
         continue;
