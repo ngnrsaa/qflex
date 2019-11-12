@@ -342,7 +342,7 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
   std::size_t num_indices = old_ordering.size();
   std::size_t total_dim = size();
 
-  if (num_indices == 0) throw ERROR_MSG("Something went wrong.");
+  if (num_indices == 0) throw ERROR_MSG("Number of indices cannot be zero.");
 
   // Create map_old_to_new_idxpos from old to new indices, and new_dimensions.
   std::vector<std::size_t> map_old_to_new_idxpos(num_indices);
@@ -525,7 +525,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
   // all of these cases.
   {
     if (new_binary_ordering.size() < _LOG_2.at(MAX_RIGHT_DIM))
-      throw ERROR_MSG("Something went wrong.");
+      throw ERROR_MSG("New ordering is too small to be used at this point.");
 
     std::size_t Lr = _LOG_2.at(MAX_RIGHT_DIM);
     std::size_t Ll = new_binary_ordering.size() - Lr;
@@ -545,7 +545,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
       return;
     }
 
-    if (Rr == 0) throw ERROR_MSG("Something went wrong.");
+    if (Rr == 0) throw ERROR_MSG("Rr move cannot be zero.");
 
     // TODO: This loop has been tested to make sure that extended_Rr is
     // consistent with its previous implementation. However, no simulations so
@@ -596,9 +596,9 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
     // Debug from here!
 
     if (new_binary_ordering.size() < _LOG_2.at(MAX_RIGHT_DIM))
-      throw ERROR_MSG("Something wrong with the _fast_reorder routine.");
+      throw ERROR_MSG("New ordering is too small to be used at this point.");
     if (new_binary_ordering.size() < _LOG_2.at(MIN_RIGHT_DIM))
-      throw ERROR_MSG("Something wrong with the _fast_reorder routine.");
+      throw ERROR_MSG("New ordering is too small to be used at this point.");
 
     std::size_t Lr = _LOG_2.at(MAX_RIGHT_DIM);
     std::size_t Ll = new_binary_ordering.size() - Lr;
