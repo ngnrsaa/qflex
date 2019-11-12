@@ -76,7 +76,8 @@ int main(int argc, char** argv) {
     try {
       amplitudes = qflex::EvaluateCircuit(&input);
     } catch (const std::string& err_msg) {
-      throw ERROR_MSG("Failed to call EvaluateCircuit(). Error:\n\t[", err_msg, "]");
+      throw ERROR_MSG("Failed to call EvaluateCircuit(). Error:\n\t[", err_msg,
+                      "]");
     }
 
     // Printing output.

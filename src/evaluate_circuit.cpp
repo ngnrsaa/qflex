@@ -64,7 +64,8 @@ std::string get_output_states(const QflexInput* input,
     try {
       pos = find_output_pos(input, op.cut.tensors[0]);
     } catch (const std::string& err_msg) {
-      throw ERROR_MSG("Failed to call find_output_pos(). Error:\n\t[", err_msg, "]");
+      throw ERROR_MSG("Failed to call find_output_pos(). Error:\n\t[", err_msg,
+                      "]");
     }
     const auto tensor_pos = op.cut.tensors[0];
     if (final_state_unspecified) {
@@ -128,7 +129,9 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   try {
     ordering_data_to_contraction_ordering(*input, &ordering);
   } catch (const std::string& err_msg) {
-    throw ERROR_MSG("Failed to call ordering_data_to_contraction_ordering(). Error:\n\t[", err_msg, "]");
+    throw ERROR_MSG(
+        "Failed to call ordering_data_to_contraction_ordering(). Error:\n\t[",
+        err_msg, "]");
   }
   t1 = std::chrono::high_resolution_clock::now();
   time_span =
@@ -152,7 +155,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     input->final_state =
         get_output_states(input, ordering, &final_qubits, &output_states);
   } catch (const std::string& err_msg) {
-    throw ERROR_MSG("Failed to call get_output_states(). Error:\n\t[", err_msg, "]");
+    throw ERROR_MSG("Failed to call get_output_states(). Error:\n\t[", err_msg,
+                    "]");
   }
   // Scratch space to be reused for operations.
   t0 = std::chrono::high_resolution_clock::now();

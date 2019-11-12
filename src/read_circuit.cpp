@@ -456,7 +456,8 @@ void circuit_data_to_tensor_network(
       try {
         link_name = index_name(i_j_1, i_j_2);
       } catch (const std::string& err_msg) {
-        throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
+        throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                        "]");
       }
       link_counters[link_name]++;
       int counter = link_counters[link_name];
@@ -595,9 +596,10 @@ void flatten_grid_of_tensors(
       for (const auto& pair : pairs) {
         std::string between_name;
         try {
-          between_name  = index_name(local, pair);
+          between_name = index_name(local, pair);
         } catch (const std::string& err_msg) {
-          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                          "]");
         }
         bundle_between(grid_of_tensors_2D[i][j],
                        grid_of_tensors_2D[pair[0]][pair[1]], between_name,
@@ -638,7 +640,8 @@ void flatten_grid_of_tensors(
         try {
           ordered_indices_2D.push_back(index_name({i, j}, {}));
         } catch (const std::string& err_msg) {
-          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                          "]");
         }
         fr_buffer = 1;
       }
@@ -660,7 +663,8 @@ void flatten_grid_of_tensors(
           ordered_indices_2D.push_back(
               index_name({q1[0], q1[1]}, {q2[0], q2[1]}));
         } catch (const std::string& err_msg) {
-          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                          "]");
         }
       }
 

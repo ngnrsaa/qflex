@@ -69,7 +69,8 @@ ContractionData ContractionData::Initialize(
         try {
           cut_index = index_name(op.cut.tensors);
         } catch (const std::string& err_msg) {
-          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                          "]");
         }
         int side = 0;
         for (auto& tensor : op.cut.tensors) {
@@ -212,7 +213,8 @@ void ContractionData::ContractGrid(
         try {
           index = index_name(op.cut.tensors);
         } catch (const std::string& err_msg) {
-          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                          "]");
         }
         Tensor& tensor_a =
             (*tensor_grid_)[op.cut.tensors[0][0]][op.cut.tensors[0][1]];
@@ -250,7 +252,8 @@ void ContractionData::ContractGrid(
             try {
               ContractGrid(ordering, output_index, active_patches);
             } catch (const std::string& err_msg) {
-              throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[", err_msg, "]");
+              throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[",
+                              err_msg, "]");
             }
           }
           tensor_a = copy_a;
@@ -268,7 +271,8 @@ void ContractionData::ContractGrid(
             try {
               ContractGrid(ordering, output_index, active_patches);
             } catch (const std::string& err_msg) {
-              throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[", err_msg, "]");
+              throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[",
+                              err_msg, "]");
             }
             output_index++;
           }
@@ -544,9 +548,10 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
         }
         std::string index;
         try {
-          index= index_name(op.cut.tensors);
+          index = index_name(op.cut.tensors);
         } catch (const std::string& err_msg) {
-          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                          "]");
         }
         if (cut_indices.find(index) != cut_indices.end())
           error_msg = concat(error_msg, "\nIndex ", index.c_str(),
