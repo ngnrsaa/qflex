@@ -213,8 +213,8 @@ order_func(const std::list<ContractionOperation>& ordering,
 
     std::string lpatch = "null";
     std::string rpatch = "null";
-    std::size_t lpos = std::numeric_limits<std::size_t>::max();
-    std::size_t rpos = std::numeric_limits<std::size_t>::max();
+    std::optional<std::size_t> lpos;
+    std::optional<std::size_t> rpos;
     std::size_t op_num = 0;
     for (const auto& op : ordering) {
       if (op.op_type != ContractionOperation::EXPAND) continue;
@@ -225,7 +225,7 @@ order_func(const std::list<ContractionOperation>& ordering,
       }
       op_num++;
     }
-    if (lpos == std::numeric_limits<std::size_t>::max()) {
+    if (not lpos.has_value()) {
       throw ERROR_MSG("Left hand side of pair not found: (", local[0], ',',
                       local[1], "),(", lhs[0], ',', lhs[1], ").");
     }
@@ -240,7 +240,7 @@ order_func(const std::list<ContractionOperation>& ordering,
       }
       op_num++;
     }
-    if (rpos == std::numeric_limits<std::size_t>::max()) {
+    if (not rpos.has_value()) {
       throw ERROR_MSG("Right hand side of pair not found: (", local[0], ',',
                       local[1], "),(", rhs[0], ',', rhs[1], ").");
     }
