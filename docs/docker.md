@@ -11,7 +11,7 @@ To build qFlex and run all the tests:
 # docker-compose up --build
 ```
 
-`docker-compose` will create three images: `qflex`, `qflex-tests`, and
+`docker-compose` will create three images: `qflex`, `qflex-cxx-tests`, and
 `qflex-py-tests`. To build qFlex images without running tests, use the
 following command:
 
@@ -21,10 +21,10 @@ following command:
 
 ## Run Tests
 
-Once `qflex-tests` is created, use the following command to run all C++ tests:
+Once `qflex-cxx-tests` is created, use the following command to run all C++ tests:
 
 ```
-# docker run -ti --rm qflex-tests
+# docker run -ti --rm qflex-cxx-tests
 ```
 
 Similarly, once `qflex-py-tests` is created the following command will run all

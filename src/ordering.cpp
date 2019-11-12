@@ -2,10 +2,13 @@
 
 namespace qflex {
 
+void QflexOrdering::clear() { this->instructions.clear(); }
+
 void QflexOrdering::load(std::istream& istream) {
   this->load(std::move(istream));
 }
 void QflexOrdering::load(std::istream&& istream) {
+  // Strip everthing from a line that doesn't follow the right format
   auto strip_line = [](std::string line) {
     // Remove everything after '#'
     line = std::regex_replace(line, std::regex("#.*"), "");
@@ -33,11 +36,13 @@ void QflexOrdering::load(std::istream&& istream) {
     return line;
   };
 
+  // Clear this ordering
+  this->clear();
+
   std::string line;
   while (std::getline(istream, line))
     if (std::size(line = strip_line(line))) this->instructions.push_back(line);
 }
-
 void QflexOrdering::load(const std::string& filename) {
   if (auto in = std::ifstream(filename); in.good())
     this->load(in);

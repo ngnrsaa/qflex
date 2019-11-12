@@ -357,10 +357,23 @@ void circuit_data_to_tensor_network(
     std::string output_name = "(" + std::to_string(i_j[0]) + "," +
                               std::to_string(i_j[1]) + "),(" +
                               std::to_string(grid_of_counters[i][j]) + ")";
-    grid_of_tensors[i][j].push_back(
-        Tensor({output_name}, {2}, gate_array(delta_gate, {})));
+    try {
+      grid_of_tensors[i][j].push_back(
+          Tensor({output_name}, {2}, gate_array(delta_gate, {})));
+    } catch (const std::string& err_msg) {
+      throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+    }
     idx += 1;
   }
+
+  // Check if off contains valid qubits
+  if (off.has_value())
+    for (const auto& w : off.value()) {
+      const auto& x = w[0];
+      const auto& y = w[1];
+      if (x < 0 or x >= I or y < 0 or y >= J)
+        throw ERROR_MSG("Off qubit '(", x, ", ", y, ")' is outside the grid.");
+    }
 
   std::unordered_set<int> used_qubits;
   std::size_t last_cycle{0};
@@ -383,6 +396,7 @@ void circuit_data_to_tensor_network(
       else
         used_qubits.insert(q);
 
+    // One qubit gate
     if (std::size_t num_qubits = std::size(gate.qubits); num_qubits == 1) {
       // Get qubit
       std::size_t q1 = gate.qubits[0];
@@ -391,7 +405,8 @@ void circuit_data_to_tensor_network(
       // Check that position is an active qubit
       bool qubit_off = find_grid_coord_in_list(off, i_j_1[0], i_j_1[1]);
       if (qubit_off)
-        throw ERROR_MSG("Qubit ", q1, " must correspond to an active qubit.");
+        throw ERROR_MSG("Qubit '", q1, "' in gate '", gate.raw,
+                        "' must correspond to an active qubit.");
 
       std::string input_name =
           "(" + std::to_string(i_j_1[0]) + "," + std::to_string(i_j_1[1]) +
@@ -400,10 +415,15 @@ void circuit_data_to_tensor_network(
       std::string output_name =
           "(" + std::to_string(i_j_1[0]) + "," + std::to_string(i_j_1[1]) +
           "),(" + std::to_string(grid_of_counters[i_j_1[0]][i_j_1[1]]) + ")";
-      grid_of_tensors[i_j_1[0]][i_j_1[1]].push_back(
-          Tensor({input_name, output_name}, {2, 2},
-                 gate_array(gate.name, gate.params)));
+      try {
+        grid_of_tensors[i_j_1[0]][i_j_1[1]].push_back(
+            Tensor({input_name, output_name}, {2, 2},
+                   gate_array(gate.name, gate.params)));
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+      }
 
+      // Two qubit gate
     } else if (num_qubits == 2) {
       // Get qubits
       std::size_t q1 = gate.qubits[0];
@@ -416,9 +436,11 @@ void circuit_data_to_tensor_network(
       bool second_qubit_off = find_grid_coord_in_list(off, i_j_2[0], i_j_2[1]);
 
       if (first_qubit_off)
-        throw ERROR_MSG("Qubit ", q1, " must correspond to an active qubit.");
+        throw ERROR_MSG("Qubit '", q1, "' in gate '", gate.raw,
+                        "' must correspond to an active qubit.");
       if (second_qubit_off)
-        throw ERROR_MSG("Qubit ", q2, " must correspond to an active qubit.");
+        throw ERROR_MSG("Qubit '", q2, "' in gate '", gate.raw,
+                        "' must correspond to an active qubit.");
 
       bool nearest_neighbors =
           (std::abs(i_j_1[0] - i_j_2[0]) + std::abs(i_j_1[1] - i_j_2[1])) == 1;
@@ -454,11 +476,18 @@ void circuit_data_to_tensor_network(
       std::string output_name_2 =
           "(" + std::to_string(i_j_2[0]) + "," + std::to_string(i_j_2[1]) +
           "),(" + std::to_string(grid_of_counters[i_j_2[0]][i_j_2[1]]) + ")";
-      grid_of_tensors[i_j_1[0]][i_j_1[1]].push_back(Tensor(
-          {input_name_1, virtual_name, output_name_1}, dimensions, gate_q1));
-      grid_of_tensors[i_j_2[0]][i_j_2[1]].push_back(Tensor(
-          {input_name_2, virtual_name, output_name_2}, dimensions, gate_q2));
-
+      try {
+        grid_of_tensors[i_j_1[0]][i_j_1[1]].push_back(Tensor(
+            {input_name_1, virtual_name, output_name_1}, dimensions, gate_q1));
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+      }
+      try {
+        grid_of_tensors[i_j_2[0]][i_j_2[1]].push_back(Tensor(
+            {input_name_2, virtual_name, output_name_2}, dimensions, gate_q2));
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+      }
     } else
       throw ERROR_MSG("k-qubit gates with k > 2 not yet implemented.");
   }
@@ -480,11 +509,20 @@ void circuit_data_to_tensor_network(
     if (find_grid_coord_in_list(final_qubit_region, i, j)) {
       std::string output_name =
           "(" + std::to_string(i_j[0]) + "," + std::to_string(i_j[1]) + "),(o)";
-      grid_of_tensors[i][j].back().rename_index(last_name, output_name);
+      try {
+        grid_of_tensors[i][j].back().rename_index(last_name, output_name);
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call rename_index(). Error:\n\t[", err_msg,
+                        "]");
+      }
     } else {
       std::string delta_gate = (final_conf[idx] == '0') ? "delta_0" : "delta_1";
-      grid_of_tensors[i][j].push_back(
-          Tensor({last_name}, {2}, gate_array(delta_gate, {})));
+      try {
+        grid_of_tensors[i][j].push_back(
+            Tensor({last_name}, {2}, gate_array(delta_gate, {})));
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+      }
     }
   }
 
@@ -519,7 +557,12 @@ void flatten_grid_of_tensors(
         Tensor B(grid_of_tensors[i][j][k + 1]);
         size_t result_dimension = result_size(A, B);
         Tensor C({""}, {result_dimension});
-        multiply(A, B, C, scratch);
+        try {
+          multiply(A, B, C, scratch);
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
+                          "]");
+        }
         column_of_tensors[k + 1] = Tensor(C);
       }
       grid_of_tensors_2D[i][j] = Tensor(column_of_tensors.back());
@@ -604,7 +647,11 @@ void flatten_grid_of_tensors(
       }
 
       // Reorder.
-      grid_of_tensors_2D[i][j].reorder(ordered_indices_2D, scratch);
+      try {
+        grid_of_tensors_2D[i][j].reorder(ordered_indices_2D, scratch);
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call reorder(). Error:\n\t[", err_msg, "]");
+      }
     }
   }
 }
@@ -659,8 +706,12 @@ void read_wave_function_evolution(
       if (q2 < 0) {
         std::string input_index = std::to_string(q1) + ",i";
         std::string output_index = std::to_string(q1) + ",o";
-        gates.push_back(Tensor({input_index, output_index}, {DIM, DIM},
-                               gate_array(gate, {})));
+        try {
+          gates.push_back(Tensor({input_index, output_index}, {DIM, DIM},
+                                 gate_array(gate, {})));
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+        }
         inputs.push_back({input_index});
         outputs.push_back({output_index});
       }
@@ -671,9 +722,13 @@ void read_wave_function_evolution(
         std::string output_index2 = std::to_string(q2) + ",o";
         inputs.push_back({input_index1, input_index2});
         outputs.push_back({output_index1, output_index2});
-        gates.push_back(
-            Tensor({input_index1, input_index2, output_index1, output_index2},
-                   {DIM, DIM, DIM, DIM}, gate_array(gate, {})));
+        try {
+          gates.push_back(
+              Tensor({input_index1, input_index2, output_index1, output_index2},
+                     {DIM, DIM, DIM, DIM}, gate_array(gate, {})));
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+        }
       }
     }
 

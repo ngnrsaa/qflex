@@ -18,10 +18,17 @@ std::ostream &operator<<(std::ostream &out, const QflexGate &gate) {
   return gate.operator<<(out);
 }
 
+void QflexCircuit::clear() {
+  this->num_active_qubits = 0;
+  this->depth = 0;
+  gates.clear();
+}
+
 void QflexCircuit::load(std::istream &istream) {
   this->load(std::move(istream));
 }
 void QflexCircuit::load(std::istream &&istream) {
+  // Check if token is a number
   auto is_number = [](const std::string &token) {
     try {
       std::stol(token);
@@ -31,10 +38,12 @@ void QflexCircuit::load(std::istream &&istream) {
     return true;
   };
 
+  // Check if token is an integer
   auto is_integer = [&is_number](const std::string &token) {
     return is_number(token) and std::stol(token) == std::stod(token);
   };
 
+  // Given a line, strip everything that doesn't follow the right format
   auto strip_line = [](std::string line) {
     // Remove everything after '#'
     line = std::regex_replace(line, std::regex("#.*"), "");
@@ -63,6 +72,7 @@ void QflexCircuit::load(std::istream &&istream) {
     return line;
   };
 
+  // Given a line, tokenize it
   auto tokenize = [](const std::string &line,
                      const std::string &regex_expr = "[^\\s]+") {
     std::vector<std::string> tokens;
@@ -73,6 +83,9 @@ void QflexCircuit::load(std::istream &&istream) {
       tokens.push_back(w->str());
     return tokens;
   };
+
+  // Clear this circuit
+  this->clear();
 
   std::size_t line_counter{0}, last_cycle_number{0};
   std::unordered_set<std::size_t> used_qubits;
@@ -112,6 +125,9 @@ void QflexCircuit::load(std::istream &&istream) {
         // Get gate
         this->gates.emplace_back();
         auto &gate = gates.back();
+
+        // Add raw line to gate
+        gate.raw = line;
 
         // Check the first token is actually a number
         if (not is_integer(tokens[0]))

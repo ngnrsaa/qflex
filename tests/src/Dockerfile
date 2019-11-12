@@ -1,10 +1,13 @@
 # Use qFlex as baseline
 FROM qflex
 
-# Copy qflex tests
+# Copy relevant files
 COPY ./tests/src/ /qflex/tests/src/
 
 # Compile tests
 WORKDIR /qflex/
 
-ENTRYPOINT make -j${OMP_NUM_THREADS} run-cxx-tests
+# Arguments from docker-compose
+ARG OMP_NUM_THREADS
+
+ENTRYPOINT make -j${OMP_NUM_THREADS:-8} run-cxx-tests
