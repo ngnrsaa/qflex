@@ -452,8 +452,9 @@ void circuit_data_to_tensor_network(
       std::vector<s_type> gate_q2;
       std::vector<size_t> dimensions;
       tie(gate_q1, gate_q2, dimensions) = gate_arrays(gate.name, gate.params);
+      std::string link_name;
       try {
-        std::string link_name = index_name(i_j_1, i_j_2);
+        link_name = index_name(i_j_1, i_j_2);
       } catch (const std::string& err_msg) {
         throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
       }
@@ -592,8 +593,9 @@ void flatten_grid_of_tensors(
       }
 
       for (const auto& pair : pairs) {
+        std::string between_name;
         try {
-          std::string between_name = index_name(local, pair);
+          between_name  = index_name(local, pair);
         } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
         }

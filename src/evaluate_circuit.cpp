@@ -60,8 +60,9 @@ std::string get_output_states(const QflexInput* input,
     if (op.op_type != ContractionOperation::CUT) continue;
     // Any qubit with a terminal cut is in the final region.
     if (op.cut.tensors.size() != 1) continue;
+    std::size_t pos;
     try {
-      const int pos = find_output_pos(input, op.cut.tensors[0]);
+      pos = find_output_pos(input, op.cut.tensors[0]);
     } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call find_output_pos(). Error:\n\t[", err_msg, "]");
     }

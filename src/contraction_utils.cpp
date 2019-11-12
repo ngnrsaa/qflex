@@ -65,8 +65,9 @@ ContractionData ContractionData::Initialize(
         break;
       }
       case ContractionOperation::CUT: {
+        std::string cut_index;
         try {
-          const std::string cut_index = index_name(op.cut.tensors);
+          cut_index = index_name(op.cut.tensors);
         } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
         }
@@ -207,8 +208,9 @@ void ContractionData::ContractGrid(
         continue;
       }
       case ContractionOperation::CUT: {
+        std::string index;
         try {
-          const std::string index = index_name(op.cut.tensors);
+          index = index_name(op.cut.tensors);
         } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
         }
@@ -540,8 +542,9 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
             patch_pair.second.is_used = true;
           }
         }
+        std::string index;
         try {
-          const std::string index = index_name(op.cut.tensors);
+          index= index_name(op.cut.tensors);
         } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
         }
@@ -586,9 +589,9 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
   }
 
   // Populate ContractionData and perform grid contraction.
+  ContractionData data;
   try {
-    ContractionData data =
-        ContractionData::Initialize(ordering, tensor_grid, amplitudes);
+    data = ContractionData::Initialize(ordering, tensor_grid, amplitudes);
   } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call Initialize(). Error:\n\t[", err_msg, "]");
   }
