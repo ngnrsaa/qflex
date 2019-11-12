@@ -70,10 +70,10 @@ std::string get_output_states(const QflexInput* input,
     // If no error is caught, output_pos will be initialized.
     const auto tensor_pos = op.cut.tensors[0];
     if (final_state_unspecified) {
-      base_state[pos] = 'x';
+      base_state[output_pos] = 'x';
     }
     // TODO(martinop): reconsider requiring 'x' for cut indices.
-    output_pos_map.push_back(pos);
+    output_pos_map.push_back(output_pos);
     if (op.cut.values.empty()) {
       output_values_map.push_back({0, 1});
     } else {
