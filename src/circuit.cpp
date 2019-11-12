@@ -103,7 +103,7 @@ void QflexCircuit::load(std::istream &&istream) {
               std::count(std::begin(line), std::end(line), '('),
           n_close = std::count(std::begin(line), std::end(line), ')');
           n_open != n_close or n_open > 1)
-        throw error_msg("Not-matching parentheses.");
+        throw ERROR_MSG("Not-matching parentheses.");
 
       // Tokenize the line
       auto tokens = tokenize(line);
@@ -112,13 +112,13 @@ void QflexCircuit::load(std::istream &&istream) {
       // of qubits
       if (line_counter == 0) {
         if (std::size(tokens) != 1 or std::stol(tokens[0]) <= 0)
-          throw error_msg(
+          throw ERROR_MSG(
               "First line in circuit must be the number of active qubits.");
         this->num_active_qubits = std::stol(tokens[0]);
       } else {
         // Check the correct number of tokens
         if (std::size(tokens) < 3)
-          throw error_msg(
+          throw ERROR_MSG(
               "Gate must be specified as: cycle gate_name[(p1[,p2,...])] q1 "
               "[q2, ...]");
 
@@ -131,12 +131,12 @@ void QflexCircuit::load(std::istream &&istream) {
 
         // Check the first token is actually a number
         if (not is_integer(tokens[0]))
-          throw error_msg("First token must be a valid cycle number.");
+          throw ERROR_MSG("First token must be a valid cycle number.");
         gate.cycle = std::stol(tokens[0]);
 
         // Check that cycle number is monotonically increasing
         if (gate.cycle < last_cycle_number)
-          throw error_msg("Cycle number can only increase.");
+          throw ERROR_MSG("Cycle number can only increase.");
 
         // If cycle number change, reset used qubits
         if (gate.cycle != last_cycle_number) {
@@ -162,14 +162,14 @@ void QflexCircuit::load(std::istream &&istream) {
         // Add all the qubits
         for (std::size_t i = 2; i < std::size(tokens); ++i) {
           if (not is_integer(tokens[i]))
-            throw error_msg("Qubit must be a valid number.");
+            throw ERROR_MSG("Qubit must be a valid number.");
           gate.qubits.push_back(std::stol(tokens[i]));
         }
 
         // Check that qubits are not already used in the same cycle
         for (const auto &qubit : gate.qubits)
           if (used_qubits.find(qubit) != std::end(used_qubits))
-            throw error_msg("Qubits can only used one for each cycle");
+            throw ERROR_MSG("Qubits can only used one for each cycle");
           else
             used_qubits.insert(qubit);
       }
@@ -187,7 +187,7 @@ void QflexCircuit::load(std::istream &&istream) {
         layers;
     for (const auto &gate : this->gates) {
       if (std::size(gate.qubits) > 2)
-        throw error_msg(
+        throw ERROR_MSG(
             "Depth calculation does not handle k-qubit gates with k > 2.");
 
       if (std::size(gate.qubits) == 2) {

@@ -26,7 +26,7 @@ void QflexGrid::load(std::istream&& istream) {
 
       // Get number of columns
       if (J != 0 and J != std::size(line))
-        throw std::string("Grid size is inconsistent");
+        throw ERROR_MSG("Grid size is inconsistent");
       else
         J = std::size(line);
 
@@ -43,7 +43,7 @@ void QflexGrid::load(const std::string& filename) {
   if (auto in = std::ifstream(filename); in.good())
     this->load(in);
   else
-    throw std::string("Cannot open grid file: ") + filename;
+    throw ERROR_MSG("Cannot open grid file: ") + filename;
 }
 
 }  // namespace qflex
