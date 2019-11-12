@@ -136,7 +136,6 @@ ContractionData ContractionData::Initialize(
 
   // TODO(martinop): minor optimizations possible: When consecutive cuts apply
   // to the same grid tensor, only one copy needs to be stored.
-  // std::size_t cut_copy_pos = data.scratch_map_.size();
   for (const auto& copy_rank_pair : cut_copy_rank) {
     const std::size_t size = (std::size_t)pow(bond_dim, copy_rank_pair.second);
     try {
@@ -302,7 +301,7 @@ bool ordering_data_to_contraction_ordering(
     throw ERROR_MSG("Ordering must be non-null.");
   }
 
-  // Lambda function to check if indexes as in the right range
+  // Lambda function to check if indexes are in the right range
   auto check_index = [&input](auto index, auto& error_msg) {
     using index_type =
         std::remove_reference_t<std::remove_cv_t<decltype(index)>>;
@@ -421,21 +420,21 @@ std::string index_name(const std::vector<std::size_t>& p1,
   char buffer[64];
   if (p1.size() == 2 && p2.size() == 2) {
     // Two-qubit contraction.
-    std::size_t len = snprintf(buffer, sizeof(buffer), "(%ld,%ld),(%ld,%ld)",
+    std::size_t len = snprintf(buffer, sizeof(buffer), "(%zd,%zd),(%zd,%zd)",
                                p1[0], p1[1], p2[0], p2[1]);
     return std::string(buffer, len);
   }
   if (p1.size() == 3 && p2.size() == 3) {
     // Single-qubit contraction, or virtual index.
     std::size_t len =
-        snprintf(buffer, sizeof(buffer), "(%ld,%ld,%ld),(%ld,%ld,%ld)", p1[0],
+        snprintf(buffer, sizeof(buffer), "(%zd,%zd,%zd),(%zd,%zd,%zd)", p1[0],
                  p1[1], p1[2], p2[0], p2[1], p2[2]);
     return std::string(buffer, len);
   }
   // Final qubit output value assignment.
   if (p1.size() == 2 && p2.empty()) {
     std::size_t len =
-        snprintf(buffer, sizeof(buffer), "(%ld,%ld),(o)", p1[0], p1[1]);
+        snprintf(buffer, sizeof(buffer), "(%zd,%zd),(o)", p1[0], p1[1]);
     return std::string(buffer, len);
   }
   std::stringstream ss;
@@ -499,7 +498,7 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
                      op.expand.id.c_str(), " after a cut.");
 
         char tensor_name[20];
-        snprintf(tensor_name, sizeof(tensor_name), "(%ld,%ld)",
+        snprintf(tensor_name, sizeof(tensor_name), "(%zd,%zd)",
                  op.expand.tensor[0], op.expand.tensor[1]);
         if (used_tensors.find(tensor_name) != used_tensors.end())
           error_msg = concat(error_msg, "\nTensor ", tensor_name,

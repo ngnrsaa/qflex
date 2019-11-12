@@ -530,7 +530,6 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
     std::size_t Lr = _LOG_2.at(MAX_RIGHT_DIM);
     std::size_t Ll = new_binary_ordering.size() - Lr;
     std::size_t Rr = _LOG_2.at(MIN_RIGHT_DIM);
-    // std::size_t Rl = new_binary_ordering.size() - Rr;
     std::vector<std::string> Ll_old_indices(old_binary_ordering.begin(),
                                             old_binary_ordering.begin() + Ll);
     std::vector<std::string> Ll_new_indices(new_binary_ordering.begin(),
