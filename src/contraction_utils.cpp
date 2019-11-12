@@ -65,7 +65,7 @@ ContractionData ContractionData::Initialize(
         break;
       }
       case ContractionOperation::CUT: {
-        try { 
+        try {
           const std::string cut_index = index_name(op.cut.tensors);
           // If no error is caught, cut_index will be initialized.
           int side = 0;
@@ -77,8 +77,7 @@ ContractionData ContractionData::Initialize(
             indices = _vector_subtraction(indices, {cut_index});
           }
         } catch (const std::string& err_msg) {
-          throw ERROR_MSG("Failed during CUT. Error:\n\t[", err_msg,
-                          "]");
+          throw ERROR_MSG("Failed during CUT. Error:\n\t[", err_msg, "]");
         }
         break;
       }
@@ -236,14 +235,14 @@ void ContractionData::ContractGrid(
               try {
                 copy_a.project(index, val, tensor_a);
               } catch (const std::string& err_msg) {
-                throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
-                                "]");
+                throw ERROR_MSG("Failed to call project(). Error:\n\t[",
+                                err_msg, "]");
               }
               try {
                 copy_b.project(index, val, tensor_b);
               } catch (const std::string& err_msg) {
-                throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
-                                "]");
+                throw ERROR_MSG("Failed to call project(). Error:\n\t[",
+                                err_msg, "]");
               }
               ContractGrid(ordering, output_index, active_patches);
             }
@@ -256,8 +255,8 @@ void ContractionData::ContractGrid(
               try {
                 copy_a.project(index, val, tensor_a);
               } catch (const std::string& err_msg) {
-                throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
-                                "]");
+                throw ERROR_MSG("Failed to call project(). Error:\n\t[",
+                                err_msg, "]");
               }
               ContractGrid(ordering, output_index, active_patches);
               output_index++;
@@ -541,7 +540,7 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
           // If no error is caught, index will be initialized.
           if (cut_indices.find(index) != cut_indices.end())
             error_msg = concat(error_msg, "\nIndex ", index.c_str(),
-                              " is cut multiple times.");
+                               " is cut multiple times.");
 
           cut_indices.insert(index);
         } catch (const std::string& err_msg) {
