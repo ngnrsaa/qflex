@@ -79,6 +79,7 @@ int main(int argc, char** argv) {
       throw ERROR_MSG("Failed to call EvaluateCircuit(). Error:\n\t[", err_msg,
                       "]");
     }
+    // If no error is caught, amplitudes will be initialized.
 
     // Printing output.
     for (int c = 0; c < amplitudes.size(); ++c) {

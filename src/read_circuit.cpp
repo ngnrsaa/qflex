@@ -459,6 +459,7 @@ void circuit_data_to_tensor_network(
         throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
                         "]");
       }
+      // If no error is caught, link_name will be initialized.
       link_counters[link_name]++;
       int counter = link_counters[link_name];
       std::string virtual_name =
@@ -601,6 +602,7 @@ void flatten_grid_of_tensors(
           throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
                           "]");
         }
+        // If no error is caught, between_name will be initialized.
         bundle_between(grid_of_tensors_2D[i][j],
                        grid_of_tensors_2D[pair[0]][pair[1]], between_name,
                        scratch);

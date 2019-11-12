@@ -72,6 +72,7 @@ ContractionData ContractionData::Initialize(
           throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
                           "]");
         }
+        // If no error is caught, cut_index will be initialized.
         int side = 0;
         for (auto& tensor : op.cut.tensors) {
           auto& indices = grid_indices[tensor[0]][tensor[1]];
@@ -216,6 +217,7 @@ void ContractionData::ContractGrid(
           throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
                           "]");
         }
+        // If no error is caught, index will be initialized.
         Tensor& tensor_a =
             (*tensor_grid_)[op.cut.tensors[0][0]][op.cut.tensors[0][1]];
         Tensor& copy_a =
@@ -249,12 +251,7 @@ void ContractionData::ContractGrid(
               throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
                               "]");
             }
-            try {
-              ContractGrid(ordering, output_index, active_patches);
-            } catch (const std::string& err_msg) {
-              throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[",
-                              err_msg, "]");
-            }
+            ContractGrid(ordering, output_index, active_patches);
           }
           tensor_a = copy_a;
           tensor_b = copy_b;
@@ -268,12 +265,7 @@ void ContractionData::ContractGrid(
               throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
                               "]");
             }
-            try {
-              ContractGrid(ordering, output_index, active_patches);
-            } catch (const std::string& err_msg) {
-              throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[",
-                              err_msg, "]");
-            }
+            ContractGrid(ordering, output_index, active_patches);
             output_index++;
           }
           tensor_a = copy_a;
@@ -553,6 +545,7 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
           throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
                           "]");
         }
+        // If no error is caught, index will be initialized.
         if (cut_indices.find(index) != cut_indices.end())
           error_msg = concat(error_msg, "\nIndex ", index.c_str(),
                              " is cut multiple times.");
@@ -600,6 +593,7 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
   } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call Initialize(). Error:\n\t[", err_msg, "]");
   }
+  // If no error is caught, data will be initialized.
   std::unordered_map<std::string, bool> active_patches;
   for (const auto& patch : data.scratch_list()) {
     active_patches[patch] = false;
