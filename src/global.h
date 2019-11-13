@@ -1,6 +1,10 @@
 #ifndef GLOBAL__H
 #define GLOBAL__H
 
-inline int VERBOSE = 0;
+namespace qflex::global {
+
+inline int verbose = 0;
+
+}
 
 #endif

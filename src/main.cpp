@@ -43,14 +43,15 @@ int main(int argc, char** argv) {
     // Reading input
     qflex::QflexInput input;
 
-    // Update global VERBOSE
+    // Update global qflex::global::verbose
     if (bool(args["--verbose"]) and args["--verbose"].asBool()) {
-      VERBOSE = 1;
+      qflex::global::verbose = 1;
       if (bool(args["--verbosity-level"]))
-        if (const auto l = args["--verbosity-level"].asLong(); l > VERBOSE)
-          VERBOSE = l;
+        if (const auto l = args["--verbosity-level"].asLong();
+            l > qflex::global::verbose)
+          qflex::global::verbose = l;
     } else
-      VERBOSE = 0;
+      qflex::global::verbose = 0;
 
     // Get initial/final configurations
     if (bool(args["--initial-conf"]))
