@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "global.h"
+
 template <typename T>
 std::string concat(const T& x) {
   std::stringstream ss;

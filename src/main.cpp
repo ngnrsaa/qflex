@@ -1,6 +1,7 @@
 #include "circuit.h"
 #include "docopt.h"
 #include "evaluate_circuit.h"
+#include "global.h"
 #include "grid.h"
 #include "input.h"
 #include "ordering.h"
@@ -12,7 +13,7 @@ tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
     qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf>]
-    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf>]
+    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf> --verbose --verbosity-level <level>]
     qflex (-h | --help)
     qflex --version
 
@@ -21,6 +22,8 @@ tensor network, CPU-based simulator of large quantum circuits.
     -c,--circuit=<circuit_filename>        Circuit filename.
     -o,--ordering=<ordering_filename>      Ordering filename.
     -g,--grid=<grid_filename>              Grid filename.
+    -v,--verbose                           Verbose.
+    --verbosity-level=<level>              Verbosity level (default=1).
     --initial-conf=<initial_conf>          Initial configuration.
     --final-conf=<final_conf>              Final configuration.
     --version                              Show version.
@@ -39,6 +42,16 @@ int main(int argc, char** argv) {
 
     // Reading input
     qflex::QflexInput input;
+
+    // Update global qflex::global::verbose
+    if (bool(args["--verbose"]) and args["--verbose"].asBool()) {
+      qflex::global::verbose = 1;
+      if (bool(args["--verbosity-level"]))
+        if (const auto l = args["--verbosity-level"].asLong();
+            l > qflex::global::verbose)
+          qflex::global::verbose = l;
+    } else
+      qflex::global::verbose = 0;
 
     // Get initial/final configurations
     if (bool(args["--initial-conf"]))

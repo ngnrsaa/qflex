@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "global.h"
+
 namespace qflex {
 
 struct QflexOrdering {

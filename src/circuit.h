@@ -8,6 +8,7 @@
 #include <unordered_set>
 
 #include "errors.h"
+#include "global.h"
 
 namespace qflex {
 
