@@ -12,8 +12,8 @@ static const char USAGE[] =
 tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
-    qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf>]
-    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf> --verbose --verbosity-level <level>]
+    qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf> --verbosity <verbosity_level>]
+    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf> --verbosity <verbosity_level>]
     qflex (-h | --help)
     qflex --version
 
@@ -22,8 +22,7 @@ tensor network, CPU-based simulator of large quantum circuits.
     -c,--circuit=<circuit_filename>        Circuit filename.
     -o,--ordering=<ordering_filename>      Ordering filename.
     -g,--grid=<grid_filename>              Grid filename.
-    -v,--verbose                           Verbose.
-    --verbosity-level=<level>              Verbosity level (default=1).
+    -v,--verbosity=<verbosity_level>       Verbosity level.
     --initial-conf=<initial_conf>          Initial configuration.
     --final-conf=<final_conf>              Final configuration.
     --version                              Show version.
@@ -44,34 +43,33 @@ int main(int argc, char** argv) {
     qflex::QflexInput input;
 
     // Update global qflex::global::verbose
-    if (bool(args["--verbose"]) and args["--verbose"].asBool()) {
-      qflex::global::verbose = 1;
-      if (bool(args["--verbosity-level"]))
-        if (const auto l = args["--verbosity-level"].asLong();
-            l > qflex::global::verbose)
-          qflex::global::verbose = l;
-    } else
+    if (static_cast<bool>(args["--verbosity"]))
+      qflex::global::verbose = args["--verbosity"].asLong();
+    else if (static_cast<bool>(args["<verbosity_level>"]))
+      qflex::global::verbose = args["<verbosity_level>"].asLong();
+    else
       qflex::global::verbose = 0;
 
     // Get initial/final configurations
-    if (bool(args["--initial-conf"]))
+    if (static_cast<bool>(args["--initial-conf"]))
       input.initial_state = args["--initial-conf"].asString();
-    else if (bool(args["<initial_conf>"]))
+    else if (static_cast<bool>(args["<initial_conf>"]))
       input.initial_state = args["<initial_conf>"].asString();
 
-    if (bool(args["--final-conf"]))
+    if (static_cast<bool>(args["--final-conf"]))
       input.final_state = args["--final-conf"].asString();
-    else if (bool(args["<final_conf>"]))
+    else if (static_cast<bool>(args["<final_conf>"]))
       input.final_state = args["<final_conf>"].asString();
 
     // Getting filenames
-    std::string circuit_filename = bool(args["--circuit"])
+    std::string circuit_filename = static_cast<bool>(args["--circuit"])
                                        ? args["--circuit"].asString()
                                        : args["<circuit_filename>"].asString();
     std::string ordering_filename =
-        bool(args["--ordering"]) ? args["--ordering"].asString()
-                                 : args["<ordering_filename>"].asString();
-    std::string grid_filename = bool(args["--grid"])
+        static_cast<bool>(args["--ordering"])
+            ? args["--ordering"].asString()
+            : args["<ordering_filename>"].asString();
+    std::string grid_filename = static_cast<bool>(args["--grid"])
                                     ? args["--grid"].asString()
                                     : args["<grid_filename>"].asString();
 

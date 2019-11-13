@@ -160,7 +160,7 @@ ContractionData ContractionData::Initialize(
     alloc_size /= (1 << 10);
   }
 
-  if (global::verbose) {
+  if (global::verbose > 0) {
     int old_precision = std::cerr.precision(6);
     std::string suffix[] = {"B", "kB", "MB", "GB"};
     std::cerr << alloc_size << suffix[scale] << " allocated." << std::endl;
@@ -547,7 +547,7 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
 
   if (std::empty(error_msg)) return true;
 
-  if (global::verbose) std::cerr << error_msg << std::endl;
+  if (global::verbose > 0) std::cerr << error_msg << std::endl;
 
   return false;
 }
