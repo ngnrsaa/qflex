@@ -92,8 +92,8 @@ void QflexCircuit::load(std::istream &&istream) {
   std::string line;
 
   auto error_msg = [&line, &line_counter](const std::string &msg) {
-    return ERROR_MSG("[", std::to_string(line_counter + 1), ": ", line, 
-                     "] ", msg);
+    return ERROR_MSG("[", std::to_string(line_counter + 1), ": ", line, "] ",
+                     msg);
   };
 
   while (std::getline(istream, line)) {
