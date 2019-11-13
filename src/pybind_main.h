@@ -8,6 +8,7 @@ namespace py = pybind11;
 
 #include <vector>
 
+#include "global.h"
 #include "errors.h"
 #include "evaluate_circuit.h"
 #include "read_circuit.h"

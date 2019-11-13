@@ -28,6 +28,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "global.h"
 #include "circuit.h"
 #include "contraction_utils.h"
 #include "tensor.h"

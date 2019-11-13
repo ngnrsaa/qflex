@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "global.h"
 #include "input.h"
 #include "tensor.h"
 
