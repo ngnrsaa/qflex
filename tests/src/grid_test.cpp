@@ -12,7 +12,7 @@ TEST(GridExceptionTest, InvalidFilenameInput) {
   try {
     grid.load(invalid_filename);
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Cannot open grid file: invalid.txt"));
+    EXPECT_THAT(msg, testing::HasSubstr("Cannot open grid file: invalid.txt."));
   }
 }
 

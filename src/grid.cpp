@@ -43,7 +43,7 @@ void QflexGrid::load(const std::string& filename) {
   if (auto in = std::ifstream(filename); in.good())
     this->load(in);
   else
-    throw ERROR_MSG("Cannot open grid file: ") + filename;
+    throw ERROR_MSG("Cannot open grid file: ", filename, ".");
 }
 
 }  // namespace qflex
