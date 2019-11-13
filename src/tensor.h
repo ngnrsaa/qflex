@@ -29,8 +29,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "global.h"
 #include "errors.h"
+#include "global.h"
 
 namespace qflex {
 

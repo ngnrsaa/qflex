@@ -29,8 +29,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "global.h"
 #include "contraction_utils.h"
+#include "global.h"
 #include "input.h"
 #include "read_circuit.h"
 #include "tensor.h"

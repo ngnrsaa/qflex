@@ -1,8 +1,8 @@
 #ifndef INPUT__H
 #define INPUT__H
 
-#include "global.h"
 #include "circuit.h"
+#include "global.h"
 #include "grid.h"
 #include "ordering.h"
 

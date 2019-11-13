@@ -1,7 +1,7 @@
-#include "global.h"
 #include "circuit.h"
 #include "docopt.h"
 #include "evaluate_circuit.h"
+#include "global.h"
 #include "grid.h"
 #include "input.h"
 #include "ordering.h"
@@ -44,12 +44,13 @@ int main(int argc, char** argv) {
     qflex::QflexInput input;
 
     // Update global VERBOSE
-    if(bool(args["--verbose"]) and args["--verbose"].asBool()) {
+    if (bool(args["--verbose"]) and args["--verbose"].asBool()) {
       VERBOSE = 1;
-      if(bool(args["--verbosity-level"]))
-        if(const auto l = args["--verbosity-level"].asLong(); l > VERBOSE)
+      if (bool(args["--verbosity-level"]))
+        if (const auto l = args["--verbosity-level"].asLong(); l > VERBOSE)
           VERBOSE = l;
-    } else VERBOSE = 0;
+    } else
+      VERBOSE = 0;
 
     // Get initial/final configurations
     if (bool(args["--initial-conf"]))

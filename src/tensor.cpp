@@ -944,7 +944,7 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
 
   std::chrono::high_resolution_clock::time_point t0, t1;
   std::chrono::duration<double> time_span;
-  if(VERBOSE > 1) t0 = std::chrono::high_resolution_clock::now();
+  if (VERBOSE > 1) t0 = std::chrono::high_resolution_clock::now();
 
   // Define left_indices, left_dim, right_indices, right_dim, and
   // common_indices, common_dim. Also C_size.
@@ -972,9 +972,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     common_dim *= a_dim;
   }
 
-  if(VERBOSE > 1) {
+  if (VERBOSE > 1) {
     t1 = std::chrono::high_resolution_clock::now();
-    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    time_span =
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
     std::cerr << "Time preparing variables: " << time_span.count() << "s\n";
   }
 
@@ -985,7 +986,7 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
                     (left_dim * right_dim), ".");
   }
 
-  if(VERBOSE > 1) t0 = std::chrono::high_resolution_clock::now();
+  if (VERBOSE > 1) t0 = std::chrono::high_resolution_clock::now();
 
   // Reorder.
   std::vector<std::string> A_new_ordering =
@@ -996,9 +997,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     throw ERROR_MSG("Failed to call reorder(). Error:\n\t[", err_msg, "]");
   }
 
-  if(VERBOSE > 1) {
+  if (VERBOSE > 1) {
     t1 = std::chrono::high_resolution_clock::now();
-    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    time_span =
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
     std::cerr << "R " << time_span.count() << " s\n";
     std::cerr << "Time reordering A: " << time_span.count() << "s\n";
     t0 = std::chrono::high_resolution_clock::now();
@@ -1012,9 +1014,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     throw ERROR_MSG("Failed to call reorder(). Error:\n\t[", err_msg, "]");
   }
 
-  if(VERBOSE > 1) {
+  if (VERBOSE > 1) {
     t1 = std::chrono::high_resolution_clock::now();
-    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    time_span =
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
     std::cerr << "R " << time_span.count() << " s\n";
     std::cerr << "Time reordering B: " << time_span.count() << "s\n";
     t0 = std::chrono::high_resolution_clock::now();
@@ -1053,9 +1056,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     }
   }
 
-  if(VERBOSE > 1) {
+  if (VERBOSE > 1) {
     t1 = std::chrono::high_resolution_clock::now();
-    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    time_span =
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
     std::cerr << "M " << time_span.count() << " s\n";
     std::cerr << "Time multiplying A*B: " << time_span.count() << "s\n";
     t0 = std::chrono::high_resolution_clock::now();
@@ -1079,9 +1083,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   }
   C.generate_index_to_dimension();
 
-  if(VERBOSE > 1) {
+  if (VERBOSE > 1) {
     t1 = std::chrono::high_resolution_clock::now();
-    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    time_span =
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
     std::cerr << "Time updating C's variables: " << time_span.count() << "s\n";
   }
 }

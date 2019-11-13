@@ -7,8 +7,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "global.h"
 #include "errors.h"
+#include "global.h"
 
 namespace qflex {
 

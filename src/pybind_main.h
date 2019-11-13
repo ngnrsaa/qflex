@@ -8,9 +8,9 @@ namespace py = pybind11;
 
 #include <vector>
 
-#include "global.h"
 #include "errors.h"
 #include "evaluate_circuit.h"
+#include "global.h"
 #include "read_circuit.h"
 
 std::vector<std::pair<std::string, std::complex<double>>> simulate(
