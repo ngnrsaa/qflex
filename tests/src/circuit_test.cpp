@@ -24,8 +24,7 @@ TEST(CircuitExceptionTest, PrintGate) {
     gate.cycle = 1;
     gate.qubits = {2, 4};
     gate.params = {3, 5};
-    
-    std::cout << gate << std::endl;
+    // std::cout << gate << std::endl;
 }
 
 constexpr char kBadCircuit1[] = R"(
@@ -38,6 +37,7 @@ TEST(CircuitExceptionTest, BadCircuits) {
     QflexCircuit circuit;
     // try {
     circuit.load(std::stringstream(kBadCircuit1));
+    // shouldn't this throw an error??
     // } catch (std::string msg) {
     //     std::cout << msg << std::endl;
     //     EXPECT_THAT(msg, testing::HasSubstr("asdf"));
