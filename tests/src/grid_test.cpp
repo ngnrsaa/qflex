@@ -66,14 +66,14 @@ TEST(GridTest, ReadValidGrid6x2) {
 }
 
 TEST(GridTest, ClearGridTest) {
-    QflexGrid grid;
-    grid.I = 4;
-    grid.J = 8;
-    grid.qubits_off = {{0,0}, {1, 0}, {0, 1}};
-    grid.clear();
-    EXPECT_EQ(grid.I, 0);
-    EXPECT_EQ(grid.J, 0);
-    EXPECT_EQ(grid.qubits_off.size(), 0);
+  QflexGrid grid;
+  grid.I = 4;
+  grid.J = 8;
+  grid.qubits_off = {{0, 0}, {1, 0}, {0, 1}};
+  grid.clear();
+  EXPECT_EQ(grid.I, 0);
+  EXPECT_EQ(grid.J, 0);
+  EXPECT_EQ(grid.qubits_off.size(), 0);
 }
 
 }  // namespace
