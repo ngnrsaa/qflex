@@ -111,31 +111,31 @@ ContractionData ContractionData::Initialize(
   // Calculate the necessary space before actually allocating memory.
 
   // If the --memory flag is set properly, this should prevent OOM errors.
-  uint64_t allocated_space = 0;
+  std::size_t allocated_space = 0;
 
   // Max rank/size of all patches.
   int max_rank = 0;
   for (const auto& patch_rank_pair : data.patch_rank_) {
     max_rank = std::max(patch_rank_pair.second, max_rank);
   }
-  uint64_t max_size = static_cast<uint64_t>(pow(bond_dim, max_rank));
+  std::size_t max_size = static_cast<std::size_t>(pow(bond_dim, max_rank));
 
   // General-purpose scratch space (primarily used for tensor reordering).
   allocated_space += max_size;
 
   // "Swap tensor" space, used to store operation results.
   for (int rank = 1; rank <= max_rank; ++rank) {
-    allocated_space += static_cast<uint64_t>(pow(bond_dim, rank));
+    allocated_space += static_cast<std::size_t>(pow(bond_dim, rank));
   }
   // Per-patch space, sized to match the maximum size of the patch.
   for (const auto& patch_rank_pair : data.patch_rank_) {
     allocated_space +=
-        static_cast<uint64_t>(pow(bond_dim, patch_rank_pair.second));
+        static_cast<std::size_t>(pow(bond_dim, patch_rank_pair.second));
   }
   // Extra space for storing copies made during cut operations.
   for (const auto& copy_rank_pair : cut_copy_rank) {
     allocated_space +=
-        static_cast<uint64_t>(pow(bond_dim, copy_rank_pair.second));
+        static_cast<std::size_t>(pow(bond_dim, copy_rank_pair.second));
   }
 
   // Prevent memory allocation from exceeding memory_limit.
@@ -169,28 +169,26 @@ ContractionData ContractionData::Initialize(
 
   // "Swap tensor" space, used to store operation results.
   for (int rank = 1; rank <= max_rank; ++rank) {
-    const uint64_t size = static_cast<uint64_t>(pow(bond_dim, rank));
+    const std::size_t size = static_cast<std::size_t>(pow(bond_dim, rank));
     try {
       data.scratch_.push_back(Tensor({""}, {size}));
     } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
     }
     data.scratch_map_[result_space(rank)] = rank;
-    allocated_space += size;
   }
 
   // Per-patch space, sized to match the maximum size of the patch.
   int patch_pos = data.scratch_map_.size();
   for (const auto& patch_rank_pair : data.patch_rank_) {
-    const uint64_t size =
-        static_cast<uint64_t>(pow(bond_dim, patch_rank_pair.second));
+    const std::size_t size =
+        static_cast<std::size_t>(pow(bond_dim, patch_rank_pair.second));
     try {
       data.scratch_.push_back(Tensor({""}, {size}));
     } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
     }
     data.scratch_map_[patch_rank_pair.first] = patch_pos++;
-    allocated_space += size;
   }
 
   // Extra space for storing copies made during cut operations.
@@ -198,15 +196,14 @@ ContractionData ContractionData::Initialize(
   // to the same grid tensor, only one copy needs to be stored.
   int cut_copy_pos = data.scratch_map_.size();
   for (const auto& copy_rank_pair : cut_copy_rank) {
-    const uint64_t size =
-        static_cast<uint64_t>(pow(bond_dim, copy_rank_pair.second));
+    const std::size_t size =
+        static_cast<std::size_t>(pow(bond_dim, copy_rank_pair.second));
     try {
       data.scratch_.push_back(Tensor({""}, {size}));
     } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
     }
     data.scratch_map_[copy_rank_pair.first] = patch_pos++;
-    allocated_space += size;
   }
 
   return data;
