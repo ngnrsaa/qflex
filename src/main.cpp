@@ -12,8 +12,8 @@ static const char USAGE[] =
 tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
-    qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf> --verbosity <verbosity_level>]
-    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf> --verbosity <verbosity_level>]
+    qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf> --verbosity <verbosity_level> --memory <memory_limit>]
+    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf> --verbosity <verbosity_level> --memory <memory_limit>]
     qflex (-h | --help)
     qflex --version
 
@@ -23,6 +23,7 @@ tensor network, CPU-based simulator of large quantum circuits.
     -o,--ordering=<ordering_filename>      Ordering filename.
     -g,--grid=<grid_filename>              Grid filename.
     -v,--verbosity=<verbosity_level>       Verbosity level.
+    -m,--memory=<memory_limit>             Memory limit (default 1GB).
     --initial-conf=<initial_conf>          Initial configuration.
     --final-conf=<final_conf>              Final configuration.
     --version                              Show version.
@@ -49,6 +50,15 @@ int main(int argc, char** argv) {
       qflex::global::verbose = args["<verbosity_level>"].asLong();
     else
       qflex::global::verbose = 0;
+
+    // Update global qflex::global::memory_limit
+    if (static_cast<bool>(args["--memory"]))
+      qflex::global::memory_limit = args["--memory"].asLong();
+    else if (static_cast<bool>(args["<memory_limit>"]))
+      qflex::global::memory_limit = args["<memory_limit>"].asLong();
+    else
+      // Default limit of one gigabyte.
+      qflex::global::memory_limit = 1L << 30;
 
     // Get initial/final configurations
     if (static_cast<bool>(args["--initial-conf"]))
