@@ -30,7 +30,7 @@ function find_cmd() {
   shift
 
   # Get modules
-  modules=$(cat ${ROOT_DIR}/.gitmodules 2>/dev/null | grep path | sed 's/[[:space:]]*//g' | awk -F "=" -v root_dir=${ROOT_DIR} '{ print root_dir"/"$2 }' | xargs realpath | tr '\n' '|')
+  modules=$(cat ${ROOT_DIR}/.gitmodules 2>/dev/null | grep path | awk -v root_dir=${ROOT_DIR} '{ print root_dir"/"$3 }' | xargs realpath | tr '\n' '|')
   if [[ ! -z $modules ]]; then
     modules=${modules::$((${#modules}-1))}
     modules="$modules|$(realpath ${ROOT_DIR}/.git)"
