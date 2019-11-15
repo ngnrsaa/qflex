@@ -12,6 +12,8 @@
  * @licence: Apache License, Version 2.0
  */
 
+#include <set>
+
 #include "evaluate_circuit.h"
 
 namespace qflex {
@@ -148,29 +150,17 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   input->final_state =
       get_output_states(input, ordering, &final_qubits, &output_states);
 
-  if (global::verbose > 0) t0 = std::chrono::high_resolution_clock::now();
-
-  // Scratch space to be reused for operations.
-  // This scratch space is used for reading circuit and building tensor
-  // network. At most we need super_dim * 4 for square grids, and times 2
-  // when qubits are cut on the output index.
-  s_type* scratch = new s_type[(int)pow(super_dim, 4) * 2];
-
-  if (global::verbose > 0) {
-    t1 = std::chrono::high_resolution_clock::now();
-    time_span =
-        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << "Time spent reading allocating scratch space: "
-              << time_span.count() << "s" << std::endl;
-  }
-
   // Declaring and then filling 2D grid of tensors.
   std::vector<std::vector<Tensor>> tensor_grid(input->grid.I);
   for (int i = 0; i < input->grid.I; ++i) {
     tensor_grid[i] = std::vector<Tensor>(input->grid.J);
   }
-  // Scope so that the 3D grid of tensors is destructed.
+  // Scope so that scratch space and the 3D grid of tensors are destructed.
   {
+    // Scratch space for creating 3D tensor network. The largest single-gate
+    // tensor we currently support is rank 4.
+    s_type scratch_3D[16];
+
     if (global::verbose > 0) t0 = std::chrono::high_resolution_clock::now();
 
     // Creating 3D grid of tensors from file.
@@ -178,7 +168,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     circuit_data_to_tensor_network(input->circuit, input->grid.I, input->grid.J,
                                    input->initial_state, input->final_state,
                                    final_qubits, input->grid.qubits_off,
-                                   tensor_grid_3D, scratch);
+                                   tensor_grid_3D, scratch_3D);
 
     if (global::verbose > 0) {
       t1 = std::chrono::high_resolution_clock::now();
@@ -186,12 +176,42 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
           std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
       std::cerr << "Time spent creating 3D grid of tensors from file: "
                 << time_span.count() << "s" << std::endl;
+      t0 = std::chrono::high_resolution_clock::now();
+    }
+
+    std::size_t max_rank = 0;
+    for (int i = 0; i < tensor_grid_3D.size(); ++i) {
+      for (int j = 0; j < tensor_grid_3D[i].size(); ++j) {
+        std::set<std::string> indices;
+        for (const auto tensor : tensor_grid_3D[i][j]) {
+          for (const auto index : tensor.get_indices()) {
+            if (!indices.insert(index).second) {
+              // Index is shared between adjacent tensors; remove it.
+              indices.erase(index);
+            }
+          }
+        }
+        if (indices.size() > max_rank) {
+          max_rank = indices.size();
+        }
+      }
+    }
+    // Scratch space for contracting 3D to 2D grid. This must have enough space
+    // to hold the largest single-qubit tensor in the 2D grid.
+    s_type scratch_2D[static_cast<std::size_t>(pow(2, max_rank))];
+
+    if (global::verbose > 0) {
+      t1 = std::chrono::high_resolution_clock::now();
+      time_span =
+          std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+      std::cerr << "Time spent allocating scratch space for 2D grid: "
+                << time_span.count() << "s" << std::endl;
+      t0 = std::chrono::high_resolution_clock::now();
     }
 
     // Contract 3D grid onto 2D grid of tensors, as usual.
-    if (global::verbose > 0) t0 = std::chrono::high_resolution_clock::now();
     flatten_grid_of_tensors(tensor_grid_3D, tensor_grid, final_qubits,
-                            input->grid.qubits_off, ordering, scratch);
+                            input->grid.qubits_off, ordering, scratch_2D);
     if (global::verbose > 0) {
       t1 = std::chrono::high_resolution_clock::now();
       time_span =
@@ -199,10 +219,6 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
       std::cerr << "Time spent creating 2D grid of tensors from 3D one: "
                 << time_span.count() << "s" << std::endl;
     }
-
-    // Freeing scratch data: delete and NULL.
-    delete[] scratch;
-    scratch = NULL;
   }
 
   // Perform tensor grid contraction.
