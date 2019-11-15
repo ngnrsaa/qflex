@@ -155,7 +155,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // This scratch space is used for reading circuit and building tensor
   // network. At most we need super_dim * 4 for square grids, and times 2
   // when qubits are cut on the output index.
-  s_type* scratch = new s_type[(int)pow(super_dim, 4) * 2];
+  s_type* scratch = new s_type[static_cast<std::size_t>(pow(super_dim, 4) * 2)];
 
   if (global::verbose > 0) {
     t1 = std::chrono::high_resolution_clock::now();

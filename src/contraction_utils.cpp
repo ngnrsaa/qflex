@@ -124,7 +124,7 @@ ContractionData ContractionData::Initialize(
   allocated_space += max_size;
 
   // "Swap tensor" space, used to store operation results.
-  for (int rank = 1; rank <= max_rank; ++rank) {
+  for (std::size_t rank = 1; rank <= max_rank; ++rank) {
     allocated_space += static_cast<std::size_t>(pow(bond_dim, rank));
   }
   // Per-patch space, sized to match the maximum size of the patch.
@@ -151,7 +151,7 @@ ContractionData ContractionData::Initialize(
   // tensors allocated during contraction; total memory usage should not vary
   // significantly from this value.
   if (global::verbose > 0) {
-    int old_precision = std::cerr.precision(6);
+    std::size_t old_precision = std::cerr.precision(6);
     std::cerr << "Allocating " << readable_memory_string(alloc_size)
               << " for this simulation." << std::endl;
     std::cerr.precision(old_precision);
