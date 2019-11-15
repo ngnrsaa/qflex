@@ -5,6 +5,8 @@
 #include <fstream>
 #include <vector>
 
+#include "global.h"
+
 namespace qflex {
 
 struct QflexGrid {

@@ -976,7 +976,8 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
 
   std::chrono::high_resolution_clock::time_point t0, t1;
   std::chrono::duration<double> time_span;
-  t0 = std::chrono::high_resolution_clock::now();
+  if (global::verbose > 1) t0 = std::chrono::high_resolution_clock::now();
+
   // Define left_indices, left_dim, right_indices, right_dim, and
   // common_indices, common_dim. Also C_size.
   std::vector<std::string> left_indices =
@@ -1002,10 +1003,13 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     }
     common_dim *= a_dim;
   }
-  t1 = std::chrono::high_resolution_clock::now();
-  time_span =
-      std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-  // std::cout << "Time preparing variables: " << time_span.count() << "s\n";
+
+  if (global::verbose > 1) {
+    t1 = std::chrono::high_resolution_clock::now();
+    time_span =
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    std::cerr << "Time preparing variables: " << time_span.count() << "s\n";
+  }
 
   // Check.
   if (left_dim * right_dim > C.capacity()) {
@@ -1013,8 +1017,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
                     " doesn't have enough space for the product of A*B: ",
                     (left_dim * right_dim), ".");
   }
+
+  if (global::verbose > 1) t0 = std::chrono::high_resolution_clock::now();
+
   // Reorder.
-  t0 = std::chrono::high_resolution_clock::now();
   std::vector<std::string> A_new_ordering =
       _vector_union(left_indices, common_indices);
   try {
@@ -1022,12 +1028,16 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call reorder(). Error:\n\t[", err_msg, "]");
   }
-  t1 = std::chrono::high_resolution_clock::now();
-  time_span =
-      std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-  // std::cout << "R " << time_span.count() << " s\n";
-  // std::cout << "Time reordering A: " << time_span.count() << "s\n";
-  t0 = std::chrono::high_resolution_clock::now();
+
+  if (global::verbose > 1) {
+    t1 = std::chrono::high_resolution_clock::now();
+    time_span =
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    std::cerr << "R " << time_span.count() << " s\n";
+    std::cerr << "Time reordering A: " << time_span.count() << "s\n";
+    t0 = std::chrono::high_resolution_clock::now();
+  }
+
   std::vector<std::string> B_new_ordering =
       _vector_union(common_indices, right_indices);
   try {
@@ -1035,14 +1045,17 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call reorder(). Error:\n\t[", err_msg, "]");
   }
-  t1 = std::chrono::high_resolution_clock::now();
-  time_span =
-      std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-  // std::cout << "R " << time_span.count() << " s\n";
-  // std::cout << "Time reordering B: " << time_span.count() << "s\n";
+
+  if (global::verbose > 1) {
+    t1 = std::chrono::high_resolution_clock::now();
+    time_span =
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    std::cerr << "R " << time_span.count() << " s\n";
+    std::cerr << "Time reordering B: " << time_span.count() << "s\n";
+    t0 = std::chrono::high_resolution_clock::now();
+  }
 
   // Multiply. Four cases: MxM, Mxv, vxM, vxv.
-  t0 = std::chrono::high_resolution_clock::now();
   if (left_indices.size() > 0 && right_indices.size() > 0) {
     try {
       _multiply_MM(A.data(), B.data(), C.data(), left_dim, right_dim,
@@ -1074,14 +1087,17 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
                       "]");
     }
   }
-  t1 = std::chrono::high_resolution_clock::now();
-  time_span =
-      std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-  // std::cout << "M " << time_span.count() << " s\n";
-  // std::cout << "Time multiplying A*B: " << time_span.count() << "s\n";
+
+  if (global::verbose > 1) {
+    t1 = std::chrono::high_resolution_clock::now();
+    time_span =
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    std::cerr << "M " << time_span.count() << " s\n";
+    std::cerr << "Time multiplying A*B: " << time_span.count() << "s\n";
+    t0 = std::chrono::high_resolution_clock::now();
+  }
 
   // Set indices and dimensions of C.
-  t0 = std::chrono::high_resolution_clock::now();
   std::vector<std::string> C_indices =
       _vector_union(left_indices, right_indices);
   std::vector<std::size_t> C_dimensions(C_indices.size());
@@ -1098,10 +1114,13 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
                     "]");
   }
   C.generate_index_to_dimension();
-  t1 = std::chrono::high_resolution_clock::now();
-  time_span =
-      std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-  // std::cout << "Time updating C's variables: " << time_span.count() << "s\n";
+
+  if (global::verbose > 1) {
+    t1 = std::chrono::high_resolution_clock::now();
+    time_span =
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+    std::cerr << "Time updating C's variables: " << time_span.count() << "s\n";
+  }
 }
 
 // TODO: write tests for this function.

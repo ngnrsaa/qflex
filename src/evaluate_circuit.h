@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "contraction_utils.h"
+#include "global.h"
 #include "input.h"
 #include "read_circuit.h"
 #include "tensor.h"
