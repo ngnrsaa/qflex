@@ -2,6 +2,7 @@
 #define INPUT__H
 
 #include "circuit.h"
+#include "global.h"
 #include "grid.h"
 #include "ordering.h"
 
@@ -13,7 +14,6 @@ struct QflexInput {
   QflexGrid grid;
   std::string initial_state;
   std::string final_state;
-  bool enable_timing_logs = false;
 };
 
 }  // namespace qflex
