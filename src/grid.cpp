@@ -32,7 +32,7 @@ void QflexGrid::load(std::istream&& istream) {
 
       // Get off qubits
       for (int q = 0; q < J; ++q)
-        if (line[q] == '0') qubits_off.push_back({I, q});  
+        if (line[q] == '0') qubits_off.push_back({I, q});
 
       // Update number of rows
       ++I;
