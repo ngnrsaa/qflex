@@ -224,13 +224,7 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
   input.initial_state = "00000";
   input.final_state = "1100x";
 
-  std::vector<std::pair<std::string, std::complex<double>>> amplitudes;
-  try {
-    amplitudes = EvaluateCircuit(&input);
-  } catch (const std::string &err) {
-    std::cerr << err << std::endl;
-    std::rethrow_exception(std::current_exception());
-  }
+  std::vector<std::pair<std::string, std::complex<double>>> amplitudes = EvaluateCircuit(&input);
 
   ASSERT_EQ(amplitudes.size(), 2);
   EXPECT_EQ(amplitudes[0].first, "11000");

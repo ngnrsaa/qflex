@@ -140,8 +140,6 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
         err_msg, "]");
   }
 
-  ordering_data_to_contraction_ordering(*input, &ordering);
-
   if (global::verbose > 0) {
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
