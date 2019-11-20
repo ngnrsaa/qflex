@@ -374,25 +374,6 @@ expand B 15
 merge A B
 """
 
-ordering_2x2_test = """
-# CUT BETWEEN A AND B
-cut () 1 3
-
-# EXPAND PATCH A
-expand A 0
-expand A 1
-
-# EXPAND PATCH B
-expand B 2
-expand B 3
-
-# MERGE PATCHES A-B
-merge A B
-"""
-
-grid_2x2_test = """1 1
-1 1"""
-
 # Simulate circuit
 qubits = utils.GetGridQubits(StringIO(grid_test))
 circuit = utils.GetCircuit(StringIO(circuit_test), qubits)
@@ -403,33 +384,6 @@ auto_ordering = auto_order.circuit_to_ordering(circuit,
 results = cirq.Simulator().simulate(circuit)
 results_no_h_and_sparse = cirq.Simulator().simulate(circuit_no_h_and_sparse)
 
-# Save circuit and grid on temporary files
-circuit_filename = mkstemp()
-circuit_no_h_and_sparse_filename = mkstemp()
-grid_filename = mkstemp()
-grid_2x2_filename = mkstemp()
-ordering_filename = mkstemp()
-ordering_2x2_filename = mkstemp()
-ordering_with_cuts_filename = mkstemp()
-ordering_auto_filename = mkstemp()
-
-with open(circuit_filename[1], 'w') as f:
-    print(circuit_test, file=f)
-with open(circuit_no_h_and_sparse_filename[1], 'w') as f:
-    print(circuit_no_h_and_sparse_test, file=f)
-with open(grid_filename[1], 'w') as f:
-    print(grid_test, file=f)
-with open(grid_2x2_filename[1], 'w') as f:
-    print(grid_2x2_test, file=f)
-with open(ordering_filename[1], 'w') as f:
-    print(ordering_test, file=f)
-with open(ordering_2x2_filename[1], 'w') as f:
-    print(ordering_2x2_test, file=f)
-with open(ordering_with_cuts_filename[1], 'w') as f:
-    print(ordering_with_cuts_test, file=f)
-with open(ordering_auto_filename[1], 'w') as f:
-    print('\n'.join(auto_ordering), file=f)
-
 
 @pytest.mark.parametrize(
     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
@@ -439,9 +393,9 @@ def test_simulation(x):
     final_conf = bin(x)[2:].zfill(len(qubits))
 
     options = {
-        'circuit_filename': circuit_filename[1],
-        'ordering_filename': ordering_filename[1],
-        'grid_filename': grid_filename[1],
+        'circuit': circuit_test.split('\n'),
+        'ordering': ordering_test.split('\n'),
+        'grid': grid_test.split('\n'),
         'final_state': final_conf
     }
 
@@ -460,9 +414,9 @@ def test_no_h_and_sparse_simulation(x):
     final_conf = bin(x)[2:].zfill(len(qubits))
 
     options = {
-        'circuit_filename': circuit_no_h_and_sparse_filename[1],
-        'ordering_filename': ordering_filename[1],
-        'grid_filename': grid_filename[1],
+        'circuit': circuit_no_h_and_sparse_test.split('\n'),
+        'ordering': ordering_test.split('\n'),
+        'grid': grid_test.split('\n'),
         'final_state': final_conf
     }
 
@@ -482,9 +436,9 @@ def test_simulation_with_cuts(x):
     final_conf = bin(x)[2:].zfill(len(qubits))
 
     options = {
-        'circuit_filename': circuit_filename[1],
-        'ordering_filename': ordering_with_cuts_filename[1],
-        'grid_filename': grid_filename[1],
+        'circuit': circuit_test.split('\n'),
+        'ordering': ordering_with_cuts_test.split('\n'),
+        'grid': grid_test.split('\n'),
         'final_state': final_conf
     }
 
@@ -503,9 +457,9 @@ def test_simulation_with_auto_order(x):
     final_conf = bin(x)[2:].zfill(len(qubits))
 
     options = {
-        'circuit_filename': circuit_filename[1],
-        'ordering_filename': ordering_auto_filename[1],
-        'grid_filename': grid_filename[1],
+        'circuit': circuit_test.split('\n'),
+        'ordering': auto_ordering,
+        'grid': grid_test.split('\n'),
         'final_state': final_conf
     }
 
@@ -558,9 +512,35 @@ circuit_test_fsim = """4
 17 hz_1_2 2
 17 hz_1_2 3"""
 
+grid_2x2_test = """1 1
+1 1"""
+
+ordering_2x2_test = """
+# CUT BETWEEN A AND B
+cut () 1 3
+
+# EXPAND PATCH A
+expand A 0
+expand A 1
+
+# EXPAND PATCH B
+expand B 2
+expand B 3
+
+# MERGE PATCHES A-B
+merge A B
+"""
+
 circuit_fsim_filename = mkstemp()
+grid_2x2_filename = mkstemp()
+ordering_2x2_filename = mkstemp()
+
 with open(circuit_fsim_filename[1], 'w') as f:
     print(circuit_test_fsim, file=f)
+with open(grid_2x2_filename[1], 'w') as f:
+    print(grid_2x2_test, file=f)
+with open(ordering_2x2_filename[1], 'w') as f:
+    print(ordering_2x2_test, file=f)
 
 qdev = qdevice.QFlexVirtualDevice(
     qflex_grid=qgrid.QFlexGrid.from_existing_file(grid_2x2_filename[1]))
@@ -587,9 +567,9 @@ def test_simulation_with_fsim_gates(x):
     final_conf = bin(x)[2:].zfill(len(qqubits))
 
     options = {
-        'circuit_filename': circuit_fsim_filename[1],
-        'ordering_filename': ordering_2x2_filename[1],
-        'grid_filename': grid_2x2_filename[1],
+        'circuit': circuit_test_fsim.split('\n'),
+        'ordering': ordering_2x2_test.split('\n'),
+        'grid': grid_2x2_test.split('\n'),
         'final_state': final_conf
     }
 
