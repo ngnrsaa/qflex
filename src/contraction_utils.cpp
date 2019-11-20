@@ -467,7 +467,7 @@ bool ordering_data_to_contraction_ordering(
   }
   
   // Ensure ordering generated is valid
-  if(auto [error, error_msg] = IsOrderingValid(*ordering); error) {
+  if(auto [valid, error_msg] = IsOrderingValid(*ordering); not valid) {
     throw ERROR_MSG(error_msg);
   }
 
@@ -608,7 +608,7 @@ std::pair<bool, std::string> IsOrderingValid(const std::list<ContractionOperatio
     }
   }
 
-  return {std::size(error_msg), error_msg};
+  return {std::empty(error_msg), error_msg};
 }
 
 void ContractGrid(const std::list<ContractionOperation>& ordering,

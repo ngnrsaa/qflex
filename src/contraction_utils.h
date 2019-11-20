@@ -198,7 +198,7 @@ class ContractionData {
  *   - Each patch can only be the source in one MergePatches.
  * @param ordering std::list<ContractionOperation> listing operations to
  * perform.
- * @return std::pair<error, error_msg> with error = true if order is invalid.
+ * @return std::pair<valid, error_msg> with valid = true if order is valid.
  */
 std::pair<bool, std::string> IsOrderingValid(const std::list<ContractionOperation>& ordering);
 
