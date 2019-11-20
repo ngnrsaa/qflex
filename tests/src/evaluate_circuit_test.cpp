@@ -218,16 +218,19 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
   std::stringstream grid_data(kSimpleGrid);
 
   QflexInput input;
-  input.grid.I = 3;
-  input.grid.J = 2;
   input.circuit.load(circuit_data);
   input.ordering.load(ordering_data);
   input.grid.load(grid_data);
   input.initial_state = "00000";
   input.final_state = "1100x";
 
-  std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
-      EvaluateCircuit(&input);
+  std::vector<std::pair<std::string, std::complex<double>>> amplitudes;
+  try {
+    amplitudes = EvaluateCircuit(&input);
+  } catch (const std::string &err) {
+    std::cerr << err << std::endl;
+    std::rethrow_exception(std::current_exception());
+  }
 
   ASSERT_EQ(amplitudes.size(), 2);
   EXPECT_EQ(amplitudes[0].first, "11000");
