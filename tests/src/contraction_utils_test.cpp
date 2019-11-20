@@ -450,7 +450,8 @@ TEST(OrderingParserExceptionTest, InvalidOrderingGenerated) {
     FAIL() << "Expected ordering_data_to_contration_ordering() to throw an "
               "exception.";
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Tensor (0,1) is contracted multiple times"));
+    EXPECT_THAT(
+        msg, testing::HasSubstr("Tensor (0,1) is contracted multiple times"));
   }
 }
 
