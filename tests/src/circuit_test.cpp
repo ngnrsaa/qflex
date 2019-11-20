@@ -34,13 +34,13 @@ constexpr char kBadCircuit1[] = R"(
 
 TEST(CircuitExceptionTest, BadCircuits) {
   QflexCircuit circuit;
-  // try {
-  circuit.load(std::stringstream(kBadCircuit1));
+  try {
+    circuit.load(std::stringstream(kBadCircuit1));
   // shouldn't this throw an error??
-  // } catch (std::string msg) {
-  //     std::cout << msg << std::endl;
-  //     EXPECT_THAT(msg, testing::HasSubstr("asdf"));
-  // }
+  } catch (std::string msg) {
+      std::cout << msg << std::endl;
+      EXPECT_THAT(msg, testing::HasSubstr("asdf"));
+  }
 }
 
 constexpr char kSimpleCircuit[] = R"(5
