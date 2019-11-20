@@ -198,9 +198,9 @@ class ContractionData {
  *   - Each patch can only be the source in one MergePatches.
  * @param ordering std::list<ContractionOperation> listing operations to
  * perform.
- * @return true is the ordering is valid, false otherwise.
+ * @return std::pair<error, error_msg> with error = true if order is invalid.
  */
-bool IsOrderingValid(const std::list<ContractionOperation>& ordering);
+std::pair<bool, std::string> IsOrderingValid(const std::list<ContractionOperation>& ordering);
 
 /**
  * Performs contraction operations specified by 'ordering' on tensor_grid.

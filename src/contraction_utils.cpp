@@ -459,15 +459,16 @@ bool ordering_data_to_contraction_ordering(
       break;
     }
   }
+
   if (!error_msg.empty()) {
     std::cerr << "Parsing failed on line: \"" << line
               << "\" with error: " << error_msg << std::endl;
     return false;
   }
+  
   // Ensure ordering generated is valid
-  bool valid_ordering = IsOrderingValid(*ordering);
-  if (!valid_ordering) {
-    throw ERROR_MSG("Generated ordering must be valid.");
+  if(auto [error, error_msg] = IsOrderingValid(*ordering); error) {
+    throw ERROR_MSG(error_msg);
   }
 
   return true;
@@ -533,7 +534,7 @@ bool find_grid_coord_in_list(
               std::vector<int>({i, j})) != coord_list.value().end();
 }
 
-bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
+std::pair<bool, std::string> IsOrderingValid(const std::list<ContractionOperation>& ordering) {
   struct PatchState {
     // This patch has expanded, but no cuts have happened since then.
     bool is_active = false;
@@ -607,11 +608,7 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
     }
   }
 
-  if (std::empty(error_msg)) return true;
-
-  if (global::verbose > 0) std::cerr << error_msg << std::endl;
-
-  return false;
+  return {std::size(error_msg), error_msg};
 }
 
 void ContractGrid(const std::list<ContractionOperation>& ordering,
