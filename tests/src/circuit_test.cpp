@@ -10,6 +10,7 @@ namespace {
 TEST(CircuitExceptionTest, InvalidFilenameInput) {
   QflexCircuit circuit;
   std::string invalid_filename = "invalid.txt";
+
   try {
     circuit.load(invalid_filename);
   } catch (std::string msg) {
@@ -20,11 +21,15 @@ TEST(CircuitExceptionTest, InvalidFilenameInput) {
 
 TEST(CircuitExceptionTest, PrintGate) {
   QflexGate gate;
+  std::stringstream gate_as_string;
+
   gate.name = "cx";
   gate.cycle = 1;
   gate.qubits = {2, 4};
   gate.params = {3, 5};
-  // std::cout << gate << std::endl;
+
+  gate_as_string << gate << std::endl;
+  EXPECT_EQ(gate_as_string.str(), "gate_name: cx\nqubits: 2 4 \nparams: 3 5 \n\n");
 }
 
 constexpr char kBadCircuit1[] = R"(0 h 0
@@ -80,7 +85,7 @@ constexpr char kBadCircuit7[] = R"(4
 9 cz 1 3
 9 h 1)";
 
-
+// Testing bad circuits
 TEST(CircuitExceptionTest, BadCircuits) {
   QflexCircuit circuit;
 
@@ -167,17 +172,18 @@ TEST(CircuitTest, SimpleLoadTest) {
   EXPECT_EQ(circuit.gates.size(), 22);
 }
 
-// Testing circuit.clear()
 constexpr char kClearCircuit[] = R"(2
 0 h 0
 0 h 1
 9 h 0
 9 h 1)";
 
+// Testing circuit.clear()
 TEST(CircuitTest, ClearCircuitTest) {
   QflexCircuit circuit;
   circuit.load(std::stringstream(kClearCircuit));
   circuit.clear();
+
   EXPECT_EQ(circuit.gates.size(), 0);
   EXPECT_EQ(circuit.num_active_qubits, 0);
 }
