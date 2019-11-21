@@ -111,7 +111,9 @@ void QflexCircuit::load(std::istream &&istream) {
       // Enforce first line to be a single number which correspond to the number
       // of qubits
       if (line_counter == 0) {
-        if (std::size(tokens) != 1 or std::stol(tokens[0]) <= 0)
+        std::cout << "first line: " << line << std::endl;
+        std::cout << "first token: " << tokens[0] << std::endl;
+        if (std::size(tokens) != 1 || std::stol(tokens[0]) <= 0)
           throw error_msg(
               "First line in circuit must be the number of active qubits.");
         this->num_active_qubits = std::stol(tokens[0]);

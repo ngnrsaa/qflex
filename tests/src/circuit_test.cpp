@@ -27,20 +27,69 @@ TEST(CircuitExceptionTest, PrintGate) {
   // std::cout << gate << std::endl;
 }
 
-constexpr char kBadCircuit1[] = R"(
+constexpr char kBadCircuit1[] = R"(6
 0 h 0
 0 h 1
-0 h 2)";
+9 h 0
+9 h 1)";
+
+constexpr char kBadCircuit2[] = R"(6
+0 h 0
+0 h
+9 h 0
+9 h 1)";
+
+constexpr char kBadCircuit3[] = R"(2
+0 h 0
+0 h 1
+cz 0 2
+9 h 1)";
+
+constexpr char kBadCircuit4[] = R"(2
+0 h 0
+0 h 1
+9 cz 0 2
+7 cz 1 3
+9 h 1)";
+
 
 TEST(CircuitExceptionTest, BadCircuits) {
   QflexCircuit circuit;
-  try {
+
+  // First line isn't the number of active qubits
+  /*try {
     circuit.load(std::stringstream(kBadCircuit1));
+    std::cout << circuit.num_active_qubits << std::endl;
   // shouldn't this throw an error??
   } catch (std::string msg) {
       std::cout << msg << std::endl;
       EXPECT_THAT(msg, testing::HasSubstr("asdf"));
+  }*/
+
+  // Gate is missing parameters.
+  try {
+    std::cout << "BadCircuit2" << std::endl;
+    circuit.load(std::stringstream(kBadCircuit2));
+  } catch (std::string msg) {
+      EXPECT_THAT(msg, testing::HasSubstr("[3: 0 h] Gate must be specified as: cycle gate_name[(p1[,p2,...])] q1 [q2, ...]"));
   }
+
+  // First number isn't cycle.
+  try {
+    std::cout << "BadCircuit3" << std::endl;
+    circuit.load(std::stringstream(kBadCircuit3));
+  } catch (std::string msg) {
+      EXPECT_THAT(msg, testing::HasSubstr("[4: cz 0 2] First token must be a valid cycle number."));
+  }
+  
+  // Cycle isn't increasing.
+  try {
+    std::cout << "BadCircuit4" << std::endl;
+    circuit.load(std::stringstream(kBadCircuit4));
+  } catch (std::string msg) {
+      EXPECT_THAT(msg, testing::HasSubstr("[5: 7 cz 1 3] Cycle number can only increase."));
+  }
+
 }
 
 constexpr char kSimpleCircuit[] = R"(5
