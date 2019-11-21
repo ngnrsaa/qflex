@@ -29,7 +29,8 @@ TEST(CircuitExceptionTest, PrintGate) {
   gate.params = {3, 5};
 
   gate_as_string << gate << std::endl;
-  EXPECT_EQ(gate_as_string.str(), "gate_name: cx\nqubits: 2 4 \nparams: 3 5 \n\n");
+  EXPECT_EQ(gate_as_string.str(),
+            "gate_name: cx\nqubits: 2 4 \nparams: 3 5 \n\n");
 }
 
 constexpr char kBadCircuit1[] = R"(0 h 0
@@ -66,7 +67,6 @@ constexpr char kBadCircuit5[] = R"(4
 4 h 1
 )";
 
-
 constexpr char kBadCircuit6[] = R"(2
 0 h 0
 0 h 1
@@ -93,50 +93,57 @@ TEST(CircuitExceptionTest, BadCircuits) {
   try {
     circuit.load(std::stringstream(kBadCircuit1));
   } catch (std::string msg) {
-      EXPECT_THAT(msg, testing::HasSubstr("[1: 0 h 0] First line in circuit must be the number of active qubits."));
+    EXPECT_THAT(msg, testing::HasSubstr("[1: 0 h 0] First line in circuit must "
+                                        "be the number of active qubits."));
   }
 
   // Gate is missing parameters.
   try {
     circuit.load(std::stringstream(kBadCircuit2));
   } catch (std::string msg) {
-      EXPECT_THAT(msg, testing::HasSubstr("[3: 0 h] Gate must be specified as: cycle gate_name[(p1[,p2,...])] q1 [q2, ...]"));
+    EXPECT_THAT(msg,
+                testing::HasSubstr("[3: 0 h] Gate must be specified as: cycle "
+                                   "gate_name[(p1[,p2,...])] q1 [q2, ...]"));
   }
 
   // First number isn't cycle.
   try {
     circuit.load(std::stringstream(kBadCircuit3));
   } catch (std::string msg) {
-      EXPECT_THAT(msg, testing::HasSubstr("[4: cz 0 2] First token must be a valid cycle number."));
+    EXPECT_THAT(msg,
+                testing::HasSubstr(
+                    "[4: cz 0 2] First token must be a valid cycle number."));
   }
-  
+
   // Cycle isn't increasing.
   try {
     circuit.load(std::stringstream(kBadCircuit4));
   } catch (std::string msg) {
-      EXPECT_THAT(msg, testing::HasSubstr("[5: 7 cz 1 3] Cycle number can only increase."));
+    EXPECT_THAT(msg, testing::HasSubstr(
+                         "[5: 7 cz 1 3] Cycle number can only increase."));
   }
 
   // Params aren't numbers.
   try {
     circuit.load(std::stringstream(kBadCircuit5));
   } catch (std::string msg) {
-      EXPECT_THAT(msg, testing::HasSubstr("Params must be valid numbers."));
+    EXPECT_THAT(msg, testing::HasSubstr("Params must be valid numbers."));
   }
 
   // Qubits aren't valid numbers.
   try {
     circuit.load(std::stringstream(kBadCircuit6));
   } catch (std::string msg) {
-      EXPECT_THAT(msg, testing::HasSubstr("[5: 1 t a] Qubit must be a valid number."));
+    EXPECT_THAT(msg,
+                testing::HasSubstr("[5: 1 t a] Qubit must be a valid number."));
   }
   // Qubits are being reused.
   try {
     circuit.load(std::stringstream(kBadCircuit7));
   } catch (std::string msg) {
-      EXPECT_THAT(msg, testing::HasSubstr("[6: 4 cz 2 4] Qubits can only used once per cycle."));
+    EXPECT_THAT(msg, testing::HasSubstr(
+                         "[6: 4 cz 2 4] Qubits can only used once per cycle."));
   }
-
 }
 
 constexpr char kSimpleCircuit[] = R"(5
