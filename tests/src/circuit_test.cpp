@@ -51,6 +51,15 @@ constexpr char kBadCircuit4[] = R"(2
 9 cz 0 2
 7 cz 1 3
 9 h 1)";
+constexpr char kBadCircuit7[] = R"(4
+0 h 0
+0 h 1
+4 t 2
+4 t 4 
+4 cz 2 4
+9 cz 0 2
+9 cz 1 3
+9 h 1)";
 
 
 TEST(CircuitExceptionTest, BadCircuits) {
@@ -88,6 +97,18 @@ TEST(CircuitExceptionTest, BadCircuits) {
     circuit.load(std::stringstream(kBadCircuit4));
   } catch (std::string msg) {
       EXPECT_THAT(msg, testing::HasSubstr("[5: 7 cz 1 3] Cycle number can only increase."));
+  }
+
+  // Params aren't numbers.
+
+  // Qubits aren't valid numbers.
+
+  // Qubits are being reused.
+  try {
+    std::cout << "BadCircuit7" << std::endl;
+    circuit.load(std::stringstream(kBadCircuit7));
+  } catch (std::string msg) {
+      EXPECT_THAT(msg, testing::HasSubstr("[6: 4 cz 2 4] Qubits can only used once per cycle."));
   }
 
 }

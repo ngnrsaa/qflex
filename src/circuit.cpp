@@ -171,7 +171,7 @@ void QflexCircuit::load(std::istream &&istream) {
         // Check that qubits are not already used in the same cycle
         for (const auto &qubit : gate.qubits)
           if (used_qubits.find(qubit) != std::end(used_qubits))
-            throw error_msg("Qubits can only used one for each cycle");
+            throw error_msg("Qubits can only used once per cycle.");
           else
             used_qubits.insert(qubit);
       }
