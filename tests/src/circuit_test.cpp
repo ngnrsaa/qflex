@@ -33,23 +33,27 @@ TEST(CircuitExceptionTest, PrintGate) {
             "gate_name: cx\nqubits: 2 4 \nparams: 3 5 \n\n");
 }
 
+// First line isn't the number of active qubits
 constexpr char kBadCircuit1[] = R"(0 h 0
 0 h 1
 9 h 0
 9 h 1)";
 
+// Gate is missing parameters.
 constexpr char kBadCircuit2[] = R"(6
 0 h 0
 0 h
 9 h 0
 9 h 1)";
 
+// First token isn't cycle.
 constexpr char kBadCircuit3[] = R"(2
 0 h 0
 0 h 1
 cz 0 2
 9 h 1)";
 
+// Cycle isn't increasing.
 constexpr char kBadCircuit4[] = R"(2
 0 h 0
 0 h 1
@@ -57,6 +61,7 @@ constexpr char kBadCircuit4[] = R"(2
 7 cz 1 3
 9 h 1)";
 
+// Params aren't numbers.
 constexpr char kBadCircuit5[] = R"(4
 0 h 0
 0 h 1
@@ -67,6 +72,7 @@ constexpr char kBadCircuit5[] = R"(4
 4 h 1
 )";
 
+// Qubits aren't valid numbers.
 constexpr char kBadCircuit6[] = R"(2
 0 h 0
 0 h 1
@@ -75,6 +81,7 @@ constexpr char kBadCircuit6[] = R"(2
 4 h 0
 4 h 1)";
 
+// Qubits are being reused.
 constexpr char kBadCircuit7[] = R"(4
 0 h 0
 0 h 1
@@ -106,7 +113,7 @@ TEST(CircuitExceptionTest, BadCircuits) {
                                    "gate_name[(p1[,p2,...])] q1 [q2, ...]"));
   }
 
-  // First number isn't cycle.
+  // First token isn't cycle.
   try {
     circuit.load(std::stringstream(kBadCircuit3));
   } catch (std::string msg) {
@@ -137,6 +144,7 @@ TEST(CircuitExceptionTest, BadCircuits) {
     EXPECT_THAT(msg,
                 testing::HasSubstr("[5: 1 t a] Qubit must be a valid number."));
   }
+
   // Qubits are being reused.
   try {
     circuit.load(std::stringstream(kBadCircuit7));
