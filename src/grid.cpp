@@ -29,7 +29,9 @@ void QflexGrid::load(std::istream&& istream) {
 
       // Get number of columns
       if (J != 0 and J != std::size(line))
-        throw ERROR_MSG("Grid size at line ", line_counter,  " is inconsistent with a width of ", std::size(line), " instead of ", J, ".");
+        throw ERROR_MSG("Grid size at line ", line_counter,
+                        " is inconsistent with a width of ", std::size(line),
+                        " instead of ", J, ".");
       else
         J = std::size(line);
 

@@ -27,7 +27,8 @@ TEST(GridExceptionTest, InvalidGridFormat) {
   try {
     grid.load(stream);
   } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Grid size at line 2 is inconsistent with a width of 4 instead of 3."));
+    EXPECT_THAT(msg, testing::HasSubstr("Grid size at line 2 is inconsistent "
+                                        "with a width of 4 instead of 3."));
   }
 }
 
