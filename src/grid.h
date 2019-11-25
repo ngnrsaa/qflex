@@ -5,6 +5,7 @@
 #include <fstream>
 #include <vector>
 
+#include "errors.h"
 #include "global.h"
 
 namespace qflex {
