@@ -179,26 +179,32 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
       t0 = std::chrono::high_resolution_clock::now();
     }
 
-    std::size_t max_rank = 0;
+    std::size_t max_size = 0;
     for (int i = 0; i < tensor_grid_3D.size(); ++i) {
       for (int j = 0; j < tensor_grid_3D[i].size(); ++j) {
-        std::set<std::string> indices;
+        std::unordered_map<std::string, std::size_t> index_dim;
         for (const auto tensor : tensor_grid_3D[i][j]) {
-          for (const auto index : tensor.get_indices()) {
-            if (!indices.insert(index).second) {
+          for (const auto& [index, dim] : tensor.get_index_to_dimension()) {
+            if (index_dim.find(index) == index_dim.end()) {
+              index_dim[index] = dim;
+            } else {
               // Index is shared between adjacent tensors; remove it.
-              indices.erase(index);
+              index_dim.erase(index);
             }
           }
         }
-        if (indices.size() > max_rank) {
-          max_rank = indices.size();
+        std::size_t tensor_size = 1;
+        for (const auto& [index, dim] : index_dim) {
+          tensor_size *= dim;
+        }
+        if (tensor_size > max_size) {
+          max_size = tensor_size;
         }
       }
     }
     // Scratch space for contracting 3D to 2D grid. This must have enough space
     // to hold the largest single-qubit tensor in the 2D grid.
-    s_type scratch_2D[static_cast<std::size_t>(pow(2, max_rank))];
+    s_type scratch_2D[max_size];
 
     if (global::verbose > 0) {
       t1 = std::chrono::high_resolution_clock::now();
