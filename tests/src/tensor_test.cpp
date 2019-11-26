@@ -136,7 +136,7 @@ TEST(TensorTest, IndexBundling) {
 }
 
 // Reorders indices of a tensor and verifies that data changes accordingly.
-TEST(TensorTest, IndexReordering) {
+TEST(TensorTest, SimpleIndexReordering) {
   std::vector<std::string> indices = {"a", "b", "c"};
   std::vector<size_t> dimensions = {2, 2, 2};
   std::vector<std::complex<float>> data;
@@ -162,6 +162,23 @@ TEST(TensorTest, IndexReordering) {
   for (int i = 0; i < read_data.size(); ++i) {
     ASSERT_FLOAT_EQ(read_data[i].real(), expected_data[i].real());
   }
+}
+
+
+// Tests a reordering with a single right move.
+TEST(TensorTest, RightIndexReordering) {
+
+}
+
+TEST(TensorTest, LeftRightIndexReordering) {
+  
+}
+
+// Tests a reordering with a left and a right move.
+
+// Tests a worse case index reordering.
+TEST(TensorTest, WorstCaseIndexReordering) {
+ 
 }
 
 // Multiplies two tensors and verify shape, indices, and data of the result.
