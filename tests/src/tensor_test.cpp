@@ -164,10 +164,10 @@ TEST(TensorTest, SimpleIndexReordering) {
   }
 }
 
-
 // Tests a reordering with a single right move.
 TEST(TensorTest, RightIndexReordering) {
-  std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"};
+  std::vector<std::string> indices = {"a", "b", "c", "d", "e",
+                                      "f", "g", "h", "i", "j"};
   std::vector<size_t> dimensions = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
   std::vector<std::complex<float>> data;
   for (int i = 0; i < 1024; i++) {
@@ -175,19 +175,21 @@ TEST(TensorTest, RightIndexReordering) {
   }
 
   Tensor tensor(indices, dimensions, data);
-  std::vector<std::string> expected_indices = {"j", "e", "g", "c", "f", "b", "h", "i", "d", "a"};
+  std::vector<std::string> expected_indices = {"j", "e", "g", "c", "f",
+                                               "b", "h", "i", "d", "a"};
   std::array<std::complex<float>, 1024> scratch;
   tensor.reorder(expected_indices, scratch.data());
   ASSERT_EQ(tensor.get_indices(), expected_indices);
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
-  std::cout << "One right." << std::endl; 
+  std::cout << "One right." << std::endl;
 
   // Check Tensor data.
 }
 
 // Tests a reordering with a left and a right move.
 TEST(TensorTest, LeftRightIndexReordering) {
-  std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"};
+  std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
+                                      "g", "h", "i", "j", "k", "l"};
   std::vector<size_t> dimensions = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
   std::vector<std::complex<float>> data;
   for (int i = 0; i < 4096; i++) {
@@ -195,8 +197,10 @@ TEST(TensorTest, LeftRightIndexReordering) {
   }
   Tensor tensor(indices, dimensions, data);
   // Ben's ordering
-  // std::vector<std::string> expected_indices = {"b", "f", "k", "j", "l", "g", "c","h", "e", "d", "a", "i"};
-  std::vector<std::string> expected_indices = {"c", "d", "h", "i", "j", "k", "l", "e", "f", "g", "a", "b"};
+  // std::vector<std::string> expected_indices = {"b", "f", "k", "j", "l", "g",
+  // "c","h", "e", "d", "a", "i"};
+  std::vector<std::string> expected_indices = {"c", "d", "h", "i", "j", "k",
+                                               "l", "e", "f", "g", "a", "b"};
   std::array<std::complex<float>, 4096> scratch;
   try {
     tensor.reorder(expected_indices, scratch.data());
@@ -210,15 +214,19 @@ TEST(TensorTest, LeftRightIndexReordering) {
 
 // Tests a worse case index reordering.
 TEST(TensorTest, WorstCaseIndexReordering) {
-  std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"};
-  std::vector<size_t> dimensions = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+  std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f", "g", "h",
+                                      "i", "j", "k", "l", "m", "n", "o"};
+  std::vector<size_t> dimensions = {2, 2, 2, 2, 2, 2, 2, 2,
+                                    2, 2, 2, 2, 2, 2, 2};
   std::vector<std::complex<float>> data;
   for (int i = 0; i < 32768; i++) {
     data.push_back(std::complex<float>(i, 0));
   }
 
   Tensor tensor(indices, dimensions, data);
-  std::vector<std::string> expected_indices = {"l", "e", "h", "d", "b", "m", "i", "c", "g", "j", "n", "a", "f", "k", "o"};
+  std::vector<std::string> expected_indices = {"l", "e", "h", "d", "b",
+                                               "m", "i", "c", "g", "j",
+                                               "n", "a", "f", "k", "o"};
   std::array<std::complex<float>, 32768> scratch;
   tensor.reorder(expected_indices, scratch.data());
   ASSERT_EQ(tensor.get_indices(), expected_indices);
