@@ -20,87 +20,72 @@ else
   exit 1
 fi
 
-# Space separated folders in $ROOT_DIR
-EXCLUDED_FOLDERS=".env .mypy_cache"
+# Find files within git repository given extension
+function git_find() {
+  while [[ $# > 0 ]]; do
 
-function find_cmd() {
+    # Get extension
+    ext=$1; shift
 
-  # Get path
-  path=$1
-  shift
+    # Get files
+    git ls-files --exclude-per-directory=.gitignore -co ${ROOT_DIR} | awk -v ext=$ext -F. '$NF == ext { print $0 }'
 
-  # Get modules
-  modules=$(cat ${ROOT_DIR}/.gitmodules 2>/dev/null | grep path | awk -v root_dir=${ROOT_DIR} '{ print root_dir"/"$3 }' | xargs realpath | tr '\n' '|')
-  if [[ ! -z $modules ]]; then
-    modules=${modules::$((${#modules}-1))}
-    modules="$modules|$(realpath ${ROOT_DIR}/.git)"
-  fi
-
-  # Get excluded folders
-  excluded_folders=$(echo $EXCLUDED_FOLDERS | sed 's/ \+/|/g' | xargs realpath)
-
-  if [[ ! -z $modules && ! -z $excluded_folders ]]; then
-    find "$path" "$@" | xargs realpath | grep -Ev ^"$modules|$excluded_folders"
-  elif [[ ! -z $modules ]]; then
-    find "$path" "$@" | xargs realpath | grep -Ev ^$modules
-  elif [[ ! -z $excluded_folders ]]; then
-    find "$path" "$@" | xargs realpath | grep -Ev ^$excluded_folders
-  else
-    find "$path" "$@" | xargs realpath
-  fi
+  done
 }
 
-# Make a list of files that need formatting
-malformed_files=()
-malformed_py_files=()
+function check_cxx_format {
+  while read filename; do
+    filename=$(realpath $(dirname "$filename"))/$(basename "$filename")
+    echo "Checking: $filename" >&2
+    # ...check if there are any changes required.
+    if ${CXX_CHECKER} --style=file --output-replacements-xml "$filename" | grep -q "<replacement "; then
+      # This file requires changes, add it to the list.
+      echo '"'$filename'"'
+    fi
+  done
+}
 
-# For all files in this directory and all subdirectories...
-for filename in $(find_cmd ${ROOT_DIR}/ -type f -iname "*.h" -or -iname "*.cpp"); do
-  filename=$(realpath $(dirname $filename))/$(basename $filename)
-  echo "Checking: $filename" >&2
-  # ...check if there are any changes required.
-  if ${CXX_CHECKER} --style=file --output-replacements-xml "$filename" | grep -q "<replacement "; then
-    # This file requires changes, add it to the list.
-    malformed_files=("$filename" ${malformed_files[@]})
-  fi
-done
+function check_py_format {
+  while read filename; do
+    filename=$(realpath $(dirname "$filename"))/$(basename "$filename")
+    echo "Checking: $filename" >&2
+    # ...check if there are any changes required.
+    if [[ $(${PY_CHECKER} -d "$filename" | wc -l) > 0 ]]; then
+      # This file requires changes, add it to the list.
+      echo '"'$filename'"'
+    fi
+  done
+}
 
-for filename in $(find_cmd ${ROOT_DIR}/ -type f -iname "*.py"); do
-  filename=$(realpath $(dirname $filename))/$(basename $filename)
-  echo "Checking: $filename" >&2
-  # ...check if there are any changes required.
-  if [[ $(${PY_CHECKER} -d "$filename" | wc -l) > 0 ]]; then
-    # This file requires changes, add it to the list.
-    malformed_py_files=("$filename" ${malformed_py_files[@]})
-  fi
-done
+malformed_files=$(git_find cpp h | check_cxx_format)
+malformed_py_files=$(git_find py | check_py_format)
 
 # If any files require formatting, list them and return an error.
 status=0
 
 echo >&2
-if ! [ ${#malformed_files[@]} -eq 0 ]; then
-  echo "C++ files require formatting: ${malformed_files[@]}"    >&2
-  echo                                                          >&2
-  echo "Run the following command to auto-format these files:"  >&2
-  echo "${CXX_CHECKER} --style=file -i ${malformed_files[@]}"   >&2
-  echo                                                          >&2
+if [[ -n ${malformed_files} ]]; then
+  echo "C++ files require formatting: ${malformed_files}"      >&2
+  echo                                                         >&2
+  echo "Run the following command to auto-format these files:" >&2
+  echo "${CXX_CHECKER} --style=file -i ${malformed_files}"     >&2
+  echo                                                         >&2
   status=1
 else
-  echo "All C++ files are formatted correctly."                 >&2
-  echo                                                          >&2
+  echo "All C++ files are formatted correctly."                >&2
+  echo                                                         >&2
 fi
 
-if ! [ ${#malformed_py_files[@]} -eq 0 ]; then
-  echo "Python files require formatting: ${malformed_py_files[@]}"  >&2
-  echo                                                              >&2
-  echo "Run the following command to auto-format these files:"      >&2
-  echo "${PY_CHECKER} -i ${malformed_py_files[@]}"                  >&2
-  echo                                                              >&2
+if [[ -n ${malformed_py_files} ]]; then
+  echo "Python files require formatting: ${malformed_py_files}"  >&2
+  echo                                                           >&2
+  echo "Run the following command to auto-format these files:"   >&2
+  echo "${PY_CHECKER} -i ${malformed_py_files}"                  >&2
+  echo                                                           >&2
   status=1
 else
-  echo "All Python files are formatted correctly."                  >&2
-  echo                                                              >&2
+  echo "All Python files are formatted correctly."               >&2
+  echo                                                           >&2
 fi
 
 exit $status
