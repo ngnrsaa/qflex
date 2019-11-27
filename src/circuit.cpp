@@ -92,8 +92,8 @@ void QflexCircuit::load(std::istream &&istream) {
   std::string line;
 
   auto error_msg = [&line, &line_counter](const std::string &msg) {
-    return ERROR_MSG("[" + std::to_string(line_counter + 1) + ": " + line +
-                     "] " + msg);
+    return ERROR_MSG("[", std::to_string(line_counter + 1), ": ", line, "] ",
+                     msg);
   };
 
   while (std::getline(istream, line)) {
@@ -169,7 +169,7 @@ void QflexCircuit::load(std::istream &&istream) {
         // Check that qubits are not already used in the same cycle
         for (const auto &qubit : gate.qubits)
           if (used_qubits.find(qubit) != std::end(used_qubits))
-            throw error_msg("Qubits can only used one for each cycle");
+            throw error_msg("Qubits can only used once per cycle.");
           else
             used_qubits.insert(qubit);
       }
@@ -209,7 +209,7 @@ void QflexCircuit::load(const std::string &filename) {
   if (auto in = std::ifstream(filename); in.good())
     this->load(in);
   else
-    throw ERROR_MSG("Cannot open circuit file " + filename + ".");
+    throw ERROR_MSG("Cannot open circuit file ", filename, ".");
 };
 
 }  // namespace qflex
