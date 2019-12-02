@@ -2,5 +2,5 @@ cirq==0.6.0
 pytest
 docopt
 pybind11
-yapf==0.29
+yapf==0.29.0
 clang-format==9.0.0
