@@ -28,7 +28,8 @@ function git_find() {
     ext=$1; shift
 
     # Get files
-    git ls-files --exclude-per-directory=.gitignore -co ${ROOT_DIR} | awk -v ext=$ext -F. '$NF == ext { print $0 }'
+    git --git-dir=$ROOT_DIR/.git --work-tree=$ROOT_DIR ls-files --exclude-per-directory=.gitignore -co ${ROOT_DIR} | \
+      awk -v root=$ROOT_DIR -v ext=$ext -F. '$NF == ext { print root"/"$0 }'
 
   done
 }
@@ -40,7 +41,7 @@ function check_cxx_format {
     # ...check if there are any changes required.
     if ${CXX_CHECKER} --style=file --output-replacements-xml "$filename" | grep -q "<replacement "; then
       # This file requires changes, add it to the list.
-      echo '"'$filename'"'
+      echo -ne '"'$filename'" '
     fi
   done
 }
@@ -52,7 +53,7 @@ function check_py_format {
     # ...check if there are any changes required.
     if [[ $(${PY_CHECKER} -d "$filename" | wc -l) > 0 ]]; then
       # This file requires changes, add it to the list.
-      echo '"'$filename'"'
+      echo -ne '"'$filename'" '
     fi
   done
 }
