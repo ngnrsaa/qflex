@@ -251,63 +251,59 @@ void ContractionData::ContractGrid(
         continue;
       }
       case ContractionOperation::CUT: {
-        try {
-          const std::string index = index_name(op.cut.tensors);
-          // If no error is caught, index will be initialized.
-          Tensor& tensor_a =
-              (*tensor_grid_)[op.cut.tensors[0][0]][op.cut.tensors[0][1]];
-          Tensor& copy_a =
-              get_scratch(cut_copy_name(op.cut.tensors, /*side = */ 0));
-          copy_a = tensor_a;
-          // List of values to evaluate on the cut.
-          std::vector<int> values = op.cut.values;
-          if (values.empty()) {
-            int num_values = tensor_a.get_index_to_dimension().at(index);
-            for (int i = 0; i < num_values; ++i) {
-              values.push_back(i);
-            }
+        const std::string index = index_name(op.cut.tensors);
+        // If no error is caught, index will be initialized.
+        Tensor& tensor_a =
+            (*tensor_grid_)[op.cut.tensors[0][0]][op.cut.tensors[0][1]];
+        Tensor& copy_a =
+            get_scratch(cut_copy_name(op.cut.tensors, /*side = */ 0));
+        copy_a = tensor_a;
+        // List of values to evaluate on the cut.
+        std::vector<int> values = op.cut.values;
+        if (values.empty()) {
+          int num_values = tensor_a.get_index_to_dimension().at(index);
+          for (int i = 0; i < num_values; ++i) {
+            values.push_back(i);
           }
-          if (op.cut.tensors.size() > 1) {
-            // This is a normal cut; each value adds to the same amplitude.
-            Tensor& tensor_b =
-                (*tensor_grid_)[op.cut.tensors[1][0]][op.cut.tensors[1][1]];
-            Tensor& copy_b =
-                get_scratch(cut_copy_name(op.cut.tensors, /*side = */ 1));
-            copy_b = tensor_b;
-            for (int val : values) {
-              try {
-                copy_a.project(index, val, tensor_a);
-              } catch (const std::string& err_msg) {
-                throw ERROR_MSG("Failed to call project(). Error:\n\t[",
-                                err_msg, "]");
-              }
-              try {
-                copy_b.project(index, val, tensor_b);
-              } catch (const std::string& err_msg) {
-                throw ERROR_MSG("Failed to call project(). Error:\n\t[",
-                                err_msg, "]");
-              }
-              ContractGrid(ordering, output_index, active_patches);
+        }
+        if (op.cut.tensors.size() > 1) {
+          // This is a normal cut; each value adds to the same amplitude.
+          Tensor& tensor_b =
+              (*tensor_grid_)[op.cut.tensors[1][0]][op.cut.tensors[1][1]];
+          Tensor& copy_b =
+              get_scratch(cut_copy_name(op.cut.tensors, /*side = */ 1));
+          copy_b = tensor_b;
+          for (int val : values) {
+            try {
+              copy_a.project(index, val, tensor_a);
+            } catch (const std::string& err_msg) {
+              throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
+                              "]");
             }
-            tensor_a = copy_a;
-            tensor_b = copy_b;
-          } else {
-            // This is a terminal cut; each value adds to a different amplitude.
-            output_index *= values.size();
-            for (int val : values) {
-              try {
-                copy_a.project(index, val, tensor_a);
-              } catch (const std::string& err_msg) {
-                throw ERROR_MSG("Failed to call project(). Error:\n\t[",
-                                err_msg, "]");
-              }
-              ContractGrid(ordering, output_index, active_patches);
-              output_index++;
+            try {
+              copy_b.project(index, val, tensor_b);
+            } catch (const std::string& err_msg) {
+              throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
+                              "]");
             }
-            tensor_a = copy_a;
+            ContractGrid(ordering, output_index, active_patches);
           }
-        } catch (const std::string& err_msg) {
-          throw ERROR_MSG("Failed to during CUT. Error:\n\t[", err_msg, "]");
+          tensor_a = copy_a;
+          tensor_b = copy_b;
+        } else {
+          // This is a terminal cut; each value adds to a different amplitude.
+          output_index *= values.size();
+          for (int val : values) {
+            try {
+              copy_a.project(index, val, tensor_a);
+            } catch (const std::string& err_msg) {
+              throw ERROR_MSG("Failed to call project(). Error:\n\t[", err_msg,
+                              "]");
+            }
+            ContractGrid(ordering, output_index, active_patches);
+            output_index++;
+          }
+          tensor_a = copy_a;
         }
         return;  // Post-cut contraction is handled recursively.
       }
@@ -463,6 +459,8 @@ bool ordering_data_to_contraction_ordering(
   if (!error_msg.empty()) {
     std::cerr << "Parsing failed on line: \"" << line
               << "\" with error: " << error_msg << std::endl;
+    // throw ERROR_MSG("Parsing failed on line: '", line, "' with error: ",
+    // error_msg);
     return false;
   }
 
