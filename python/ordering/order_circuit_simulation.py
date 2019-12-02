@@ -202,9 +202,9 @@ class Graph:
 
 
 def create_ordering_data(
-        contraction_steps: Iterable[cirq.ops.raw_types.Operation],
-        qubit_names: Iterable[int],
-        qubit_order: Tuple[cirq.ops.raw_types.Qid, ...]):
+    contraction_steps: Iterable[cirq.ops.raw_types.Operation],
+    qubit_names: Iterable[int], qubit_order: Tuple[cirq.ops.raw_types.Qid,
+                                                   ...]):
     """Converts a sequence of Cirq operations to a qFlex contraction ordering.
 
   Args:
@@ -286,11 +286,11 @@ def get_steps_for_graph(g: Graph):
     return (time_cost, contraction_steps)
 
 
-def circuit_to_ordering(circuit: cirq.circuits.Circuit,
-                        qubit_names: Iterable[int] = None,
-                        qubit_order_method: cirq.ops.QubitOrderOrList = cirq.
-                        ops.QubitOrder.DEFAULT,
-                        max_cuts: int = 2):
+def circuit_to_ordering(
+    circuit: cirq.circuits.Circuit,
+    qubit_names: Iterable[int] = None,
+    qubit_order_method: cirq.ops.QubitOrderOrList = cirq.ops.QubitOrder.DEFAULT,
+    max_cuts: int = 2):
     """Generates a qFlex circuit ordering (with cuts) from a Cirq circuit.
 
   Args:
