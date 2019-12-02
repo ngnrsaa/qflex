@@ -14,7 +14,6 @@ options = {
 #    'ordering_filename': "../config/ordering/bristlecone_70.txt",
 #    'grid_filename': "../config/grid/bristlecone_70.txt",
 #    'final_state': "1" * 70
-
 #}
 
 # Get output from qFlex
