@@ -7,7 +7,9 @@ from python.ordering import order_circuit_simulation as auto_order
 
 class QFlexOrder():
 
-    def __init__(self, qflex_order_strings=None, cirq_circuit=None,
+    def __init__(self,
+                 qflex_order_strings=None,
+                 cirq_circuit=None,
                  qubits=None):
 
         if (qflex_order_strings is None) and (cirq_circuit is None):

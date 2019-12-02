@@ -37,8 +37,9 @@ def test_coupler_numbers():
     assert Rochester.n_couplers == 58
 
 
-def compute_edges(activation_patterns: Dict[str, Set[Tuple[int, int]]]
-                 ) -> Dict[int, Set[int]]:
+def compute_edges(
+    activation_patterns: Dict[str, Set[Tuple[int, int]]]
+) -> Dict[int, Set[int]]:
     """Returns mapping from vertices to edges."""
     edges: Dict[int, Set[int]] = {}
     for couplers in activation_patterns.values():
