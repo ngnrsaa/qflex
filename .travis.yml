@@ -7,7 +7,7 @@ services:
   - docker
 
 before_script:
-  - docker run -ti --rm -v $PWD:/qflex:ro alpine:3.10.3 /bin/sh -c "apk update && apk add bash py3-pip clang git && pip3 install yapf==0.29 && bash /qflex/scripts/check_format.sh"
+  - docker run -ti --rm -v $PWD:/qflex:ro alpine:3.10.3 /bin/sh -c 'apk update && apk add bash py3-pip git && pip3 install $(cat /qflex/scripts/requirements.txt | grep ^yapf==) && pip3 install $(cat /qflex/scripts/requirements.txt | grep ^clang-format==) --platform manylinux1_x86_64 --no-deps --upgrade --target /usr/lib/python3.7/site-packages/ && ln -s /usr/lib/python3.7/site-packages/clang_format/bin/clang-format /usr/bin/ && bash /qflex/scripts/check_format.sh'
   - docker-compose build
 
 script:
