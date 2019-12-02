@@ -1,6 +1,6 @@
 #include "read_circuit.h"
-#include "circuit.h"
 
+#include "circuit.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
