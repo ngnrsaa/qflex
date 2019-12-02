@@ -12,9 +12,9 @@
  * @licence: Apache License, Version 2.0
  */
 
-#include <set>
-
 #include "evaluate_circuit.h"
+
+#include <set>
 
 namespace qflex {
 
