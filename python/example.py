@@ -7,6 +7,11 @@ options = {
     'ordering_filename': '../config/ordering/rectangular_2x2.txt',
     'grid_filename': '../config/grid/rectangular_2x2.txt',
     'final_state': "0110"
+
+
+
+
+
 }
 
 #options = {
@@ -14,7 +19,10 @@ options = {
 #    'ordering_filename': "../config/ordering/bristlecone_70.txt",
 #    'grid_filename': "../config/grid/bristlecone_70.txt",
 #    'final_state': "1" * 70
+
+
+
 #}
 
 # Get output from qFlex
-print(qflex.simulate(options))
+print(qflex.simulate(options       )  )
