@@ -14,11 +14,11 @@ class QFlexSimulator(SimulatesAmplitudes):
         return
 
     def compute_amplitudes_sweep(
-            self,
-            program: Union[circuits.Circuit, schedules.Schedule],
-            bitstrings: Sequence[int],
-            params: study.Sweepable,
-            qubit_order: ops.QubitOrderOrList = ops.QubitOrder.DEFAULT,
+        self,
+        program: Union[circuits.Circuit, schedules.Schedule],
+        bitstrings: Sequence[int],
+        params: study.Sweepable,
+        qubit_order: ops.QubitOrderOrList = ops.QubitOrder.DEFAULT,
     ) -> Sequence[Sequence[complex]]:
 
         if not isinstance(program, qcirc.QFlexCircuit):
