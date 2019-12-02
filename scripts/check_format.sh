@@ -62,7 +62,7 @@ function check_py_format {
     filename=$(realpath $(dirname "$filename"))/$(basename "$filename")
     echo -ne "${CYAN}[    ] Checking: $filename${RESET}" >&2
     # ...check if there are any changes required.
-    if [[ $(${PY_CHECKER} --style=google -d "$filename" | wc -l) > 0 ]]; then
+    if ! ${PY_CHECKER} --style=google -d "$filename" >/dev/null; then
       # This file requires changes, add it to the list.
       echo -ne '"'$filename'" '
       echo -ne "\r${CYAN}[${RED}FAIL${RESET}" >&2
