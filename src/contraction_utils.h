@@ -201,7 +201,7 @@ class ContractionData {
  * perform.
  * @return void.
  */
-void IsOrderingValid(const std::list<ContractionOperation>& ordering);
+void ValidateOrdering(const std::list<ContractionOperation>& ordering);
 
 /**
  * Performs contraction operations specified by 'ordering' on tensor_grid.

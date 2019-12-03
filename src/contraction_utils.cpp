@@ -466,7 +466,7 @@ bool ordering_data_to_contraction_ordering(
 
   // Ensure ordering generated is valid
   try {
-    IsOrderingValid(*ordering);
+    ValidateOrdering(*ordering);
   } catch (...) {
     std::rethrow_exception(std::current_exception());
   }
@@ -534,7 +534,7 @@ bool find_grid_coord_in_list(
               std::vector<int>({i, j})) != coord_list.value().end();
 }
 
-void IsOrderingValid(const std::list<ContractionOperation>& ordering) {
+void ValidateOrdering(const std::list<ContractionOperation>& ordering) {
   struct PatchState {
     // This patch has expanded, but no cuts have happened since then.
     bool is_active = false;
