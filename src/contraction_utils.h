@@ -200,8 +200,7 @@ class ContractionData {
  * perform.
  * @return std::pair<valid, error_msg> with valid = true if order is valid.
  */
-std::pair<bool, std::string> IsOrderingValid(
-    const std::list<ContractionOperation>& ordering);
+void IsOrderingValid(const std::list<ContractionOperation>& ordering);
 
 /**
  * Performs contraction operations specified by 'ordering' on tensor_grid.
