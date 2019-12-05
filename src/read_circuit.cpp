@@ -14,7 +14,9 @@
  */
 
 #include "read_circuit.h"
+
 #include <memory>
+
 #include "errors.h"
 
 namespace qflex {

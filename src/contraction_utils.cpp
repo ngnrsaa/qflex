@@ -11,6 +11,22 @@
 
 namespace qflex {
 
+namespace {
+
+// Convert 'memory' bytes into a more readable string.
+std::string readable_memory_string(double memory) {
+  std::string suffix[] = {" B", " kB", " MB", " GB"};
+  std::size_t scale = 0;
+  double size_prefix = memory;
+  while (size_prefix >= (1 << 10)) {
+    ++scale;
+    size_prefix /= (1 << 10);
+  }
+  return concat(size_prefix, suffix[scale]);
+}
+
+}  // namespace
+
 // ContractionData methods
 
 ContractionData ContractionData::Initialize(
@@ -92,14 +108,56 @@ ContractionData ContractionData::Initialize(
     }
   }
 
-  long allocated_space = 0;
+  // Calculate the necessary space before actually allocating memory.
+
+  // If the --memory flag is set properly, this should prevent OOM errors.
+  std::size_t allocated_space = 0;
 
   // Max rank/size of all patches.
   int max_rank = 0;
   for (const auto& patch_rank_pair : data.patch_rank_) {
     max_rank = std::max(patch_rank_pair.second, max_rank);
   }
-  long unsigned int max_size = (long unsigned int)pow(bond_dim, max_rank);
+  std::size_t max_size = static_cast<std::size_t>(pow(bond_dim, max_rank));
+
+  // General-purpose scratch space (primarily used for tensor reordering).
+  allocated_space += max_size;
+
+  // "Swap tensor" space, used to store operation results.
+  for (int rank = 1; rank <= max_rank; ++rank) {
+    allocated_space += static_cast<std::size_t>(pow(bond_dim, rank));
+  }
+  // Per-patch space, sized to match the maximum size of the patch.
+  for (const auto& patch_rank_pair : data.patch_rank_) {
+    allocated_space +=
+        static_cast<std::size_t>(pow(bond_dim, patch_rank_pair.second));
+  }
+  // Extra space for storing copies made during cut operations.
+  for (const auto& copy_rank_pair : cut_copy_rank) {
+    allocated_space +=
+        static_cast<std::size_t>(pow(bond_dim, copy_rank_pair.second));
+  }
+
+  // Prevent memory allocation from exceeding memory_limit.
+  double alloc_size = allocated_space * sizeof(std::complex<double>);
+  if (alloc_size > global::memory_limit) {
+    throw ERROR_MSG("Required space (", readable_memory_string(alloc_size),
+                    ") exceeds memory limit (",
+                    readable_memory_string(global::memory_limit),
+                    "). Cancelling simulation.");
+  }
+
+  // Log how much space will be allocated for this operation. This includes all
+  // tensors allocated during contraction; total memory usage should not vary
+  // significantly from this value.
+  if (global::verbose > 0) {
+    int old_precision = std::cerr.precision(6);
+    std::cerr << "Allocating " << readable_memory_string(alloc_size)
+              << " for this simulation." << std::endl;
+    std::cerr.precision(old_precision);
+  }
+
+  // Actually allocate the required space.
 
   // General-purpose scratch space (primarily used for tensor reordering).
   try {
@@ -108,63 +166,44 @@ ContractionData ContractionData::Initialize(
     throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
   }
   data.scratch_map_[kGeneralSpace] = 0;
-  allocated_space += max_size;
 
   // "Swap tensor" space, used to store operation results.
   for (int rank = 1; rank <= max_rank; ++rank) {
-    const long unsigned int size = (long unsigned int)pow(bond_dim, rank);
+    const std::size_t size = static_cast<std::size_t>(pow(bond_dim, rank));
     try {
       data.scratch_.push_back(Tensor({""}, {size}));
     } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
     }
     data.scratch_map_[result_space(rank)] = rank;
-    allocated_space += size;
   }
 
+  // Per-patch space, sized to match the maximum size of the patch.
   int patch_pos = data.scratch_map_.size();
   for (const auto& patch_rank_pair : data.patch_rank_) {
-    const long unsigned int size =
-        (long unsigned int)pow(bond_dim, patch_rank_pair.second);
+    const std::size_t size =
+        static_cast<std::size_t>(pow(bond_dim, patch_rank_pair.second));
     try {
       data.scratch_.push_back(Tensor({""}, {size}));
     } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
     }
     data.scratch_map_[patch_rank_pair.first] = patch_pos++;
-    allocated_space += size;
   }
 
+  // Extra space for storing copies made during cut operations.
   // TODO(martinop): minor optimizations possible: When consecutive cuts apply
   // to the same grid tensor, only one copy needs to be stored.
   int cut_copy_pos = data.scratch_map_.size();
   for (const auto& copy_rank_pair : cut_copy_rank) {
-    const long unsigned int size =
-        (long unsigned int)pow(bond_dim, copy_rank_pair.second);
+    const std::size_t size =
+        static_cast<std::size_t>(pow(bond_dim, copy_rank_pair.second));
     try {
       data.scratch_.push_back(Tensor({""}, {size}));
     } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
     }
     data.scratch_map_[copy_rank_pair.first] = patch_pos++;
-    allocated_space += size;
-  }
-
-  // Log how much space is allocated for this operation. This includes all
-  // tensors allocated during contraction; total memory usage should not vary
-  // significantly from this value.
-  int scale = 0;
-  double alloc_size = allocated_space * sizeof(std::complex<double>);
-  while (alloc_size > (1 << 10)) {
-    ++scale;
-    alloc_size /= (1 << 10);
-  }
-
-  if (global::verbose) {
-    int old_precision = std::cerr.precision(6);
-    std::string suffix[] = {"B", "kB", "MB", "GB"};
-    std::cerr << alloc_size << suffix[scale] << " allocated." << std::endl;
-    std::cerr.precision(old_precision);
   }
 
   return data;
@@ -547,7 +586,7 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
 
   if (std::empty(error_msg)) return true;
 
-  if (global::verbose) std::cerr << error_msg << std::endl;
+  if (global::verbose > 0) std::cerr << error_msg << std::endl;
 
   return false;
 }
