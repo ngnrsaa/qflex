@@ -465,8 +465,10 @@ bool ordering_data_to_contraction_ordering(
   }
 
   // Ensure ordering generated is valid
-  if (auto [valid, error_msg] = IsOrderingValid(*ordering); not valid) {
-    throw ERROR_MSG(error_msg);
+  try {
+    ValidateOrdering(*ordering);
+  } catch (...) {
+    std::rethrow_exception(std::current_exception());
   }
 
   return true;
@@ -532,8 +534,7 @@ bool find_grid_coord_in_list(
               std::vector<int>({i, j})) != coord_list.value().end();
 }
 
-std::pair<bool, std::string> IsOrderingValid(
-    const std::list<ContractionOperation>& ordering) {
+void ValidateOrdering(const std::list<ContractionOperation>& ordering) {
   struct PatchState {
     // This patch has expanded, but no cuts have happened since then.
     bool is_active = false;
@@ -607,7 +608,7 @@ std::pair<bool, std::string> IsOrderingValid(
     }
   }
 
-  return {std::empty(error_msg), error_msg};
+  if (not std::empty(error_msg)) throw error_msg;
 }
 
 void ContractGrid(const std::list<ContractionOperation>& ordering,

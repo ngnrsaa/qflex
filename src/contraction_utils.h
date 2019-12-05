@@ -187,7 +187,8 @@ class ContractionData {
 };
 
 /**
- * Performs basic sanity checks on the given contraction ordering:
+ * Performs basic sanity checks on the given contraction ordering and throws in
+ * case of an error:
  *   - A patch cannot be expanded after being merged into another patch.
  *     - Workaround: expand the target patch instead.
  *   - A patch cannot be expanded/merged into both before and after a cut.
@@ -198,10 +199,9 @@ class ContractionData {
  *   - Each patch can only be the source in one MergePatches.
  * @param ordering std::list<ContractionOperation> listing operations to
  * perform.
- * @return std::pair<valid, error_msg> with valid = true if order is valid.
+ * @return void.
  */
-std::pair<bool, std::string> IsOrderingValid(
-    const std::list<ContractionOperation>& ordering);
+void ValidateOrdering(const std::list<ContractionOperation>& ordering);
 
 /**
  * Performs contraction operations specified by 'ordering' on tensor_grid.

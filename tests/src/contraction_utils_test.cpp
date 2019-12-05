@@ -105,26 +105,26 @@ TEST(ContractionTest, RepeatedOperations) {
   std::list<ContractionOperation> ordering;
   ordering.emplace_back(ExpandPatch("a", {1, 2}));
   ordering.emplace_back(ExpandPatch("a", {1, 2}));
-  EXPECT_FALSE(std::get<bool>(IsOrderingValid(ordering)));
+  EXPECT_ANY_THROW(ValidateOrdering(ordering));
 
   // Cannot cut the same index twice.
   ordering.clear();
   std::vector<std::vector<int>> index = {{1, 2}, {1, 3}};
   ordering.emplace_back(CutIndex(index, {0, 1}));
   ordering.emplace_back(CutIndex(index, {2, 3}));
-  EXPECT_FALSE(std::get<bool>(IsOrderingValid(ordering)));
+  EXPECT_ANY_THROW(ValidateOrdering(ordering));
 
   // Cannot merge the same patch twice.
   ordering.clear();
   ordering.emplace_back(MergePatches("a", "b"));
   ordering.emplace_back(MergePatches("a", "c"));
-  EXPECT_FALSE(std::get<bool>(IsOrderingValid(ordering)));
+  EXPECT_ANY_THROW(ValidateOrdering(ordering));
 
   // Can merge into the same patch twice.
   ordering.clear();
   ordering.emplace_back(MergePatches("a", "c"));
   ordering.emplace_back(MergePatches("b", "c"));
-  EXPECT_TRUE(std::get<bool>(IsOrderingValid(ordering)));
+  EXPECT_NO_THROW(ValidateOrdering(ordering));
 }
 
 TEST(ContractionTest, MergeSafety) {
@@ -132,13 +132,13 @@ TEST(ContractionTest, MergeSafety) {
   std::list<ContractionOperation> ordering;
   ordering.emplace_back(MergePatches("a", "b"));
   ordering.emplace_back(ExpandPatch("a", {1, 2}));
-  EXPECT_FALSE(std::get<bool>(IsOrderingValid(ordering)));
+  EXPECT_ANY_THROW(ValidateOrdering(ordering));
 
   // Can expand a patch that has been merged into.
   ordering.clear();
   ordering.emplace_back(MergePatches("a", "b"));
   ordering.emplace_back(ExpandPatch("b", {1, 2}));
-  EXPECT_TRUE(std::get<bool>(IsOrderingValid(ordering)));
+  EXPECT_NO_THROW(ValidateOrdering(ordering));
 }
 
 TEST(ContractionTest, CutSafety) {
@@ -149,28 +149,28 @@ TEST(ContractionTest, CutSafety) {
   ordering.emplace_back(ExpandPatch("a", {1, 2}));
   ordering.emplace_back(CutIndex(index, cut_values));
   ordering.emplace_back(ExpandPatch("a", {2, 2}));
-  EXPECT_FALSE(std::get<bool>(IsOrderingValid(ordering)));
+  EXPECT_ANY_THROW(ValidateOrdering(ordering));
 
   // Cannot merge into a patch after a cut if it was previously expanded.
   ordering.clear();
   ordering.emplace_back(ExpandPatch("b", {1, 2}));
   ordering.emplace_back(CutIndex(index, cut_values));
   ordering.emplace_back(MergePatches("a", "b"));
-  EXPECT_FALSE(std::get<bool>(IsOrderingValid(ordering)));
+  EXPECT_ANY_THROW(ValidateOrdering(ordering));
 
   // Cannot expand a patch after a cut if it was previously merged into.
   ordering.clear();
   ordering.emplace_back(MergePatches("a", "b"));
   ordering.emplace_back(CutIndex(index, cut_values));
   ordering.emplace_back(ExpandPatch("b", {1, 2}));
-  EXPECT_FALSE(std::get<bool>(IsOrderingValid(ordering)));
+  EXPECT_ANY_THROW(ValidateOrdering(ordering));
 
   // Cannot merge into a patch before and after a cut.
   ordering.clear();
   ordering.emplace_back(MergePatches("a", "c"));
   ordering.emplace_back(CutIndex(index, cut_values));
   ordering.emplace_back(MergePatches("b", "c"));
-  EXPECT_FALSE(std::get<bool>(IsOrderingValid(ordering)));
+  EXPECT_ANY_THROW(ValidateOrdering(ordering));
 
   // Can merge a patch into an empty patch for later use.
   ordering.clear();
@@ -178,7 +178,7 @@ TEST(ContractionTest, CutSafety) {
   ordering.emplace_back(CutIndex(index, cut_values));
   ordering.emplace_back(MergePatches("a", "b"));
   ordering.emplace_back(ExpandPatch("b", {1, 3}));
-  EXPECT_TRUE(std::get<bool>(IsOrderingValid(ordering)));
+  EXPECT_NO_THROW(ValidateOrdering(ordering));
 }
 
 // Trivial grid with one "off" qubit and one cut:
@@ -315,7 +315,7 @@ TEST(ContractionTest, ExampleOrdering) {
   }
   ordering.emplace_back(MergePatches("D", "C"));
 
-  ASSERT_TRUE(std::get<bool>(IsOrderingValid(ordering)));
+  EXPECT_NO_THROW(ValidateOrdering(ordering));
 }
 
 constexpr char kSimpleOrdering[] = R"(# test comment
