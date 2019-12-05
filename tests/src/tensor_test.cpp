@@ -11,6 +11,32 @@ namespace {
 using ::testing::Eq;
 using ::testing::Pointwise;
 
+// Simple tensor permutation of axes
+template<typename array_type, typename idx1_type, typename idx2_type> array_type simple_reordering(const array_type &array, const idx1_type &idx1, const idx2_type &idx2) {
+
+  // Find map
+  std::vector<std::size_t> map;
+  for(std::size_t i = 0; i < std::size(idx1); ++i)
+    map.push_back(std::size(idx1) - std::distance(std::begin(idx1), std::find(std::begin(idx1), std::end(idx1), idx2[i])) - 1);
+  std::reverse(std::begin(map), std::end(map));
+
+  array_type out(std::size(array));
+  for(std::size_t i = 0; i < std::size(array); ++i) {
+
+    // Apply permutation to indices
+    std::size_t j = 0;
+    for(std::size_t p1 = 0; p1 < std::size(map); ++p1) {
+      std::size_t p2 = map[p1];
+      j ^= ((i >> p1) & std::size_t(1)) << p2;
+    }
+
+    // Assign
+    out[i] = array[j];
+  }
+
+  return out;
+}
+
 // Creates an empty tensor and runs basic sanity checks on it.
 TEST(TensorTest, EmptyTensor) {
   std::vector<std::string> indices = {"a", "b"};
@@ -183,6 +209,12 @@ TEST(TensorTest, RightTenIndicesReordering) {
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
 
   // Check Tensor data.
+  data = simple_reordering(data, indices, expected_indices);
+
+  for(std::size_t i = 0; i < std::size(data); ++i) {
+    ASSERT_EQ(data[i], tensor.data()[i]);
+  }
+
 }
 
 TEST(TensorTest, RightTwelveIndicesReordering) {
@@ -206,6 +238,12 @@ TEST(TensorTest, RightTwelveIndicesReordering) {
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
 
   // Check Tensor data.
+  data = simple_reordering(data, indices, expected_indices);
+
+  for(std::size_t i = 0; i < std::size(data); ++i) {
+    ASSERT_EQ(data[i], tensor.data()[i]);
+  }
+
 }
 
 TEST(TensorTest, LeftTwelveIndicesReordering) {
@@ -229,6 +267,12 @@ TEST(TensorTest, LeftTwelveIndicesReordering) {
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
 
   // Check Tensor data.
+  data = simple_reordering(data, indices, expected_indices);
+
+  for(std::size_t i = 0; i < std::size(data); ++i) {
+    ASSERT_EQ(data[i], tensor.data()[i]);
+  }
+
 }
 
 TEST(TensorTest, SlowLeftTwelveIndicesReordering) {
@@ -252,6 +296,12 @@ TEST(TensorTest, SlowLeftTwelveIndicesReordering) {
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
 
   // Check Tensor data.
+  data = simple_reordering(data, indices, expected_indices);
+
+  for(std::size_t i = 0; i < std::size(data); ++i) {
+    ASSERT_EQ(data[i], tensor.data()[i]);
+  }
+
 }
 
 // Tests a reordering with a left and a right move.
@@ -274,6 +324,12 @@ TEST(TensorTest, LeftRightIndexReordering) {
   }
 
   // Check Tensor data.
+  data = simple_reordering(data, indices, expected_indices);
+
+  for(std::size_t i = 0; i < std::size(data); ++i) {
+    ASSERT_EQ(data[i], tensor.data()[i]);
+  }
+
 }
 
 // Tests a worse case index reordering.
@@ -295,6 +351,12 @@ TEST(TensorTest, WorstCaseIndexReordering) {
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
 
   // Check Tensor data.
+  data = simple_reordering(data, indices, expected_indices);
+
+  for(std::size_t i = 0; i < std::size(data); ++i) {
+    ASSERT_EQ(data[i], tensor.data()[i]);
+  }
+
 }
 
 // Multiplies two tensors and verify shape, indices, and data of the result.
