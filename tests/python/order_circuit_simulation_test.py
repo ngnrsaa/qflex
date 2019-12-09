@@ -131,3 +131,8 @@ def test_max_cuts_negative_fails():
     # max_cuts cannot be less than zero.
     with pytest.raises(ValueError):
         order_lib.circuit_to_ordering(circuit=circuit, max_cuts=-1)
+
+
+def test_match_fidelity():
+    """Tests the fidelity-matching method."""
+    # DO NOT SUBMIT without implementing this test!
