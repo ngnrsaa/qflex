@@ -28,7 +28,8 @@ expand      B   3
 # trailing spaces
 merge A B   
 # spaces between parentheses
-cut ( 0 ) 4)";
+cut ( 0 ) 4
+)";
 
 constexpr char kSimpleOrdering2[] = R"(# comment
 cut () 1 2
@@ -36,7 +37,8 @@ expand A 3
 expand A 4
 expand B 5
 expand B 6
-merge A B)";
+merge A B
+)";
 
 TEST(OrderingTest, LoadTest) {
   QflexOrdering ordering;
@@ -51,7 +53,7 @@ TEST(OrderingTest, LoadTest) {
     ASSERT_EQ(check_ordering_1[i], ordering.instructions[i]);
   }
 
-  // Check normal ordering.
+  // Check normal ordering and that load() clears previous ordering.
   ordering.load(std::stringstream(kSimpleOrdering2));
   std::vector<std::string> check_ordering_2 = {"cut () 1 2", "expand A 3",
                                                "expand A 4", "expand B 5",
