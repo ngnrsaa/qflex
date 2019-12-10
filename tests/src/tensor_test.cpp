@@ -177,7 +177,13 @@ TEST(TensorTest, SimpleIndexReordering) {
   Tensor tensor(indices, dimensions, data);
   std::vector<std::string> expected_indices = {"b", "c", "a"};
   std::array<std::complex<float>, 8> scratch;
-  tensor.reorder(expected_indices, scratch.data());
+  try {
+    tensor.reorder(expected_indices, scratch.data());
+  } catch (std::string msg) {
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
+  }
   ASSERT_EQ(tensor.get_indices(), expected_indices);
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
 
@@ -194,7 +200,8 @@ TEST(TensorTest, SimpleIndexReordering) {
   }
 }
 
-// Tests a reordering with a single right move.
+// Tests a reordering of ten indices needing a single right move.
+// abcde | fghij -> jegcf | bhida
 TEST(TensorTest, RightTenIndicesReordering) {
   std::vector<std::string> indices = {"a", "b", "c", "d", "e",
                                       "f", "g", "h", "i", "j"};
@@ -208,7 +215,13 @@ TEST(TensorTest, RightTenIndicesReordering) {
   std::vector<std::string> expected_indices = {"j", "e", "g", "c", "f",
                                                "b", "h", "i", "d", "a"};
   std::array<std::complex<float>, 1024> scratch;
-  tensor.reorder(expected_indices, scratch.data());
+  try {
+    tensor.reorder(expected_indices, scratch.data());
+  } catch (std::string msg) {
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
+  }
   ASSERT_EQ(tensor.get_indices(), expected_indices);
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
 
@@ -220,6 +233,8 @@ TEST(TensorTest, RightTenIndicesReordering) {
   }
 }
 
+// Tests a reordering needing a single right move.
+// ab | cdefg | hijkl -> ab | ldefh | gijkc
 TEST(TensorTest, RightTwelveIndicesReordering) {
   std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
                                       "g", "h", "i", "j", "k", "l"};
@@ -235,7 +250,9 @@ TEST(TensorTest, RightTwelveIndicesReordering) {
   try {
     tensor.reorder(expected_indices, scratch.data());
   } catch (std::string msg) {
-    std::cout << msg << std::endl;
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
   }
   ASSERT_EQ(tensor.get_indices(), expected_indices);
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
@@ -248,6 +265,8 @@ TEST(TensorTest, RightTwelveIndicesReordering) {
   }
 }
 
+// Tests a reordering needing a single left move.
+// ab | cdefg | hijkl -> ga | cdefb | hijkl
 TEST(TensorTest, LeftTwelveIndicesReordering) {
   std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
                                       "g", "h", "i", "j", "k", "l"};
@@ -263,7 +282,9 @@ TEST(TensorTest, LeftTwelveIndicesReordering) {
   try {
     tensor.reorder(expected_indices, scratch.data());
   } catch (std::string msg) {
-    std::cout << msg << std::endl;
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
   }
   ASSERT_EQ(tensor.get_indices(), expected_indices);
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
@@ -276,6 +297,8 @@ TEST(TensorTest, LeftTwelveIndicesReordering) {
   }
 }
 
+// Tests a reordering needing a single left move, checks up to the 8 indices.
+// ab | cdefg | hijkl -> hb | cdefg | aijkl
 TEST(TensorTest, SlowLeftTwelveIndicesReordering) {
   std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
                                       "g", "h", "i", "j", "k", "l"};
@@ -291,7 +314,9 @@ TEST(TensorTest, SlowLeftTwelveIndicesReordering) {
   try {
     tensor.reorder(expected_indices, scratch.data());
   } catch (std::string msg) {
-    std::cout << msg << std::endl;
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
   }
   ASSERT_EQ(tensor.get_indices(), expected_indices);
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
@@ -304,7 +329,8 @@ TEST(TensorTest, SlowLeftTwelveIndicesReordering) {
   }
 }
 
-// Tests a reordering with a left and a right move.
+// Tests a reordering needing a left and a right move.
+// ab | cdefg | hijkl -> cd | hijkl | efgab
 TEST(TensorTest, LeftRightIndexReordering) {
   std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
                                       "g", "h", "i", "j", "k", "l"};
@@ -320,7 +346,9 @@ TEST(TensorTest, LeftRightIndexReordering) {
   try {
     tensor.reorder(expected_indices, scratch.data());
   } catch (std::string msg) {
-    std::cout << msg << std::endl;
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
   }
 
   // Check Tensor data.
@@ -331,7 +359,8 @@ TEST(TensorTest, LeftRightIndexReordering) {
   }
 }
 
-// Tests a worse case index reordering.
+// Tests a worse case index reordering needing a left, right, and left move.
+// ab | cdefg | hijkl -> kc | aldgf | hbeij
 TEST(TensorTest, WorstCaseIndexReordering) {
   std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
                                       "g", "h", "i", "j", "k", "l"};
@@ -345,7 +374,13 @@ TEST(TensorTest, WorstCaseIndexReordering) {
   std::vector<std::string> expected_indices = {"k", "c", "a", "l", "d", "g",
                                                "f", "h", "b", "e", "i", "j"};
   std::array<std::complex<float>, 4096> scratch;
-  tensor.reorder(expected_indices, scratch.data());
+  try {
+    tensor.reorder(expected_indices, scratch.data());
+  } catch (std::string msg) {
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
+  }
   ASSERT_EQ(tensor.get_indices(), expected_indices);
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
 
