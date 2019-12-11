@@ -109,7 +109,8 @@ TEST(ContractionTest, RepeatedOperations) {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
   } catch (const std::string& msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Tensor (1,2) is contracted multiple times."));
+    EXPECT_THAT(
+        msg, testing::HasSubstr("Tensor (1,2) is contracted multiple times."));
   }
 
   // Cannot cut the same index twice.
@@ -121,7 +122,8 @@ TEST(ContractionTest, RepeatedOperations) {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
   } catch (const std::string& msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Index (1,2),(1,3) is cut multiple times."));
+    EXPECT_THAT(msg,
+                testing::HasSubstr("Index (1,2),(1,3) is cut multiple times."));
   }
 
   // Cannot merge the same patch twice.
@@ -151,7 +153,9 @@ TEST(ContractionTest, MergeSafety) {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
   } catch (const std::string& msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Tensor at (1,2) is added to non-empty patch a after a cut."));
+    EXPECT_THAT(
+        msg, testing::HasSubstr(
+                 "Tensor at (1,2) is added to non-empty patch a after a cut."));
   }
 
   // Can expand a patch that has been merged into.
@@ -173,7 +177,9 @@ TEST(ContractionTest, CutSafety) {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
   } catch (const std::string& msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Tensor at (2,2) is added to non-empty patch a after a cut."));
+    EXPECT_THAT(
+        msg, testing::HasSubstr(
+                 "Tensor at (2,2) is added to non-empty patch a after a cut."));
   }
 
   // Cannot merge into a patch after a cut if it was previously expanded.
@@ -185,7 +191,9 @@ TEST(ContractionTest, CutSafety) {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
   } catch (const std::string& msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Patch a is merged into non-empty patch b after a cut."));
+    EXPECT_THAT(msg,
+                testing::HasSubstr(
+                    "Patch a is merged into non-empty patch b after a cut."));
   }
 
   // Cannot expand a patch after a cut if it was previously merged into.
@@ -197,7 +205,9 @@ TEST(ContractionTest, CutSafety) {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
   } catch (const std::string& msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Tensor at (1,2) is added to non-empty patch b after a cut."));
+    EXPECT_THAT(
+        msg, testing::HasSubstr(
+                 "Tensor at (1,2) is added to non-empty patch b after a cut."));
   }
 
   // Cannot merge into a patch before and after a cut.
@@ -209,7 +219,9 @@ TEST(ContractionTest, CutSafety) {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
   } catch (const std::string& msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Patch b is merged into non-empty patch c after a cut."));
+    EXPECT_THAT(msg,
+                testing::HasSubstr(
+                    "Patch b is merged into non-empty patch c after a cut."));
   }
 
   // Can merge a patch into an empty patch for later use.
