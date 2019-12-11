@@ -347,7 +347,7 @@ void ContractionData::ContractGrid(
 
 // External methods
 
-bool ordering_data_to_contraction_ordering(
+void ordering_data_to_contraction_ordering(
     const QflexInput& input, std::list<ContractionOperation>* ordering) {
   if (ordering == nullptr) {
     throw ERROR_MSG("Ordering must be non-null.");
@@ -456,13 +456,8 @@ bool ordering_data_to_contraction_ordering(
     }
   }
 
-  if (!error_msg.empty()) {
-    std::cerr << "Parsing failed on line: \"" << line
-              << "\" with error: " << error_msg << std::endl;
-    // throw ERROR_MSG("Parsing failed on line: '", line, "' with error: ",
-    // error_msg);
-    return false;
-  }
+  if (!error_msg.empty())
+    throw ERROR_MSG("Parsing failed on line: '", line, "' with error: ", error_msg);
 
   // Ensure ordering generated is valid
   try {
@@ -471,7 +466,6 @@ bool ordering_data_to_contraction_ordering(
     std::rethrow_exception(std::current_exception());
   }
 
-  return true;
 }
 
 std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {

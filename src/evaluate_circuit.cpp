@@ -136,10 +136,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   std::list<ContractionOperation> ordering;
   try {
     ordering_data_to_contraction_ordering(*input, &ordering);
-  } catch (const std::string& err_msg) {
-    throw ERROR_MSG(
-        "Failed to call ordering_data_to_contraction_ordering(). Error:\n\t[",
-        err_msg, "]");
+  } catch (...) {
+    std::rethrow_exception(std::current_exception());
   }
 
   if (global::verbose > 0) {

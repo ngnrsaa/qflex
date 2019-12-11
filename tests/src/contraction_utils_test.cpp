@@ -388,7 +388,7 @@ TEST(OrderingParserTest, ParseSimpleOrdering) {
   input.grid.J = 2;
 
   std::list<ContractionOperation> ordering;
-  ASSERT_TRUE(ordering_data_to_contraction_ordering(input, &ordering));
+  EXPECT_NO_THROW(ordering_data_to_contraction_ordering(input, &ordering));
 
   std::list<ContractionOperation> expected_ordering;
   expected_ordering.emplace_back(CutIndex({{0, 1}, {1, 1}}, {1, 2}));
@@ -434,7 +434,7 @@ TEST(OrderingParserTest, ParseCutReordering) {
   input.grid.J = 2;
 
   std::list<ContractionOperation> ordering;
-  ASSERT_TRUE(ordering_data_to_contraction_ordering(input, &ordering));
+  EXPECT_NO_THROW(ordering_data_to_contraction_ordering(input, &ordering));
 
   ContractionOperation expected_op(CutIndex({{0, 0}, {0, 1}}, {1, 2}));
 
@@ -454,24 +454,24 @@ TEST(OrderingParserTest, ParserFailures) {
   input.grid.J = 2;
 
   std::list<ContractionOperation> ordering;
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
+  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
 
   // Qubit indices must be within the grid (3x2).
   input.ordering.instructions = {"expand a 8"};
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
+  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
   input.ordering.instructions = {"expand a -2"};
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
+  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
   input.ordering.instructions = {"cut () 1 7"};
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
+  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
   input.ordering.instructions = {"cut () -1 4"};
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
+  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
 
   // Cuts must receive a valid value list.
   input.ordering.instructions = {"cut 2 3"};
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
+  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
   // Spaces are not allowed in the value list.
   input.ordering.instructions = {"cut (1, 2) 2 3"};
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
+  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
 }
 
 TEST(OrderingParserExceptionTest, InvalidInput) {
