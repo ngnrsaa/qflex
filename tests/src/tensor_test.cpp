@@ -311,10 +311,10 @@ TEST(TensorTest, LeftTwelveIndicesReordering) {
   }
 }
 
-// Tests a reordering needing a single left move. Even though 'h is in the rightmost grouping,
-// left_reorder() will check and see if it can perform the reordering by making a left move with up
-// to the 8th index from the left. 
-// abcdefgh | ijkl 
+// Tests a reordering needing a single left move. Even though 'h is in the
+// rightmost grouping, left_reorder() will check and see if it can perform the
+// reordering by making a left move with up to the 8th index from the left.
+// abcdefgh | ijkl
 // -> hbcdefg | ijk
 TEST(TensorTest, SlowLeftTwelveIndicesReordering) {
   std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
@@ -347,7 +347,7 @@ TEST(TensorTest, SlowLeftTwelveIndicesReordering) {
 }
 
 // Tests a reordering needing a left and a right move.
-// Left: ab | cdefg | hijkl -> cd | abefg | hijkl 
+// Left: ab | cdefg | hijkl -> cd | abefg | hijkl
 // Right: cd | abefg | hijkl -> cd | hijkl | efgab
 TEST(TensorTest, LeftRightIndexReordering) {
   std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
@@ -378,8 +378,8 @@ TEST(TensorTest, LeftRightIndexReordering) {
 }
 
 // Tests a worse case index reordering needing a left, right, and left move.
-// Left: ab | cdefg | hijkl -> ac | dfgbe | hijkl 
-// Right: ac | dfgbe | hijkl -> ac | dfgkl | hbeij 
+// Left: ab | cdefg | hijkl -> ac | dfgbe | hijkl
+// Right: ac | dfgbe | hijkl -> ac | dfgkl | hbeij
 // Left: ac | dfgkl | hbeij -> kc | aldgf | hbeij
 TEST(TensorTest, WorstCaseIndexReordering) {
   std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
