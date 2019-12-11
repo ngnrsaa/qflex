@@ -288,24 +288,29 @@ def get_steps_for_graph(g: Graph):
     return (time_cost, contraction_steps)
 
 
-def match_fidelity(target_fidelity: int, cuts: Dict[frozenset, int]):
-    '''Determines the "width" of each cut (what values to evaluate over) to
+def match_fidelity(target_fidelity: float, cuts: Dict[frozenset, int]):
+    """Determines the "width" of each cut (what values to evaluate over) to
     match the target fidelity as closely as possible.
 
-    Args:
-      target_fidelity: the requested fidelity. The final fidelity must be
-        greater than this, but should otherwise be as close as possible.
-      cuts: a dict of (cut_qubits, bond_dim) for all cuts.
+  Args:
+    target_fidelity: the requested fidelity. The final fidelity must be
+      greater than this, but should otherwise be as close as possible.
+    cuts: a dict of (cut_qubits, bond_dim) for all cuts.
 
-    Returns:
-      The final fidelity approximation and a list of tuples
-        (cut qubits, cut width, cut_dimension).
-'''
+  Returns:
+    The final fidelity approximation and a list of tuples
+      (cut qubits, cut width, cut_dimension).
+  """
+    if (target_fidelity == 1.0):
+        return (1.0, zip(list(cuts.keys()), list(cuts.values()),
+                         list(cuts.values())))
+
     value_sets = []
     denominator = 1.0
     for cut, dim in cuts.items():
-        min_width = math.ceil(dim * target_fidelity)
-        value_sets.append(list(range(min_width, dim)))
+        # Using min() prevents float math from producing dim+1.
+        min_width = min(dim, math.ceil(dim * target_fidelity))
+        value_sets.append(list(range(min_width, dim + 1)))
         denominator *= dim
 
     combinations = itertools.product(*value_sets)
@@ -413,7 +418,9 @@ def circuit_to_ordering(
         cut_qubits = tuple(cut)
         cut_ids = tuple(qubit_names[qubit_order.index(c)] for c in cut)
         order_data.append('# cut bond {} of dim={}'.format(cut_qubits, dim))
-        order_data.append('cut {} {} {}'.format(tuple(range(width)), cut_ids[0],
+        # If cut evaluates all values, value list can be removed.
+        cut_values = tuple(range(width)) if width < dim else tuple()
+        order_data.append('cut {} {} {}'.format(cut_values, cut_ids[0],
                                                 cut_ids[1]))
     order_data.append('# approximate fidelity: {}'.format(final_fidelity))
     order_data += create_ordering_data(min_steps, qubit_names, qubit_order)
