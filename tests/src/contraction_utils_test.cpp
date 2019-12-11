@@ -454,24 +454,59 @@ TEST(OrderingParserTest, ParserFailures) {
   input.grid.J = 2;
 
   std::list<ContractionOperation> ordering;
-  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
+  try {
+    ordering_data_to_contraction_ordering(input, &ordering);
+    FAIL() << "Expected ordering_data_to_contration_ordering to throw an expection.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Received an invalid operation in config."));
+  }
 
   // Qubit indices must be within the grid (3x2).
   input.ordering.instructions = {"expand a 8"};
-  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
+  try {
+    ordering_data_to_contraction_ordering(input, &ordering);
+    FAIL() << "Expected ordering_data_to_contration_ordering to throw an expection.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Index must be within grid boundaries."));
+  }
   input.ordering.instructions = {"expand a -2"};
-  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
+  try {
+    ordering_data_to_contraction_ordering(input, &ordering);
+    FAIL() << "Expected ordering_data_to_contration_ordering to throw an expection.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Index cannot be negative."));
+  }
   input.ordering.instructions = {"cut () 1 7"};
-  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
+  try {
+    ordering_data_to_contraction_ordering(input, &ordering);
+    FAIL() << "Expected ordering_data_to_contration_ordering to throw an expection.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Index 2 must be within grid boundaries."));
+  }
   input.ordering.instructions = {"cut () -1 4"};
-  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
+  try {
+    ordering_data_to_contraction_ordering(input, &ordering);
+    FAIL() << "Expected ordering_data_to_contration_ordering to throw an expection.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Index 1 cannot be negative."));
+  }
 
   // Cuts must receive a valid value list.
   input.ordering.instructions = {"cut 2 3"};
-  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
+  try {
+    ordering_data_to_contraction_ordering(input, &ordering);
+    FAIL() << "Expected ordering_data_to_contration_ordering to throw an expection.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Cut values must be comma-separated ints, e.g. (0,1,3)."));
+  }
   // Spaces are not allowed in the value list.
   input.ordering.instructions = {"cut (1, 2) 2 3"};
-  EXPECT_ANY_THROW(ordering_data_to_contraction_ordering(input, &ordering));
+  try {
+    ordering_data_to_contraction_ordering(input, &ordering);
+    FAIL() << "Expected ordering_data_to_contration_ordering to throw an expection.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Cut values must be comma-separated ints, e.g. (0,1,3)."));
+  }
 }
 
 TEST(OrderingParserExceptionTest, InvalidInput) {
