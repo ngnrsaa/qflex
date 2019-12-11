@@ -26,7 +26,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   try {
     index_name(index);
     FAIL() << "Expected index_name() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(
         msg,
         testing::HasSubstr(
@@ -38,7 +38,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   try {
     index_name(index);
     FAIL() << "Expected index_name() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(msg, testing::HasSubstr(
                          "Failed to construct tensor name with the following "
                          "vectors: p1 = [1,2,] and p2 = [3,4,5,]."));
@@ -49,7 +49,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   try {
     index_name(index);
     FAIL() << "Expected index_name() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(msg, testing::HasSubstr(
                          "Failed to construct tensor name with the following "
                          "vectors: p1 = [1,2,3,4,] and p2 = [5,6,7,8,]."));
@@ -60,7 +60,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   try {
     index_name(index);
     FAIL() << "Expected index_name() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(
         msg,
         testing::HasSubstr(
@@ -72,7 +72,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   try {
     index_name(index);
     FAIL() << "Expected index_name() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(msg, testing::HasSubstr(
                          "Failed to construct tensor name with the following "
                          "vectors: p1 = [1,2,3,] and p2 = []."));
@@ -428,7 +428,7 @@ TEST(OrderingParserExceptionTest, InvalidInput) {
     ordering_data_to_contraction_ordering(QflexInput(), nullptr);
     FAIL() << "Expected ordering_data_to_contration_ordering() to throw an "
               "exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(msg, testing::HasSubstr("Ordering must be non-null."));
   }
 }
@@ -449,7 +449,7 @@ TEST(OrderingParserExceptionTest, InvalidOrderingGenerated) {
     ordering_data_to_contraction_ordering(input, &ordering);
     FAIL() << "Expected ordering_data_to_contration_ordering() to throw an "
               "exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(
         msg, testing::HasSubstr("Tensor (0,1) is contracted multiple times"));
   }
@@ -464,7 +464,7 @@ TEST(ContractionExceptionTest, ContractGridInvalidInput) {
   try {
     ContractGrid(ordering, nullptr, &amplitudes);
     FAIL() << "Expected ContractGrid() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(msg, testing::HasSubstr("Tensor grid must be non-null."));
   }
 
@@ -472,7 +472,7 @@ TEST(ContractionExceptionTest, ContractGridInvalidInput) {
   try {
     ContractGrid(ordering, &tensor_grid, nullptr);
     FAIL() << "Expected ContractGrid() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(
         msg, testing::HasSubstr("Amplitude return vector must be non-null."));
   }
@@ -487,7 +487,7 @@ TEST(ContractionExceptionTest, InitializeInvalidInput) {
   try {
     ContractionData::Initialize(ordering, nullptr, &amplitudes);
     FAIL() << "Expected ContractionData::Initialize() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(msg, testing::HasSubstr("Tensor grid must be non-null."));
   }
 
@@ -495,7 +495,7 @@ TEST(ContractionExceptionTest, InitializeInvalidInput) {
   try {
     ContractionData::Initialize(ordering, &tensor_grid, nullptr);
     FAIL() << "Expected ContractionData::Initialize() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(
         msg, testing::HasSubstr("Amplitude return vector must be non-null."));
   }
