@@ -12,16 +12,27 @@ using ::testing::Eq;
 using ::testing::Pointwise;
 
 // Simple tensor permutation of axes
-template <typename array_type, typename idx1_type, typename idx2_type>
-array_type simple_reordering(const array_type &array, const idx1_type &idx1,
-                             const idx2_type &idx2) {
+/**
+ * Simple reordering routine to swap axes of a tensor
+ * @param array input array
+ * @param initial_indices set of tags corresponding to the indices of the input
+ * tensor
+ * @param final_indices set of tags corresponding to the desired re-ordering
+ * @return a new tensor with the desired order of indices
+ */
+template <typename array_type, typename initial_indices_type,
+          typename final_indices_type>
+array_type simple_reordering(const array_type &array,
+                             const initial_indices_type &initial_indices,
+                             const final_indices_type &final_indices) {
   // Find map
   std::vector<std::size_t> map;
-  for (std::size_t i = 0; i < std::size(idx1); ++i)
+  for (std::size_t i = 0; i < std::size(initial_indices); ++i)
     map.push_back(
-        std::size(idx1) -
-        std::distance(std::begin(idx1),
-                      std::find(std::begin(idx1), std::end(idx1), idx2[i])) -
+        std::size(initial_indices) -
+        std::distance(std::begin(initial_indices),
+                      std::find(std::begin(initial_indices),
+                                std::end(initial_indices), final_indices[i])) -
         1);
   std::reverse(std::begin(map), std::end(map));
 
