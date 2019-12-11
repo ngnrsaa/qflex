@@ -320,8 +320,8 @@ def match_fidelity(target_fidelity: int, cuts: Dict[frozenset, int]):
             closest_set = width_set
             closest_fidelity = fidelity
 
-    return (closest_fidelity, zip(list(cuts.keys()), closest_set,
-                                  list(cuts.values())))
+    return (closest_fidelity,
+            zip(list(cuts.keys()), closest_set, list(cuts.values())))
 
 
 def circuit_to_ordering(
@@ -450,8 +450,10 @@ if __name__ == "__main__":
     if verbose:
         print('Compute ordering.', file=stderr)
 
-    ordering = circuit_to_ordering(circuit=circuit, qubit_names=sorted(qubits),
-                                   max_cuts=max_cuts, fidelity=fidelity)
+    ordering = circuit_to_ordering(circuit=circuit,
+                                   qubit_names=sorted(qubits),
+                                   max_cuts=max_cuts,
+                                   fidelity=fidelity)
     with (stdout
           if output_filename is None else open(output_filename, 'w')) as f:
         print('\n'.join(ordering), file=f)
