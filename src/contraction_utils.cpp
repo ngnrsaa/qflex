@@ -457,7 +457,8 @@ void ordering_data_to_contraction_ordering(
   }
 
   if (!error_msg.empty())
-    throw ERROR_MSG("Parsing failed on line: '", line, "' with error: ", error_msg);
+    throw ERROR_MSG("Parsing failed on line: '", line,
+                    "' with error: ", error_msg);
 
   // Ensure ordering generated is valid
   try {
@@ -465,7 +466,6 @@ void ordering_data_to_contraction_ordering(
   } catch (...) {
     std::rethrow_exception(std::current_exception());
   }
-
 }
 
 std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
