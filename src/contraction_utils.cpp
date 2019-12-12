@@ -81,14 +81,19 @@ ContractionData ContractionData::Initialize(
         break;
       }
       case ContractionOperation::CUT: {
-        const std::string cut_index = index_name(op.cut.tensors);
-        int side = 0;
-        for (auto& tensor : op.cut.tensors) {
-          auto& indices = grid_indices[tensor[0]][tensor[1]];
-          const std::string copy_name = cut_copy_name(op.cut.tensors, side);
-          cut_copy_rank[copy_name] = indices.size();
-          ++side;
-          indices = _vector_subtraction(indices, {cut_index});
+        try {
+          const std::string cut_index = index_name(op.cut.tensors);
+          // If no error is caught, cut_index will be initialized.
+          int side = 0;
+          for (auto& tensor : op.cut.tensors) {
+            auto& indices = grid_indices[tensor[0]][tensor[1]];
+            const std::string copy_name = cut_copy_name(op.cut.tensors, side);
+            cut_copy_rank[copy_name] = indices.size();
+            ++side;
+            indices = _vector_subtraction(indices, {cut_index});
+          }
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed during CUT. Error:\n\t[", err_msg, "]");
         }
         break;
       }
@@ -247,6 +252,7 @@ void ContractionData::ContractGrid(
       }
       case ContractionOperation::CUT: {
         const std::string index = index_name(op.cut.tensors);
+        // If no error is caught, index will be initialized.
         Tensor& tensor_a =
             (*tensor_grid_)[op.cut.tensors[0][0]][op.cut.tensors[0][1]];
         Tensor& copy_a =
@@ -449,15 +455,20 @@ bool ordering_data_to_contraction_ordering(
       break;
     }
   }
+
   if (!error_msg.empty()) {
     std::cerr << "Parsing failed on line: \"" << line
               << "\" with error: " << error_msg << std::endl;
+    // throw ERROR_MSG("Parsing failed on line: '", line, "' with error: ",
+    // error_msg);
     return false;
   }
+
   // Ensure ordering generated is valid
-  bool valid_ordering = IsOrderingValid(*ordering);
-  if (!valid_ordering) {
-    throw ERROR_MSG("Generated ordering must be valid.");
+  try {
+    ValidateOrdering(*ordering);
+  } catch (...) {
+    std::rethrow_exception(std::current_exception());
   }
 
   return true;
@@ -493,10 +504,18 @@ std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2) {
 
 std::string index_name(const std::vector<std::vector<int>>& tensors) {
   if (tensors.size() == 2) {
-    return index_name(tensors.at(0), tensors.at(1));
+    try {
+      return index_name(tensors.at(0), tensors.at(1));
+    } catch (const std::string& err_msg) {
+      throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
+    }
   }
   if (tensors.size() == 1) {
-    return index_name(tensors.at(0), {});
+    try {
+      return index_name(tensors.at(0), {});
+    } catch (const std::string& err_msg) {
+      throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg, "]");
+    }
   }
   throw ERROR_MSG("Failed to construct tensor name with input tensors size: ",
                   tensors.size(), ".");
@@ -515,7 +534,7 @@ bool find_grid_coord_in_list(
               std::vector<int>({i, j})) != coord_list.value().end();
 }
 
-bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
+void ValidateOrdering(const std::list<ContractionOperation>& ordering) {
   struct PatchState {
     // This patch has expanded, but no cuts have happened since then.
     bool is_active = false;
@@ -554,17 +573,22 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
         continue;
       }
       case ContractionOperation::CUT: {
-        for (auto& patch_pair : patches) {
-          if (patch_pair.second.is_active) {
-            patch_pair.second.is_used = true;
+        try {
+          for (auto& patch_pair : patches) {
+            if (patch_pair.second.is_active) {
+              patch_pair.second.is_used = true;
+            }
           }
-        }
-        const std::string index = index_name(op.cut.tensors);
-        if (cut_indices.find(index) != cut_indices.end())
-          error_msg = concat(error_msg, "\nIndex ", index.c_str(),
-                             " is cut multiple times.");
+          const std::string index = index_name(op.cut.tensors);
+          // If no error is caught, index will be initialized.
+          if (cut_indices.find(index) != cut_indices.end())
+            error_msg = concat(error_msg, "\nIndex ", index.c_str(),
+                               " is cut multiple times.");
 
-        cut_indices.insert(index);
+          cut_indices.insert(index);
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to during CUT. Error:\n\t[", err_msg, "]");
+        }
         continue;
       }
       case ContractionOperation::MERGE: {
@@ -584,11 +608,7 @@ bool IsOrderingValid(const std::list<ContractionOperation>& ordering) {
     }
   }
 
-  if (std::empty(error_msg)) return true;
-
-  if (global::verbose > 0) std::cerr << error_msg << std::endl;
-
-  return false;
+  if (not std::empty(error_msg)) throw error_msg;
 }
 
 void ContractGrid(const std::list<ContractionOperation>& ordering,
@@ -602,13 +622,22 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
   }
 
   // Populate ContractionData and perform grid contraction.
-  ContractionData data =
-      ContractionData::Initialize(ordering, tensor_grid, amplitudes);
+  ContractionData data;
+  try {
+    data = ContractionData::Initialize(ordering, tensor_grid, amplitudes);
+  } catch (const std::string& err_msg) {
+    throw ERROR_MSG("Failed to call Initialize(). Error:\n\t[", err_msg, "]");
+  }
+  // If no error is caught, data will be initialized.
   std::unordered_map<std::string, bool> active_patches;
   for (const auto& patch : data.scratch_list()) {
     active_patches[patch] = false;
   }
-  data.ContractGrid(ordering, /*output_index = */ 0, active_patches);
+  try {
+    data.ContractGrid(ordering, /*output_index = */ 0, active_patches);
+  } catch (const std::string& err_msg) {
+    throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[", err_msg, "]");
+  }
 }
 
 }  // namespace qflex
