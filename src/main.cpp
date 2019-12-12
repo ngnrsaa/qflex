@@ -95,8 +95,14 @@ int main(int argc, char** argv) {
     input.grid.load(grid_filename);
 
     // Evaluating circuit.
-    std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
-        qflex::EvaluateCircuit(&input);
+    std::vector<std::pair<std::string, std::complex<double>>> amplitudes;
+    try {
+      amplitudes = qflex::EvaluateCircuit(&input);
+    } catch (const std::string& err_msg) {
+      throw ERROR_MSG("Failed to call EvaluateCircuit(). Error:\n\t[", err_msg,
+                      "]");
+    }
+    // If no error is caught, amplitudes will be initialized.
 
     // Printing output.
     for (std::size_t c = 0; c < amplitudes.size(); ++c) {

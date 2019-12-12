@@ -460,7 +460,14 @@ void circuit_data_to_tensor_network(
       std::vector<s_type> gate_q2;
       std::vector<std::size_t> dimensions;
       tie(gate_q1, gate_q2, dimensions) = gate_arrays(gate.name, gate.params);
-      std::string link_name = index_name(i_j_1, i_j_2);
+      std::string link_name;
+      try {
+        link_name = index_name(i_j_1, i_j_2);
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                        "]");
+      }
+      // If no error is caught, link_name will be initialized.
       link_counters[link_name]++;
       std::size_t counter = link_counters[link_name];
       std::string virtual_name =
@@ -597,7 +604,14 @@ void flatten_grid_of_tensors(
       }
 
       for (const auto& pair : pairs) {
-        std::string between_name = index_name(local, pair);
+        std::string between_name;
+        try {
+          between_name = index_name(local, pair);
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                          "]");
+        }
+        // If no error is caught, between_name will be initialized.
         bundle_between(grid_of_tensors_2D[i][j],
                        grid_of_tensors_2D[pair[0]][pair[1]], between_name,
                        scratch);
@@ -634,8 +648,12 @@ void flatten_grid_of_tensors(
       // If this qubit is in the final region, bundling must be adjusted.
       // std::size_t fr_buffer = 0;
       if (find_grid_coord_in_list(final_qubit_region, i, j)) {
-        ordered_indices_2D.push_back(index_name({i, j}, {}));
-        // fr_buffer = 1;
+        try {
+          ordered_indices_2D.push_back(index_name({i, j}, {}));
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                          "]");
+        }
       }
 
       std::vector<std::size_t> local = {i, j};
@@ -651,8 +669,13 @@ void flatten_grid_of_tensors(
           q1 = local;
           q2 = pair;
         }
-        ordered_indices_2D.push_back(
-            index_name({q1[0], q1[1]}, {q2[0], q2[1]}));
+        try {
+          ordered_indices_2D.push_back(
+              index_name({q1[0], q1[1]}, {q2[0], q2[1]}));
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                          "]");
+        }
       }
 
       // Reorder.

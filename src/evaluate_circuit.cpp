@@ -63,13 +63,13 @@ std::string get_output_states(
     if (op.op_type != ContractionOperation::CUT) continue;
     // Any qubit with a terminal cut is in the final region.
     if (op.cut.tensors.size() != 1) continue;
-    const std::size_t pos = find_output_pos(input, op.cut.tensors[0]);
+    const std::size_t output_pos = find_output_pos(input, op.cut.tensors[0]);
     const auto tensor_pos = op.cut.tensors[0];
     if (final_state_unspecified) {
-      base_state[pos] = 'x';
+      base_state[output_pos] = 'x';
     }
     // TODO(martinop): reconsider requiring 'x' for cut indices.
-    output_pos_map.push_back(pos);
+    output_pos_map.push_back(output_pos);
     if (op.cut.values.empty()) {
       output_values_map.push_back({0, 1});
     } else {
@@ -125,7 +125,13 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
   // Create the ordering for this tensor contraction from file.
   std::list<ContractionOperation> ordering;
-  ordering_data_to_contraction_ordering(*input, &ordering);
+  try {
+    ordering_data_to_contraction_ordering(*input, &ordering);
+  } catch (const std::string& err_msg) {
+    throw ERROR_MSG(
+        "Failed to call ordering_data_to_contraction_ordering(). Error:\n\t[",
+        err_msg, "]");
+  }
 
   if (global::verbose > 0) {
     t1 = std::chrono::high_resolution_clock::now();
@@ -145,8 +151,14 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // final_state if one wasn't provided.
   std::vector<std::vector<std::size_t>> final_qubits;
   std::vector<std::string> output_states;
-  input->final_state =
-      get_output_states(input, ordering, &final_qubits, &output_states);
+
+  try {
+    input->final_state =
+        get_output_states(input, ordering, &final_qubits, &output_states);
+  } catch (const std::string& err_msg) {
+    throw ERROR_MSG("Failed to call get_output_states(). Error:\n\t[", err_msg,
+                    "]");
+  }
 
   // Declaring and then filling 2D grid of tensors.
   std::vector<std::vector<Tensor>> tensor_grid(input->grid.I);
@@ -228,7 +240,11 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // Perform tensor grid contraction.
   std::vector<std::complex<double>> amplitudes(output_states.size());
   std::vector<std::pair<std::string, std::complex<double>>> result;
-  ContractGrid(ordering, &tensor_grid, &amplitudes);
+  try {
+    ContractGrid(ordering, &tensor_grid, &amplitudes);
+  } catch (const std::string& err_msg) {
+    throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[", err_msg, "]");
+  }
   for (std::size_t c = 0; c < amplitudes.size(); ++c) {
     result.push_back(std::make_pair(output_states[c], amplitudes[c]));
   }
