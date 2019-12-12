@@ -311,10 +311,10 @@ TEST(TensorTest, LeftTwelveIndicesReordering) {
   }
 }
 
-// Tests a reordering needing a single left move. Even though index 'h' should be in
-// the rightmost grouping, left_reorder() will check and see if it can perform the
-// reordering by making a left move with up to the 8th index from the left.
-// abcdefgh | ijkl
+// Tests a reordering needing a single left move. Even though index 'h' should
+// be in the rightmost grouping, left_reorder() will check and see if it can
+// perform the reordering by making a left move with up to the 8th index from
+// the left. abcdefgh | ijkl
 // -> hbcdefga | ijkl
 TEST(TensorTest, SlowLeftTwelveIndicesReordering) {
   std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
