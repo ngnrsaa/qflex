@@ -223,7 +223,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
     // Contract 3D grid onto 2D grid of tensors, as usual.
     flatten_grid_of_tensors(tensor_grid_3D, tensor_grid, final_qubits,
-                            input->grid.qubits_off, ordering, &scratch_2D[0]);
+                            input->grid.qubits_off, ordering,
+                            scratch_2D.data());
     if (global::verbose > 0) {
       t1 = std::chrono::high_resolution_clock::now();
       time_span =
