@@ -352,26 +352,28 @@ void ordering_data_to_contraction_ordering(
     throw ERROR_MSG("Ordering must be non-null.");
   }
 
+  static const std::regex cut_value_regex("\\([0-9,]*\\)");
+  std::string line;
+  std::string operation;
+
+  auto error_msg = [&line](const auto& msg) {
+    return ERROR_MSG("Parsing failed on line: '", line, "' with error: ", msg);
+  };
+
   // Lambda function to check if indexes are in the right range
-  auto check_index = [&input](auto index, auto& error_msg) {
+  auto check_index = [&input, &error_msg](auto index) {
     using index_type =
         std::remove_reference_t<std::remove_cv_t<decltype(index)>>;
     const std::size_t grid_size = input.grid.I * input.grid.J;
     if (static_cast<std::size_t>(static_cast<index_type>(grid_size)) !=
         grid_size) {
-      error_msg = "Grid is too big.";
-      return false;
+      throw error_msg("Grid is too big.");
     } else if (index < 0 or index >= static_cast<index_type>(grid_size)) {
-      error_msg = concat("Index ", index, " must be within grid boundaries.");
-      return false;
-    } else
-      return true;
+      throw error_msg(
+          concat("Index ", index, " must be within grid boundaries."));
+    }
   };
 
-  static const std::regex cut_value_regex("\\([0-9,]*\\)");
-  std::string line;
-  std::string error_msg;
-  std::string operation;
   // Read one line at a time from the ordering, skipping comments.
   for (const auto& line : input.ordering.instructions) {
     if (line.empty() || line[0] == '#') continue;
@@ -383,22 +385,25 @@ void ordering_data_to_contraction_ordering(
       long int index;
       ss >> patch;
       ss >> index;
-      if (not check_index(index, error_msg)) break;
+
+      // Check index
+      check_index(index);
+
       std::vector<std::size_t> position = get_qubit_coords(index, input.grid.J);
       if (find_grid_coord_in_list(input.grid.qubits_off, position[0],
                                   position[1])) {
-        error_msg = "Index must specify an active qubit.";
-        break;
+        throw error_msg("Index must specify an active qubit.");
       }
       ordering->emplace_back(ExpandPatch(patch, position));
+
     } else if (operation == "cut") {
       std::vector<std::size_t> values;
       std::string values_str;
       std::smatch match;
       ss >> values_str;
       if (!std::regex_match(values_str, match, cut_value_regex)) {
-        error_msg = "Cut values must be comma-separated ints, e.g. (0,1,3).";
-        break;
+        throw error_msg(
+            "Cut values must be comma-separated ints, e.g. (0,1,3).");
       }
       values_str = values_str.substr(1, values_str.size() - 2);
       if (!values_str.empty()) {
@@ -414,25 +419,29 @@ void ordering_data_to_contraction_ordering(
       }
       long int index_1, index_2;
       ss >> index_1;
-      if (not check_index(index_1, error_msg)) break;
+
+      // Check index
+      check_index(index_1);
+
       std::vector<std::size_t> position_1 =
           get_qubit_coords(index_1, input.grid.J);
       if (find_grid_coord_in_list(input.grid.qubits_off, position_1[0],
                                   position_1[1])) {
-        error_msg = "Index 1 must specify an active qubit.";
-        break;
+        throw error_msg("Index 1 must specify an active qubit.");
       }
       if (ss.eof()) {
         ordering->emplace_back(CutIndex({position_1}, values));
       } else {
         ss >> index_2;
-        if (not check_index(index_2, error_msg)) break;
+
+        // Check index
+        check_index(index_2);
+
         std::vector<std::size_t> position_2 =
             get_qubit_coords(index_2, input.grid.J);
         if (find_grid_coord_in_list(input.grid.qubits_off, position_2[0],
                                     position_2[1])) {
-          error_msg = "Index 2 must specify an active qubit.";
-          break;
+          throw error_msg("Index 2 must specify an active qubit.");
         }
         // If indices are listed in reverse order, swap them to prevent issues
         // in tensor contraction.
@@ -448,21 +457,12 @@ void ordering_data_to_contraction_ordering(
       ss >> patch_2;
       ordering->emplace_back(MergePatches(patch_1, patch_2));
     } else {
-      error_msg = "Received an invalid operation in config.";
-      break;
+      throw error_msg("Received an invalid operation in config.");
     }
   }
 
-  if (!error_msg.empty())
-    throw ERROR_MSG("Parsing failed on line: '", line,
-                    "' with error: ", error_msg);
-
   // Ensure ordering generated is valid
-  try {
-    ValidateOrdering(*ordering);
-  } catch (...) {
-    std::rethrow_exception(std::current_exception());
-  }
+  ValidateOrdering(*ordering);
 }
 
 std::string index_name(const std::vector<std::size_t>& p1,
