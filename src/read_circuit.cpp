@@ -730,8 +730,7 @@ void read_wave_function_evolution(
       // Get the first position
       ss >> q1;
       // Get the second position in the case
-      if (gate == "cz" || gate == "cx" || gate.rfind("fsim", 0) == 0)
-        ss >> *q2;
+      if (gate == "cz" || gate == "cx" || gate.rfind("fsim", 0) == 0) ss >> *q2;
 
       // Fill in one-qubit gates.
       if (q2.has_value()) {
