@@ -46,10 +46,6 @@ struct hash<std::pair<T, U>> {
 
 namespace qflex {
 
-// TODO: Use math library calls for these. Also use constexpr.
-const double _SQRT_2 = 1.41421356237309504880168872;
-const double _INV_SQRT_2 = 1. / _SQRT_2;
-const double _PI = 3.14159265358979323846264338;
 const std::size_t SUPER_CYCLE_DEPTH = 8;
 const std::size_t DIM = 2;
 

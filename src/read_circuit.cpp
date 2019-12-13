@@ -29,22 +29,20 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
      {"delta_0", std::vector<s_type>({1.0, 0.0})},
      {"delta_1", std::vector<s_type>({0.0, 1.0})},
      // For one-qubit gates, the first index is input an second is output.
-     {"h",
-      std::vector<s_type>({static_cast<s_type::value_type>(_INV_SQRT_2),
-                           static_cast<s_type::value_type>(_INV_SQRT_2),
-                           static_cast<s_type::value_type>(_INV_SQRT_2),
-                           -static_cast<s_type::value_type>(_INV_SQRT_2)})},
+     {"h", std::vector<s_type>({static_cast<s_type::value_type>(M_SQRT1_2),
+                                static_cast<s_type::value_type>(M_SQRT1_2),
+                                static_cast<s_type::value_type>(M_SQRT1_2),
+                                -static_cast<s_type::value_type>(M_SQRT1_2)})},
      {"hz_1_2",
       std::vector<s_type>({{0.5, 0.5},
-                           {static_cast<s_type::value_type>(_INV_SQRT_2), 0},
-                           {0., -static_cast<s_type::value_type>(_INV_SQRT_2)},
+                           {static_cast<s_type::value_type>(M_SQRT1_2), 0},
+                           {0., -static_cast<s_type::value_type>(M_SQRT1_2)},
                            {0.5, 0.5}})},
-     {"t",
-      std::vector<s_type>({1.0,
-                           0.,
-                           0.,
-                           {static_cast<s_type::value_type>(_INV_SQRT_2),
-                            static_cast<s_type::value_type>(_INV_SQRT_2)}})},
+     {"t", std::vector<s_type>({1.0,
+                                0.,
+                                0.,
+                                {static_cast<s_type::value_type>(M_SQRT1_2),
+                                 static_cast<s_type::value_type>(M_SQRT1_2)}})},
      {"x_1_2",
       std::vector<s_type>({{0.5, 0.5}, {0.5, -0.5}, {0.5, -0.5}, {0.5, 0.5}})},
      {"y_1_2",
@@ -84,7 +82,7 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
 std::vector<s_type> gate_array(const std::string& gate_name,
                                const std::vector<double>& params) {
   if (gate_name == "rz") {
-    const double angle_rads = _PI * params[0];
+    const double angle_rads = M_PI * params[0];
     const s_type phase = std::exp(s_type(0., angle_rads / 2));
     return std::vector<s_type>({conj(phase), 0., 0., phase});
   }
@@ -156,8 +154,8 @@ gate_arrays(const std::string& gate_name, const std::vector<double>& params) {
                       std::vector<std::size_t>>(
         gate_array("cx_q1", params), gate_array("cx_q2", params), {2, 2, 2});
   } else if (gate_name == "fsim") {
-    const double theta_rads = _PI * params[0];
-    const double phi_rads = _PI * params[1];
+    const double theta_rads = M_PI * params[0];
+    const double phi_rads = M_PI * params[1];
     std::vector<std::vector<s_type>> ret_val = fSim(theta_rads, phi_rads);
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
                       std::vector<std::size_t>>(ret_val[0], ret_val[1],
