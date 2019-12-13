@@ -134,13 +134,9 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
   // Create the ordering for this tensor contraction from file.
   std::list<ContractionOperation> ordering;
-  try {
-    ordering_data_to_contraction_ordering(*input, &ordering);
-  } catch (const std::string& err_msg) {
-    throw ERROR_MSG(
-        "Failed to call ordering_data_to_contraction_ordering(). Error:\n\t[",
-        err_msg, "]");
-  }
+
+  // Parse ordering
+  ordering_data_to_contraction_ordering(*input, &ordering);
 
   if (global::verbose > 0) {
     t1 = std::chrono::high_resolution_clock::now();
