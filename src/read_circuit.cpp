@@ -704,7 +704,8 @@ void read_wave_function_evolution(
   }
 
   // Gotten from the file.
-  std::size_t num_qubits, cycle, q1, q2;
+  std::size_t num_qubits, cycle, q1;
+  std::optional<std::size_t> q2;
   std::string gate;
   // Useful for plugging into the tensor network:
   std::vector<std::size_t> i_j_1, i_j_2;
@@ -730,12 +731,10 @@ void read_wave_function_evolution(
       ss >> q1;
       // Get the second position in the case
       if (gate == "cz" || gate == "cx" || gate.rfind("fsim", 0) == 0)
-        ss >> q2;
-      else
-        q2 = std::numeric_limits<std::size_t>::max();
+        ss >> *q2;
 
       // Fill in one-qubit gates.
-      if (q2 == std::numeric_limits<std::size_t>::max()) {
+      if (q2.has_value()) {
         std::string input_index = std::to_string(q1) + ",i";
         std::string output_index = std::to_string(q1) + ",o";
         try {
@@ -749,8 +748,8 @@ void read_wave_function_evolution(
       } else {
         std::string input_index1 = std::to_string(q1) + ",i";
         std::string output_index1 = std::to_string(q1) + ",o";
-        std::string input_index2 = std::to_string(q2) + ",i";
-        std::string output_index2 = std::to_string(q2) + ",o";
+        std::string input_index2 = std::to_string(q2.value()) + ",i";
+        std::string output_index2 = std::to_string(q2.value()) + ",o";
         inputs.push_back({input_index1, input_index2});
         outputs.push_back({output_index1, output_index2});
         try {
