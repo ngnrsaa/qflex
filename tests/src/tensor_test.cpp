@@ -11,7 +11,6 @@ namespace {
 using ::testing::Eq;
 using ::testing::Pointwise;
 
-// Simple tensor permutation of axes
 /**
  * Simple reordering routine to swap axes of a tensor
  * @param array input array
