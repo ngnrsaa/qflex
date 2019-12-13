@@ -362,7 +362,7 @@ void ordering_data_to_contraction_ordering(
       error_msg = "Grid is too big.";
       return false;
     } else if (index < 0 or index >= static_cast<index_type>(grid_size)) {
-      error_msg = "Index must be within grid boundaries.";
+      error_msg = concat("Index ", index, " must be within grid boundaries.");
       return false;
     } else
       return true;

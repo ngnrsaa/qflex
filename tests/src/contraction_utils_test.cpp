@@ -474,7 +474,7 @@ TEST(OrderingParserTest, ParserFailures) {
               "expection.";
   } catch (const std::string& msg) {
     EXPECT_THAT(msg,
-                testing::HasSubstr("Index must be within grid boundaries."));
+                testing::HasSubstr("Index 8 must be within grid boundaries."));
   }
   input.ordering.load(std::stringstream("expand a -2"));
   try {
@@ -482,7 +482,8 @@ TEST(OrderingParserTest, ParserFailures) {
     FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
               "expection.";
   } catch (const std::string& msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Index cannot be negative."));
+    EXPECT_THAT(msg,
+                testing::HasSubstr("Index -2 must be within grid boundaries."));
   }
   input.ordering.load(std::stringstream("cut () 1 7"));
   try {
@@ -491,7 +492,7 @@ TEST(OrderingParserTest, ParserFailures) {
               "expection.";
   } catch (const std::string& msg) {
     EXPECT_THAT(msg,
-                testing::HasSubstr("Index 2 must be within grid boundaries."));
+                testing::HasSubstr("Index 7 must be within grid boundaries."));
   }
   input.ordering.load(std::stringstream("cut () -1 4"));
   try {
@@ -499,7 +500,8 @@ TEST(OrderingParserTest, ParserFailures) {
     FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
               "expection.";
   } catch (const std::string& msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Index 1 cannot be negative."));
+    EXPECT_THAT(msg,
+                testing::HasSubstr("Index -1 must be within grid boundaries."));
   }
 
   // Cuts must receive a valid value list.
