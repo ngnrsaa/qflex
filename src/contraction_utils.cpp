@@ -467,26 +467,20 @@ void ordering_data_to_contraction_ordering(
 
 std::string index_name(const std::vector<std::size_t>& p1,
                        const std::vector<std::size_t>& p2) {
-  char buffer[64];
   if (p1.size() == 2 && p2.size() == 2) {
     // Two-qubit contraction.
-    std::size_t len = snprintf(buffer, sizeof(buffer), "(%zd,%zd),(%zd,%zd)",
-                               p1[0], p1[1], p2[0], p2[1]);
-    return std::string(buffer, len);
+    return concat("(", p1[0], ",", p1[1], "),(", p2[0], ",", p2[1], ")");
   }
   if (p1.size() == 3 && p2.size() == 3) {
     // Single-qubit contraction, or virtual index.
-    std::size_t len =
-        snprintf(buffer, sizeof(buffer), "(%zd,%zd,%zd),(%zd,%zd,%zd)", p1[0],
-                 p1[1], p1[2], p2[0], p2[1], p2[2]);
-    return std::string(buffer, len);
+    return concat("(", p1[0], ",", p1[1], ",", p1[2], "),(", p2[0], ",", p2[1],
+                  ",", p2[2], ")");
   }
-  // Final qubit output value assignment.
   if (p1.size() == 2 && p2.empty()) {
-    std::size_t len =
-        snprintf(buffer, sizeof(buffer), "(%zd,%zd),(o)", p1[0], p1[1]);
-    return std::string(buffer, len);
+    // Final qubit output value assignment.
+    return concat("(", p1[0], ",", p1[1], "),(o)");
   }
+
   std::stringstream ss;
   ss << "Failed to construct tensor name with the following vectors: p1 = [";
   for (const auto& p : p1) ss << std::to_string(p) << ',';
@@ -555,9 +549,8 @@ void ValidateOrdering(const std::list<ContractionOperation>& ordering) {
                      op.expand.tensor[1], ") is added to non-empty patch ",
                      op.expand.id.c_str(), " after a cut.");
 
-        char tensor_name[20];
-        snprintf(tensor_name, sizeof(tensor_name), "(%zd,%zd)",
-                 op.expand.tensor[0], op.expand.tensor[1]);
+        std::string tensor_name =
+            concat("(", op.expand.tensor[0], ",", op.expand.tensor[1], ")");
         if (used_tensors.find(tensor_name) != used_tensors.end())
           error_msg = concat(error_msg, "\nTensor ", tensor_name,
                              " is contracted multiple times.");
