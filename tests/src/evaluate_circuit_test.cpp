@@ -188,8 +188,6 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
   std::stringstream grid_data(kSimpleGrid);
 
   QflexInput input;
-  input.grid.I = 3;
-  input.grid.J = 2;
   input.circuit.load(circuit_data);
   input.ordering.load(ordering_data);
   input.grid.load(grid_data);

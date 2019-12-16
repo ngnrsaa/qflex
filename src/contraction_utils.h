@@ -98,9 +98,8 @@ struct ContractionOperation {
  * Parses a grid contraction ordering from the given stream.
  * @param QflexInput containing simulation information
  * @param ordering pointer to std::list<ContractionOperation> output object.
- * @return false if parsing failed at any point, true otherwise.
  **/
-bool ordering_data_to_contraction_ordering(
+void ordering_data_to_contraction_ordering(
     const QflexInput& input, std::list<ContractionOperation>* ordering);
 
 // Helper class for the external ContractGrid method. This should not be
@@ -187,7 +186,8 @@ class ContractionData {
 };
 
 /**
- * Performs basic sanity checks on the given contraction ordering:
+ * Performs basic sanity checks on the given contraction ordering and throws in
+ * case of an error:
  *   - A patch cannot be expanded after being merged into another patch.
  *     - Workaround: expand the target patch instead.
  *   - A patch cannot be expanded/merged into both before and after a cut.
@@ -198,9 +198,9 @@ class ContractionData {
  *   - Each patch can only be the source in one MergePatches.
  * @param ordering std::list<ContractionOperation> listing operations to
  * perform.
- * @return true is the ordering is valid, false otherwise.
+ * @return void.
  */
-bool IsOrderingValid(const std::list<ContractionOperation>& ordering);
+void ValidateOrdering(const std::list<ContractionOperation>& ordering);
 
 /**
  * Performs contraction operations specified by 'ordering' on tensor_grid.

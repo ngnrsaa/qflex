@@ -26,7 +26,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   try {
     index_name(index);
     FAIL() << "Expected index_name() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(
         msg,
         testing::HasSubstr(
@@ -38,7 +38,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   try {
     index_name(index);
     FAIL() << "Expected index_name() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(msg, testing::HasSubstr(
                          "Failed to construct tensor name with the following "
                          "vectors: p1 = [1,2,] and p2 = [3,4,5,]."));
@@ -49,7 +49,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   try {
     index_name(index);
     FAIL() << "Expected index_name() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(msg, testing::HasSubstr(
                          "Failed to construct tensor name with the following "
                          "vectors: p1 = [1,2,3,4,] and p2 = [5,6,7,8,]."));
@@ -60,7 +60,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   try {
     index_name(index);
     FAIL() << "Expected index_name() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(
         msg,
         testing::HasSubstr(
@@ -72,7 +72,7 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
   try {
     index_name(index);
     FAIL() << "Expected index_name() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(msg, testing::HasSubstr(
                          "Failed to construct tensor name with the following "
                          "vectors: p1 = [1,2,3,] and p2 = []."));
@@ -105,26 +105,43 @@ TEST(ContractionTest, RepeatedOperations) {
   std::list<ContractionOperation> ordering;
   ordering.emplace_back(ExpandPatch("a", {1, 2}));
   ordering.emplace_back(ExpandPatch("a", {1, 2}));
-  EXPECT_FALSE(IsOrderingValid(ordering));
+  try {
+    ValidateOrdering(ordering);
+    FAIL() << "Expected ValidateOrdering() to throw an exception.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(
+        msg, testing::HasSubstr("Tensor (1,2) is contracted multiple times."));
+  }
 
   // Cannot cut the same index twice.
   ordering.clear();
   std::vector<std::vector<int>> index = {{1, 2}, {1, 3}};
   ordering.emplace_back(CutIndex(index, {0, 1}));
   ordering.emplace_back(CutIndex(index, {2, 3}));
-  EXPECT_FALSE(IsOrderingValid(ordering));
+  try {
+    ValidateOrdering(ordering);
+    FAIL() << "Expected ValidateOrdering() to throw an exception.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg,
+                testing::HasSubstr("Index (1,2),(1,3) is cut multiple times."));
+  }
 
   // Cannot merge the same patch twice.
   ordering.clear();
   ordering.emplace_back(MergePatches("a", "b"));
   ordering.emplace_back(MergePatches("a", "c"));
-  EXPECT_FALSE(IsOrderingValid(ordering));
+  try {
+    ValidateOrdering(ordering);
+    FAIL() << "Expected ValidateOrdering() to throw an exception.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Patch a is merged multiple times."));
+  }
 
   // Can merge into the same patch twice.
   ordering.clear();
   ordering.emplace_back(MergePatches("a", "c"));
   ordering.emplace_back(MergePatches("b", "c"));
-  EXPECT_TRUE(IsOrderingValid(ordering));
+  EXPECT_NO_THROW(ValidateOrdering(ordering));
 }
 
 TEST(ContractionTest, MergeSafety) {
@@ -132,13 +149,20 @@ TEST(ContractionTest, MergeSafety) {
   std::list<ContractionOperation> ordering;
   ordering.emplace_back(MergePatches("a", "b"));
   ordering.emplace_back(ExpandPatch("a", {1, 2}));
-  EXPECT_FALSE(IsOrderingValid(ordering));
+  try {
+    ValidateOrdering(ordering);
+    FAIL() << "Expected ValidateOrdering() to throw an exception.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(
+        msg, testing::HasSubstr(
+                 "Tensor at (1,2) is added to non-empty patch a after a cut."));
+  }
 
   // Can expand a patch that has been merged into.
   ordering.clear();
   ordering.emplace_back(MergePatches("a", "b"));
   ordering.emplace_back(ExpandPatch("b", {1, 2}));
-  EXPECT_TRUE(IsOrderingValid(ordering));
+  EXPECT_NO_THROW(ValidateOrdering(ordering));
 }
 
 TEST(ContractionTest, CutSafety) {
@@ -149,28 +173,56 @@ TEST(ContractionTest, CutSafety) {
   ordering.emplace_back(ExpandPatch("a", {1, 2}));
   ordering.emplace_back(CutIndex(index, cut_values));
   ordering.emplace_back(ExpandPatch("a", {2, 2}));
-  EXPECT_FALSE(IsOrderingValid(ordering));
+  try {
+    ValidateOrdering(ordering);
+    FAIL() << "Expected ValidateOrdering() to throw an exception.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(
+        msg, testing::HasSubstr(
+                 "Tensor at (2,2) is added to non-empty patch a after a cut."));
+  }
 
   // Cannot merge into a patch after a cut if it was previously expanded.
   ordering.clear();
   ordering.emplace_back(ExpandPatch("b", {1, 2}));
   ordering.emplace_back(CutIndex(index, cut_values));
   ordering.emplace_back(MergePatches("a", "b"));
-  EXPECT_FALSE(IsOrderingValid(ordering));
+  try {
+    ValidateOrdering(ordering);
+    FAIL() << "Expected ValidateOrdering() to throw an exception.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg,
+                testing::HasSubstr(
+                    "Patch a is merged into non-empty patch b after a cut."));
+  }
 
   // Cannot expand a patch after a cut if it was previously merged into.
   ordering.clear();
   ordering.emplace_back(MergePatches("a", "b"));
   ordering.emplace_back(CutIndex(index, cut_values));
   ordering.emplace_back(ExpandPatch("b", {1, 2}));
-  EXPECT_FALSE(IsOrderingValid(ordering));
+  try {
+    ValidateOrdering(ordering);
+    FAIL() << "Expected ValidateOrdering() to throw an exception.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(
+        msg, testing::HasSubstr(
+                 "Tensor at (1,2) is added to non-empty patch b after a cut."));
+  }
 
   // Cannot merge into a patch before and after a cut.
   ordering.clear();
   ordering.emplace_back(MergePatches("a", "c"));
   ordering.emplace_back(CutIndex(index, cut_values));
   ordering.emplace_back(MergePatches("b", "c"));
-  EXPECT_FALSE(IsOrderingValid(ordering));
+  try {
+    ValidateOrdering(ordering);
+    FAIL() << "Expected ValidateOrdering() to throw an exception.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg,
+                testing::HasSubstr(
+                    "Patch b is merged into non-empty patch c after a cut."));
+  }
 
   // Can merge a patch into an empty patch for later use.
   ordering.clear();
@@ -178,7 +230,7 @@ TEST(ContractionTest, CutSafety) {
   ordering.emplace_back(CutIndex(index, cut_values));
   ordering.emplace_back(MergePatches("a", "b"));
   ordering.emplace_back(ExpandPatch("b", {1, 3}));
-  EXPECT_TRUE(IsOrderingValid(ordering));
+  EXPECT_NO_THROW(ValidateOrdering(ordering));
 }
 
 // Trivial grid with one "off" qubit and one cut:
@@ -315,7 +367,7 @@ TEST(ContractionTest, ExampleOrdering) {
   }
   ordering.emplace_back(MergePatches("D", "C"));
 
-  ASSERT_TRUE(IsOrderingValid(ordering));
+  EXPECT_NO_THROW(ValidateOrdering(ordering));
 }
 
 constexpr char kSimpleOrdering[] = R"(# test comment
@@ -336,7 +388,7 @@ TEST(OrderingParserTest, ParseSimpleOrdering) {
   input.grid.J = 2;
 
   std::list<ContractionOperation> ordering;
-  ASSERT_TRUE(ordering_data_to_contraction_ordering(input, &ordering));
+  EXPECT_NO_THROW(ordering_data_to_contraction_ordering(input, &ordering));
 
   std::list<ContractionOperation> expected_ordering;
   expected_ordering.emplace_back(CutIndex({{0, 1}, {1, 1}}, {1, 2}));
@@ -382,7 +434,7 @@ TEST(OrderingParserTest, ParseCutReordering) {
   input.grid.J = 2;
 
   std::list<ContractionOperation> ordering;
-  ASSERT_TRUE(ordering_data_to_contraction_ordering(input, &ordering));
+  EXPECT_NO_THROW(ordering_data_to_contraction_ordering(input, &ordering));
 
   ContractionOperation expected_op(CutIndex({{0, 0}, {0, 1}}, {1, 2}));
 
@@ -396,30 +448,71 @@ TEST(OrderingParserTest, ParserFailures) {
   QflexInput input;
 
   // Invalid operations cause failures.
-  input.ordering.instructions = {"bad op 1 2"};
+  input.ordering.load(std::stringstream("bad op 1 2"));
   input.grid.qubits_off = {{2, 0}};
   input.grid.I = 3;
   input.grid.J = 2;
 
   std::list<ContractionOperation> ordering;
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
+  try {
+    ordering_data_to_contraction_ordering(input, &ordering);
+    FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
+              "expection.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg,
+                testing::HasSubstr("Received an invalid operation in config."));
+  }
 
   // Qubit indices must be within the grid (3x2).
-  input.ordering.instructions = {"expand a 8"};
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
-  input.ordering.instructions = {"expand a -2"};
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
-  input.ordering.instructions = {"cut () 1 7"};
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
-  input.ordering.instructions = {"cut () -1 4"};
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
+  input.ordering.load(std::stringstream("expand a 8"));
+  try {
+    ordering_data_to_contraction_ordering(input, &ordering);
+    FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
+              "expection.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg,
+                testing::HasSubstr("Index must be within grid boundaries."));
+  }
+  input.ordering.load(std::stringstream("expand a -2"));
+  try {
+    ordering_data_to_contraction_ordering(input, &ordering);
+    FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
+              "expection.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Index cannot be negative."));
+  }
+  input.ordering.load(std::stringstream("cut () 1 7"));
+  try {
+    ordering_data_to_contraction_ordering(input, &ordering);
+    FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
+              "expection.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg,
+                testing::HasSubstr("Index 2 must be within grid boundaries."));
+  }
+  input.ordering.load(std::stringstream("cut () -1 4"));
+  try {
+    ordering_data_to_contraction_ordering(input, &ordering);
+    FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
+              "expection.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Index 1 cannot be negative."));
+  }
 
   // Cuts must receive a valid value list.
-  input.ordering.instructions = {"cut 2 3"};
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
-  // Spaces are not allowed in the value list.
-  input.ordering.instructions = {"cut (1, 2) 2 3"};
-  EXPECT_FALSE(ordering_data_to_contraction_ordering(input, &ordering));
+  input.ordering.load(std::stringstream("cut 2 3"));
+  try {
+    ordering_data_to_contraction_ordering(input, &ordering);
+    FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
+              "expection.";
+  } catch (const std::string& msg) {
+    EXPECT_THAT(msg,
+                testing::HasSubstr(
+                    "Cut values must be comma-separated ints, e.g. (0,1,3)."));
+  }
+  // Check spaces are properly removed
+  input.ordering.load(std::stringstream("cut   (  1  , 2   )    2        3"));
+  EXPECT_NO_THROW(ordering_data_to_contraction_ordering(input, &ordering));
 }
 
 TEST(OrderingParserExceptionTest, InvalidInput) {
@@ -428,7 +521,7 @@ TEST(OrderingParserExceptionTest, InvalidInput) {
     ordering_data_to_contraction_ordering(QflexInput(), nullptr);
     FAIL() << "Expected ordering_data_to_contration_ordering() to throw an "
               "exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(msg, testing::HasSubstr("Ordering must be non-null."));
   }
 }
@@ -449,8 +542,9 @@ TEST(OrderingParserExceptionTest, InvalidOrderingGenerated) {
     ordering_data_to_contraction_ordering(input, &ordering);
     FAIL() << "Expected ordering_data_to_contration_ordering() to throw an "
               "exception.";
-  } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Generated ordering must be valid."));
+  } catch (const std::string& msg) {
+    EXPECT_THAT(
+        msg, testing::HasSubstr("Tensor (0,1) is contracted multiple times"));
   }
 }
 
@@ -463,7 +557,7 @@ TEST(ContractionExceptionTest, ContractGridInvalidInput) {
   try {
     ContractGrid(ordering, nullptr, &amplitudes);
     FAIL() << "Expected ContractGrid() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(msg, testing::HasSubstr("Tensor grid must be non-null."));
   }
 
@@ -471,7 +565,7 @@ TEST(ContractionExceptionTest, ContractGridInvalidInput) {
   try {
     ContractGrid(ordering, &tensor_grid, nullptr);
     FAIL() << "Expected ContractGrid() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(
         msg, testing::HasSubstr("Amplitude return vector must be non-null."));
   }
@@ -486,7 +580,7 @@ TEST(ContractionExceptionTest, InitializeInvalidInput) {
   try {
     ContractionData::Initialize(ordering, nullptr, &amplitudes);
     FAIL() << "Expected ContractionData::Initialize() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(msg, testing::HasSubstr("Tensor grid must be non-null."));
   }
 
@@ -494,7 +588,7 @@ TEST(ContractionExceptionTest, InitializeInvalidInput) {
   try {
     ContractionData::Initialize(ordering, &tensor_grid, nullptr);
     FAIL() << "Expected ContractionData::Initialize() to throw an exception.";
-  } catch (std::string msg) {
+  } catch (const std::string& msg) {
     EXPECT_THAT(
         msg, testing::HasSubstr("Amplitude return vector must be non-null."));
   }
