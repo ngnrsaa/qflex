@@ -302,8 +302,9 @@ def match_fidelity(target_fidelity: float, cuts: Dict[frozenset, int]):
       (cut qubits, cut width, cut_dimension).
   """
     if (target_fidelity == 1.0):
-        return (1.0, zip(list(cuts.keys()), list(cuts.values()),
-                         list(cuts.values())))
+        return (1.0,
+                zip(list(cuts.keys()), list(cuts.values()),
+                    list(cuts.values())))
 
     value_sets = []
     denominator = 1.0
