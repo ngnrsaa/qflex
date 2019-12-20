@@ -12,7 +12,7 @@ $ sudo apt-get install autoconf automake make g++ libgsl-dev libgslcblas0
 ```
 followed by the installation of required python modules:
 ```
-# python3 -m pip install -r scripts/requirements.txt
+$ python3 -m pip install -r scripts/requirements.txt
 ```
 
 ## Check prerequisites
