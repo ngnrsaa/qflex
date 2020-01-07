@@ -183,8 +183,8 @@ TEST(CircuitTest, SimpleLoadTest) {
   QflexCircuit circuit;
   circuit.load(std::stringstream(kSimpleCircuit));
 
-  EXPECT_EQ(circuit.num_active_qubits, 5);
-  EXPECT_EQ(circuit.gates.size(), 22);
+  EXPECT_EQ(circuit.num_active_qubits, 5ull);
+  EXPECT_EQ(circuit.gates.size(), 22ull);
 }
 
 constexpr char kClearCircuit[] = R"(2
@@ -199,8 +199,8 @@ TEST(CircuitTest, ClearCircuitTest) {
   circuit.load(std::stringstream(kClearCircuit));
   circuit.clear();
 
-  EXPECT_EQ(circuit.gates.size(), 0);
-  EXPECT_EQ(circuit.num_active_qubits, 0);
+  EXPECT_EQ(circuit.gates.size(), 0ull);
+  EXPECT_EQ(circuit.num_active_qubits, 0ull);
 }
 
 }  // namespace

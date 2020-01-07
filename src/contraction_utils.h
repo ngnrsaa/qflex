@@ -23,51 +23,55 @@ namespace qflex {
  * @param p2 position of the second connected tensor.
  * @return string name of the index.
  */
-std::string index_name(const std::vector<int>& p1, const std::vector<int>& p2);
+std::string index_name(const std::vector<std::size_t>& p1,
+                       const std::vector<std::size_t>& p2);
 
 // As above, but accepts a list of qubit locations. If the list has only one
 // element, an empty vector will be provided as the second element.
-std::string index_name(const std::vector<std::vector<int>>& tensors);
+std::string index_name(const std::vector<std::vector<std::size_t>>& tensors);
 
 /**
  * Returns spatial coordinates on the grid for the given qubit q.
- * @param q int with the qubit number.
- * @param J int with the second spatial dimension of the grid of qubits.
- * @return vector<int> with the spatial coordinates of qubit q on the grid.
+ * @param q std::size_t with the qubit number.
+ * @param J std::size_t with the second spatial dimension of the grid of qubits.
+ * @return vector<std::size_t> with the spatial coordinates of qubit q on the
+ * grid.
  */
-std::vector<int> get_qubit_coords(int q, int J);
+std::vector<std::size_t> get_qubit_coords(std::size_t q, std::size_t J);
 
 /**
  * Helper function to find a grid coordinate in a list of coordinates.
  * @param coord_list optional vector of qubit positions.
- * @param i int with the first spatial dimension of the target position.
- * @param j int with the second spatial dimension of the target position.
+ * @param i std::size_t with the first spatial dimension of the target position.
+ * @param j std::size_t with the second spatial dimension of the target
+ * position.
  * @return true if (i, j) is in coord_list.
  */
 bool find_grid_coord_in_list(
-    const std::optional<std::vector<std::vector<int>>>& coord_list, const int i,
-    const int j);
+    const std::optional<std::vector<std::vector<std::size_t>>>& coord_list,
+    const std::size_t i, const std::size_t j);
 
 struct ExpandPatch {
   ExpandPatch() {}
-  ExpandPatch(std::string id, std::vector<int> tensor)
+  ExpandPatch(std::string id, std::vector<std::size_t> tensor)
       : id(id), tensor(tensor) {}
   // ID of the patch expanded by this operation.
   std::string id;
   // Tensor to contract into the patch.
-  std::vector<int> tensor;
+  std::vector<std::size_t> tensor;
 };
 
 struct CutIndex {
   CutIndex() {}
-  CutIndex(std::vector<std::vector<int>> tensors, std::vector<int> values = {})
+  CutIndex(std::vector<std::vector<std::size_t>> tensors,
+           std::vector<std::size_t> values = {})
       : tensors(tensors), values(values) {}
   // Tensors connected by the cut index. If only one tensor is provided, this
   // represents a 'terminal' cut - i.e., a choice of output value for a qubit.
-  std::vector<std::vector<int>> tensors;
+  std::vector<std::vector<std::size_t>> tensors;
   // Values to assign to this index when cutting. If left blank, all possible
   // values will be assigned.
-  std::vector<int> values;
+  std::vector<std::size_t> values;
 };
 
 struct MergePatches {
@@ -129,10 +133,12 @@ class ContractionData {
    * calls itself recursively on each "cut" operation.
    * @param ordering std::list<ContractionOperation> listing operations to
    * perform.
-   * @param output_index int marking which amplitude will be updated next.
+   * @param output_index std::size_t marking which amplitude will be updated
+   * next.
    * @param active_patches list of patches already created in scratch space.
    */
-  void ContractGrid(std::list<ContractionOperation> ordering, int output_index,
+  void ContractGrid(std::list<ContractionOperation> ordering,
+                    std::size_t output_index,
                     std::unordered_map<std::string, bool> active_patches);
 
   Tensor& get_scratch(std::string id) { return scratch_[scratch_map_[id]]; }
@@ -143,19 +149,20 @@ class ContractionData {
    * @param side the side of the cut referenced.
    * @return the key used for this cut-copy.
    */
-  static std::string cut_copy_name(std::vector<std::vector<int>> index,
-                                   int side) {
+  static std::string cut_copy_name(std::vector<std::vector<std::size_t>> index,
+                                   std::size_t side) {
     std::string base = index_name(index);
     char buffer[64];
-    int len =
-        snprintf(buffer, sizeof(buffer), "cut-%s:side-%d", base.c_str(), side);
+    std::size_t len =
+        snprintf(buffer, sizeof(buffer), "cut-%s:side-%ld", base.c_str(), side);
     return std::string(buffer, len);
   }
 
   // Gets the index of result scratch space of the given rank.
-  static std::string result_space(int rank) {
+  static std::string result_space(std::size_t rank) {
     char buffer[64];
-    int len = snprintf(buffer, sizeof(buffer), "%s%d", kResultSpace, rank);
+    std::size_t len =
+        snprintf(buffer, sizeof(buffer), "%s%ld", kResultSpace, rank);
     return std::string(buffer, len);
   }
 
@@ -173,10 +180,10 @@ class ContractionData {
   std::vector<Tensor> scratch_;
 
   // Map of patch IDs/index names to scratch locations.
-  std::unordered_map<std::string, int> scratch_map_;
+  std::unordered_map<std::string, std::size_t> scratch_map_;
 
   // Max rank of each patch generated during contraction.
-  std::unordered_map<std::string, int> patch_rank_;
+  std::unordered_map<std::string, std::size_t> patch_rank_;
 
   // Contains the tensor grid produced by grid_of_tensors_3D_to_2D.
   std::vector<std::vector<Tensor>>* tensor_grid_;
