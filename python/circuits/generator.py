@@ -216,11 +216,13 @@ if __name__ == '__main__':
 
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('--pattern-file',
+                            '-p',
                             type=str,
                             required=True,
                             help=f'pattern filename')
     arg_parser.add_argument(
         '--sequence',
+        '-s',
         type=str,
         required=True,
         help=f'sequence of device-specific coupler activation patterns')
@@ -237,6 +239,7 @@ if __name__ == '__main__':
         required=True,
         help='name of the two-qubit gate known to qsim, e.g. cz, fs')
     arg_parser.add_argument('--depth',
+                            '-d',
                             type=int,
                             required=True,
                             help='number of layers of two-qubit gates')
