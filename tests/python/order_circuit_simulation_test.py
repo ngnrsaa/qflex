@@ -138,4 +138,41 @@ def test_max_cuts_negative_fails():
 
 def test_match_fidelity():
     """Tests the fidelity-matching method."""
-    # DO NOT SUBMIT without implementing this test!
+    qubits = [
+        cirq.GridQubit(0, 0),
+        cirq.GridQubit(0, 1),
+        cirq.GridQubit(1, 1),
+        cirq.GridQubit(1, 0)
+    ]
+    cuts = [(frozenset([qubits[0], qubits[1]]), 4),
+            (frozenset([qubits[1], qubits[2]]), 8),
+            (frozenset([qubits[2], qubits[3]]), 16),
+            (frozenset([qubits[3], qubits[0]]), 32)]
+
+    # Check that cut dimension affects resulting fidelity.
+    target_fidelity = 17.0 / 32.0
+    for cut in cuts:
+        dim = cut[1]
+        fidelity, unused_data = order_lib.match_fidelity(
+            target_fidelity, dict([cut]))
+        assert fidelity == float(dim / 2 + 1) / dim
+
+    # Check that different sets of cuts can have different result fidelities,
+    # even if the total cut dimension is the same.
+    target_fidelity = (3.0 / 4.0) * (19.0 / 32.0)
+    fidelity, unused_data = order_lib.match_fidelity(target_fidelity,
+                                                     dict([cuts[0], cuts[3]]))
+    assert fidelity == target_fidelity
+    fidelity, unused_data = order_lib.match_fidelity(target_fidelity,
+                                                     dict([cuts[1], cuts[2]]))
+    # This is the closest possible fidelity with dimensions (8, 16).
+    assert fidelity == (6.0 / 8.0) * (10.0 / 16.0)
+
+    # Check that cut order does not affect fidelity.
+    target_fidelity = (3.0 / 4.0) * (5.0 / 8.0) * (11.0 / 16.0) * (23.0 / 32.0)
+    fidelity, unused_data = order_lib.match_fidelity(target_fidelity,
+                                                     dict(cuts))
+    assert fidelity == target_fidelity
+    fidelity, unused_data = order_lib.match_fidelity(target_fidelity,
+                                                     dict(cuts[::-1]))
+    assert fidelity == target_fidelity
