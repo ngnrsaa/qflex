@@ -1,3 +1,4 @@
+#include "memory.h"
 #include "circuit.h"
 #include "docopt.h"
 #include "evaluate_circuit.h"
@@ -85,6 +86,12 @@ int main(int argc, char** argv) {
                                     ? args["--grid"].asString()
                                     : args["<grid_filename>"].asString();
 
+    // set alarms to get memory usage in real time
+    if(qflex::global::verbose > 0) {
+      signal(SIGALRM, qflex::memory::print_peak_memory_usage);
+      ualarm(1e5,1e5);
+    }
+
     // Load circuit
     input.circuit.load(std::ifstream(circuit_filename));
 
@@ -103,6 +110,9 @@ int main(int argc, char** argv) {
                       "]");
     }
     // If no error is caught, amplitudes will be initialized.
+    
+    if(qflex::global::verbose > 0)
+      std::cerr << "Peak memory usage: " << qflex::memory::get_peak_memory_usage() << std::endl;
 
     // Printing output.
     for (std::size_t c = 0; c < amplitudes.size(); ++c) {
