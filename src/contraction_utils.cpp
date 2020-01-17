@@ -95,6 +95,8 @@ ContractionData ContractionData::Initialize(
           auto& indices = grid_indices[tensor[0]][tensor[1]];
           const std::string copy_name = cut_copy_name(op.cut.tensors, side);
           ++side;
+          // Update indices so it keeps track of cuts so that tensor sizes and
+          // ranks are not overestimated.
           indices = _vector_subtraction(indices, {cut_index});
           std::size_t new_size(1);
           for (auto index : indices) {
@@ -126,6 +128,16 @@ ContractionData ContractionData::Initialize(
       }
     }
   }
+
+
+  // NEW
+  std::cout << "\n\nResulting sizes:\n";
+  for (const auto& patch_max_size_pair : data.patch_max_size_) {
+    std::cout << patch_max_size_pair.first << " "
+        << patch_max_size_pair.second << std::endl;
+  }
+  // NEW UP TO HERE
+
 
   // Calculate the necessary space before actually allocating memory.
 

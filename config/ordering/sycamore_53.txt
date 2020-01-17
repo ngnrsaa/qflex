@@ -57,16 +57,16 @@ expand D 54
 expand D 55
 expand D 56
 merge Dd D
-#
-# MERGE PATCHES B-D
-merge B D
-#
 # EXPAND PATCH D
 #
 expand D 44
 expand D 45
 expand D 46
 expand D 47
+#
+# MERGE PATCHES B-D
+merge B D
+#
 expand D 37
 expand D 36
 expand D 35
