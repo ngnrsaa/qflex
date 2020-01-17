@@ -4,10 +4,10 @@
 # repository. If issues are found, a command to automatically resolve them will
 # be printed as output.
 
-RESET="\e[0m"
-RED="\e[91m"
-GREEN="\e[92m"
-CYAN="\e[96m"
+RESET="\033[0m"
+RED="\033[91m"
+GREEN="\033[92m"
+CYAN="\033[96m"
 
 ROOT_DIR="$(realpath $(realpath $(dirname $0))/../)"
 

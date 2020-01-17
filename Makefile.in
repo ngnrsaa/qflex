@@ -7,6 +7,11 @@ PREFIX = @prefix@
 PYBIND11 = @pybind11@
 PYTHON_TESTS = @python_tests@
 OPENMP = @openmp@
+ERROR_ON_WARNINGS = @error_on_warnings@
+
+ifeq ($(ERROR_ON_WARNINGS), true)
+  CXXFLAGS += -Werror
+endif
 
 ifeq ($(CXX), icpc)
 	CXXFLAGS += -mkl -DMKL_TENSOR -lpthread

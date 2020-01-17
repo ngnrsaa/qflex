@@ -29,22 +29,20 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
      {"delta_0", std::vector<s_type>({1.0, 0.0})},
      {"delta_1", std::vector<s_type>({0.0, 1.0})},
      // For one-qubit gates, the first index is input an second is output.
-     {"h",
-      std::vector<s_type>({static_cast<s_type::value_type>(_INV_SQRT_2),
-                           static_cast<s_type::value_type>(_INV_SQRT_2),
-                           static_cast<s_type::value_type>(_INV_SQRT_2),
-                           -static_cast<s_type::value_type>(_INV_SQRT_2)})},
+     {"h", std::vector<s_type>({static_cast<s_type::value_type>(M_SQRT1_2),
+                                static_cast<s_type::value_type>(M_SQRT1_2),
+                                static_cast<s_type::value_type>(M_SQRT1_2),
+                                -static_cast<s_type::value_type>(M_SQRT1_2)})},
      {"hz_1_2",
       std::vector<s_type>({{0.5, 0.5},
-                           {static_cast<s_type::value_type>(_INV_SQRT_2), 0},
-                           {0., -static_cast<s_type::value_type>(_INV_SQRT_2)},
+                           {static_cast<s_type::value_type>(M_SQRT1_2), 0},
+                           {0., -static_cast<s_type::value_type>(M_SQRT1_2)},
                            {0.5, 0.5}})},
-     {"t",
-      std::vector<s_type>({1.0,
-                           0.,
-                           0.,
-                           {static_cast<s_type::value_type>(_INV_SQRT_2),
-                            static_cast<s_type::value_type>(_INV_SQRT_2)}})},
+     {"t", std::vector<s_type>({1.0,
+                                0.,
+                                0.,
+                                {static_cast<s_type::value_type>(M_SQRT1_2),
+                                 static_cast<s_type::value_type>(M_SQRT1_2)}})},
      {"x_1_2",
       std::vector<s_type>({{0.5, 0.5}, {0.5, -0.5}, {0.5, -0.5}, {0.5, 0.5}})},
      {"y_1_2",
@@ -84,7 +82,7 @@ const std::unordered_map<std::string, std::vector<s_type>> _GATES_DATA(
 std::vector<s_type> gate_array(const std::string& gate_name,
                                const std::vector<double>& params) {
   if (gate_name == "rz") {
-    const double angle_rads = _PI * params[0];
+    const double angle_rads = M_PI * params[0];
     const s_type phase = std::exp(s_type(0., angle_rads / 2));
     return std::vector<s_type>({conj(phase), 0., 0., phase});
   }
@@ -145,22 +143,23 @@ std::vector<std::vector<s_type>> fSim(s_type::value_type theta_rads,
 // array handling into its own class.
 // TODO: make params optional.
 // TODO: implement c-phase, cpf(phi).
-std::tuple<std::vector<s_type>, std::vector<s_type>, std::vector<size_t>>
+std::tuple<std::vector<s_type>, std::vector<s_type>, std::vector<std::size_t>>
 gate_arrays(const std::string& gate_name, const std::vector<double>& params) {
   if (gate_name == "cz") {
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
-                      std::vector<size_t>>(
+                      std::vector<std::size_t>>(
         gate_array("cz_q1", params), gate_array("cz_q2", params), {2, 2, 2});
   } else if (gate_name == "cx") {
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
-                      std::vector<size_t>>(
+                      std::vector<std::size_t>>(
         gate_array("cx_q1", params), gate_array("cx_q2", params), {2, 2, 2});
   } else if (gate_name == "fsim") {
-    const double theta_rads = _PI * params[0];
-    const double phi_rads = _PI * params[1];
+    const double theta_rads = M_PI * params[0];
+    const double phi_rads = M_PI * params[1];
     std::vector<std::vector<s_type>> ret_val = fSim(theta_rads, phi_rads);
     return std::tuple<std::vector<s_type>, std::vector<s_type>,
-                      std::vector<size_t>>(ret_val[0], ret_val[1], {2, 4, 2});
+                      std::vector<std::size_t>>(ret_val[0], ret_val[1],
+                                                {2, 4, 2});
   }
   throw ERROR_MSG("Invalid gate name provided: ", gate_name);
 }
@@ -186,15 +185,16 @@ gate_arrays(const std::string& gate_name, const std::vector<double>& params) {
  * reordering of tensor indices.
  * @param ordering std::list<ContractionOperation> providing the steps required
  * to contract the tensor grid.
- * @param local vector<int> of the target qubit coordinates.
+ * @param local vector<std::size_t> of the target qubit coordinates.
  * @return function for use as a comparator in std::sort.
  */
-std::function<bool(std::vector<int>, std::vector<int>)> order_func(
-    const std::list<ContractionOperation>& ordering, std::vector<int> local) {
-  return [&ordering, local](const std::vector<int> lhs,
-                            const std::vector<int> rhs) {
+std::function<bool(std::vector<std::size_t>, std::vector<std::size_t>)>
+order_func(const std::list<ContractionOperation>& ordering,
+           std::vector<std::size_t> local) {
+  return [&ordering, local](const std::vector<std::size_t> lhs,
+                            const std::vector<std::size_t> rhs) {
     // Cuts are projected early and should be ordered first.
-    std::vector<std::vector<int>> lhs_pair, rhs_pair;
+    std::vector<std::vector<std::size_t>> lhs_pair, rhs_pair;
     if (local[0] < lhs[0] || local[1] < lhs[1]) {
       lhs_pair = {local, lhs};
     } else {
@@ -213,9 +213,9 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
 
     std::string lpatch = "null";
     std::string rpatch = "null";
-    int lpos = -1;
-    int rpos = -1;
-    int op_num = 0;
+    std::optional<std::size_t> lpos;
+    std::optional<std::size_t> rpos;
+    std::size_t op_num = 0;
     for (const auto& op : ordering) {
       if (op.op_type != ContractionOperation::EXPAND) continue;
       if (lhs == op.expand.tensor) {
@@ -225,7 +225,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       }
       op_num++;
     }
-    if (lpos == -1) {
+    if (not lpos.has_value()) {
       throw ERROR_MSG("Left hand side of pair not found: (", local[0], ',',
                       local[1], "),(", lhs[0], ',', lhs[1], ").");
     }
@@ -240,7 +240,7 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       }
       op_num++;
     }
-    if (rpos == -1) {
+    if (not rpos.has_value()) {
       throw ERROR_MSG("Right hand side of pair not found: (", local[0], ',',
                       local[1], "),(", rhs[0], ',', rhs[1], ").");
     }
@@ -284,7 +284,6 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
       }
     }
     // Error in comparison - likely issue in contraction ordering.
-    char error[200];
     throw ERROR_MSG("Failed to compare (", lhs[0], ',', lhs[1], ") and (",
                     rhs[0], ',', rhs[1], ") for local (", local[0], ',',
                     local[1], ").");
@@ -295,21 +294,22 @@ std::function<bool(std::vector<int>, std::vector<int>)> order_func(
 // function for all index names used here. Use smart pointers where possible.
 // Add depth functionality to read a circuit up to a certain cycle.
 void circuit_data_to_tensor_network(
-    const QflexCircuit& circuit, int I, int J, const std::string initial_conf,
-    const std::string final_conf,
-    const std::optional<std::vector<std::vector<int>>>& final_qubit_region,
-    const std::optional<std::vector<std::vector<int>>>& off,
+    const QflexCircuit& circuit, std::size_t I, std::size_t J,
+    const std::string initial_conf, const std::string final_conf,
+    const std::optional<std::vector<std::vector<std::size_t>>>&
+        final_qubit_region,
+    const std::optional<std::vector<std::vector<std::size_t>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch) {
   if (scratch == nullptr) {
     throw ERROR_MSG("Scratch must be non-null.");
   }
   // Useful for plugging into the tensor network:
-  std::vector<int> i_j_1, i_j_2;
+  std::vector<std::size_t> i_j_1, i_j_2;
   // Calculated from input.
-  const int grid_size = I * J;
-  const int off_size = off.has_value() ? off.value().size() : 0;
-  const int num_active_qubits_from_grid = grid_size - off_size;
+  const std::size_t grid_size = I * J;
+  const std::size_t off_size = off.has_value() ? off.value().size() : 0;
+  const std::size_t num_active_qubits_from_grid = grid_size - off_size;
 
   if (circuit.num_active_qubits != num_active_qubits_from_grid) {
     throw ERROR_MSG(
@@ -321,7 +321,7 @@ void circuit_data_to_tensor_network(
 
   // Check for the length of initial_conf and final_conf.
   {
-    // size_t off_size = off.has_value() ? off.value().size() : 0;
+    // std::size_t off_size = off.has_value() ? off.value().size() : 0;
     if (initial_conf.size() != num_active_qubits_from_grid) {
       throw ERROR_MSG("Size of initial_conf: ", initial_conf.size(),
                       ", must be equal to the number of qubits: ",
@@ -336,22 +336,22 @@ void circuit_data_to_tensor_network(
 
   // Creating grid variables.
   grid_of_tensors = std::vector<std::vector<std::vector<Tensor>>>(I);
-  std::vector<std::vector<int>> grid_of_counters(I);
-  std::unordered_map<std::string, int> link_counters;
-  for (int i = 0; i < I; ++i) {
+  std::vector<std::vector<std::size_t>> grid_of_counters(I);
+  std::unordered_map<std::string, std::size_t> link_counters;
+  for (std::size_t i = 0; i < I; ++i) {
     grid_of_tensors[i] = std::vector<std::vector<Tensor>>(J);
-    grid_of_counters[i] = std::vector<int>(J);
-    for (int j = 0; j < J; ++j) {
+    grid_of_counters[i] = std::vector<std::size_t>(J);
+    for (std::size_t j = 0; j < J; ++j) {
       grid_of_tensors[i][j] = std::vector<Tensor>();
       grid_of_counters[i][j] = 0;
     }
   }
 
   // Insert deltas to first layer.
-  int idx = 0;
-  for (int q = 0; q < grid_size; ++q) {
-    std::vector<int> i_j = get_qubit_coords(q, J);
-    int i = i_j[0], j = i_j[1];
+  std::size_t idx = 0;
+  for (std::size_t q = 0; q < grid_size; ++q) {
+    std::vector<std::size_t> i_j = get_qubit_coords(q, J);
+    std::size_t i = i_j[0], j = i_j[1];
     if (find_grid_coord_in_list(off, i, j)) {
       continue;
     }
@@ -373,11 +373,11 @@ void circuit_data_to_tensor_network(
     for (const auto& w : off.value()) {
       const auto& x = w[0];
       const auto& y = w[1];
-      if (x < 0 or x >= I or y < 0 or y >= J)
+      if (x >= I or y >= J)
         throw ERROR_MSG("Off qubit '(", x, ", ", y, ")' is outside the grid.");
     }
 
-  std::unordered_set<int> used_qubits;
+  std::unordered_set<std::size_t> used_qubits;
   std::size_t last_cycle{0};
   for (auto gate : circuit.gates) {
     // gate.name = gate name
@@ -444,19 +444,30 @@ void circuit_data_to_tensor_network(
         throw ERROR_MSG("Qubit '", q2, "' in gate '", gate.raw,
                         "' must correspond to an active qubit.");
 
-      bool nearest_neighbors =
-          (std::abs(i_j_1[0] - i_j_2[0]) + std::abs(i_j_1[1] - i_j_2[1])) == 1;
-      if (!nearest_neighbors)
-        throw ERROR_MSG("Qubits ", q1, " and ", q2,
-                        " are not nearest neighbors.");
+      {
+        std::size_t x_dist =
+            std::max(i_j_1[0], i_j_2[0]) - std::min(i_j_1[0], i_j_2[0]);
+        std::size_t y_dist =
+            std::max(i_j_1[1], i_j_2[1]) - std::min(i_j_1[1], i_j_2[1]);
+        if (x_dist + y_dist != 1)
+          throw ERROR_MSG("Qubits ", q1, " and ", q2,
+                          " are not nearest neighbors.");
+      }
 
       std::vector<s_type> gate_q1;
       std::vector<s_type> gate_q2;
-      std::vector<size_t> dimensions;
+      std::vector<std::size_t> dimensions;
       tie(gate_q1, gate_q2, dimensions) = gate_arrays(gate.name, gate.params);
-      std::string link_name = index_name(i_j_1, i_j_2);
+      std::string link_name;
+      try {
+        link_name = index_name(i_j_1, i_j_2);
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                        "]");
+      }
+      // If no error is caught, link_name will be initialized.
       link_counters[link_name]++;
-      int counter = link_counters[link_name];
+      std::size_t counter = link_counters[link_name];
       std::string virtual_name =
           "(" + std::to_string(std::min(i_j_1[0], i_j_2[0])) + "," +
           std::to_string(std::min(i_j_1[1], i_j_2[1])) + "," +
@@ -497,14 +508,13 @@ void circuit_data_to_tensor_network(
   // Insert deltas to last layer on qubits that are in not in
   // final_qubit_region. Rename last index when in final_qubit_region to
   // "(i,j),(o)".
-  idx = -1;
-  for (int q = 0; q < grid_size; ++q) {
-    std::vector<int> i_j = get_qubit_coords(q, J);
-    int i = i_j[0], j = i_j[1];
+  idx = 0;
+  for (std::size_t q = 0; q < grid_size; ++q) {
+    std::vector<std::size_t> i_j = get_qubit_coords(q, J);
+    std::size_t i = i_j[0], j = i_j[1];
     if (find_grid_coord_in_list(off, i, j)) {
       continue;
     }
-    idx += 1;
     std::string last_name = "(" + std::to_string(i_j[0]) + "," +
                             std::to_string(i_j[1]) + "),(" +
                             std::to_string(grid_of_counters[i][j]) + ")";
@@ -526,6 +536,7 @@ void circuit_data_to_tensor_network(
         throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
       }
     }
+    idx += 1;
   }
 
   // Be proper about pointers.
@@ -538,26 +549,27 @@ void circuit_data_to_tensor_network(
 void flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
-    const std::optional<std::vector<std::vector<int>>>& final_qubit_region,
-    const std::optional<std::vector<std::vector<int>>>& off,
+    const std::optional<std::vector<std::vector<std::size_t>>>&
+        final_qubit_region,
+    const std::optional<std::vector<std::vector<std::size_t>>>& off,
     const std::list<ContractionOperation>& ordering, s_type* scratch) {
   if (scratch == nullptr) {
     throw ERROR_MSG("Scratch must be non-null.");
   }
 
   // Contract vertically and fill grid_of_tensors_2D.
-  int I = grid_of_tensors.size();
-  for (int i = 0; i < I; ++i) {
-    int J = grid_of_tensors[i].size();
-    for (int j = 0; j < J; ++j) {
+  std::size_t I = grid_of_tensors.size();
+  for (std::size_t i = 0; i < I; ++i) {
+    std::size_t J = grid_of_tensors[i].size();
+    for (std::size_t j = 0; j < J; ++j) {
       if (find_grid_coord_in_list(off, i, j)) continue;
-      int K = grid_of_tensors[i][j].size();
+      std::size_t K = grid_of_tensors[i][j].size();
       std::vector<Tensor> column_of_tensors(K);
       column_of_tensors[0] = Tensor(grid_of_tensors[i][j][0]);
-      for (int k = 0; k < K - 1; ++k) {
+      for (std::size_t k = 0; k < K - 1; ++k) {
         Tensor A(column_of_tensors[k]);
         Tensor B(grid_of_tensors[i][j][k + 1]);
-        size_t result_dimension = result_size(A, B);
+        std::size_t result_dimension = result_size(A, B);
         Tensor C({""}, {result_dimension});
         try {
           multiply(A, B, C, scratch);
@@ -571,16 +583,16 @@ void flatten_grid_of_tensors(
     }
   }
 
-  for (int i = 0; i < I; ++i) {
-    int J = grid_of_tensors[i].size();
-    for (int j = 0; j < J; ++j) {
+  for (std::size_t i = 0; i < I; ++i) {
+    std::size_t J = grid_of_tensors[i].size();
+    for (std::size_t j = 0; j < J; ++j) {
       if (find_grid_coord_in_list(off, i, j)) {
         continue;
       }
 
       // Positions of connected active qubits.
-      std::vector<int> local({i, j});
-      std::vector<std::vector<int>> pairs;
+      std::vector<std::size_t> local({i, j});
+      std::vector<std::vector<std::size_t>> pairs;
 
       if (i < I - 1 && !find_grid_coord_in_list(off, i + 1, j)) {
         pairs.push_back({i + 1, j});
@@ -590,7 +602,14 @@ void flatten_grid_of_tensors(
       }
 
       for (const auto& pair : pairs) {
-        std::string between_name = index_name(local, pair);
+        std::string between_name;
+        try {
+          between_name = index_name(local, pair);
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                          "]");
+        }
+        // If no error is caught, between_name will be initialized.
         bundle_between(grid_of_tensors_2D[i][j],
                        grid_of_tensors_2D[pair[0]][pair[1]], between_name,
                        scratch);
@@ -599,9 +618,9 @@ void flatten_grid_of_tensors(
   }
 
   // Reorder.
-  for (int i = 0; i < I; ++i) {
-    int J = grid_of_tensors[i].size();
-    for (int j = 0; j < J; ++j) {
+  for (std::size_t i = 0; i < I; ++i) {
+    std::size_t J = grid_of_tensors[i].size();
+    for (std::size_t j = 0; j < J; ++j) {
       if (find_grid_coord_in_list(off, i, j)) {
         continue;
       }
@@ -609,7 +628,7 @@ void flatten_grid_of_tensors(
       std::vector<std::string> ordered_indices_2D;
 
       // Positions of connected active qubits.
-      std::vector<std::vector<int>> pairs;
+      std::vector<std::vector<std::size_t>> pairs;
 
       if (i > 0 && !find_grid_coord_in_list(off, i - 1, j)) {
         pairs.push_back({i - 1, j});
@@ -625,18 +644,22 @@ void flatten_grid_of_tensors(
       }
 
       // If this qubit is in the final region, bundling must be adjusted.
-      int fr_buffer = 0;
+      // std::size_t fr_buffer = 0;
       if (find_grid_coord_in_list(final_qubit_region, i, j)) {
-        ordered_indices_2D.push_back(index_name({i, j}, {}));
-        fr_buffer = 1;
+        try {
+          ordered_indices_2D.push_back(index_name({i, j}, {}));
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                          "]");
+        }
       }
 
-      std::vector<int> local = {i, j};
+      std::vector<std::size_t> local = {i, j};
       auto order_fn = order_func(ordering, local);
       std::sort(pairs.begin(), pairs.end(), order_fn);
 
       for (const auto& pair : pairs) {
-        std::vector<int> q1, q2;
+        std::vector<std::size_t> q1, q2;
         if (pair[0] < i || pair[1] < j) {
           q1 = pair;
           q2 = local;
@@ -644,8 +667,13 @@ void flatten_grid_of_tensors(
           q1 = local;
           q2 = pair;
         }
-        ordered_indices_2D.push_back(
-            index_name({q1[0], q1[1]}, {q2[0], q2[1]}));
+        try {
+          ordered_indices_2D.push_back(
+              index_name({q1[0], q1[1]}, {q2[0], q2[1]}));
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to call index_name(). Error:\n\t[", err_msg,
+                          "]");
+        }
       }
 
       // Reorder.
@@ -661,7 +689,7 @@ void flatten_grid_of_tensors(
 // This function is currently not being called.
 // TODO: Decide whether or not to deprecate function, also needs to be tested.
 void read_wave_function_evolution(
-    std::string filename, int I, std::vector<Tensor>& gates,
+    std::string filename, std::size_t I, std::vector<Tensor>& gates,
     std::vector<std::vector<std::string>>& inputs,
     std::vector<std::vector<std::string>>& outputs, s_type* scratch) {
   if (scratch == nullptr) {
@@ -674,10 +702,11 @@ void read_wave_function_evolution(
   }
 
   // Gotten from the file.
-  int num_qubits, cycle, q1, q2;
+  std::size_t num_qubits, cycle, q1;
+  std::optional<std::size_t> q2;
   std::string gate;
   // Useful for plugging into the tensor network:
-  std::vector<int> i_j_1, i_j_2;
+  std::vector<std::size_t> i_j_1, i_j_2;
 
   // The first element should be the number of qubits
   io >> num_qubits;
@@ -699,13 +728,10 @@ void read_wave_function_evolution(
       // Get the first position
       ss >> q1;
       // Get the second position in the case
-      if (gate == "cz" || gate == "cx" || gate.rfind("fsim", 0) == 0)
-        ss >> q2;
-      else
-        q2 = -1;
+      if (gate == "cz" || gate == "cx" || gate.rfind("fsim", 0) == 0) ss >> *q2;
 
       // Fill in one-qubit gates.
-      if (q2 < 0) {
+      if (q2.has_value()) {
         std::string input_index = std::to_string(q1) + ",i";
         std::string output_index = std::to_string(q1) + ",o";
         try {
@@ -716,12 +742,11 @@ void read_wave_function_evolution(
         }
         inputs.push_back({input_index});
         outputs.push_back({output_index});
-      }
-      if (q2 >= 0) {
+      } else {
         std::string input_index1 = std::to_string(q1) + ",i";
         std::string output_index1 = std::to_string(q1) + ",o";
-        std::string input_index2 = std::to_string(q2) + ",i";
-        std::string output_index2 = std::to_string(q2) + ",o";
+        std::string input_index2 = std::to_string(q2.value()) + ",i";
+        std::string output_index2 = std::to_string(q2.value()) + ",o";
         inputs.push_back({input_index1, input_index2});
         outputs.push_back({output_index1, output_index2});
         try {

@@ -11,6 +11,46 @@ namespace {
 using ::testing::Eq;
 using ::testing::Pointwise;
 
+/**
+ * Simple reordering routine to swap axes of a tensor
+ * @param array input array
+ * @param initial_indices set of tags corresponding to the indices of the input
+ * tensor
+ * @param final_indices set of tags corresponding to the desired re-ordering
+ * @return a new tensor with the desired order of indices
+ */
+template <typename array_type, typename initial_indices_type,
+          typename final_indices_type>
+array_type simple_reordering(const array_type &array,
+                             const initial_indices_type &initial_indices,
+                             const final_indices_type &final_indices) {
+  // Find map
+  std::vector<std::size_t> map;
+  for (std::size_t i = 0; i < std::size(initial_indices); ++i)
+    map.push_back(
+        std::size(initial_indices) -
+        std::distance(std::begin(initial_indices),
+                      std::find(std::begin(initial_indices),
+                                std::end(initial_indices), final_indices[i])) -
+        1);
+  std::reverse(std::begin(map), std::end(map));
+
+  array_type out(std::size(array));
+  for (std::size_t i = 0; i < std::size(array); ++i) {
+    // Apply permutation to indices
+    std::size_t j = 0;
+    for (std::size_t p1 = 0; p1 < std::size(map); ++p1) {
+      std::size_t p2 = map[p1];
+      j ^= ((i >> p1) & std::size_t(1)) << p2;
+    }
+
+    // Assign
+    out[i] = array[j];
+  }
+
+  return out;
+}
+
 // Creates an empty tensor and runs basic sanity checks on it.
 TEST(TensorTest, EmptyTensor) {
   std::vector<std::string> indices = {"a", "b"};
@@ -20,20 +60,20 @@ TEST(TensorTest, EmptyTensor) {
   Tensor tensor(indices, dimensions);
   ASSERT_EQ(tensor.get_indices(), indices);
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
-  ASSERT_EQ(tensor.size(), 8);
-  ASSERT_EQ(tensor.num_zeros(), 8);
+  ASSERT_EQ(tensor.size(), 8ul);
+  ASSERT_EQ(tensor.num_zeros(), 8ul);
 
   // Verify that data is initialized to zero.
   std::vector<std::complex<float>> read_data(tensor.data(),
                                              tensor.data() + tensor.size());
-  for (int i = 0; i < read_data.size(); ++i) {
+  for (std::size_t i = 0; i < read_data.size(); ++i) {
     ASSERT_FLOAT_EQ(read_data[i].real(), 0);
     ASSERT_FLOAT_EQ(read_data[i].imag(), 0);
   }
 
   const auto dict = tensor.get_index_to_dimension();
-  ASSERT_EQ(dict.at("a"), 2);
-  ASSERT_EQ(dict.at("b"), 4);
+  ASSERT_EQ(dict.at("a"), 2ul);
+  ASSERT_EQ(dict.at("b"), 4ul);
 
   // Test index renaming as well.
   tensor.rename_index("a", "c");
@@ -54,13 +94,13 @@ TEST(TensorTest, LoadData) {
   Tensor tensor(indices, dimensions, data);
   ASSERT_EQ(tensor.get_indices(), indices);
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
-  ASSERT_EQ(tensor.size(), 4);
-  ASSERT_EQ(tensor.num_zeros(), 0);
+  ASSERT_EQ(tensor.size(), 4ul);
+  ASSERT_EQ(tensor.num_zeros(), 0ul);
 
   // Verify that data is read in from vector as expected.
   std::vector<std::complex<float>> read_data(tensor.data(),
                                              tensor.data() + tensor.size());
-  for (int i = 0; i < read_data.size(); ++i) {
+  for (std::size_t i = 0; i < read_data.size(); ++i) {
     ASSERT_FLOAT_EQ(read_data[i].real(), data[i].real());
     ASSERT_FLOAT_EQ(read_data[i].imag(), data[i].imag());
   }
@@ -69,7 +109,7 @@ TEST(TensorTest, LoadData) {
   tensor.scalar_multiply(std::complex<float>(0, 1));
   read_data = std::vector<std::complex<float>>(tensor.data(),
                                                tensor.data() + tensor.size());
-  for (int i = 0; i < read_data.size(); ++i) {
+  for (std::size_t i = 0; i < read_data.size(); ++i) {
     ASSERT_FLOAT_EQ(read_data[i].real(), -1 * data[i].imag());
     ASSERT_FLOAT_EQ(read_data[i].imag(), data[i].real());
   }
@@ -81,7 +121,7 @@ TEST(TensorTest, TensorProjection) {
   std::vector<std::string> indices = {"a", "b", "c"};
   std::vector<size_t> dimensions = {2, 2, 2};
   std::vector<std::complex<float>> data;
-  for (int i = 0; i < 8; i++) {
+  for (std::size_t i = 0; i < 8; i++) {
     data.push_back(std::complex<float>(i, 0));
   }
 
@@ -99,13 +139,13 @@ TEST(TensorTest, TensorProjection) {
   ASSERT_EQ(projection_tensor_2.get_indices(), expected_indices);
   ASSERT_EQ(projection_tensor_2.get_dimensions(), expected_dimensions);
 
-  const int psize = projection_tensor_1.size();
+  const std::size_t psize = projection_tensor_1.size();
 
   const std::vector<std::complex<float>> proj_data_1(
       projection_tensor_1.data(), projection_tensor_1.data() + psize);
   const std::vector<std::complex<float>> proj_data_2(
       projection_tensor_2.data(), projection_tensor_2.data() + psize);
-  for (int i = 0; i < psize; ++i) {
+  for (std::size_t i = 0; i < psize; ++i) {
     ASSERT_FLOAT_EQ(proj_data_1[i].real(), data[i + psize].real());
     ASSERT_FLOAT_EQ(proj_data_2[i].real(), data[i + psize].real());
   }
@@ -117,7 +157,7 @@ TEST(TensorTest, IndexBundling) {
   std::vector<std::string> indices = {"a", "b", "c", "d"};
   std::vector<size_t> dimensions = {2, 2, 2, 2};
   std::vector<std::complex<float>> data;
-  for (int i = 0; i < 16; i++) {
+  for (std::size_t i = 0; i < 16; i++) {
     data.push_back(std::complex<float>(i, 0));
   }
 
@@ -130,24 +170,30 @@ TEST(TensorTest, IndexBundling) {
 
   std::vector<std::complex<float>> read_data(tensor.data(),
                                              tensor.data() + tensor.size());
-  for (int i = 0; i < read_data.size(); ++i) {
+  for (std::size_t i = 0; i < read_data.size(); ++i) {
     ASSERT_FLOAT_EQ(read_data[i].real(), data[i].real());
   }
 }
 
 // Reorders indices of a tensor and verifies that data changes accordingly.
-TEST(TensorTest, IndexReordering) {
+TEST(TensorTest, SimpleIndexReordering) {
   std::vector<std::string> indices = {"a", "b", "c"};
   std::vector<size_t> dimensions = {2, 2, 2};
   std::vector<std::complex<float>> data;
-  for (int i = 0; i < 8; i++) {
+  for (std::size_t i = 0; i < 8; i++) {
     data.push_back(std::complex<float>(i, 0));
   }
 
   Tensor tensor(indices, dimensions, data);
   std::vector<std::string> expected_indices = {"b", "c", "a"};
   std::array<std::complex<float>, 8> scratch;
-  tensor.reorder(expected_indices, scratch.data());
+  try {
+    tensor.reorder(expected_indices, scratch.data());
+  } catch (std::string msg) {
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
+  }
   ASSERT_EQ(tensor.get_indices(), expected_indices);
   ASSERT_EQ(tensor.get_dimensions(), dimensions);
 
@@ -159,8 +205,211 @@ TEST(TensorTest, IndexReordering) {
       std::complex<float>(2, 0), std::complex<float>(6, 0),
       std::complex<float>(3, 0), std::complex<float>(7, 0),
   };
-  for (int i = 0; i < read_data.size(); ++i) {
+  for (std::size_t i = 0; i < read_data.size(); ++i) {
     ASSERT_FLOAT_EQ(read_data[i].real(), expected_data[i].real());
+  }
+}
+
+// Tests a reordering of ten indices needing a single right move.
+// <empty> | abcde | fghij
+// -> <empty> | jegcf | bhida
+TEST(TensorTest, RightTenIndicesReordering) {
+  std::vector<std::string> indices = {"a", "b", "c", "d", "e",
+                                      "f", "g", "h", "i", "j"};
+  std::vector<size_t> dimensions = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+  std::vector<std::complex<float>> data;
+  for (int i = 0; i < 1024; i++) {
+    data.push_back(std::complex<float>(i, 0));
+  }
+
+  Tensor tensor(indices, dimensions, data);
+  std::vector<std::string> expected_indices = {"j", "e", "g", "c", "f",
+                                               "b", "h", "i", "d", "a"};
+  std::array<std::complex<float>, 1024> scratch;
+  try {
+    tensor.reorder(expected_indices, scratch.data());
+  } catch (std::string msg) {
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
+  }
+  ASSERT_EQ(tensor.get_indices(), expected_indices);
+  ASSERT_EQ(tensor.get_dimensions(), dimensions);
+
+  // Check Tensor data.
+  data = simple_reordering(data, indices, expected_indices);
+
+  for (std::size_t i = 0; i < std::size(data); ++i) {
+    ASSERT_EQ(data[i], tensor.data()[i]);
+  }
+}
+
+// Tests a reordering needing a single right move.
+// ab | cdefg | hijkl
+// -> ab | ldefh | gijkc
+TEST(TensorTest, RightTwelveIndicesReordering) {
+  std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
+                                      "g", "h", "i", "j", "k", "l"};
+  std::vector<size_t> dimensions = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+  std::vector<std::complex<float>> data;
+  for (int i = 0; i < 4096; i++) {
+    data.push_back(std::complex<float>(i, 0));
+  }
+  Tensor tensor(indices, dimensions, data);
+  std::vector<std::string> expected_indices = {"a", "b", "l", "d", "e", "f",
+                                               "h", "g", "i", "j", "k", "c"};
+  std::array<std::complex<float>, 4096> scratch;
+  try {
+    tensor.reorder(expected_indices, scratch.data());
+  } catch (std::string msg) {
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
+  }
+  ASSERT_EQ(tensor.get_indices(), expected_indices);
+  ASSERT_EQ(tensor.get_dimensions(), dimensions);
+
+  // Check Tensor data.
+  data = simple_reordering(data, indices, expected_indices);
+
+  for (std::size_t i = 0; i < std::size(data); ++i) {
+    ASSERT_EQ(data[i], tensor.data()[i]);
+  }
+}
+
+// Tests a reordering needing a single left move.
+// ab | cdefg | hijkl
+// -> ga | cdefb | hijkl
+TEST(TensorTest, LeftTwelveIndicesReordering) {
+  std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
+                                      "g", "h", "i", "j", "k", "l"};
+  std::vector<size_t> dimensions = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+  std::vector<std::complex<float>> data;
+  for (int i = 0; i < 4096; i++) {
+    data.push_back(std::complex<float>(i, 0));
+  }
+  Tensor tensor(indices, dimensions, data);
+  std::vector<std::string> expected_indices = {"g", "a", "c", "d", "e", "f",
+                                               "b", "h", "i", "j", "k", "l"};
+  std::array<std::complex<float>, 4096> scratch;
+  try {
+    tensor.reorder(expected_indices, scratch.data());
+  } catch (std::string msg) {
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
+  }
+  ASSERT_EQ(tensor.get_indices(), expected_indices);
+  ASSERT_EQ(tensor.get_dimensions(), dimensions);
+
+  // Check Tensor data.
+  data = simple_reordering(data, indices, expected_indices);
+
+  for (std::size_t i = 0; i < std::size(data); ++i) {
+    ASSERT_EQ(data[i], tensor.data()[i]);
+  }
+}
+
+// clang-format off
+// Tests a reordering needing a single left move. Even though index 'h' should be
+// in the rightmost grouping, left_reorder() will check and see if it can perform
+// the reordering by making a left move with up to the 8th index from the left. 
+// abcdefgh | ijkl
+// -> hbcdefga | ijkl
+// clang-format on
+TEST(TensorTest, SlowLeftTwelveIndicesReordering) {
+  std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
+                                      "g", "h", "i", "j", "k", "l"};
+  std::vector<size_t> dimensions = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+  std::vector<std::complex<float>> data;
+  for (int i = 0; i < 4096; i++) {
+    data.push_back(std::complex<float>(i, 0));
+  }
+  Tensor tensor(indices, dimensions, data);
+  std::vector<std::string> expected_indices = {"h", "b", "c", "d", "e", "f",
+                                               "g", "a", "i", "j", "k", "l"};
+  std::array<std::complex<float>, 4096> scratch;
+  try {
+    tensor.reorder(expected_indices, scratch.data());
+  } catch (std::string msg) {
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
+  }
+  ASSERT_EQ(tensor.get_indices(), expected_indices);
+  ASSERT_EQ(tensor.get_dimensions(), dimensions);
+
+  // Check Tensor data.
+  data = simple_reordering(data, indices, expected_indices);
+
+  for (std::size_t i = 0; i < std::size(data); ++i) {
+    ASSERT_EQ(data[i], tensor.data()[i]);
+  }
+}
+
+// Tests a reordering needing a left and a right move.
+// Left: ab | cdefg | hijkl -> cd | abefg | hijkl
+// Right: cd | abefg | hijkl -> cd | hijkl | efgab
+TEST(TensorTest, LeftRightIndexReordering) {
+  std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
+                                      "g", "h", "i", "j", "k", "l"};
+  std::vector<size_t> dimensions = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+  std::vector<std::complex<float>> data;
+  for (int i = 0; i < 4096; i++) {
+    data.push_back(std::complex<float>(i, 0));
+  }
+  Tensor tensor(indices, dimensions, data);
+  std::vector<std::string> expected_indices = {"c", "d", "h", "i", "j", "k",
+                                               "l", "e", "f", "g", "a", "b"};
+  std::array<std::complex<float>, 4096> scratch;
+  try {
+    tensor.reorder(expected_indices, scratch.data());
+  } catch (std::string msg) {
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
+  }
+
+  // Check Tensor data.
+  data = simple_reordering(data, indices, expected_indices);
+
+  for (std::size_t i = 0; i < std::size(data); ++i) {
+    ASSERT_EQ(data[i], tensor.data()[i]);
+  }
+}
+
+// Tests a worse case index reordering needing a left, right, and left move.
+// Left: ab | cdefg | hijkl -> ac | dfgbe | hijkl
+// Right: ac | dfgbe | hijkl -> ac | dfgkl | hbeij
+// Left: ac | dfgkl | hbeij -> kc | aldgf | hbeij
+TEST(TensorTest, WorstCaseIndexReordering) {
+  std::vector<std::string> indices = {"a", "b", "c", "d", "e", "f",
+                                      "g", "h", "i", "j", "k", "l"};
+  std::vector<size_t> dimensions = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+  std::vector<std::complex<float>> data;
+  for (int i = 0; i < 4096; i++) {
+    data.push_back(std::complex<float>(i, 0));
+  }
+
+  Tensor tensor(indices, dimensions, data);
+  std::vector<std::string> expected_indices = {"k", "c", "a", "l", "d", "g",
+                                               "f", "h", "b", "e", "i", "j"};
+  std::array<std::complex<float>, 4096> scratch;
+  try {
+    tensor.reorder(expected_indices, scratch.data());
+  } catch (std::string msg) {
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
+  }
+  ASSERT_EQ(tensor.get_indices(), expected_indices);
+  ASSERT_EQ(tensor.get_dimensions(), dimensions);
+
+  // Check Tensor data.
+  data = simple_reordering(data, indices, expected_indices);
+
+  for (std::size_t i = 0; i < std::size(data); ++i) {
+    ASSERT_EQ(data[i], tensor.data()[i]);
   }
 }
 
@@ -169,7 +418,7 @@ TEST(TensorTest, Multiply) {
   std::vector<std::string> indices_a = {"a", "b", "c"};
   std::vector<size_t> dimensions_a = {2, 2, 2};
   std::vector<std::complex<float>> data_a;
-  for (int i = 0; i < 8; i++) {
+  for (std::size_t i = 0; i < 8; i++) {
     data_a.push_back(std::complex<float>(i, 0));
   }
   Tensor tensor_a(indices_a, dimensions_a, data_a);
@@ -177,7 +426,7 @@ TEST(TensorTest, Multiply) {
   std::vector<std::string> indices_b = {"b", "c", "d"};
   std::vector<size_t> dimensions_b = {2, 2, 2};
   std::vector<std::complex<float>> data_b;
-  for (int i = 8; i > 0; i--) {
+  for (std::size_t i = 8; i > 0; i--) {
     data_b.push_back(std::complex<float>(i, 0));
   }
   Tensor tensor_b(indices_b, dimensions_b, data_b);
@@ -196,7 +445,7 @@ TEST(TensorTest, Multiply) {
   std::vector<std::complex<float>> expected_data = {20, 14, 100, 78};
   std::vector<std::complex<float>> read_data(tensor_c.data(),
                                              tensor_c.data() + tensor_c.size());
-  for (int i = 0; i < read_data.size(); ++i) {
+  for (std::size_t i = 0; i < read_data.size(); ++i) {
     ASSERT_FLOAT_EQ(read_data[i].real(), expected_data[i].real());
   }
 }
@@ -419,8 +668,8 @@ TEST(TensorExceptionTest, InvalidInput) {
 // Testing this function by direct call because too nested to test by calling
 // Tensor::reorder
 TEST(TensorExceptionTest, GenerateBinaryReorderingMapInvalidInput) {
-  const std::vector<int> map_old_to_new_idxpos = {1, 2};
-  std::vector<int> map_old_to_new_position = {1, 2, 3};
+  const std::vector<std::size_t> map_old_to_new_idxpos = {1, 2};
+  std::vector<std::size_t> map_old_to_new_position = {1, 2, 3};
 
   // Size of map must be equal to 2 ^ (number of indices).
   try {

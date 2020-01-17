@@ -30,11 +30,13 @@ tensor network, CPU-based simulator of large quantum circuits.
 
 )";
 
-// Example:
-// $ src/qflex.x config/circuits/bristlecone_48_1-24-1_0.txt \
-//               config/ordering/bristlecone_48.txt \
-//               config/grid/bristlecone_48.txt
-//
+/*
+ * Example:
+ * $ src/qflex.x config/circuits/bristlecone_48_1-24-1_0.txt \
+ *               config/ordering/bristlecone_48.txt \
+ *               config/grid/bristlecone_48.txt
+ *
+ */
 int main(int argc, char** argv) {
   try {
     std::map<std::string, docopt::value> args =
@@ -93,11 +95,17 @@ int main(int argc, char** argv) {
     input.grid.load(grid_filename);
 
     // Evaluating circuit.
-    std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
-        qflex::EvaluateCircuit(&input);
+    std::vector<std::pair<std::string, std::complex<double>>> amplitudes;
+    try {
+      amplitudes = qflex::EvaluateCircuit(&input);
+    } catch (const std::string& err_msg) {
+      throw ERROR_MSG("Failed to call EvaluateCircuit(). Error:\n\t[", err_msg,
+                      "]");
+    }
+    // If no error is caught, amplitudes will be initialized.
 
     // Printing output.
-    for (int c = 0; c < amplitudes.size(); ++c) {
+    for (std::size_t c = 0; c < amplitudes.size(); ++c) {
       const auto& state = amplitudes[c].first;
       const auto& amplitude = amplitudes[c].second;
       std::cout << input.initial_state << " --> " << state << ": "

@@ -53,10 +53,10 @@ class Tensor {
    * Creates a Tensor. New space is allocated.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
-   * @param dimensions std::vector<size_t> with the ordered dimensions of the
-   * indices.
+   * @param dimensions std::vector<std::size_t> with the ordered dimensions of
+   * the indices.
    */
-  Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions);
+  Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions);
 
   /**
    * Creates a Tensor. New space is allocated and filled with a copy of
@@ -64,25 +64,25 @@ class Tensor {
    * negligible.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
-   * @param dimensions std::vector<size_t> with the ordered dimensions of the
-   * indices.
+   * @param dimensions std::vector<std::size_t> with the ordered dimensions of
+   * the indices.
    * @param data std::vector<s_type> with the data to be copied. It has to
    * match in length the dimension of the Tensor, as given by the
    * dimensions.
    */
-  Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
+  Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions,
          const std::vector<s_type>& data);
 
   /**
    * Creates a Tensor. A pointer to the data is passed.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
-   * @param dimensions std::vector<int> with the ordered dimensions of the
-   * indices.
+   * @param dimensions std::vector<std::size_t> with the ordered dimensions of
+   * the indices.
    * @param data pointer to the data of the tensor. It is responsibility of
    * the user to provide enough allocated memory to store the Tensor.
    */
-  Tensor(std::vector<std::string> indices, std::vector<size_t> dimensions,
+  Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions,
          s_type* data);
 
   /**
@@ -124,30 +124,31 @@ class Tensor {
 
   /**
    * Get dimensions.
-   * @return const reference to std::vector<int> of dimensions.
+   * @return const reference to std::vector<std::size_t> of dimensions.
    */
-  const std::vector<size_t>& get_dimensions() const;
+  const std::vector<std::size_t>& get_dimensions() const;
 
   /**
    * Set dimensions. This function is deprecated. Use rename_index() or
    * set_dimensions_and_indices().
-   * @param const reference to std::vector<int> of dimensions.
+   * @param const reference to std::vector<std::size_t> of dimensions.
    */
-  void set_dimensions(const std::vector<size_t>& dimensions);
+  void set_dimensions(const std::vector<std::size_t>& dimensions);
 
   /**
    * Set dimensions and indices.
    * @param const reference to std::vector<std::string> of indices.
-   * @param const reference to std::vector<int> of dimensions.
+   * @param const reference to std::vector<std::size_t> of dimensions.
    */
   void set_indices_and_dimensions(const std::vector<std::string>& indices,
-                                  const std::vector<size_t>& dimensions);
+                                  const std::vector<std::size_t>& dimensions);
 
   /**
    * Get index_to_dimension dictionary (or unordered_map).
    * @return const reference to unordered_map of index to dimensions.
    */
-  const std::unordered_map<std::string, size_t>& get_index_to_dimension() const;
+  const std::unordered_map<std::string, std::size_t>& get_index_to_dimension()
+      const;
 
   /**
    * Generate index_to_dimension map from the object's indices and
@@ -157,16 +158,16 @@ class Tensor {
 
   /**
    * Get size (total dimension) of the Tensor.
-   * @return int with the number of elements in the Tensor.
+   * @return std::size_t with the number of elements in the Tensor.
    */
-  size_t size() const;
+  std::size_t size() const;
 
   /**
    * Get the allocated space of the Tensor. This tensor can be resized to
    * any shape with total dimension (size) less than this value.
    * @return int with the capacity of the Tensor.
    */
-  size_t capacity() const;
+  std::size_t capacity() const;
 
   /**
    * Get data.
@@ -186,14 +187,14 @@ class Tensor {
    * the user to follow efficient practices, and be aware of the costs
    * involved in operations.
    * @param index std::string with the name of the index to fix.
-   * @param index_value int with the value to which the index is fixed.
+   * @param index_value std::size_t with the value to which the index is fixed.
    * @param projection_tensor Reference to the Tensor to which the current
    * Tensor will be projected. It is responsibility of the user to provide
    * enough allocated space to store the projected Tensor. A trivial tensor
    * with the right amount of allocated space can be passed. The indices and
    * dimensions will be initialized correctly from the project() function.
    */
-  void project(std::string index, size_t index_value,
+  void project(std::string index, std::size_t index_value,
                Tensor& projection_tensor) const;
 
   /**
@@ -242,7 +243,7 @@ class Tensor {
    * to debug contractions that zero out entries due to the range of values
    * s_type admits.
    */
-  size_t num_zeros() const;
+  std::size_t num_zeros() const;
 
   /**
    * Saves information about the Tensor to a string.
@@ -257,12 +258,12 @@ class Tensor {
  private:
   // Storage.
   std::vector<std::string> _indices;
-  std::vector<size_t> _dimensions;
-  std::unordered_map<std::string, size_t> _index_to_dimension;
+  std::vector<std::size_t> _dimensions;
+  std::unordered_map<std::string, std::size_t> _index_to_dimension;
   s_type* _data;
 
   // Allocated data space. This value does not change after initialization.
-  size_t _capacity;
+  std::size_t _capacity;
 
   // Private helper functions.
   /**
@@ -271,11 +272,11 @@ class Tensor {
    * to the pointer to the data.
    * @param indices std::vector<std::string> with the names of the indices in
    * order.
-   * @param dimensions std::vector<int> with the ordered dimensions of the
-   * indices.
+   * @param dimensions std::vector<std::size_t> with the ordered dimensions of
+   * the indices.
    */
   void _init(const std::vector<std::string>& indices,
-             const std::vector<size_t>& dimensions);
+             const std::vector<std::size_t>& dimensions);
 
   /**
    * Helper function for the destructor. Clear memory.
@@ -321,7 +322,7 @@ class Tensor {
    */
   void _right_reorder(const std::vector<std::string>& old_ordering,
                       const std::vector<std::string>& new_ordering,
-                      int num_indices_right);
+                      std::size_t num_indices_right);
 
   /**
    * Helper function for reorder(). Only left moves are taken. As oposed
@@ -338,7 +339,7 @@ class Tensor {
    */
   void _left_reorder(const std::vector<std::string>& old_ordering,
                      const std::vector<std::string>& new_ordering,
-                     int num_indices_right, s_type* scratch_copy);
+                     std::size_t num_indices_right, s_type* scratch_copy);
 };
 
 /**
@@ -347,12 +348,12 @@ class Tensor {
  * @param A_data const pointer to s_type array with the data of matrix A.
  * @param B_data const pointer to s_type array with the data of matrix B.
  * @param C_data pointer to s_type array with the data of matrix C.
- * @param m int with the left dimension of A.
- * @param n int with the right dimension of B.
- * @param k int with the left dimension of C.
+ * @param m std::size_t with the left dimension of A.
+ * @param n std::size_t with the right dimension of B.
+ * @param k std::size_t with the left dimension of C.
  */
 void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
-                  int m, int n, int k);
+                  std::size_t m, std::size_t n, std::size_t k);
 
 /**
  * Call matrix x vector multiplication C = A * B, or self-written if the
@@ -360,11 +361,11 @@ void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
  * @param A_data const pointer to s_type array with the data of matrix A.
  * @param B_data const pointer to s_type array with the data of vector B.
  * @param C_data pointer to s_type array with the data of vector C.
- * @param m int with the left dimension of A.
- * @param k int with the left dimension of C.
+ * @param m std::size_t with the left dimension of A.
+ * @param k std::size_t with the left dimension of C.
  */
 void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
-                  int m, int k);
+                  std::size_t m, std::size_t k);
 
 /**
  * Call vector x matrix multiplication C = A * B, or self-written if the
@@ -372,11 +373,11 @@ void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
  * @param A_data const pointer to s_type array with the data of vector A.
  * @param B_data const pointer to s_type array with the data of matrix B.
  * @param C_data pointer to s_type array with the data of vector C.
- * @param n int with the right dimension of B.
- * @param k int with the left dimension of C.
+ * @param n std::size_t with the right dimension of B.
+ * @param k std::size_t with the left dimension of C.
  */
 void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
-                  int n, int k);
+                  std::size_t n, std::size_t k);
 
 /**
  * Call vector x vector multiplication C = A * B, or self-written if the
@@ -384,10 +385,10 @@ void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
  * @param A_data const pointer to s_type array with the data of vector A.
  * @param B_data const pointer to s_type array with the data of vector B.
  * @param C_data pointer to s_type with the data of scalar C.
- * @param k int with the left dimension of C.
+ * @param k std::size_t with the left dimension of C.
  */
 void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
-                  int k);
+                  std::size_t k);
 
 /**
  * Implement the tensor multiplication C = A * B. The ordering of the incides of
@@ -415,10 +416,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy);
  * Returns the size of the tensor product of A and B.
  * @param A Reference to Tensor A.
  * @param B Reference to Tensor B.
- * @return size_t with the size of the tensor resulting from the multiplication
- * of A and B.
+ * @return std::size_t with the size of the tensor resulting from the
+ * multiplication of A and B.
  */
-size_t result_size(Tensor& A, Tensor& B);
+std::size_t result_size(Tensor& A, Tensor& B);
 
 /**
  * Bundle indices shared by tensors A and B.
@@ -436,8 +437,8 @@ void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
  * between old_ordering and new_ordering.
  * @param map_old_to_new_idxpos const reference to a std::vector<std::string> of
  * new indices.
- * @param map_old_to_new_position Reference to a std::vector<int> where the map
- * will be stored. The size of the vector has to be equal to
+ * @param map_old_to_new_position Reference to a std::vector<std::size_t> where
+ * the map will be stored. The size of the vector has to be equal to
  * 2^(old_indices.size()). \todo Think about passing some scratch space to store
  * small maps. Probably not worth it, since they are small, and the big ones
  * will be memoized anyway. If the NO_MEMO_MAPS flag is passed, then it might
@@ -446,15 +447,15 @@ void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
  * argument.
  */
 void _generate_binary_reordering_map(
-    const std::vector<int>& map_old_to_new_idxpos,
-    std::vector<int>& map_old_to_new_position);
+    const std::vector<std::size_t>& map_old_to_new_idxpos,
+    std::vector<std::size_t>& map_old_to_new_position);
 
 /**
  * Converts an int vector into a string
- * @param input vector<int> int vector to convert.
+ * @param input vector<std::size_t> int vector to convert.
  * @return string containing input vector contents
  **/
-std::string _int_vector_to_string(std::vector<int> input);
+std::string _int_vector_to_string(std::vector<std::size_t> input);
 
 /**
  * Converts a string vector into a string
@@ -466,14 +467,15 @@ std::string _string_vector_to_string(std::vector<std::string> input);
 /**
  * Generates the standard name of the reordering as a std::string:
  * "abc...->fbe...,dim_a,dim_b,...".
- * @param map_old_to_new_idxpos const reference to a std::vector<int> index
- * mapping (old to new).
- * @param old_dimensions const reference to a std::vector<int> with the old
- * dimensions.
+ * @param map_old_to_new_idxpos const reference to a std::vector<std::size_t>
+ * index mapping (old to new).
+ * @param old_dimensions const reference to a std::vector<std::size_t> with the
+ * old dimensions.
  * @return std::string with the standard name of the ordering.
  */
-std::string _reordering_to_string(const std::vector<int>& map_old_to_new_idxpos,
-                                  const std::vector<size_t>& old_dimensions);
+std::string _reordering_to_string(
+    const std::vector<std::size_t>& map_old_to_new_idxpos,
+    const std::vector<std::size_t>& old_dimensions);
 
 /**
  * Checks whether a particular std::string is in a std::vector<std::string>.
