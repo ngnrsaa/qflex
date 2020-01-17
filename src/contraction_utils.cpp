@@ -55,7 +55,7 @@ ContractionData ContractionData::Initialize(
         std::vector<std::vector<std::string>>((*tensor_grid)[i].size());
     for (std::size_t j = 0; j < (*tensor_grid)[i].size(); ++j) {
       grid_indices[i][j] = (*tensor_grid)[i][j].get_indices();
-      for (const std::string index : (*tensor_grid)[i][j].get_indices()) {
+      for (const std::string& index : (*tensor_grid)[i][j].get_indices()) {
         index_dimension[index] =
             (*tensor_grid)[i][j].get_index_to_dimension().at(index);
       }
@@ -78,8 +78,8 @@ ContractionData ContractionData::Initialize(
         patch_indices[op.expand.id] =
             _vector_subtraction(_vector_union(indices_a, indices_b),
                                 _vector_intersection(indices_a, indices_b));
-        std::size_t new_size(1);
-        for (auto index : patch_indices[op.expand.id]) {
+        std::size_t new_size = 1;
+        for (const auto& index : patch_indices[op.expand.id]) {
           new_size *= index_dimension.at(index);
         }
         patch_size[op.expand.id] = new_size;
@@ -99,13 +99,10 @@ ContractionData ContractionData::Initialize(
             // Update indices so it keeps track of cuts so that tensor sizes and
             // ranks are not overestimated.
             indices = _vector_subtraction(indices, {cut_index});
-            std::size_t new_size(1);
-            for (auto index : indices) {
-              new_size *= index_dimension.at(index);
-            }
             // TODO(benjaminvillalonga): reduce size of copy, since it loses
             // an index. This has implications in ContractGrid() below.
-            cut_copy_size[copy_name] = new_size * index_dimension.at(cut_index);
+            cut_copy_size[copy_name] =
+                (*tensor_grid)[tensor[0]][tensor[1]].size();
           }
         } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed during CUT. Error:\n\t[", err_msg, "]");
@@ -118,8 +115,8 @@ ContractionData ContractionData::Initialize(
         patch_indices[op.merge.target_id] =
             _vector_subtraction(_vector_union(indices_a, indices_b),
                                 _vector_intersection(indices_a, indices_b));
-        std::size_t new_size(1);
-        for (auto index : patch_indices[op.merge.target_id]) {
+        std::size_t new_size = 1;
+        for (const auto& index : patch_indices[op.merge.target_id]) {
           new_size *= index_dimension.at(index);
         }
         patch_size[op.merge.target_id] = new_size;
@@ -151,10 +148,8 @@ ContractionData ContractionData::Initialize(
   allocated_space += max_size;
 
   // "Swap tensor" space, used to store operation results.
-  {
-    for (const auto& swap_size : unique_sizes) {
-      allocated_space += swap_size;
-    }
+  for (const auto& swap_size : unique_sizes) {
+    allocated_space += swap_size;
   }
   // Per-patch space, sized to match the maximum size of the patch.
   for (const auto& patch_max_size_pair : data.patch_max_size_) {
