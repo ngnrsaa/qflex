@@ -152,12 +152,12 @@ class ContractionData {
    */
   static std::string cut_copy_name(std::vector<std::vector<std::size_t>> index,
                                    std::size_t side) {
-    return concat("cut-", index_name(index), ":size-", side);
+    return utils::concat("cut-", index_name(index), ":size-", side);
   }
 
   // Gets the index of result scratch space of the given size.
   static std::string result_space(std::size_t size) {
-    return concat(kResultSpace, size);
+    return utils::concat(kResultSpace, size);
   }
 
   // Gets the names of all scratch tensors.

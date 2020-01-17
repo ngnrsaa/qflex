@@ -22,7 +22,7 @@ std::string readable_memory_string(double memory) {
     ++scale;
     size_prefix /= (1 << 10);
   }
-  return concat(size_prefix, suffix[scale]);
+  return utils::concat(size_prefix, suffix[scale]);
 }
 
 }  // namespace
@@ -384,7 +384,7 @@ void ordering_data_to_contraction_ordering(
       throw error_msg("Grid is too big.");
     } else if (index < 0 or index >= static_cast<index_type>(grid_size)) {
       throw error_msg(
-          concat("Index ", index, " must be within grid boundaries."));
+          utils::concat("Index ", index, " must be within grid boundaries."));
     }
   };
 
@@ -483,16 +483,16 @@ std::string index_name(const std::vector<std::size_t>& p1,
                        const std::vector<std::size_t>& p2) {
   if (p1.size() == 2 && p2.size() == 2) {
     // Two-qubit contraction.
-    return concat("(", p1[0], ",", p1[1], "),(", p2[0], ",", p2[1], ")");
+    return utils::concat("(", p1[0], ",", p1[1], "),(", p2[0], ",", p2[1], ")");
   }
   if (p1.size() == 3 && p2.size() == 3) {
     // Single-qubit contraction, or virtual index.
-    return concat("(", p1[0], ",", p1[1], ",", p1[2], "),(", p2[0], ",", p2[1],
-                  ",", p2[2], ")");
+    return utils::concat("(", p1[0], ",", p1[1], ",", p1[2], "),(", p2[0], ",",
+                         p2[1], ",", p2[2], ")");
   }
   if (p1.size() == 2 && p2.empty()) {
     // Final qubit output value assignment.
-    return concat("(", p1[0], ",", p1[1], "),(o)");
+    return utils::concat("(", p1[0], ",", p1[1], "),(o)");
   }
 
   std::stringstream ss;
@@ -553,21 +553,21 @@ void ValidateOrdering(const std::list<ContractionOperation>& ordering) {
     switch (op.op_type) {
       case ContractionOperation::EXPAND: {
         if (patches[op.expand.id].is_used)
-          error_msg =
-              concat(error_msg, "\nTensor at (", op.expand.tensor[0], ",",
-                     op.expand.tensor[1], ") is added to non-empty patch ",
-                     op.expand.id.c_str(), " after a cut.");
+          error_msg = utils::concat(
+              error_msg, "\nTensor at (", op.expand.tensor[0], ",",
+              op.expand.tensor[1], ") is added to non-empty patch ",
+              op.expand.id.c_str(), " after a cut.");
         if (patches[op.expand.id].is_merged)
-          error_msg =
-              concat(error_msg, "\nTensor at (", op.expand.tensor[0], ",",
-                     op.expand.tensor[1], ") is added to non-empty patch ",
-                     op.expand.id.c_str(), " after a cut.");
+          error_msg = utils::concat(
+              error_msg, "\nTensor at (", op.expand.tensor[0], ",",
+              op.expand.tensor[1], ") is added to non-empty patch ",
+              op.expand.id.c_str(), " after a cut.");
 
-        std::string tensor_name =
-            concat("(", op.expand.tensor[0], ",", op.expand.tensor[1], ")");
+        std::string tensor_name = utils::concat("(", op.expand.tensor[0], ",",
+                                                op.expand.tensor[1], ")");
         if (used_tensors.find(tensor_name) != used_tensors.end())
-          error_msg = concat(error_msg, "\nTensor ", tensor_name,
-                             " is contracted multiple times.");
+          error_msg = utils::concat(error_msg, "\nTensor ", tensor_name,
+                                    " is contracted multiple times.");
 
         used_tensors.insert(tensor_name);
         patches[op.expand.id].is_active = true;
@@ -583,8 +583,8 @@ void ValidateOrdering(const std::list<ContractionOperation>& ordering) {
           const std::string index = index_name(op.cut.tensors);
           // If no error is caught, index will be initialized.
           if (cut_indices.find(index) != cut_indices.end())
-            error_msg = concat(error_msg, "\nIndex ", index.c_str(),
-                               " is cut multiple times.");
+            error_msg = utils::concat(error_msg, "\nIndex ", index.c_str(),
+                                      " is cut multiple times.");
 
           cut_indices.insert(index);
         } catch (const std::string& err_msg) {
@@ -594,13 +594,15 @@ void ValidateOrdering(const std::list<ContractionOperation>& ordering) {
       }
       case ContractionOperation::MERGE: {
         if (patches[op.merge.source_id].is_merged)
-          error_msg = concat(error_msg, "\nPatch ", op.merge.source_id.c_str(),
-                             " is merged multiple times.");
+          error_msg =
+              utils::concat(error_msg, "\nPatch ", op.merge.source_id.c_str(),
+                            " is merged multiple times.");
 
         if (patches[op.merge.target_id].is_used)
-          error_msg = concat(error_msg, "\nPatch ", op.merge.source_id.c_str(),
-                             " is merged into non-empty patch ",
-                             op.merge.target_id.c_str(), " after a cut.");
+          error_msg =
+              utils::concat(error_msg, "\nPatch ", op.merge.source_id.c_str(),
+                            " is merged into non-empty patch ",
+                            op.merge.target_id.c_str(), " after a cut.");
 
         patches[op.merge.source_id].is_merged = true;
         patches[op.merge.target_id].is_active = true;
