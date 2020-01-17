@@ -166,7 +166,7 @@ ContractionData ContractionData::Initialize(
   }
 
   // Prevent memory allocation from exceeding memory_limit.
-  double alloc_size = allocated_space * sizeof(std::complex<double>);
+  double alloc_size = allocated_space * sizeof(s_type);
   if (alloc_size > global::memory_limit) {
     throw ERROR_MSG("Required space (", readable_memory_string(alloc_size),
                     ") exceeds memory limit (",
