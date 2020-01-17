@@ -163,7 +163,7 @@ class Tensor {
 
   /**
    * Get the allocated space of the Tensor. This tensor can be resized to
-   * any shape with total dimension less than this value.
+   * any shape with total dimension (size) less than this value.
    * @return int with the capacity of the Tensor.
    */
   size_t capacity() const;

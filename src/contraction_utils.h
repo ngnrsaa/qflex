@@ -136,7 +136,9 @@ class ContractionData {
   void ContractGrid(std::list<ContractionOperation> ordering, int output_index,
                     std::unordered_map<std::string, bool> active_patches);
 
-  Tensor& get_scratch(std::string id) { return scratch_[scratch_map_[id]]; }
+  // Gets a reference to the tensor in scratch with ID id.
+  Tensor& get_scratch_by_size(std::string id) {
+      return scratch_by_size_[scratch_by_size_map_[id]]; }
 
   /**
    * Assigns a name to a given cut-copy tensor for mapping into scratch space.
@@ -153,17 +155,19 @@ class ContractionData {
     return std::string(buffer, len);
   }
 
-  // Gets the index of result scratch space of the given rank.
-  static std::string result_space(int rank) {
+  // Gets the index of result scratch space of the given size.
+  // TODO(benjaminvillalonga): is this the standard way to print size_t value?
+  static std::string result_space_by_size(std::size_t size) {
     char buffer[64];
-    int len = snprintf(buffer, sizeof(buffer), "%s%d", kResultSpace, rank);
+    int len = snprintf(buffer, sizeof(buffer), "%s%s", kResultSpace,
+                       std::to_string(size).c_str());
     return std::string(buffer, len);
   }
 
   // Gets the names of all scratch tensors.
   std::vector<std::string> scratch_list() {
     std::vector<std::string> names;
-    for (const auto& name_pos_pair : scratch_map_) {
+    for (const auto& name_pos_pair : scratch_by_size_map_) {
       names.push_back(name_pos_pair.first);
     }
     return names;
@@ -171,13 +175,13 @@ class ContractionData {
 
  private:
   // List of tensors used for scratch space or storage between recursive calls.
-  std::vector<Tensor> scratch_;
+  std::vector<Tensor> scratch_by_size_;
 
-  // Map of patch IDs/index names to scratch locations.
-  std::unordered_map<std::string, int> scratch_map_;
+  // Map of patch IDs/index names to scratch locations on scratch_.
+  std::unordered_map<std::string, int> scratch_by_size_map_;
 
-  // Max rank of each patch generated during contraction.
-  std::unordered_map<std::string, int> patch_rank_;
+  // Max size of each patch generated during contraction.
+  std::unordered_map<std::string, size_t> patch_max_size_;
 
   // Contains the tensor grid produced by grid_of_tensors_3D_to_2D.
   std::vector<std::vector<Tensor>>* tensor_grid_;

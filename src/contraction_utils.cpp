@@ -43,8 +43,9 @@ ContractionData ContractionData::Initialize(
   data.tensor_grid_ = tensor_grid;
   data.amplitudes_ = amplitudes;
 
-  // Maximum bond dimension in the tensor grid.
-  int bond_dim = 0;
+  // Map of index name to dimenion for all indices of all tensors  in the
+  // network.
+  std::unordered_map<std::string, std::size_t> index_dimension;
 
   // Indices of tensor_grid elements during the contraction.
   std::vector<std::vector<std::vector<std::string>>> grid_indices(
@@ -54,16 +55,19 @@ ContractionData ContractionData::Initialize(
         std::vector<std::vector<std::string>>((*tensor_grid)[i].size());
     for (int j = 0; j < (*tensor_grid)[i].size(); ++j) {
       grid_indices[i][j] = (*tensor_grid)[i][j].get_indices();
-      for (const int dim : (*tensor_grid)[i][j].get_dimensions()) {
-        bond_dim = std::max(bond_dim, dim);
+      for (const std::string index : (*tensor_grid)[i][j].get_indices()) {
+        index_dimension[index] =
+            (*tensor_grid)[i][j].get_index_to_dimension().at(index);
       }
     }
   }
 
   // Indices of each patch.
   std::unordered_map<std::string, std::vector<std::string>> patch_indices;
-  // Rank of cut-copy tensors.
-  std::unordered_map<std::string, int> cut_copy_rank;
+  // Size of each patch.
+  std::unordered_map<std::string, std::size_t> patch_size;
+  // Size of cut-copy tensors.
+  std::unordered_map<std::string, std::size_t> cut_copy_size;
 
   for (const auto& op : ordering) {
     switch (op.op_type) {
@@ -74,9 +78,13 @@ ContractionData ContractionData::Initialize(
         patch_indices[op.expand.id] =
             _vector_subtraction(_vector_union(indices_a, indices_b),
                                 _vector_intersection(indices_a, indices_b));
-        if (data.patch_rank_[op.expand.id] <
-            patch_indices[op.expand.id].size()) {
-          data.patch_rank_[op.expand.id] = patch_indices[op.expand.id].size();
+        std::size_t new_size(1);
+        for (auto index : patch_indices[op.expand.id]) {
+          new_size *= index_dimension.at(index);
+        }
+        patch_size[op.expand.id] = new_size;
+        if (data.patch_max_size_[op.expand.id] < patch_size[op.expand.id]) {
+          data.patch_max_size_[op.expand.id] = patch_size[op.expand.id];
         }
         break;
       }
@@ -86,9 +94,15 @@ ContractionData ContractionData::Initialize(
         for (auto& tensor : op.cut.tensors) {
           auto& indices = grid_indices[tensor[0]][tensor[1]];
           const std::string copy_name = cut_copy_name(op.cut.tensors, side);
-          cut_copy_rank[copy_name] = indices.size();
           ++side;
           indices = _vector_subtraction(indices, {cut_index});
+          std::size_t new_size(1);
+          for (auto index : indices) {
+            new_size *= index_dimension.at(index);
+          }
+          // TODO(benjaminvillalonga): reduce size of copy, since it loses
+          // an index. This has implications in ContractGrid() below.
+          cut_copy_size[copy_name] = new_size * index_dimension.at(cut_index);
         }
         break;
       }
@@ -98,10 +112,15 @@ ContractionData ContractionData::Initialize(
         patch_indices[op.merge.target_id] =
             _vector_subtraction(_vector_union(indices_a, indices_b),
                                 _vector_intersection(indices_a, indices_b));
-        if (data.patch_rank_[op.merge.target_id] <
-            patch_indices[op.merge.target_id].size()) {
-          data.patch_rank_[op.merge.target_id] =
-              patch_indices[op.merge.target_id].size();
+        std::size_t new_size(1);
+        for (auto index : patch_indices[op.merge.target_id]) {
+          new_size *= index_dimension.at(index);
+        }
+        patch_size[op.merge.target_id] = new_size;
+        if (data.patch_max_size_[op.merge.target_id] <
+            patch_size[op.merge.target_id]) {
+          data.patch_max_size_[op.merge.target_id] =
+              patch_size[op.merge.target_id];
         }
         break;
       }
@@ -113,29 +132,32 @@ ContractionData ContractionData::Initialize(
   // If the --memory flag is set properly, this should prevent OOM errors.
   std::size_t allocated_space = 0;
 
-  // Max rank/size of all patches.
-  int max_rank = 0;
-  for (const auto& patch_rank_pair : data.patch_rank_) {
-    max_rank = std::max(patch_rank_pair.second, max_rank);
+  // Max size of a tensor (or patches) along the contraction.
+  std::size_t max_size = 0;
+  for (const auto& patch_max_size_pair : data.patch_max_size_) {
+    max_size = std::max(patch_max_size_pair.second, max_size);
   }
-  std::size_t max_size = static_cast<std::size_t>(pow(bond_dim, max_rank));
 
   // General-purpose scratch space (primarily used for tensor reordering).
   allocated_space += max_size;
 
   // "Swap tensor" space, used to store operation results.
-  for (int rank = 1; rank <= max_rank; ++rank) {
-    allocated_space += static_cast<std::size_t>(pow(bond_dim, rank));
+  {
+    // TODO(benjaminvillalonga): allocate only unique sizes and not all sizes
+    // between 2 and max_size.
+    std::size_t swap_size = max_size;
+    while (swap_size > 0) {
+      allocated_space += swap_size;
+      swap_size /= 2;
+    }
   }
   // Per-patch space, sized to match the maximum size of the patch.
-  for (const auto& patch_rank_pair : data.patch_rank_) {
-    allocated_space +=
-        static_cast<std::size_t>(pow(bond_dim, patch_rank_pair.second));
+  for (const auto& patch_max_size_pair : data.patch_max_size_) {
+    allocated_space += patch_max_size_pair.second;
   }
   // Extra space for storing copies made during cut operations.
-  for (const auto& copy_rank_pair : cut_copy_rank) {
-    allocated_space +=
-        static_cast<std::size_t>(pow(bond_dim, copy_rank_pair.second));
+  for (const auto& cut_copy_size_pair : cut_copy_size) {
+    allocated_space += cut_copy_size_pair.second;
   }
 
   // Prevent memory allocation from exceeding memory_limit.
@@ -161,49 +183,49 @@ ContractionData ContractionData::Initialize(
 
   // General-purpose scratch space (primarily used for tensor reordering).
   try {
-    data.scratch_.push_back(Tensor({""}, {max_size}));
+    data.scratch_by_size_.push_back(Tensor({""}, {max_size}));
   } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
   }
-  data.scratch_map_[kGeneralSpace] = 0;
-
+  data.scratch_by_size_map_[kGeneralSpace] = 0;
   // "Swap tensor" space, used to store operation results.
-  for (int rank = 1; rank <= max_rank; ++rank) {
-    const std::size_t size = static_cast<std::size_t>(pow(bond_dim, rank));
-    try {
-      data.scratch_.push_back(Tensor({""}, {size}));
-    } catch (const std::string& err_msg) {
-      throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+  {
+    int patch_pos = 1;
+    std::size_t swap_size = max_size;
+    // TODO(benjaminvillalonga): allocate only unique sizes and not all sizes
+    // between 2 and max_size.
+    while (swap_size > 0) {
+      try {
+        data.scratch_by_size_.push_back(Tensor({""}, {swap_size}));
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+      }
+      data.scratch_by_size_map_[result_space_by_size(swap_size)] = patch_pos;
+      swap_size /= 2;
+      patch_pos++;
     }
-    data.scratch_map_[result_space(rank)] = rank;
-  }
-
-  // Per-patch space, sized to match the maximum size of the patch.
-  int patch_pos = data.scratch_map_.size();
-  for (const auto& patch_rank_pair : data.patch_rank_) {
-    const std::size_t size =
-        static_cast<std::size_t>(pow(bond_dim, patch_rank_pair.second));
-    try {
-      data.scratch_.push_back(Tensor({""}, {size}));
-    } catch (const std::string& err_msg) {
-      throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+    // Per-patch space, sized to match the maximum size of the patch.
+    for (const auto& patch_max_size_pair : data.patch_max_size_) {
+      try {
+        data.scratch_by_size_.push_back(Tensor({""},
+                                               {patch_max_size_pair.second}));
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+      }
+      data.scratch_by_size_map_[patch_max_size_pair.first] = patch_pos++;
     }
-    data.scratch_map_[patch_rank_pair.first] = patch_pos++;
-  }
-
-  // Extra space for storing copies made during cut operations.
-  // TODO(martinop): minor optimizations possible: When consecutive cuts apply
-  // to the same grid tensor, only one copy needs to be stored.
-  int cut_copy_pos = data.scratch_map_.size();
-  for (const auto& copy_rank_pair : cut_copy_rank) {
-    const std::size_t size =
-        static_cast<std::size_t>(pow(bond_dim, copy_rank_pair.second));
-    try {
-      data.scratch_.push_back(Tensor({""}, {size}));
-    } catch (const std::string& err_msg) {
-      throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+    // Extra space for storing copies made during cut operations.
+    // TODO(martinop): minor optimizations possible: When consecutive cuts apply
+    // to the same grid tensor, only one copy needs to be stored.
+    for (const auto& cut_copy_size_pair : cut_copy_size) {
+      try {
+        data.scratch_by_size_.push_back(Tensor({""},
+                                               {cut_copy_size_pair.second}));
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+      }
+      data.scratch_by_size_map_[cut_copy_size_pair.first] = patch_pos++;
     }
-    data.scratch_map_[copy_rank_pair.first] = patch_pos++;
   }
 
   return data;
@@ -213,6 +235,7 @@ void ContractionData::ContractGrid(
     std::list<ContractionOperation> ordering, int output_index,
     std::unordered_map<std::string, bool> active_patches) {
   Tensor* output;
+
   while (!ordering.empty()) {
     const ContractionOperation op = ordering.front();
     ordering.pop_front();
@@ -223,15 +246,17 @@ void ContractionData::ContractGrid(
             (*tensor_grid_)[op.expand.tensor[0]][op.expand.tensor[1]];
         if (!active_patches[op.expand.id]) {
           // First tensor in patch.
-          get_scratch(op.expand.id) = next;
+          get_scratch_by_size(op.expand.id) = next;
           active_patches[op.expand.id] = true;
           continue;
         }
-        Tensor& prev = get_scratch(op.expand.id);
-        std::string result_id = result_space(patch_rank_[op.expand.id]);
-        Tensor& result = get_scratch(result_id);
+        Tensor& prev = get_scratch_by_size(op.expand.id);
+        std::string result_id =
+            result_space_by_size(patch_max_size_[op.expand.id]);
+        Tensor& result = get_scratch_by_size(result_id);
         try {
-          multiply(prev, next, result, get_scratch(kGeneralSpace).data());
+          multiply(prev, next, result,
+                   get_scratch_by_size(kGeneralSpace).data());
         } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
                           "]");
@@ -240,9 +265,9 @@ void ContractionData::ContractGrid(
           output = &result;
           continue;
         }
-        int temp = scratch_map_[op.expand.id];
-        scratch_map_[op.expand.id] = scratch_map_[result_id];
-        scratch_map_[result_id] = temp;
+        int temp = scratch_by_size_map_[op.expand.id];
+        scratch_by_size_map_[op.expand.id] = scratch_by_size_map_[result_id];
+        scratch_by_size_map_[result_id] = temp;
         continue;
       }
       case ContractionOperation::CUT: {
@@ -250,7 +275,7 @@ void ContractionData::ContractGrid(
         Tensor& tensor_a =
             (*tensor_grid_)[op.cut.tensors[0][0]][op.cut.tensors[0][1]];
         Tensor& copy_a =
-            get_scratch(cut_copy_name(op.cut.tensors, /*side = */ 0));
+            get_scratch_by_size(cut_copy_name(op.cut.tensors, /*side = */ 0));
         copy_a = tensor_a;
         // List of values to evaluate on the cut.
         std::vector<int> values = op.cut.values;
@@ -265,7 +290,7 @@ void ContractionData::ContractGrid(
           Tensor& tensor_b =
               (*tensor_grid_)[op.cut.tensors[1][0]][op.cut.tensors[1][1]];
           Tensor& copy_b =
-              get_scratch(cut_copy_name(op.cut.tensors, /*side = */ 1));
+              get_scratch_by_size(cut_copy_name(op.cut.tensors, /*side = */ 1));
           copy_b = tensor_b;
           for (int val : values) {
             try {
@@ -303,18 +328,20 @@ void ContractionData::ContractGrid(
       }
       case ContractionOperation::MERGE: {
         // Multiply two existing tensors and store result in scratch.
-        Tensor& patch_1 = get_scratch(op.merge.source_id);
-        Tensor& patch_2 = get_scratch(op.merge.target_id);
+        Tensor& patch_1 = get_scratch_by_size(op.merge.source_id);
+        Tensor& patch_2 = get_scratch_by_size(op.merge.target_id);
         if (!active_patches[op.merge.target_id]) {
           // Copy the old patch into the new space.
           patch_2 = patch_1;
           active_patches[op.merge.target_id] = true;
           continue;
         }
-        std::string result_id = result_space(patch_rank_[op.merge.target_id]);
-        Tensor& result = get_scratch(result_id);
+        std::string result_id =
+            result_space_by_size(patch_max_size_[op.merge.target_id]);
+        Tensor& result = get_scratch_by_size(result_id);
         try {
-          multiply(patch_1, patch_2, result, get_scratch(kGeneralSpace).data());
+          multiply(patch_1, patch_2, result,
+                   get_scratch_by_size(kGeneralSpace).data());
         } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
                           "]");
@@ -323,9 +350,10 @@ void ContractionData::ContractGrid(
           output = &result;
           continue;
         }
-        int temp = scratch_map_[op.merge.target_id];
-        scratch_map_[op.merge.target_id] = scratch_map_[result_id];
-        scratch_map_[result_id] = temp;
+        int temp = scratch_by_size_map_[op.merge.target_id];
+        scratch_by_size_map_[op.merge.target_id] =
+            scratch_by_size_map_[result_id];
+        scratch_by_size_map_[result_id] = temp;
         continue;
       }
     }
