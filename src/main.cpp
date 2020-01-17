@@ -1,10 +1,10 @@
-#include "memory.h"
 #include "circuit.h"
 #include "docopt.h"
 #include "evaluate_circuit.h"
 #include "global.h"
 #include "grid.h"
 #include "input.h"
+#include "memory.h"
 #include "ordering.h"
 
 static const char VERSION[] = "qFlex v0.1";
@@ -87,9 +87,9 @@ int main(int argc, char** argv) {
                                     : args["<grid_filename>"].asString();
 
     // set alarms to get memory usage in real time
-    if(qflex::global::verbose > 0) {
+    if (qflex::global::verbose > 0) {
       signal(SIGALRM, qflex::memory::print_peak_memory_usage);
-      ualarm(1e5,1e5);
+      ualarm(1e5, 1e5);
     }
 
     // Load circuit
@@ -110,9 +110,10 @@ int main(int argc, char** argv) {
                       "]");
     }
     // If no error is caught, amplitudes will be initialized.
-    
-    if(qflex::global::verbose > 0)
-      std::cerr << "Peak memory usage: " << qflex::memory::get_peak_memory_usage() << std::endl;
+
+    if (qflex::global::verbose > 0)
+      std::cerr << "Peak memory usage: "
+                << qflex::memory::get_peak_memory_usage() << std::endl;
 
     // Printing output.
     for (std::size_t c = 0; c < amplitudes.size(); ++c) {
