@@ -152,18 +152,12 @@ class ContractionData {
    */
   static std::string cut_copy_name(std::vector<std::vector<std::size_t>> index,
                                    std::size_t side) {
-    std::string base = index_name(index);
-    char buffer[64];
-    std::size_t len =
-        snprintf(buffer, sizeof(buffer), "cut-%s:side-%ld", base.c_str(), side);
-    return std::string(buffer, len);
+    return concat("cut-", index_name(index), ":size-", side);
   }
 
   // Gets the index of result scratch space of the given size.
   static std::string result_space(std::size_t size) {
-    char buffer[64];
-    int len = snprintf(buffer, sizeof(buffer), "%s%ld", kResultSpace, size);
-    return std::string(buffer, len);
+    return concat(kResultSpace, size);
   }
 
   // Gets the names of all scratch tensors.
