@@ -140,8 +140,11 @@ ContractionData ContractionData::Initialize(
 
   // Max size of a tensor (or patches) along the contraction.
   std::size_t max_size = 0;
+  // The set of max_sizes of all patches.
+  std::unordered_set<std::size_t> unique_sizes;
   for (const auto& patch_max_size_pair : data.patch_max_size_) {
     max_size = std::max(patch_max_size_pair.second, max_size);
+    unique_sizes.insert(patch_max_size_pair.second);
   }
 
   // General-purpose scratch space (primarily used for tensor reordering).
@@ -149,12 +152,8 @@ ContractionData ContractionData::Initialize(
 
   // "Swap tensor" space, used to store operation results.
   {
-    // TODO(benjaminvillalonga): allocate only unique sizes and not all sizes
-    // between 2 and max_size.
-    std::size_t swap_size = max_size;
-    while (swap_size > 0) {
+    for (const auto& swap_size : unique_sizes) {
       allocated_space += swap_size;
-      swap_size /= 2;
     }
   }
   // Per-patch space, sized to match the maximum size of the patch.
@@ -196,18 +195,14 @@ ContractionData ContractionData::Initialize(
   data.scratch_map_[kGeneralSpace] = 0;
   // "Swap tensor" space, used to store operation results.
   {
-    int patch_pos = 1;
-    std::size_t swap_size = max_size;
-    // TODO(benjaminvillalonga): allocate only unique sizes and not all sizes
-    // between 2 and max_size.
-    while (swap_size > 0) {
+    std::size_t patch_pos = 1;
+    for (const auto& swap_size : unique_sizes) {
       try {
         data.scratch_.push_back(Tensor({""}, {swap_size}));
       } catch (const std::string& err_msg) {
         throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
       }
       data.scratch_map_[result_space(swap_size)] = patch_pos;
-      swap_size /= 2;
       patch_pos++;
     }
     // Per-patch space, sized to match the maximum size of the patch.
