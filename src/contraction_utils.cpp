@@ -213,8 +213,7 @@ ContractionData ContractionData::Initialize(
     // Per-patch space, sized to match the maximum size of the patch.
     for (const auto& patch_max_size_pair : data.patch_max_size_) {
       try {
-        data.scratch_.push_back(Tensor({""},
-                                               {patch_max_size_pair.second}));
+        data.scratch_.push_back(Tensor({""}, {patch_max_size_pair.second}));
       } catch (const std::string& err_msg) {
         throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
       }
@@ -225,8 +224,7 @@ ContractionData ContractionData::Initialize(
     // to the same grid tensor, only one copy needs to be stored.
     for (const auto& cut_copy_size_pair : cut_copy_size) {
       try {
-        data.scratch_.push_back(Tensor({""},
-                                               {cut_copy_size_pair.second}));
+        data.scratch_.push_back(Tensor({""}, {cut_copy_size_pair.second}));
       } catch (const std::string& err_msg) {
         throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
       }
@@ -257,12 +255,10 @@ void ContractionData::ContractGrid(
           continue;
         }
         Tensor& prev = get_scratch(op.expand.id);
-        std::string result_id =
-            result_space(patch_max_size_[op.expand.id]);
+        std::string result_id = result_space(patch_max_size_[op.expand.id]);
         Tensor& result = get_scratch(result_id);
         try {
-          multiply(prev, next, result,
-                   get_scratch(kGeneralSpace).data());
+          multiply(prev, next, result, get_scratch(kGeneralSpace).data());
         } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
                           "]");
@@ -347,8 +343,7 @@ void ContractionData::ContractGrid(
             result_space(patch_max_size_[op.merge.target_id]);
         Tensor& result = get_scratch(result_id);
         try {
-          multiply(patch_1, patch_2, result,
-                   get_scratch(kGeneralSpace).data());
+          multiply(patch_1, patch_2, result, get_scratch(kGeneralSpace).data());
         } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
                           "]");

@@ -142,8 +142,7 @@ class ContractionData {
                     std::unordered_map<std::string, bool> active_patches);
 
   // Gets a reference to the tensor in scratch with ID id.
-  Tensor& get_scratch(std::string id) {
-      return scratch_[scratch_map_[id]]; }
+  Tensor& get_scratch(std::string id) { return scratch_[scratch_map_[id]]; }
 
   /**
    * Assigns a name to a given cut-copy tensor for mapping into scratch space.
