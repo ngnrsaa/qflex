@@ -137,8 +137,8 @@ class ContractionData {
                     std::unordered_map<std::string, bool> active_patches);
 
   // Gets a reference to the tensor in scratch with ID id.
-  Tensor& get_scratch_by_size(std::string id) {
-      return scratch_by_size_[scratch_by_size_map_[id]]; }
+  Tensor& get_scratch(std::string id) {
+      return scratch_[scratch_map_[id]]; }
 
   /**
    * Assigns a name to a given cut-copy tensor for mapping into scratch space.
@@ -156,9 +156,9 @@ class ContractionData {
   }
 
   // Gets the index of result scratch space of the given size.
-  // TODO(benjaminvillalonga): is this the standard way to print size_t value?
-  static std::string result_space_by_size(std::size_t size) {
+  static std::string result_space(std::size_t size) {
     char buffer[64];
+    // Cumbersome way to convert size_t to string.
     int len = snprintf(buffer, sizeof(buffer), "%s%s", kResultSpace,
                        std::to_string(size).c_str());
     return std::string(buffer, len);
@@ -167,7 +167,7 @@ class ContractionData {
   // Gets the names of all scratch tensors.
   std::vector<std::string> scratch_list() {
     std::vector<std::string> names;
-    for (const auto& name_pos_pair : scratch_by_size_map_) {
+    for (const auto& name_pos_pair : scratch_map_) {
       names.push_back(name_pos_pair.first);
     }
     return names;
@@ -175,10 +175,10 @@ class ContractionData {
 
  private:
   // List of tensors used for scratch space or storage between recursive calls.
-  std::vector<Tensor> scratch_by_size_;
+  std::vector<Tensor> scratch_;
 
   // Map of patch IDs/index names to scratch locations on scratch_.
-  std::unordered_map<std::string, int> scratch_by_size_map_;
+  std::unordered_map<std::string, int> scratch_map_;
 
   // Max size of each patch generated during contraction.
   std::unordered_map<std::string, size_t> patch_max_size_;
