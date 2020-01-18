@@ -21,6 +21,9 @@ std::string concat(const T& x, const Q&... y) {
   return ss.str() + concat(y...);
 }
 
+// Convert 'memory' bytes into a more readable string.
+std::string readable_memory_string(double memory);
+
 }  // namespace qflex::utils
 
 #endif
