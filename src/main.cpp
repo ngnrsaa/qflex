@@ -24,7 +24,7 @@ tensor network, CPU-based simulator of large quantum circuits.
     -o,--ordering=<ordering_filename>      Ordering filename.
     -g,--grid=<grid_filename>              Grid filename.
     -v,--verbosity=<verbosity_level>       Verbosity level.
-    -m,--memory=<memory_limit>             Memory limit (default 1GB).
+    -m,--memory=<memory_limit>             Memory limit [default: 1GB].
     --initial-conf=<initial_conf>          Initial configuration.
     --final-conf=<final_conf>              Final configuration.
     --version                              Show version.
@@ -56,12 +56,9 @@ int main(int argc, char** argv) {
 
     // Update global qflex::global::memory_limit
     if (static_cast<bool>(args["--memory"]))
-      qflex::global::memory_limit = args["--memory"].asLong();
+      qflex::global::memory_limit = qflex::utils::from_readable_memory_string(args["--memory"].asString());
     else if (static_cast<bool>(args["<memory_limit>"]))
-      qflex::global::memory_limit = args["<memory_limit>"].asLong();
-    else
-      // Default limit of one gigabyte.
-      qflex::global::memory_limit = 1L << 30;
+      qflex::global::memory_limit = qflex::utils::from_readable_memory_string(args["<memory_limit>"].asString());
 
     // Get initial/final configurations
     if (static_cast<bool>(args["--initial-conf"]))
@@ -85,6 +82,10 @@ int main(int argc, char** argv) {
     std::string grid_filename = static_cast<bool>(args["--grid"])
                                     ? args["--grid"].asString()
                                     : args["<grid_filename>"].asString();
+
+    // Print info on maximum memory
+    if (qflex::global::verbose > 0)
+      std::cerr << "Maximum allowed memory: " << qflex::utils::readable_memory_string(qflex::global::memory_limit) << std::endl;
 
     // set alarms to get memory usage in real time
     if (qflex::global::verbose > 0) {
