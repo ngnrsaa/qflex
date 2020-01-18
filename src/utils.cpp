@@ -13,7 +13,7 @@ std::string readable_memory_string(double memory) {
     ++scale;
     memory /= (1 << 10);
   }
-  return concat(memory, suffix[scale]);
+  return concat(static_cast<std::size_t>(memory*100)/100., suffix[scale]);
 }
 
 }  // namespace qflex::utils
