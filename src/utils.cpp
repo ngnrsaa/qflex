@@ -16,6 +16,6 @@ std::string readable_memory_string(double memory) {
   return concat(memory, suffix[scale]);
 }
 
-}
+}  // namespace qflex::utils
 
 #endif
