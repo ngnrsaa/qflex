@@ -1,11 +1,11 @@
 #ifndef UTILS__H
 #define UTILS__H
 
-#include <stdexcept>
-#include <sstream>
-#include <string>
-#include <regex>
 #include <cmath>
+#include <regex>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 
 #include "errors.h"
 

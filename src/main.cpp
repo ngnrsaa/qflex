@@ -56,9 +56,11 @@ int main(int argc, char** argv) {
 
     // Update global qflex::global::memory_limit
     if (static_cast<bool>(args["--memory"]))
-      qflex::global::memory_limit = qflex::utils::from_readable_memory_string(args["--memory"].asString());
+      qflex::global::memory_limit = qflex::utils::from_readable_memory_string(
+          args["--memory"].asString());
     else if (static_cast<bool>(args["<memory_limit>"]))
-      qflex::global::memory_limit = qflex::utils::from_readable_memory_string(args["<memory_limit>"].asString());
+      qflex::global::memory_limit = qflex::utils::from_readable_memory_string(
+          args["<memory_limit>"].asString());
 
     // Get initial/final configurations
     if (static_cast<bool>(args["--initial-conf"]))
@@ -85,7 +87,10 @@ int main(int argc, char** argv) {
 
     // Print info on maximum memory
     if (qflex::global::verbose > 0)
-      std::cerr << "Maximum allowed memory: " << qflex::utils::readable_memory_string(qflex::global::memory_limit) << std::endl;
+      std::cerr << "Maximum allowed memory: "
+                << qflex::utils::readable_memory_string(
+                       qflex::global::memory_limit)
+                << std::endl;
 
     // set alarms to get memory usage in real time
     if (qflex::global::verbose > 0) {
