@@ -21,7 +21,8 @@ inline std::string get_peak_memory_usage() noexcept {
     line = line.substr(line.find_first_of("0123456789"), std::size(line));
 
     // Strip everything after the first space
-    return utils::readable_memory_string(std::stod(line.substr(0, line.find(' '))) * 1024);
+    return utils::readable_memory_string(
+        std::stod(line.substr(0, line.find(' '))) * 1024);
 
   } else
     return std::string("n/a");
