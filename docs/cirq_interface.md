@@ -62,7 +62,7 @@ by a heuristic (see Notes).
 
 ### Usage procedure
 
-* Create a grid of qubits starting from a string like (see input_formats.md)
+* Create a grid of qubits starting from a string like (see [input_formats.md](/docs/input_formats.md))
 ```
 111
 010
