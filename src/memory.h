@@ -21,7 +21,8 @@ inline std::array<std::string, 2> get_memory_usage() noexcept {
     line = line.substr(line.find_first_of("0123456789"), std::size(line));
 
     // Strip everything after the first space and get memory peak
-    const std::string m_peak = utils::readable_memory_string(std::stod(line.substr(0, line.find(' '))) * 1024);
+    const std::string m_peak = utils::readable_memory_string(
+        std::stod(line.substr(0, line.find(' '))) * 1024);
 
     // Get next line
     std::getline(in, line);
@@ -30,7 +31,8 @@ inline std::array<std::string, 2> get_memory_usage() noexcept {
     line = line.substr(line.find_first_of("0123456789"), std::size(line));
 
     // Strip everything after the first space and get memory usage
-    const std::string m_used = utils::readable_memory_string(std::stod(line.substr(0, line.find(' '))) * 1024);
+    const std::string m_used = utils::readable_memory_string(
+        std::stod(line.substr(0, line.find(' '))) * 1024);
 
     return {m_used, m_peak};
 
@@ -40,7 +42,8 @@ inline std::array<std::string, 2> get_memory_usage() noexcept {
 
 inline void print_memory_usage(int _ = 0) noexcept {
   const auto [vm_used, vm_peak] = get_memory_usage();
-  std::cerr << "Memory usage: " << vm_used <<  " (Peak: " << vm_peak << ")" << std::endl;
+  std::cerr << "Memory usage: " << vm_used << " (Peak: " << vm_peak << ")"
+            << std::endl;
 }
 
 }  // namespace qflex::memory
