@@ -24,9 +24,11 @@ tensor network, CPU-based simulator of large quantum circuits.
     -o,--ordering=<ordering_filename>      Ordering filename.
     -g,--grid=<grid_filename>              Grid filename.
     -v,--verbosity=<verbosity_level>       Verbosity level [default: 0].
-    -m,--memory=<memory_limit>             Memory limit [default: 1GB].
-    -t,--track-memory=<milliseconds>       If <verbosity_level> > 0, track memory usage [default: 0].
-    --initial-conf=<initial_conf>          Initial configuration.
+    -m,--memory=<memory_limit>             Memory limit [default: 1GB].)"
+#ifdef __linux__
+"\n" R"(    -t,--track-memory=<milliseconds>       If <verbosity_level> > 0, track memory usage [default: 0].)"
+#endif
+"\n" R"(    --initial-conf=<initial_conf>          Initial configuration.
     --final-conf=<final_conf>              Final configuration.
     --version                              Show version.
 
@@ -61,7 +63,7 @@ int main(int argc, char** argv) {
       qflex::global::memory_limit = qflex::utils::from_readable_memory_string(
           args["<memory_limit>"].asString());
 
-    // Update global qflex::global::memory_limit
+#ifdef __linux__
     if (static_cast<bool>(args["--track-memory"]))
       qflex::global::track_memory = args["--track-memory"].asLong();
     else if (static_cast<bool>(args["<track_memory_milliseconds>"]))
@@ -76,6 +78,7 @@ int main(int argc, char** argv) {
                 << std::endl;
       qflex::global::track_memory = 100;
     }
+#endif
 
     // Get initial/final configurations
     if (static_cast<bool>(args["--initial-conf"]))
@@ -101,6 +104,7 @@ int main(int argc, char** argv) {
                                     : args["<grid_filename>"].asString();
 
     // Print info on maximum memory
+#ifdef __linux__
     if (qflex::global::verbose > 0)
       std::cerr << "Maximum allowed memory: "
                 << qflex::utils::readable_memory_string(
@@ -113,6 +117,7 @@ int main(int argc, char** argv) {
       ualarm(qflex::global::track_memory * 1e3,
              qflex::global::track_memory * 1e3);
     }
+#endif
 
     // Load circuit
     input.circuit.load(std::ifstream(circuit_filename));
@@ -133,8 +138,10 @@ int main(int argc, char** argv) {
     }
     // If no error is caught, amplitudes will be initialized.
 
+#ifdef __linux__
     if (qflex::global::verbose > 0 && qflex::global::track_memory > 0)
       qflex::memory::print_memory_usage();
+#endif
 
     // Printing output.
     for (std::size_t c = 0; c < amplitudes.size(); ++c) {
