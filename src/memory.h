@@ -32,7 +32,7 @@ inline void print_peak_memory_usage(int _ = 0) noexcept {
   static std::string old_vm_size = get_peak_memory_usage();
   if (const std::string vm_size = get_peak_memory_usage();
       old_vm_size != vm_size) {
-    std::cerr << "Memory usage: " << vm_size << std::endl;
+    std::cerr << "Peak memory usage: " << vm_size << std::endl;
     old_vm_size = vm_size;
   }
 }
