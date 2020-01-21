@@ -22,7 +22,7 @@ std::string readable_memory_string(double memory) {
     ++scale;
     size_prefix /= (1 << 10);
   }
-  return concat(size_prefix, suffix[scale]);
+  return utils::concat(size_prefix, suffix[scale]);
 }
 
 }  // namespace
@@ -43,8 +43,9 @@ ContractionData ContractionData::Initialize(
   data.tensor_grid_ = tensor_grid;
   data.amplitudes_ = amplitudes;
 
-  // Maximum bond dimension in the tensor grid.
-  std::size_t bond_dim = 0;
+  // Map of index name to dimenion for all indices of all tensors  in the
+  // network.
+  std::unordered_map<std::string, std::size_t> index_dimension;
 
   // Indices of tensor_grid elements during the contraction.
   std::vector<std::vector<std::vector<std::string>>> grid_indices(
@@ -54,16 +55,19 @@ ContractionData ContractionData::Initialize(
         std::vector<std::vector<std::string>>((*tensor_grid)[i].size());
     for (std::size_t j = 0; j < (*tensor_grid)[i].size(); ++j) {
       grid_indices[i][j] = (*tensor_grid)[i][j].get_indices();
-      for (const std::size_t dim : (*tensor_grid)[i][j].get_dimensions()) {
-        bond_dim = std::max(bond_dim, dim);
+      for (const std::string& index : (*tensor_grid)[i][j].get_indices()) {
+        index_dimension[index] =
+            (*tensor_grid)[i][j].get_index_to_dimension().at(index);
       }
     }
   }
 
   // Indices of each patch.
   std::unordered_map<std::string, std::vector<std::string>> patch_indices;
-  // Rank of cut-copy tensors.
-  std::unordered_map<std::string, std::size_t> cut_copy_rank;
+  // Size of each patch.
+  std::unordered_map<std::string, std::size_t> patch_size;
+  // Size of cut-copy tensors.
+  std::unordered_map<std::string, std::size_t> cut_copy_size;
 
   for (const auto& op : ordering) {
     switch (op.op_type) {
@@ -74,23 +78,31 @@ ContractionData ContractionData::Initialize(
         patch_indices[op.expand.id] =
             _vector_subtraction(_vector_union(indices_a, indices_b),
                                 _vector_intersection(indices_a, indices_b));
-        if (data.patch_rank_[op.expand.id] <
-            patch_indices[op.expand.id].size()) {
-          data.patch_rank_[op.expand.id] = patch_indices[op.expand.id].size();
+        std::size_t new_size = 1;
+        for (const auto& index : patch_indices[op.expand.id]) {
+          new_size *= index_dimension.at(index);
+        }
+        patch_size[op.expand.id] = new_size;
+        if (data.patch_max_size_[op.expand.id] < patch_size[op.expand.id]) {
+          data.patch_max_size_[op.expand.id] = patch_size[op.expand.id];
         }
         break;
       }
       case ContractionOperation::CUT: {
         try {
           const std::string cut_index = index_name(op.cut.tensors);
-          // If no error is caught, cut_index will be initialized.
           int side = 0;
           for (auto& tensor : op.cut.tensors) {
             auto& indices = grid_indices[tensor[0]][tensor[1]];
             const std::string copy_name = cut_copy_name(op.cut.tensors, side);
-            cut_copy_rank[copy_name] = indices.size();
             ++side;
+            // Update indices so it keeps track of cuts so that tensor sizes and
+            // ranks are not overestimated.
             indices = _vector_subtraction(indices, {cut_index});
+            // TODO(benjaminvillalonga): reduce size of copy, since it loses
+            // an index. This has implications in ContractGrid() below.
+            cut_copy_size[copy_name] =
+                (*tensor_grid)[tensor[0]][tensor[1]].size();
           }
         } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed during CUT. Error:\n\t[", err_msg, "]");
@@ -103,10 +115,15 @@ ContractionData ContractionData::Initialize(
         patch_indices[op.merge.target_id] =
             _vector_subtraction(_vector_union(indices_a, indices_b),
                                 _vector_intersection(indices_a, indices_b));
-        if (data.patch_rank_[op.merge.target_id] <
-            patch_indices[op.merge.target_id].size()) {
-          data.patch_rank_[op.merge.target_id] =
-              patch_indices[op.merge.target_id].size();
+        std::size_t new_size = 1;
+        for (const auto& index : patch_indices[op.merge.target_id]) {
+          new_size *= index_dimension.at(index);
+        }
+        patch_size[op.merge.target_id] = new_size;
+        if (data.patch_max_size_[op.merge.target_id] <
+            patch_size[op.merge.target_id]) {
+          data.patch_max_size_[op.merge.target_id] =
+              patch_size[op.merge.target_id];
         }
         break;
       }
@@ -118,33 +135,33 @@ ContractionData ContractionData::Initialize(
   // If the --memory flag is set properly, this should prevent OOM errors.
   std::size_t allocated_space = 0;
 
-  // Max rank/size of all patches.
-  std::size_t max_rank = 0;
-  for (const auto& patch_rank_pair : data.patch_rank_) {
-    max_rank = std::max(patch_rank_pair.second, max_rank);
+  // Max size of a tensor (or patches) along the contraction.
+  std::size_t max_size = 0;
+  // The set of max_sizes of all patches.
+  std::unordered_set<std::size_t> unique_sizes;
+  for (const auto& patch_max_size_pair : data.patch_max_size_) {
+    max_size = std::max(patch_max_size_pair.second, max_size);
+    unique_sizes.insert(patch_max_size_pair.second);
   }
-  std::size_t max_size = static_cast<std::size_t>(pow(bond_dim, max_rank));
 
   // General-purpose scratch space (primarily used for tensor reordering).
   allocated_space += max_size;
 
   // "Swap tensor" space, used to store operation results.
-  for (std::size_t rank = 1; rank <= max_rank; ++rank) {
-    allocated_space += static_cast<std::size_t>(pow(bond_dim, rank));
+  for (const auto& swap_size : unique_sizes) {
+    allocated_space += swap_size;
   }
   // Per-patch space, sized to match the maximum size of the patch.
-  for (const auto& patch_rank_pair : data.patch_rank_) {
-    allocated_space +=
-        static_cast<std::size_t>(pow(bond_dim, patch_rank_pair.second));
+  for (const auto& patch_max_size_pair : data.patch_max_size_) {
+    allocated_space += patch_max_size_pair.second;
   }
   // Extra space for storing copies made during cut operations.
-  for (const auto& copy_rank_pair : cut_copy_rank) {
-    allocated_space +=
-        static_cast<std::size_t>(pow(bond_dim, copy_rank_pair.second));
+  for (const auto& cut_copy_size_pair : cut_copy_size) {
+    allocated_space += cut_copy_size_pair.second;
   }
 
   // Prevent memory allocation from exceeding memory_limit.
-  double alloc_size = allocated_space * sizeof(std::complex<double>);
+  double alloc_size = allocated_space * sizeof(s_type);
   if (alloc_size > global::memory_limit) {
     throw ERROR_MSG("Required space (", readable_memory_string(alloc_size),
                     ") exceeds memory limit (",
@@ -171,43 +188,38 @@ ContractionData ContractionData::Initialize(
     throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
   }
   data.scratch_map_[kGeneralSpace] = 0;
-
   // "Swap tensor" space, used to store operation results.
-  for (std::size_t rank = 1; rank <= max_rank; ++rank) {
-    const std::size_t size = static_cast<std::size_t>(pow(bond_dim, rank));
-    try {
-      data.scratch_.push_back(Tensor({""}, {size}));
-    } catch (const std::string& err_msg) {
-      throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+  {
+    std::size_t patch_pos = 1;
+    for (const auto& swap_size : unique_sizes) {
+      try {
+        data.scratch_.push_back(Tensor({""}, {swap_size}));
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+      }
+      data.scratch_map_[result_space(swap_size)] = patch_pos;
+      patch_pos++;
     }
-    data.scratch_map_[result_space(rank)] = rank;
-  }
-
-  // Per-patch space, sized to match the maximum size of the patch.
-  std::size_t patch_pos = data.scratch_map_.size();
-  for (const auto& patch_rank_pair : data.patch_rank_) {
-    const std::size_t size =
-        static_cast<std::size_t>(pow(bond_dim, patch_rank_pair.second));
-    try {
-      data.scratch_.push_back(Tensor({""}, {size}));
-    } catch (const std::string& err_msg) {
-      throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+    // Per-patch space, sized to match the maximum size of the patch.
+    for (const auto& patch_max_size_pair : data.patch_max_size_) {
+      try {
+        data.scratch_.push_back(Tensor({""}, {patch_max_size_pair.second}));
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+      }
+      data.scratch_map_[patch_max_size_pair.first] = patch_pos++;
     }
-    data.scratch_map_[patch_rank_pair.first] = patch_pos++;
-  }
-
-  // Extra space for storing copies made during cut operations.
-  // TODO(martinop): minor optimizations possible: When consecutive cuts apply
-  // to the same grid tensor, only one copy needs to be stored.
-  for (const auto& copy_rank_pair : cut_copy_rank) {
-    const std::size_t size =
-        static_cast<std::size_t>(pow(bond_dim, copy_rank_pair.second));
-    try {
-      data.scratch_.push_back(Tensor({""}, {size}));
-    } catch (const std::string& err_msg) {
-      throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+    // Extra space for storing copies made during cut operations.
+    // TODO(martinop): minor optimizations possible: When consecutive cuts apply
+    // to the same grid tensor, only one copy needs to be stored.
+    for (const auto& cut_copy_size_pair : cut_copy_size) {
+      try {
+        data.scratch_.push_back(Tensor({""}, {cut_copy_size_pair.second}));
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call Tensor(). Error:\n\t[", err_msg, "]");
+      }
+      data.scratch_map_[cut_copy_size_pair.first] = patch_pos++;
     }
-    data.scratch_map_[copy_rank_pair.first] = patch_pos++;
   }
 
   return data;
@@ -217,6 +229,7 @@ void ContractionData::ContractGrid(
     std::list<ContractionOperation> ordering, std::size_t output_index,
     std::unordered_map<std::string, bool> active_patches) {
   Tensor* output{nullptr};
+
   while (!ordering.empty()) {
     const ContractionOperation op = ordering.front();
     ordering.pop_front();
@@ -232,7 +245,7 @@ void ContractionData::ContractGrid(
           continue;
         }
         Tensor& prev = get_scratch(op.expand.id);
-        std::string result_id = result_space(patch_rank_[op.expand.id]);
+        std::string result_id = result_space(patch_max_size_[op.expand.id]);
         Tensor& result = get_scratch(result_id);
         try {
           multiply(prev, next, result, get_scratch(kGeneralSpace).data());
@@ -316,7 +329,8 @@ void ContractionData::ContractGrid(
           active_patches[op.merge.target_id] = true;
           continue;
         }
-        std::string result_id = result_space(patch_rank_[op.merge.target_id]);
+        std::string result_id =
+            result_space(patch_max_size_[op.merge.target_id]);
         Tensor& result = get_scratch(result_id);
         try {
           multiply(patch_1, patch_2, result, get_scratch(kGeneralSpace).data());
@@ -370,7 +384,7 @@ void ordering_data_to_contraction_ordering(
       throw error_msg("Grid is too big.");
     } else if (index < 0 or index >= static_cast<index_type>(grid_size)) {
       throw error_msg(
-          concat("Index ", index, " must be within grid boundaries."));
+          utils::concat("Index ", index, " must be within grid boundaries."));
     }
   };
 
@@ -469,16 +483,16 @@ std::string index_name(const std::vector<std::size_t>& p1,
                        const std::vector<std::size_t>& p2) {
   if (p1.size() == 2 && p2.size() == 2) {
     // Two-qubit contraction.
-    return concat("(", p1[0], ",", p1[1], "),(", p2[0], ",", p2[1], ")");
+    return utils::concat("(", p1[0], ",", p1[1], "),(", p2[0], ",", p2[1], ")");
   }
   if (p1.size() == 3 && p2.size() == 3) {
     // Single-qubit contraction, or virtual index.
-    return concat("(", p1[0], ",", p1[1], ",", p1[2], "),(", p2[0], ",", p2[1],
-                  ",", p2[2], ")");
+    return utils::concat("(", p1[0], ",", p1[1], ",", p1[2], "),(", p2[0], ",",
+                         p2[1], ",", p2[2], ")");
   }
   if (p1.size() == 2 && p2.empty()) {
     // Final qubit output value assignment.
-    return concat("(", p1[0], ",", p1[1], "),(o)");
+    return utils::concat("(", p1[0], ",", p1[1], "),(o)");
   }
 
   std::stringstream ss;
@@ -539,21 +553,21 @@ void ValidateOrdering(const std::list<ContractionOperation>& ordering) {
     switch (op.op_type) {
       case ContractionOperation::EXPAND: {
         if (patches[op.expand.id].is_used)
-          error_msg =
-              concat(error_msg, "\nTensor at (", op.expand.tensor[0], ",",
-                     op.expand.tensor[1], ") is added to non-empty patch ",
-                     op.expand.id.c_str(), " after a cut.");
+          error_msg = utils::concat(
+              error_msg, "\nTensor at (", op.expand.tensor[0], ",",
+              op.expand.tensor[1], ") is added to non-empty patch ",
+              op.expand.id.c_str(), " after a cut.");
         if (patches[op.expand.id].is_merged)
-          error_msg =
-              concat(error_msg, "\nTensor at (", op.expand.tensor[0], ",",
-                     op.expand.tensor[1], ") is added to non-empty patch ",
-                     op.expand.id.c_str(), " after a cut.");
+          error_msg = utils::concat(
+              error_msg, "\nTensor at (", op.expand.tensor[0], ",",
+              op.expand.tensor[1], ") is added to non-empty patch ",
+              op.expand.id.c_str(), " after a cut.");
 
-        std::string tensor_name =
-            concat("(", op.expand.tensor[0], ",", op.expand.tensor[1], ")");
+        std::string tensor_name = utils::concat("(", op.expand.tensor[0], ",",
+                                                op.expand.tensor[1], ")");
         if (used_tensors.find(tensor_name) != used_tensors.end())
-          error_msg = concat(error_msg, "\nTensor ", tensor_name,
-                             " is contracted multiple times.");
+          error_msg = utils::concat(error_msg, "\nTensor ", tensor_name,
+                                    " is contracted multiple times.");
 
         used_tensors.insert(tensor_name);
         patches[op.expand.id].is_active = true;
@@ -569,8 +583,8 @@ void ValidateOrdering(const std::list<ContractionOperation>& ordering) {
           const std::string index = index_name(op.cut.tensors);
           // If no error is caught, index will be initialized.
           if (cut_indices.find(index) != cut_indices.end())
-            error_msg = concat(error_msg, "\nIndex ", index.c_str(),
-                               " is cut multiple times.");
+            error_msg = utils::concat(error_msg, "\nIndex ", index.c_str(),
+                                      " is cut multiple times.");
 
           cut_indices.insert(index);
         } catch (const std::string& err_msg) {
@@ -580,13 +594,15 @@ void ValidateOrdering(const std::list<ContractionOperation>& ordering) {
       }
       case ContractionOperation::MERGE: {
         if (patches[op.merge.source_id].is_merged)
-          error_msg = concat(error_msg, "\nPatch ", op.merge.source_id.c_str(),
-                             " is merged multiple times.");
+          error_msg =
+              utils::concat(error_msg, "\nPatch ", op.merge.source_id.c_str(),
+                            " is merged multiple times.");
 
         if (patches[op.merge.target_id].is_used)
-          error_msg = concat(error_msg, "\nPatch ", op.merge.source_id.c_str(),
-                             " is merged into non-empty patch ",
-                             op.merge.target_id.c_str(), " after a cut.");
+          error_msg =
+              utils::concat(error_msg, "\nPatch ", op.merge.source_id.c_str(),
+                            " is merged into non-empty patch ",
+                            op.merge.target_id.c_str(), " after a cut.");
 
         patches[op.merge.source_id].is_merged = true;
         patches[op.merge.target_id].is_active = true;
