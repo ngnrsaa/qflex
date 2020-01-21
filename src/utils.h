@@ -1,9 +1,13 @@
 #ifndef UTILS__H
 #define UTILS__H
 
+#include <cmath>
+#include <regex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+
+#include "errors.h"
 
 namespace qflex::utils {
 
@@ -20,6 +24,12 @@ std::string concat(const T& x, const Q&... y) {
   ss << x;
   return ss.str() + concat(y...);
 }
+
+// Convert more readable strings into 'memory' bytes.
+std::size_t from_readable_memory_string(std::string memory);
+
+// Convert 'memory' bytes into a more readable string.
+std::string readable_memory_string(double memory);
 
 }  // namespace qflex::utils
 

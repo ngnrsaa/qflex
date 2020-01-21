@@ -11,22 +11,6 @@
 
 namespace qflex {
 
-namespace {
-
-// Convert 'memory' bytes into a more readable string.
-std::string readable_memory_string(double memory) {
-  std::string suffix[] = {" B", " kB", " MB", " GB"};
-  std::size_t scale = 0;
-  double size_prefix = memory;
-  while (size_prefix >= (1 << 10)) {
-    ++scale;
-    size_prefix /= (1 << 10);
-  }
-  return utils::concat(size_prefix, suffix[scale]);
-}
-
-}  // namespace
-
 // ContractionData methods
 
 ContractionData ContractionData::Initialize(
@@ -163,9 +147,10 @@ ContractionData ContractionData::Initialize(
   // Prevent memory allocation from exceeding memory_limit.
   double alloc_size = allocated_space * sizeof(s_type);
   if (alloc_size > global::memory_limit) {
-    throw ERROR_MSG("Required space (", readable_memory_string(alloc_size),
+    throw ERROR_MSG("Required space (",
+                    utils::readable_memory_string(alloc_size),
                     ") exceeds memory limit (",
-                    readable_memory_string(global::memory_limit),
+                    utils::readable_memory_string(global::memory_limit),
                     "). Cancelling simulation.");
   }
 
@@ -174,7 +159,7 @@ ContractionData ContractionData::Initialize(
   // significantly from this value.
   if (global::verbose > 0) {
     std::size_t old_precision = std::cerr.precision(6);
-    std::cerr << "Allocating " << readable_memory_string(alloc_size)
+    std::cerr << "Allocating " << utils::readable_memory_string(alloc_size)
               << " for this simulation." << std::endl;
     std::cerr.precision(old_precision);
   }
