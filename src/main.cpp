@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
 
     // set alarms to get memory usage in real time
     if (qflex::global::verbose > 0 && qflex::global::track_memory > 0) {
-      signal(SIGALRM, qflex::memory::print_peak_memory_usage);
+      signal(SIGALRM, qflex::memory::print_memory_usage);
       ualarm(qflex::global::track_memory * 1e3,
              qflex::global::track_memory * 1e3);
     }
@@ -127,8 +127,7 @@ int main(int argc, char** argv) {
     // If no error is caught, amplitudes will be initialized.
 
     if (qflex::global::verbose > 0 && qflex::global::track_memory > 0)
-      std::cerr << "Peak memory usage: "
-                << qflex::memory::get_peak_memory_usage() << std::endl;
+      qflex::memory::print_memory_usage();
 
     // Printing output.
     for (std::size_t c = 0; c < amplitudes.size(); ++c) {
