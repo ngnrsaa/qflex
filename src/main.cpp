@@ -13,8 +13,8 @@ static const char USAGE[] =
 tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
-    qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf> --verbosity <verbosity_level> --memory <memory_limit>]
-    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf> --verbosity <verbosity_level> --memory <memory_limit>]
+    qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf> <verbosity_level> <memory_limit>]
+    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf=<initial_conf> --final-conf=<final_conf> --verbosity=<verbosity_level> --memory=<memory_limit>]
     qflex (-h | --help)
     qflex --version
 
@@ -51,8 +51,6 @@ int main(int argc, char** argv) {
       qflex::global::verbose = args["--verbosity"].asLong();
     else if (static_cast<bool>(args["<verbosity_level>"]))
       qflex::global::verbose = args["<verbosity_level>"].asLong();
-    else
-      qflex::global::verbose = 0;
 
     // Update global qflex::global::memory_limit
     if (static_cast<bool>(args["--memory"]))
