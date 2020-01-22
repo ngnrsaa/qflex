@@ -10,7 +10,9 @@
 #include "utils.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-  #error
+  // Not tested
+  //#include <windows.h>
+  //#include <psapi.h>
 #elif __APPLE__
   #include <sys/resource.h>
   #include <mach/mach.h>
@@ -25,6 +27,11 @@ namespace qflex::memory {
 inline std::array<std::string, 2> get_memory_usage() noexcept {
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+
+  // Not tested
+  //PROCESS_MEMORY_COUNTERS memCounter;
+  //if (GetProcessMemoryInfo(GetCurrentProcess(), &memCounter, sizeof memCounter))
+  //  return {utils::readable_memory_string(info.WorkingSetSize), utils::readable_memory_string(info.PeakWorkingSetSize)};
 
 #elif __APPLE__
 
