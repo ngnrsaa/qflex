@@ -5,7 +5,6 @@
 #include <unistd.h>
 
 #include <array>
-//#include <fstream>
 #include <iostream>
 
 #include "utils.h"
@@ -16,6 +15,7 @@
   #include <sys/resource.h>
   #include <mach/mach.h>
 #elif __unix__
+  #include <fstream>
   #include <sys/time.h>
   #include <sys/resource.h>
 #endif
@@ -25,8 +25,6 @@ namespace qflex::memory {
 inline std::array<std::string, 2> get_memory_usage() noexcept {
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-
-  #error
 
 #elif __APPLE__
 
@@ -39,6 +37,7 @@ inline std::array<std::string, 2> get_memory_usage() noexcept {
 
   if (auto in = std::ifstream("/proc/self/status"); in.good()) {
 
+    // Get the value of a string in the format "label: value kB"
     auto get_value = [](std::string line) {
 
       // Strip everything which is not a number at the beginning of line
@@ -52,8 +51,10 @@ inline std::array<std::string, 2> get_memory_usage() noexcept {
     // Read file and get values
     std::string line, m_used, m_peak;
     while(std::getline(in, line)) {
-      if(line.rfind("VmHWM", 0)) m_peak = get_value(line);
-      else if(line.rfind("VmRSS", 0)) m_used = get_value(line);
+
+      if(line.find("VmHWM", 0) != std::string::npos) m_peak = get_value(line);
+      else if(line.find("VmRSS", 0) != std::string::npos) m_used = get_value(line);
+
     }
 
     return {m_used, m_peak};
