@@ -26,9 +26,11 @@ tensor network, CPU-based simulator of large quantum circuits.
     -v,--verbosity=<verbosity_level>       Verbosity level [default: 0].
     -m,--memory=<memory_limit>             Memory limit [default: 1GB].)"
 #ifdef __linux__
-"\n" R"(    -t,--track-memory=<milliseconds>       If <verbosity_level> > 0, track memory usage [default: 0].)"
+    "\n"
+    R"(    -t,--track-memory=<milliseconds>       If <verbosity_level> > 0, track memory usage [default: 0].)"
 #endif
-"\n" R"(    --initial-conf=<initial_conf>          Initial configuration.
+    "\n"
+    R"(    --initial-conf=<initial_conf>          Initial configuration.
     --final-conf=<final_conf>              Final configuration.
     --version                              Show version.
 
