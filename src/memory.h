@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <unistd.h>
 
+#include <array>
 #include <fstream>
 #include <iostream>
 
