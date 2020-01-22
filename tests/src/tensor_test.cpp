@@ -473,14 +473,18 @@ TEST(TensorExceptionTest, Capacity) {
   // Increase size to 8 units; capacity is still 64 units.
   tensor.set_indices_and_dimensions({"k", "m", "n"}, {2, 2, 2});
 
-  // Attempt to increase size to 256 units.
+  // Moving tensors is always allowed
+  tensor = Tensor({"f", "g"}, {16, 16});
+
+  // Copy tensors of different size is not allowed.
   try {
-    tensor = Tensor({"f", "g"}, {16, 16});
+    const auto new_tensor = Tensor({"f", "g", "h"}, {16, 16, 16});
+    tensor = new_tensor;
     FAIL() << "Expected Tensor() to throw an exception.";
   } catch (std::string msg) {
     EXPECT_THAT(msg, testing::HasSubstr(
-                         "The total allocated space: 64, is insufficient for "
-                         "the requested tensor dimensions: 256."));
+                         "The total allocated space: 256, is insufficient for "
+                         "the requested tensor dimensions: 4096."));
   }
 }
 
