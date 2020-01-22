@@ -121,6 +121,10 @@ void Tensor::_copy(const Tensor& other) {
 }
 
 void Tensor::_move(Tensor&& other) {
+
+  // Clear this tensor before moving the other
+  _clear();
+
   // Move everything
   _indices = std::move(other._indices);
   _dimensions = std::move(other._dimensions);
