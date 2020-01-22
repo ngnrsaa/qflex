@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include <array>
+#include <chrono>
 #include <iostream>
 
 #include "utils.h"
@@ -86,8 +87,11 @@ inline std::array<std::string, 2> get_memory_usage() noexcept {
  */
 inline void print_memory_usage(int unused_signal_number = 0) noexcept {
   const auto [vm_used, vm_peak] = get_memory_usage();
-  std::cerr << "Memory usage: " << vm_used << " (Peak: " << vm_peak << ")"
-            << std::endl;
+  const auto time = std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch())
+                        .count();
+  std::cerr << "[" << time << "] Memory usage: " << vm_used
+            << " (Peak: " << vm_peak << ")" << std::endl;
 }
 
 }  // namespace qflex::memory
