@@ -4,13 +4,14 @@
 #include "global.h"
 #include "grid.h"
 #include "input.h"
-#include "utils.h"
 #include "memory.h"
 #include "ordering.h"
+#include "utils.h"
 
 static const char VERSION[] = "qFlex v0.1";
 const std::string USAGE =
-    qflex::utils::concat(R"(Flexible Quantum Circuit Simulator (qFlex) implements an efficient
+    qflex::utils::concat(
+        R"(Flexible Quantum Circuit Simulator (qFlex) implements an efficient
 tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
@@ -24,13 +25,17 @@ tensor network, CPU-based simulator of large quantum circuits.
     -c,--circuit=<circuit_filename>        Circuit filename.
     -o,--ordering=<ordering_filename>      Ordering filename.
     -g,--grid=<grid_filename>              Grid filename.
-    -v,--verbosity=<verbosity_level>       Verbosity level [default: )", qflex::global::verbose, R"(].
-    -m,--memory=<memory_limit>             Memory limit [default: )", qflex::utils::readable_memory_string(qflex::global::memory_limit), R"(].
-    -t,--track-memory=<milliseconds>       If <verbosity_level> > 0, track memory usage [default: )", qflex::global::track_memory_milliseconds, R"(].
+    -v,--verbosity=<verbosity_level>       Verbosity level [default: )",
+        qflex::global::verbose, R"(].
+    -m,--memory=<memory_limit>             Memory limit [default: )",
+        qflex::utils::readable_memory_string(qflex::global::memory_limit), R"(].
+    -t,--track-memory=<milliseconds>       If <verbosity_level> > 0, track memory usage [default: )",
+        qflex::global::track_memory_milliseconds, R"(].
     --initial-conf=<initial_conf>          Initial configuration.
     --final-conf=<final_conf>              Final configuration.
     --version                              Show version.
-)").c_str();
+)")
+        .c_str();
 
 /*
  * Example:
