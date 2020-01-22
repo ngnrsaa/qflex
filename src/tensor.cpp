@@ -121,7 +121,6 @@ void Tensor::_copy(const Tensor& other) {
 }
 
 void Tensor::_move(Tensor&& other) {
-
   // Clear this tensor before moving the other
   _clear();
 
