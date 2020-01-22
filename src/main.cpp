@@ -15,8 +15,8 @@ const std::string USAGE =
 tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
-    qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf> <verbosity_level> <memory_limit> <track_memory_milliseconds>]
-    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf=<initial_conf> --final-conf=<final_conf> --verbosity=<verbosity_level> --memory=<memory_limit> --track-memory=<milliseconds>]
+    qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf> <verbosity_level> <memory_limit> <track_memory_seconds>]
+    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf=<initial_conf> --final-conf=<final_conf> --verbosity=<verbosity_level> --memory=<memory_limit> --track-memory=<seconds>]
     qflex (-h | --help)
     qflex --version
 
@@ -29,8 +29,8 @@ tensor network, CPU-based simulator of large quantum circuits.
         qflex::global::verbose, R"(].
     -m,--memory=<memory_limit>             Memory limit [default: )",
         qflex::utils::readable_memory_string(qflex::global::memory_limit), R"(].
-    -t,--track-memory=<milliseconds>       If <verbosity_level> > 0, track memory usage [default: )",
-        qflex::global::track_memory_milliseconds, R"(].
+    -t,--track-memory=<seconds>            If <verbosity_level> > 0, track memory usage [default: )",
+        qflex::global::track_memory_seconds, R"(].
     --initial-conf=<initial_conf>          Initial configuration.
     --final-conf=<final_conf>              Final configuration.
     --version                              Show version.
@@ -67,21 +67,11 @@ int main(int argc, char** argv) {
           args["<memory_limit>"].asString());
 
     if (static_cast<bool>(args["--track-memory"]))
-      qflex::global::track_memory_milliseconds =
+      qflex::global::track_memory_seconds =
           args["--track-memory"].asLong();
-    else if (static_cast<bool>(args["<track_memory_milliseconds>"]))
-      qflex::global::track_memory_milliseconds =
-          args["<track_memory_milliseconds>"].asLong();
-
-    // Alarms can interfere with the flow of the program if called to often in a
-    // short period of time
-    if (qflex::global::track_memory_milliseconds > 0 &&
-        qflex::global::track_memory_milliseconds < 100) {
-      std::cerr << "WARNING! Minimum allowed tracking time is 100ms. Setting "
-                   "to 100ms."
-                << std::endl;
-      qflex::global::track_memory_milliseconds = 100;
-    }
+    else if (static_cast<bool>(args["<track_memory_seconds>"]))
+      qflex::global::track_memory_seconds =
+          args["<track_memory_seconds>"].asLong();
 
     // Get initial/final configurations
     if (static_cast<bool>(args["--initial-conf"]))
@@ -115,10 +105,9 @@ int main(int argc, char** argv) {
 
     // set alarms to get memory usage in real time
     if (qflex::global::verbose > 0 &&
-        qflex::global::track_memory_milliseconds > 0) {
+        qflex::global::track_memory_seconds > 0) {
       signal(SIGALRM, qflex::memory::print_memory_usage);
-      ualarm(qflex::global::track_memory_milliseconds * 1e3,
-             qflex::global::track_memory_milliseconds * 1e3);
+      alarm(qflex::global::track_memory_seconds);
     }
 
     // Load circuit
@@ -141,7 +130,7 @@ int main(int argc, char** argv) {
     // If no error is caught, amplitudes will be initialized.
 
     if (qflex::global::verbose > 0 &&
-        qflex::global::track_memory_milliseconds > 0)
+        qflex::global::track_memory_seconds > 0)
       qflex::memory::print_memory_usage();
 
     // Printing output.
