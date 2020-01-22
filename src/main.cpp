@@ -67,8 +67,7 @@ int main(int argc, char** argv) {
           args["<memory_limit>"].asString());
 
     if (static_cast<bool>(args["--track-memory"]))
-      qflex::global::track_memory_seconds =
-          args["--track-memory"].asLong();
+      qflex::global::track_memory_seconds = args["--track-memory"].asLong();
     else if (static_cast<bool>(args["<track_memory_seconds>"]))
       qflex::global::track_memory_seconds =
           args["<track_memory_seconds>"].asLong();
@@ -104,8 +103,7 @@ int main(int argc, char** argv) {
                 << std::endl;
 
     // set alarms to get memory usage in real time
-    if (qflex::global::verbose > 0 &&
-        qflex::global::track_memory_seconds > 0) {
+    if (qflex::global::verbose > 0 && qflex::global::track_memory_seconds > 0) {
       signal(SIGALRM, qflex::memory::print_memory_usage);
       alarm(qflex::global::track_memory_seconds);
     }
@@ -129,8 +127,7 @@ int main(int argc, char** argv) {
     }
     // If no error is caught, amplitudes will be initialized.
 
-    if (qflex::global::verbose > 0 &&
-        qflex::global::track_memory_seconds > 0)
+    if (qflex::global::verbose > 0 && qflex::global::track_memory_seconds > 0)
       qflex::memory::print_memory_usage();
 
     // Printing output.

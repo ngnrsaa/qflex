@@ -89,10 +89,12 @@ inline void print_memory_usage(int unused_signal_number = 0) noexcept {
   const auto [vm_used, vm_peak] = get_memory_usage();
 
   std::time_t t = std::time(nullptr);
-  std::cerr << "[" << strtok(std::ctime(&t), "\n") << "] " << "Memory usage: " << vm_used << " (Peak: " << vm_peak << ")" << std::endl;
+  std::cerr << "[" << strtok(std::ctime(&t), "\n") << "] "
+            << "Memory usage: " << vm_used << " (Peak: " << vm_peak << ")"
+            << std::endl;
 
   // Reset alarm
-  if(global::track_memory_seconds > 0) alarm(global::track_memory_seconds);
+  if (global::track_memory_seconds > 0) alarm(global::track_memory_seconds);
 }
 
 }  // namespace qflex::memory
