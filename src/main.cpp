@@ -9,9 +9,8 @@
 #include "utils.h"
 
 static const char VERSION[] = "qFlex v0.1";
-const std::string USAGE =
-    qflex::utils::concat(
-        R"(Flexible Quantum Circuit Simulator (qFlex) implements an efficient
+const std::string USAGE = qflex::utils::concat(
+    R"(Flexible Quantum Circuit Simulator (qFlex) implements an efficient
 tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
@@ -26,14 +25,13 @@ tensor network, CPU-based simulator of large quantum circuits.
     -o,--ordering=<ordering_filename>      Ordering filename.
     -g,--grid=<grid_filename>              Grid filename.
     -v,--verbosity=<verbosity_level>       Verbosity level [default: )",
-        qflex::global::verbose, R"(].
+    qflex::global::verbose, R"(].
     -m,--memory=<memory_limit>             Memory limit [default: )",
-        qflex::utils::readable_memory_string(qflex::global::memory_limit), R"(].
+    qflex::utils::readable_memory_string(qflex::global::memory_limit), R"(].
     --initial-conf=<initial_conf>          Initial configuration.
     --final-conf=<final_conf>              Final configuration.
     --version                              Show version.
-)")
-        .c_str();
+)");
 
 /*
  * Example:
