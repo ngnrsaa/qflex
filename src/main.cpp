@@ -28,7 +28,8 @@ tensor network, CPU-based simulator of large quantum circuits.
     qflex::global::verbose, R"(].
     -m,--memory=<memory_limit>             Memory limit [default: )",
     qflex::utils::readable_memory_string(qflex::global::memory_limit), R"(].
-    -t,--track-memory=<seconds>            If <verbosity_level> > 0, track memory usage [default: )", qflex::global::track_memory_seconds, R"(].
+    -t,--track-memory=<seconds>            If <verbosity_level> > 0, track memory usage [default: )",
+    qflex::global::track_memory_seconds, R"(].
     --initial-conf=<initial_conf>          Initial configuration.
     --final-conf=<final_conf>              Final configuration.
     --version                              Show version.
