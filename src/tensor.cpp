@@ -89,8 +89,10 @@ void Tensor::_init(const std::vector<std::string>& indices,
 }
 
 void Tensor::_clear() {
-  delete[] _data;
-  _data = NULL;
+  if (_data != nullptr) {
+    delete[] _data;
+    _data = nullptr;
+  }
 }
 
 void Tensor::_copy(const Tensor& other) {
@@ -118,7 +120,20 @@ void Tensor::_copy(const Tensor& other) {
     *(_data + p) = *(other.data() + p);
 }
 
-Tensor::Tensor() { _data = NULL; }
+void Tensor::_move(Tensor&& other) {
+  // Move everything
+  _indices = std::move(other._indices);
+  _dimensions = std::move(other._dimensions);
+  _index_to_dimension = std::move(other._index_to_dimension);
+  _data = other._data;
+  _capacity = other._capacity;
+
+  // This should ensure that access to other._data would throw an error
+  other._data = nullptr;
+  other._capacity = 0;
+}
+
+Tensor::Tensor() {}
 
 Tensor::Tensor(std::vector<std::string> indices,
                std::vector<std::size_t> dimensions) {
@@ -162,11 +177,20 @@ Tensor::Tensor(std::vector<std::string> indices,
 
 Tensor::Tensor(const Tensor& other) { _copy(other); }
 
+Tensor::Tensor(Tensor&& other) { _move(std::move(other)); }
+
 Tensor::~Tensor() { _clear(); }
 
 const Tensor& Tensor::operator=(const Tensor& other) {
-  if (this != &other) {
+  if (other._data != nullptr && this != &other) {
     _copy(other);
+  }
+  return *this;
+}
+
+const Tensor& Tensor::operator=(Tensor&& other) {
+  if (other._data != nullptr && this != &other) {
+    _move(std::move(other));
   }
   return *this;
 }
@@ -438,7 +462,7 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
     throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
   }
 
-  scratch_copy = NULL;
+  scratch_copy = nullptr;
 }
 
 void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
@@ -516,7 +540,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
   if (num_binary_indices <= _LOG_2.at(MAX_RIGHT_DIM)) {
     _right_reorder(old_binary_ordering, new_binary_ordering,
                    num_binary_indices);
-    scratch_copy = NULL;
+    scratch_copy = nullptr;
     return;
   }
   // Reordering needs only one right move or one left move.
@@ -541,7 +565,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
       std::vector<std::string> Lr_new_indices(new_binary_ordering.begin() + Ll,
                                               new_binary_ordering.end());
       _right_reorder(Lr_old_indices, Lr_new_indices, Lr);
-      scratch_copy = NULL;
+      scratch_copy = nullptr;
       return;
     }
 
@@ -574,7 +598,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
           throw ERROR_MSG("Failed to call _left_reorder(). Error:\n\t[",
                           err_msg, "]");
         }
-        scratch_copy = NULL;
+        scratch_copy = nullptr;
         return;
       }
     }
@@ -655,7 +679,7 @@ void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
     }
     // done with 3).
 
-    scratch_copy = NULL;
+    scratch_copy = nullptr;
   }
 }
 
@@ -727,7 +751,7 @@ void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
         *(_data + offset + map_old_to_new_position[pr]) = *(temp_data + pr);
     }
     delete[] temp_data;
-    temp_data = NULL;
+    temp_data = nullptr;
   }
 }
 
@@ -804,7 +828,7 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
       }
     }
   }
-  scratch_copy = NULL;
+  scratch_copy = nullptr;
 }
 
 void Tensor::reorder(std::vector<std::string> new_ordering,
