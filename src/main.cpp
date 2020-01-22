@@ -4,12 +4,13 @@
 #include "global.h"
 #include "grid.h"
 #include "input.h"
+#include "utils.h"
 #include "memory.h"
 #include "ordering.h"
 
 static const char VERSION[] = "qFlex v0.1";
-static const char USAGE[] =
-    R"(Flexible Quantum Circuit Simulator (qFlex) implements an efficient
+const std::string USAGE =
+    qflex::utils::concat(R"(Flexible Quantum Circuit Simulator (qFlex) implements an efficient
 tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
@@ -23,13 +24,13 @@ tensor network, CPU-based simulator of large quantum circuits.
     -c,--circuit=<circuit_filename>        Circuit filename.
     -o,--ordering=<ordering_filename>      Ordering filename.
     -g,--grid=<grid_filename>              Grid filename.
-    -v,--verbosity=<verbosity_level>       Verbosity level.
-    -m,--memory=<memory_limit>             Memory limit [default: 1GB].
+    -v,--verbosity=<verbosity_level>       Verbosity level [default: )", qflex::global::verbose, R"(].
+    -m,--memory=<memory_limit>             Memory limit [default: )", qflex::utils::readable_memory_string(qflex::global::memory_limit), R"(].
+    -t,--track-memory=<milliseconds>       If <verbosity_level> > 0, track memory usage [default: )", qflex::global::track_memory_milliseconds, R"(].
     --initial-conf=<initial_conf>          Initial configuration.
     --final-conf=<final_conf>              Final configuration.
     --version                              Show version.
-
-)";
+)").c_str();
 
 /*
  * Example:
@@ -41,7 +42,7 @@ tensor network, CPU-based simulator of large quantum circuits.
 int main(int argc, char** argv) {
   try {
     std::map<std::string, docopt::value> args =
-        docopt::docopt(USAGE, {argv + 1, argv + argc}, true, VERSION);
+        docopt::docopt(USAGE.c_str(), {argv + 1, argv + argc}, true, VERSION);
 
     // Reading input
     qflex::QflexInput input;
