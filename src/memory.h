@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 #include <array>
-#include <chrono>
+#include <ctime>
 #include <iostream>
 
 #include "utils.h"
@@ -87,12 +87,11 @@ inline std::array<std::string, 2> get_memory_usage() noexcept {
  */
 inline void print_memory_usage(int unused_signal_number = 0) noexcept {
   const auto [vm_used, vm_peak] = get_memory_usage();
-  const auto time = std::chrono::duration_cast<std::chrono::milliseconds>(
-                        std::chrono::system_clock::now().time_since_epoch())
-                        .count();
-  std::cerr << "[" << time << "] Memory usage: " << vm_used
-            << " (Peak: " << vm_peak << ")" << std::endl;
 
+  std::time_t t = std::time(nullptr);
+  std::cerr << "[" << strtok(std::ctime(&t), "\n") << "] " << "Memory usage: " << vm_used << " (Peak: " << vm_peak << ")" << std::endl;
+
+  // Reset alarm
   if(global::track_memory_seconds > 0) alarm(global::track_memory_seconds);
 }
 
