@@ -26,7 +26,6 @@ tensor network, CPU-based simulator of large quantum circuits.
     -g,--grid=<grid_filename>              Grid filename.
     -v,--verbosity=<verbosity_level>       Verbosity level [default: )", qflex::global::verbose, R"(].
     -m,--memory=<memory_limit>             Memory limit [default: )", qflex::utils::readable_memory_string(qflex::global::memory_limit), R"(].
-    -t,--track-memory=<milliseconds>       If <verbosity_level> > 0, track memory usage [default: )", qflex::global::track_memory_milliseconds, R"(].
     --initial-conf=<initial_conf>          Initial configuration.
     --final-conf=<final_conf>              Final configuration.
     --version                              Show version.
