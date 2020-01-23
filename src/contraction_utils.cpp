@@ -164,7 +164,15 @@ ContractionData ContractionData::Initialize(
     std::cerr.precision(old_precision);
   }
 
-  // Actually allocate the required space.
+  // Reserve space for all the tensors
+  {
+    std::size_t num_tensors = 0;
+    num_tensors += 1;
+    num_tensors += std::size(unique_sizes);
+    num_tensors += std::size(data.patch_max_size_);
+    num_tensors += std::size(cut_copy_size);
+    data.scratch_.reserve(num_tensors);
+  }
 
   // General-purpose scratch space (primarily used for tensor reordering).
   try {

@@ -92,6 +92,12 @@ class Tensor {
   Tensor(const Tensor& other);
 
   /**
+   * Move constructor: Move tensor to a new Tensor.
+   * @param other Tensor to be copied.
+   */
+  Tensor(Tensor&& other);
+
+  /**
    * Destructor: frees all memory associated with a given Tensor object.
    * Invoked by the system.
    */
@@ -105,9 +111,16 @@ class Tensor {
    * if this Tensor has at least as much space allocated as other, then
    * everything will run smoothly, with a non-optimal usage of memory.
    * @param other Tensor to copy into the current Tensor.
-   * @return The current Tensor for assignment chaining.
+   * @return The current Tensor after assignment.
    */
   const Tensor& operator=(const Tensor& other);
+
+  /**
+   * Move-assignment operator for moving one tensor to another.
+   * @param other Tensor to move into the current Tensor.
+   * @return The current Tensor after assignment.
+   */
+  const Tensor& operator=(Tensor&& other);
 
   /**
    * Get indices.
@@ -260,10 +273,10 @@ class Tensor {
   std::vector<std::string> _indices;
   std::vector<std::size_t> _dimensions;
   std::unordered_map<std::string, std::size_t> _index_to_dimension;
-  s_type* _data;
+  s_type* _data{nullptr};
 
   // Allocated data space. This value does not change after initialization.
-  std::size_t _capacity;
+  std::size_t _capacity{0};
 
   // Private helper functions.
   /**
@@ -291,6 +304,12 @@ class Tensor {
    * @param other Tensor to copy into the current Tensor.
    */
   void _copy(const Tensor& other);
+
+  /**
+   * Helper function for the move constructor.
+   * @param other Tensor to move into the current Tensor.
+   */
+  void _move(Tensor&& other);
 
   /**
    * Helper function for reorder(). It is called when smart reordering doesn't
