@@ -476,7 +476,7 @@ TEST(TensorExceptionTest, Capacity) {
   // Moving tensors is always allowed
   tensor = Tensor({"f", "g"}, {16, 16});
 
-  // Copy tensors of different size is not allowed.
+  // Attempt to increase size to 4096 units.
   try {
     const auto new_tensor = Tensor({"f", "g", "h"}, {16, 16, 16});
     tensor = new_tensor;
