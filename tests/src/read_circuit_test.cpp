@@ -300,14 +300,14 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   }
   // Working from either end, create two patches and meet in the middle.
   std::list<ContractionOperation> ordering;
-  ordering.emplace_back(CutIndex({{0, 1}, {1, 1}}));
-  ordering.emplace_back(ExpandPatch("a", {0, 1}));
-  ordering.emplace_back(ExpandPatch("a", {0, 0}));
-  ordering.emplace_back(ExpandPatch("a", {1, 0}));
-  ordering.emplace_back(CutIndex({{2, 1}}));
-  ordering.emplace_back(ExpandPatch("b", {2, 1}));
-  ordering.emplace_back(ExpandPatch("b", {1, 1}));
-  ordering.emplace_back(MergePatches("a", "b"));
+  ordering.emplace_back(CutIndex{{{0, 1}, {1, 1}}});
+  ordering.emplace_back(ExpandPatch{"a", {0, 1}});
+  ordering.emplace_back(ExpandPatch{"a", {0, 0}});
+  ordering.emplace_back(ExpandPatch{"a", {1, 0}});
+  ordering.emplace_back(CutIndex{{{2, 1}}});
+  ordering.emplace_back(ExpandPatch{"b", {2, 1}});
+  ordering.emplace_back(ExpandPatch{"b", {1, 1}});
+  ordering.emplace_back(MergePatches{"a", "b"});
 
   flatten_grid_of_tensors(tensor_grid_3D, tensor_grid_2D, qubits_A, qubits_off,
                           ordering, scratch);

@@ -23,8 +23,8 @@ class GetOutputStatesTest : public testing::Test {
 
 // ExpandPatch should not affect output states.
 TEST_F(GetOutputStatesTest, IgnoresExpandPatch) {
-  ordering_.emplace_back(ExpandPatch("a", {0, 0}));
-  ordering_.emplace_back(ExpandPatch("a", {0, 1}));
+  ordering_.emplace_back(ExpandPatch{"a", {0, 0}});
+  ordering_.emplace_back(ExpandPatch{"a", {0, 1}});
   expected_final_qubits_ = {};
   expected_output_states_ = {"000000"};
   input_.final_state = "000000";
@@ -33,8 +33,8 @@ TEST_F(GetOutputStatesTest, IgnoresExpandPatch) {
 
 // MergePatches should not affect output states.
 TEST_F(GetOutputStatesTest, IgnoresMergePatches) {
-  ordering_.emplace_back(MergePatches("a", "b"));
-  ordering_.emplace_back(MergePatches("b", "c"));
+  ordering_.emplace_back(MergePatches{"a", "b"});
+  ordering_.emplace_back(MergePatches{"b", "c"});
   expected_final_qubits_ = {};
   expected_output_states_ = {"000000"};
   input_.final_state = "000000";
@@ -43,8 +43,8 @@ TEST_F(GetOutputStatesTest, IgnoresMergePatches) {
 
 // Non-terminal cuts should not affect output states.
 TEST_F(GetOutputStatesTest, IgnoresNonTerminalCuts) {
-  ordering_.emplace_back(CutIndex({{0, 0}, {0, 1}}, {1, 2}));
-  ordering_.emplace_back(CutIndex({{0, 0}, {1, 0}}, {3}));
+  ordering_.emplace_back(CutIndex{{{0, 0}, {0, 1}}, {1, 2}});
+  ordering_.emplace_back(CutIndex{{{0, 0}, {1, 0}}, {3}});
   expected_final_qubits_ = {};
   expected_output_states_ = {"000000"};
   input_.final_state = "000000";
@@ -56,9 +56,9 @@ TEST_F(GetOutputStatesTest, TerminalCutsOrderedNormally) {
   input_.grid.I = 3;
   input_.grid.J = 2;
   input_.final_state = "xx00x0";
-  ordering_.emplace_back(CutIndex({{0, 1}}, {0}));
-  ordering_.emplace_back(CutIndex({{0, 0}}, {0, 1}));
-  ordering_.emplace_back(CutIndex({{2, 0}}, {1}));
+  ordering_.emplace_back(CutIndex{{{0, 1}}, {0}});
+  ordering_.emplace_back(CutIndex{{{0, 0}}, {0, 1}});
+  ordering_.emplace_back(CutIndex{{{2, 0}}, {1}});
   expected_final_qubits_ = {{0, 1}, {0, 0}, {2, 0}};
   expected_output_states_ = {"000010", "100010"};
   TestOutputExpectations();
@@ -70,9 +70,9 @@ TEST_F(GetOutputStatesTest, BlankCutValuesEvaluateBothStates) {
   input_.grid.I = 2;
   input_.grid.J = 2;
   input_.final_state = "xxx";
-  ordering_.emplace_back(CutIndex({{0, 1}}));
-  ordering_.emplace_back(CutIndex({{0, 0}}));
-  ordering_.emplace_back(CutIndex({{1, 0}}));
+  ordering_.emplace_back(CutIndex{{{0, 1}}});
+  ordering_.emplace_back(CutIndex{{{0, 0}}});
+  ordering_.emplace_back(CutIndex{{{1, 0}}});
   expected_final_qubits_ = {{0, 1}, {0, 0}, {1, 0}};
   expected_output_states_ = {"000", "001", "100", "101",
                              "010", "011", "110", "111"};
@@ -86,14 +86,14 @@ TEST_F(GetOutputStatesTest, OnlyUseTerminalCuts) {
   input_.grid.J = 2;
   input_.grid.qubits_off.push_back({2, 0});
   input_.final_state = "0000x";
-  ordering_.emplace_back(CutIndex({{0, 1}, {1, 1}}, {1, 2}));
-  ordering_.emplace_back(ExpandPatch("a", {0, 1}));
-  ordering_.emplace_back(ExpandPatch("a", {0, 0}));
-  ordering_.emplace_back(ExpandPatch("a", {1, 0}));
-  ordering_.emplace_back(CutIndex({{2, 1}}));
-  ordering_.emplace_back(ExpandPatch("b", {2, 1}));
-  ordering_.emplace_back(ExpandPatch("b", {1, 1}));
-  ordering_.emplace_back(MergePatches("a", "b"));
+  ordering_.emplace_back(CutIndex{{{0, 1}, {1, 1}}, {1, 2}});
+  ordering_.emplace_back(ExpandPatch{"a", {0, 1}});
+  ordering_.emplace_back(ExpandPatch{"a", {0, 0}});
+  ordering_.emplace_back(ExpandPatch{"a", {1, 0}});
+  ordering_.emplace_back(CutIndex{{{2, 1}}});
+  ordering_.emplace_back(ExpandPatch{"b", {2, 1}});
+  ordering_.emplace_back(ExpandPatch{"b", {1, 1}});
+  ordering_.emplace_back(MergePatches{"a", "b"});
   expected_final_qubits_ = {{2, 1}};
   expected_output_states_ = {"00000", "00001"};
   TestOutputExpectations();

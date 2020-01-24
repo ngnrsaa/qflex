@@ -353,11 +353,9 @@ void ContractionData::ContractGrid(
 
 // External methods
 
-void ordering_data_to_contraction_ordering(
-    const QflexInput& input, std::list<ContractionOperation>* ordering) {
-  if (ordering == nullptr) {
-    throw ERROR_MSG("Ordering must be non-null.");
-  }
+std::list<ContractionOperation> ordering_data_to_contraction_ordering(
+    const QflexInput& input) {
+  std::list<ContractionOperation> ordering;
 
   static const std::regex cut_value_regex("\\([0-9,]*\\)");
   std::string line;
@@ -401,7 +399,7 @@ void ordering_data_to_contraction_ordering(
                                   position[1])) {
         throw error_msg("Index must specify an active qubit.");
       }
-      ordering->emplace_back(ExpandPatch(patch, position));
+      ordering.emplace_back(ExpandPatch{patch, position});
 
     } else if (operation == "cut") {
       std::vector<std::size_t> values;
@@ -437,7 +435,7 @@ void ordering_data_to_contraction_ordering(
         throw error_msg("Index 1 must specify an active qubit.");
       }
       if (ss.eof()) {
-        ordering->emplace_back(CutIndex({position_1}, values));
+        ordering.emplace_back(CutIndex{{position_1}, values});
       } else {
         ss >> index_2;
 
@@ -453,23 +451,25 @@ void ordering_data_to_contraction_ordering(
         // If indices are listed in reverse order, swap them to prevent issues
         // in tensor contraction.
         if (index_1 < index_2) {
-          ordering->emplace_back(CutIndex({position_1, position_2}, values));
+          ordering.emplace_back(CutIndex{{position_1, position_2}, values});
         } else {
-          ordering->emplace_back(CutIndex({position_2, position_1}, values));
+          ordering.emplace_back(CutIndex{{position_2, position_1}, values});
         }
       }
     } else if (operation == "merge") {
       std::string patch_1, patch_2;
       ss >> patch_1;
       ss >> patch_2;
-      ordering->emplace_back(MergePatches(patch_1, patch_2));
+      ordering.emplace_back(MergePatches{patch_1, patch_2});
     } else {
       throw error_msg("Received an invalid operation in config.");
     }
   }
 
   // Ensure ordering generated is valid
-  ValidateOrdering(*ordering);
+  ValidateOrdering(ordering);
+
+  return ordering;
 }
 
 std::string index_name(const std::vector<std::size_t>& p1,

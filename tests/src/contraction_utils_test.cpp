@@ -83,18 +83,18 @@ TEST(ContractionTest, OperationHandling) {
   std::list<ContractionOperation> ordering;
   std::vector<std::vector<std::size_t>> index = {{1, 2}, {3, 4}};
   std::vector<std::size_t> cut_values = {5, 6};
-  ordering.emplace_back(CutIndex(index, cut_values));
+  ordering.emplace_back(CutIndex{index, cut_values});
   ASSERT_EQ(ordering.back().op_type, ContractionOperation::CUT);
   EXPECT_EQ(ordering.back().cut.tensors, index);
   EXPECT_EQ(ordering.back().cut.values, cut_values);
 
   std::vector<std::size_t> expand_tensor = {7, 8};
-  ordering.emplace_back(ExpandPatch("a", expand_tensor));
+  ordering.emplace_back(ExpandPatch{"a", expand_tensor});
   ASSERT_EQ(ordering.back().op_type, ContractionOperation::EXPAND);
   EXPECT_EQ(ordering.back().expand.id, "a");
   EXPECT_EQ(ordering.back().expand.tensor, expand_tensor);
 
-  ordering.emplace_back(MergePatches("a", "b"));
+  ordering.emplace_back(MergePatches{"a", "b"});
   ASSERT_EQ(ordering.back().op_type, ContractionOperation::MERGE);
   EXPECT_EQ(ordering.back().merge.source_id, "a");
   EXPECT_EQ(ordering.back().merge.target_id, "b");
@@ -103,8 +103,8 @@ TEST(ContractionTest, OperationHandling) {
 TEST(ContractionTest, RepeatedOperations) {
   // Cannot contract the same tensor twice.
   std::list<ContractionOperation> ordering;
-  ordering.emplace_back(ExpandPatch("a", {1, 2}));
-  ordering.emplace_back(ExpandPatch("a", {1, 2}));
+  ordering.emplace_back(ExpandPatch{"a", {1, 2}});
+  ordering.emplace_back(ExpandPatch{"a", {1, 2}});
   try {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
@@ -116,8 +116,8 @@ TEST(ContractionTest, RepeatedOperations) {
   // Cannot cut the same index twice.
   ordering.clear();
   std::vector<std::vector<std::size_t>> index = {{1, 2}, {1, 3}};
-  ordering.emplace_back(CutIndex(index, {0, 1}));
-  ordering.emplace_back(CutIndex(index, {2, 3}));
+  ordering.emplace_back(CutIndex{index, {0, 1}});
+  ordering.emplace_back(CutIndex{index, {2, 3}});
   try {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
@@ -128,8 +128,8 @@ TEST(ContractionTest, RepeatedOperations) {
 
   // Cannot merge the same patch twice.
   ordering.clear();
-  ordering.emplace_back(MergePatches("a", "b"));
-  ordering.emplace_back(MergePatches("a", "c"));
+  ordering.emplace_back(MergePatches{"a", "b"});
+  ordering.emplace_back(MergePatches{"a", "c"});
   try {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
@@ -139,16 +139,16 @@ TEST(ContractionTest, RepeatedOperations) {
 
   // Can merge into the same patch twice.
   ordering.clear();
-  ordering.emplace_back(MergePatches("a", "c"));
-  ordering.emplace_back(MergePatches("b", "c"));
+  ordering.emplace_back(MergePatches{"a", "c"});
+  ordering.emplace_back(MergePatches{"b", "c"});
   EXPECT_NO_THROW(ValidateOrdering(ordering));
 }
 
 TEST(ContractionTest, MergeSafety) {
   // Cannot expand a patch after merging it.
   std::list<ContractionOperation> ordering;
-  ordering.emplace_back(MergePatches("a", "b"));
-  ordering.emplace_back(ExpandPatch("a", {1, 2}));
+  ordering.emplace_back(MergePatches{"a", "b"});
+  ordering.emplace_back(ExpandPatch{"a", {1, 2}});
   try {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
@@ -160,8 +160,8 @@ TEST(ContractionTest, MergeSafety) {
 
   // Can expand a patch that has been merged into.
   ordering.clear();
-  ordering.emplace_back(MergePatches("a", "b"));
-  ordering.emplace_back(ExpandPatch("b", {1, 2}));
+  ordering.emplace_back(MergePatches{"a", "b"});
+  ordering.emplace_back(ExpandPatch{"b", {1, 2}});
   EXPECT_NO_THROW(ValidateOrdering(ordering));
 }
 
@@ -170,9 +170,9 @@ TEST(ContractionTest, CutSafety) {
   std::list<ContractionOperation> ordering;
   std::vector<std::vector<std::size_t>> index = {{1, 2}, {1, 3}};
   std::vector<std::size_t> cut_values = {0, 1};
-  ordering.emplace_back(ExpandPatch("a", {1, 2}));
-  ordering.emplace_back(CutIndex(index, cut_values));
-  ordering.emplace_back(ExpandPatch("a", {2, 2}));
+  ordering.emplace_back(ExpandPatch{"a", {1, 2}});
+  ordering.emplace_back(CutIndex{index, cut_values});
+  ordering.emplace_back(ExpandPatch{"a", {2, 2}});
   try {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
@@ -184,9 +184,9 @@ TEST(ContractionTest, CutSafety) {
 
   // Cannot merge into a patch after a cut if it was previously expanded.
   ordering.clear();
-  ordering.emplace_back(ExpandPatch("b", {1, 2}));
-  ordering.emplace_back(CutIndex(index, cut_values));
-  ordering.emplace_back(MergePatches("a", "b"));
+  ordering.emplace_back(ExpandPatch{"b", {1, 2}});
+  ordering.emplace_back(CutIndex{index, cut_values});
+  ordering.emplace_back(MergePatches{"a", "b"});
   try {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
@@ -198,9 +198,9 @@ TEST(ContractionTest, CutSafety) {
 
   // Cannot expand a patch after a cut if it was previously merged into.
   ordering.clear();
-  ordering.emplace_back(MergePatches("a", "b"));
-  ordering.emplace_back(CutIndex(index, cut_values));
-  ordering.emplace_back(ExpandPatch("b", {1, 2}));
+  ordering.emplace_back(MergePatches{"a", "b"});
+  ordering.emplace_back(CutIndex{index, cut_values});
+  ordering.emplace_back(ExpandPatch{"b", {1, 2}});
   try {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
@@ -212,9 +212,9 @@ TEST(ContractionTest, CutSafety) {
 
   // Cannot merge into a patch before and after a cut.
   ordering.clear();
-  ordering.emplace_back(MergePatches("a", "c"));
-  ordering.emplace_back(CutIndex(index, cut_values));
-  ordering.emplace_back(MergePatches("b", "c"));
+  ordering.emplace_back(MergePatches{"a", "c"});
+  ordering.emplace_back(CutIndex{index, cut_values});
+  ordering.emplace_back(MergePatches{"b", "c"});
   try {
     ValidateOrdering(ordering);
     FAIL() << "Expected ValidateOrdering() to throw an exception.";
@@ -226,10 +226,10 @@ TEST(ContractionTest, CutSafety) {
 
   // Can merge a patch into an empty patch for later use.
   ordering.clear();
-  ordering.emplace_back(ExpandPatch("a", {1, 2}));
-  ordering.emplace_back(CutIndex(index, cut_values));
-  ordering.emplace_back(MergePatches("a", "b"));
-  ordering.emplace_back(ExpandPatch("b", {1, 3}));
+  ordering.emplace_back(ExpandPatch{"a", {1, 2}});
+  ordering.emplace_back(CutIndex{index, cut_values});
+  ordering.emplace_back(MergePatches{"a", "b"});
+  ordering.emplace_back(ExpandPatch{"b", {1, 3}});
   EXPECT_NO_THROW(ValidateOrdering(ordering));
 }
 
@@ -274,14 +274,14 @@ TEST(ContractionTest, SimpleInitializeData) {
   tensor_grid[2][1] = Tensor({"(2,1),(o)", "(1,1),(2,1)"}, {2, 4}, I_2x4);
 
   std::list<ContractionOperation> ordering;
-  ordering.emplace_back(CutIndex({{0, 1}, {1, 1}}));
-  ordering.emplace_back(ExpandPatch("a", {0, 1}));
-  ordering.emplace_back(ExpandPatch("a", {0, 0}));
-  ordering.emplace_back(ExpandPatch("a", {1, 0}));
-  ordering.emplace_back(CutIndex({{2, 1}}));
-  ordering.emplace_back(ExpandPatch("b", {2, 1}));
-  ordering.emplace_back(ExpandPatch("b", {1, 1}));
-  ordering.emplace_back(MergePatches("a", "b"));
+  ordering.emplace_back(CutIndex{{{0, 1}, {1, 1}}});
+  ordering.emplace_back(ExpandPatch{"a", {0, 1}});
+  ordering.emplace_back(ExpandPatch{"a", {0, 0}});
+  ordering.emplace_back(ExpandPatch{"a", {1, 0}});
+  ordering.emplace_back(CutIndex{{{2, 1}}});
+  ordering.emplace_back(ExpandPatch{"b", {2, 1}});
+  ordering.emplace_back(ExpandPatch{"b", {1, 1}});
+  ordering.emplace_back(MergePatches{"a", "b"});
 
   std::vector<std::complex<double>> amplitudes(2);
   auto data = ContractionData::Initialize(ordering, &tensor_grid, &amplitudes);
@@ -308,67 +308,67 @@ TEST(ContractionTest, ExampleOrdering) {
   const std::vector<std::vector<std::size_t>> order_A = {
       {0, 0}, {0, 1}, {1, 0}, {1, 1}, {0, 2}, {2, 0}, {1, 2}, {2, 1}, {2, 2}};
   for (const auto& coord : order_A) {
-    ordering.emplace_back(ExpandPatch("A", coord));
+    ordering.emplace_back(ExpandPatch{"A", coord});
   }
   const std::vector<std::vector<std::size_t>> order_pB = {
       {6, 0}, {5, 0}, {4, 0}, {3, 0}, {6, 1}, {5, 1}, {4, 1}, {3, 1}};
   for (const auto& coord : order_pB) {
-    ordering.emplace_back(ExpandPatch("pB", coord));
+    ordering.emplace_back(ExpandPatch{"pB", coord});
   }
   const std::vector<std::vector<std::size_t>> order_ppD = {
       {6, 6}, {6, 5}, {5, 6}, {5, 5}, {6, 4}, {4, 6}, {5, 4}, {4, 5}, {4, 4}};
   for (const auto& coord : order_ppD) {
-    ordering.emplace_back(ExpandPatch("ppD", coord));
+    ordering.emplace_back(ExpandPatch{"ppD", coord});
   }
   const std::vector<std::vector<std::vector<std::size_t>>> cuts_1 = {
       {{6, 2}, {6, 3}}};
   for (const auto& cut : cuts_1) {
-    ordering.emplace_back(CutIndex(cut));
+    ordering.emplace_back(CutIndex{cut});
   }
   // Copies tensor "pB" to "B" for reuse.
-  ordering.emplace_back(MergePatches("pB", "B"));
+  ordering.emplace_back(MergePatches{"pB", "B"});
   const std::vector<std::vector<std::size_t>> order_B = {
       {6, 2}, {5, 2}, {4, 2}, {3, 2}};
   for (const auto& coord : order_B) {
-    ordering.emplace_back(ExpandPatch("B", coord));
+    ordering.emplace_back(ExpandPatch{"B", coord});
   }
-  ordering.emplace_back(MergePatches("A", "B"));
+  ordering.emplace_back(MergePatches{"A", "B"});
   // Copies tensor "ppD" to "pD" for reuse.
-  ordering.emplace_back(MergePatches("ppD", "pD"));
+  ordering.emplace_back(MergePatches{"ppD", "pD"});
   const std::vector<std::vector<std::size_t>> order_pD = {
       {6, 3}, {5, 3}, {4, 3}};
   for (const auto& coord : order_pD) {
-    ordering.emplace_back(ExpandPatch("pD", coord));
+    ordering.emplace_back(ExpandPatch{"pD", coord});
   }
   const std::vector<std::vector<std::size_t>> order_pC = {
       {0, 6}, {1, 6}, {2, 6}, {0, 5}, {1, 5}, {2, 5}};
   for (const auto& coord : order_pC) {
-    ordering.emplace_back(ExpandPatch("pC", coord));
+    ordering.emplace_back(ExpandPatch{"pC", coord});
   }
   const std::vector<std::vector<std::vector<std::size_t>>> cuts_2 = {
       {{2, 6}, {3, 6}}};
   for (const auto& cut : cuts_2) {
-    ordering.emplace_back(CutIndex(cut));
+    ordering.emplace_back(CutIndex{cut});
   }
   // Copies tensor "pD" to "D" for reuse.
-  ordering.emplace_back(MergePatches("pD", "D"));
+  ordering.emplace_back(MergePatches{"pD", "D"});
   const std::vector<std::vector<std::size_t>> order_D = {
       {3, 6}, {3, 5}, {3, 4}, {3, 3}};
   for (const auto& coord : order_D) {
-    ordering.emplace_back(ExpandPatch("D", coord));
+    ordering.emplace_back(ExpandPatch{"D", coord});
   }
-  ordering.emplace_back(MergePatches("B", "D"));
+  ordering.emplace_back(MergePatches{"B", "D"});
   const std::vector<std::vector<std::size_t>> order_C = {
       {0, 4}, {1, 4}, {2, 4}, {0, 3}, {1, 3}, {2, 3}};
   // These are "terminal cuts" for fast sampling over output values of C.
   for (const auto& tensor : order_C) {
-    ordering.emplace_back(CutIndex({tensor}));
+    ordering.emplace_back(CutIndex{{tensor}});
   }
-  ordering.emplace_back(MergePatches("pC", "C"));
+  ordering.emplace_back(MergePatches{"pC", "C"});
   for (const auto& coord : order_C) {
-    ordering.emplace_back(ExpandPatch("C", coord));
+    ordering.emplace_back(ExpandPatch{"C", coord});
   }
-  ordering.emplace_back(MergePatches("D", "C"));
+  ordering.emplace_back(MergePatches{"D", "C"});
 
   EXPECT_NO_THROW(ValidateOrdering(ordering));
 }
@@ -391,17 +391,17 @@ TEST(OrderingParserTest, ParseSimpleOrdering) {
   input.grid.J = 2;
 
   std::list<ContractionOperation> ordering;
-  EXPECT_NO_THROW(ordering_data_to_contraction_ordering(input, &ordering));
+  EXPECT_NO_THROW(ordering = ordering_data_to_contraction_ordering(input));
 
   std::list<ContractionOperation> expected_ordering;
-  expected_ordering.emplace_back(CutIndex({{0, 1}, {1, 1}}, {1, 2}));
-  expected_ordering.emplace_back(ExpandPatch("a", {0, 1}));
-  expected_ordering.emplace_back(ExpandPatch("a", {0, 0}));
-  expected_ordering.emplace_back(ExpandPatch("a", {1, 0}));
-  expected_ordering.emplace_back(CutIndex({{2, 1}}));
-  expected_ordering.emplace_back(ExpandPatch("b", {2, 1}));
-  expected_ordering.emplace_back(ExpandPatch("b", {1, 1}));
-  expected_ordering.emplace_back(MergePatches("a", "b"));
+  expected_ordering.emplace_back(CutIndex{{{0, 1}, {1, 1}}, {1, 2}});
+  expected_ordering.emplace_back(ExpandPatch{"a", {0, 1}});
+  expected_ordering.emplace_back(ExpandPatch{"a", {0, 0}});
+  expected_ordering.emplace_back(ExpandPatch{"a", {1, 0}});
+  expected_ordering.emplace_back(CutIndex{{{2, 1}}});
+  expected_ordering.emplace_back(ExpandPatch{"b", {2, 1}});
+  expected_ordering.emplace_back(ExpandPatch{"b", {1, 1}});
+  expected_ordering.emplace_back(MergePatches{"a", "b"});
 
   std::size_t op_count = expected_ordering.size();
   ASSERT_EQ(ordering.size(), op_count);
@@ -437,9 +437,9 @@ TEST(OrderingParserTest, ParseCutReordering) {
   input.grid.J = 2;
 
   std::list<ContractionOperation> ordering;
-  EXPECT_NO_THROW(ordering_data_to_contraction_ordering(input, &ordering));
+  EXPECT_NO_THROW(ordering = ordering_data_to_contraction_ordering(input));
 
-  ContractionOperation expected_op(CutIndex({{0, 0}, {0, 1}}, {1, 2}));
+  ContractionOperation expected_op(CutIndex{{{0, 0}, {0, 1}}, {1, 2}});
 
   ASSERT_EQ(ordering.size(), 1ul);
   const auto& op = ordering.front();
@@ -458,7 +458,7 @@ TEST(OrderingParserTest, ParserFailures) {
 
   std::list<ContractionOperation> ordering;
   try {
-    ordering_data_to_contraction_ordering(input, &ordering);
+    ordering = ordering_data_to_contraction_ordering(input);
     FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
               "expection.";
   } catch (const std::string& msg) {
@@ -469,7 +469,7 @@ TEST(OrderingParserTest, ParserFailures) {
   // Qubit indices must be within the grid (3x2).
   input.ordering.load(std::stringstream("expand a 8"));
   try {
-    ordering_data_to_contraction_ordering(input, &ordering);
+    ordering = ordering_data_to_contraction_ordering(input);
     FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
               "expection.";
   } catch (const std::string& msg) {
@@ -478,7 +478,7 @@ TEST(OrderingParserTest, ParserFailures) {
   }
   input.ordering.load(std::stringstream("expand a -2"));
   try {
-    ordering_data_to_contraction_ordering(input, &ordering);
+    ordering = ordering_data_to_contraction_ordering(input);
     FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
               "expection.";
   } catch (const std::string& msg) {
@@ -487,7 +487,7 @@ TEST(OrderingParserTest, ParserFailures) {
   }
   input.ordering.load(std::stringstream("cut () 1 7"));
   try {
-    ordering_data_to_contraction_ordering(input, &ordering);
+    ordering = ordering_data_to_contraction_ordering(input);
     FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
               "expection.";
   } catch (const std::string& msg) {
@@ -496,7 +496,7 @@ TEST(OrderingParserTest, ParserFailures) {
   }
   input.ordering.load(std::stringstream("cut () -1 4"));
   try {
-    ordering_data_to_contraction_ordering(input, &ordering);
+    ordering = ordering_data_to_contraction_ordering(input);
     FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
               "expection.";
   } catch (const std::string& msg) {
@@ -507,7 +507,7 @@ TEST(OrderingParserTest, ParserFailures) {
   // Cuts must receive a valid value list.
   input.ordering.load(std::stringstream("cut 2 3"));
   try {
-    ordering_data_to_contraction_ordering(input, &ordering);
+    ordering = ordering_data_to_contraction_ordering(input);
     FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
               "expection.";
   } catch (const std::string& msg) {
@@ -517,18 +517,7 @@ TEST(OrderingParserTest, ParserFailures) {
   }
   // Check spaces are properly removed
   input.ordering.load(std::stringstream("cut   (  1  , 2   )    2        3"));
-  EXPECT_NO_THROW(ordering_data_to_contraction_ordering(input, &ordering));
-}
-
-TEST(OrderingParserExceptionTest, InvalidInput) {
-  // Ordering cannot be null pointer.
-  try {
-    ordering_data_to_contraction_ordering(QflexInput(), nullptr);
-    FAIL() << "Expected ordering_data_to_contration_ordering() to throw an "
-              "exception.";
-  } catch (const std::string& msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Ordering must be non-null."));
-  }
+  EXPECT_NO_THROW(ordering = ordering_data_to_contraction_ordering(input));
 }
 
 constexpr char kInvalidOrdering[] = R"(# test comment
@@ -544,7 +533,7 @@ TEST(OrderingParserExceptionTest, InvalidOrderingGenerated) {
 
   std::list<ContractionOperation> ordering;
   try {
-    ordering_data_to_contraction_ordering(input, &ordering);
+    ordering = ordering_data_to_contraction_ordering(input);
     FAIL() << "Expected ordering_data_to_contration_ordering() to throw an "
               "exception.";
   } catch (const std::string& msg) {

@@ -105,10 +105,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   if (global::verbose > 0) t0 = std::chrono::high_resolution_clock::now();
 
   // Create the ordering for this tensor contraction from file.
-  std::list<ContractionOperation> ordering;
-
-  // Parse ordering
-  ordering_data_to_contraction_ordering(input, &ordering);
+  const std::list<ContractionOperation> ordering =
+      ordering_data_to_contraction_ordering(input);
 
   if (global::verbose > 0) {
     t1 = std::chrono::high_resolution_clock::now();

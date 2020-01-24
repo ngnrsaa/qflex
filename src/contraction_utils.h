@@ -52,9 +52,6 @@ bool find_grid_coord_in_list(
     const std::size_t i, const std::size_t j);
 
 struct ExpandPatch {
-  ExpandPatch() {}
-  ExpandPatch(std::string id, std::vector<std::size_t> tensor)
-      : id(id), tensor(tensor) {}
   // ID of the patch expanded by this operation.
   std::string id;
   // Tensor to contract into the patch.
@@ -62,10 +59,6 @@ struct ExpandPatch {
 };
 
 struct CutIndex {
-  CutIndex() {}
-  CutIndex(std::vector<std::vector<std::size_t>> tensors,
-           std::vector<std::size_t> values = {})
-      : tensors(tensors), values(values) {}
   // Tensors connected by the cut index. If only one tensor is provided, this
   // represents a 'terminal' cut - i.e., a choice of output value for a qubit.
   std::vector<std::vector<std::size_t>> tensors;
@@ -75,9 +68,6 @@ struct CutIndex {
 };
 
 struct MergePatches {
-  MergePatches() {}
-  MergePatches(std::string source_id, std::string target_id)
-      : source_id(source_id), target_id(target_id) {}
   // IDs of the patches being merged. The resulting patch will use target_id.
   std::string source_id;
   std::string target_id;
@@ -85,9 +75,17 @@ struct MergePatches {
 
 struct ContractionOperation {
  public:
-  ContractionOperation(ExpandPatch expand) : op_type(EXPAND), expand(expand) {}
-  ContractionOperation(CutIndex cut) : op_type(CUT), cut(cut) {}
-  ContractionOperation(MergePatches merge) : op_type(MERGE), merge(merge) {}
+  ContractionOperation(const ExpandPatch& expand)
+      : op_type{EXPAND}, expand{expand} {}
+  ContractionOperation(const CutIndex& cut) : op_type{CUT}, cut{cut} {}
+  ContractionOperation(const MergePatches& merge)
+      : op_type{MERGE}, merge{merge} {}
+
+  ContractionOperation(ExpandPatch&& expand)
+      : op_type{EXPAND}, expand{std::move(expand)} {}
+  ContractionOperation(CutIndex&& cut) : op_type{CUT}, cut{std::move(cut)} {}
+  ContractionOperation(MergePatches&& merge)
+      : op_type{MERGE}, merge{std::move(merge)} {}
 
   enum OpType { EXPAND, CUT, MERGE };
   OpType op_type;
@@ -101,10 +99,10 @@ struct ContractionOperation {
 /**
  * Parses a grid contraction ordering from the given stream.
  * @param QflexInput containing simulation information
- * @param ordering pointer to std::list<ContractionOperation> output object.
+ * @return ordering as std::list<ContractionOperation> object.
  **/
-void ordering_data_to_contraction_ordering(
-    const QflexInput& input, std::list<ContractionOperation>* ordering);
+std::list<ContractionOperation> ordering_data_to_contraction_ordering(
+    const QflexInput& input);
 
 // Helper class for the external ContractGrid method. This should not be
 // initialized by external users.
