@@ -115,10 +115,16 @@ int main(int argc, char** argv) {
     // Load grid
     input.grid.load(grid_filename);
 
+    // If initial_state/final_state are not provide, set states to all zeros
+    if (std::empty(input.initial_state))
+      input.initial_state = std::string(input.circuit.num_active_qubits, '0');
+    if (std::empty(input.final_state))
+      input.final_state = std::string(input.circuit.num_active_qubits, '0');
+
     // Evaluating circuit.
     std::vector<std::pair<std::string, std::complex<double>>> amplitudes;
     try {
-      amplitudes = qflex::EvaluateCircuit(&input);
+      amplitudes = qflex::EvaluateCircuit(input);
     } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call EvaluateCircuit(). Error:\n\t[", err_msg,
                       "]");

@@ -67,8 +67,7 @@ std::vector<std::string> LoadStates(const py::dict &options,
       states.push_back(in_state.cast<std::string>());
     } else
       throw ERROR_MSG("states must be strings.");
-  } else
-    states.push_back("");
+  }
   return states;
 }
 
@@ -84,8 +83,15 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     LoadData(options, "grid", input.grid);
     LoadData(options, "circuit", input.circuit);
     LoadData(options, "ordering", input.ordering);
-    const auto initial_states = LoadStates(options, "initial");
-    const auto final_states = LoadStates(options, "final");
+    auto initial_states = LoadStates(options, "initial");
+    auto final_states = LoadStates(options, "final");
+
+    // If initial_states/final_states are empty, add all zeros states
+    if (std::empty(initial_states))
+      initial_states.push_back(
+          std::string(input.circuit.num_active_qubits, '0'));
+    if (std::empty(final_states))
+      final_states.push_back(std::string(input.circuit.num_active_qubits, '0'));
 
     // Define container for amplitudes
     std::vector<std::pair<
@@ -100,7 +106,7 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
       for (const auto &fs : final_states) {
         input.initial_state = is;
         input.final_state = fs;
-        amplitudes.push_back({is, EvaluateCircuit(&input)});
+        amplitudes.push_back({is, EvaluateCircuit(input)});
       }
     }
 

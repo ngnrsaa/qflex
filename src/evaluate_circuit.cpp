@@ -19,13 +19,10 @@
 namespace qflex {
 
 // Gets the position in the output state vector of the qubit at tensor_pos.
-std::size_t find_output_pos(const QflexInput* input,
-                            std::vector<std::size_t> tensor_pos) {
-  if (input == nullptr) {
-    throw ERROR_MSG("Input must be non-null.");
-  }
-  std::size_t pos = (tensor_pos[0] * input->grid.J) + tensor_pos[1];
-  for (const auto off_pos : input->grid.qubits_off) {
+std::size_t find_output_pos(const QflexInput& input,
+                            const std::vector<std::size_t>& tensor_pos) {
+  std::size_t pos = (tensor_pos[0] * input.grid.J) + tensor_pos[1];
+  for (const auto off_pos : input.grid.qubits_off) {
     if (off_pos[0] < tensor_pos[0]) {
       --pos;
     } else if (off_pos[0] == tensor_pos[0] && off_pos[1] < tensor_pos[1]) {
@@ -36,28 +33,16 @@ std::size_t find_output_pos(const QflexInput* input,
 }
 
 std::string get_output_states(
-    const QflexInput* input, const std::list<ContractionOperation>& ordering,
-    std::vector<std::vector<std::size_t>>* final_qubits,
-    std::vector<std::string>* output_states) {
-  if (input == nullptr) {
-    throw ERROR_MSG("Input must be non-null.");
-  }
-  if (final_qubits == nullptr) {
-    throw ERROR_MSG("Final qubits must be non-null.");
-  }
-  if (output_states == nullptr) {
-    throw ERROR_MSG("Output states must be non-null");
-  }
+    const QflexInput& input, const std::list<ContractionOperation>& ordering,
+    std::vector<std::vector<std::size_t>>& final_qubits,
+    std::vector<std::string>& output_states) {
+  if (std::empty(input.final_state))
+    throw ERROR_MSG("final_state cannot be empty");
+
   std::vector<std::size_t> output_pos_map;
   std::vector<std::vector<std::size_t>> output_values_map;
-  std::string base_state = input->final_state;
-  // If the final state isn't provided, it should be all zeroes except for
-  // qubits with terminal cuts (which should have 'x').
-  bool final_state_unspecified = false;
-  if (input->final_state.empty()) {
-    final_state_unspecified = true;
-    base_state = std::string(input->initial_state.length(), '0');
-  }
+  const std::string& base_state = input.final_state;
+
   for (const auto& op : ordering) {
     // TODO(martinop): update to use the new operation.
     if (op.op_type != ContractionOperation::CUT) continue;
@@ -65,9 +50,6 @@ std::string get_output_states(
     if (op.cut.tensors.size() != 1) continue;
     const std::size_t output_pos = find_output_pos(input, op.cut.tensors[0]);
     const auto tensor_pos = op.cut.tensors[0];
-    if (final_state_unspecified) {
-      base_state[output_pos] = 'x';
-    }
     // TODO(martinop): reconsider requiring 'x' for cut indices.
     output_pos_map.push_back(output_pos);
     if (op.cut.values.empty()) {
@@ -75,26 +57,26 @@ std::string get_output_states(
     } else {
       output_values_map.push_back(op.cut.values);
     }
-    final_qubits->push_back(tensor_pos);
+    final_qubits.push_back(tensor_pos);
   }
   // Construct the full set of output state strings.
   std::vector<std::string> temp_output_states;
-  output_states->push_back(base_state);
-  for (std::size_t i = 0; i < final_qubits->size(); ++i) {
+  output_states.push_back(base_state);
+  for (std::size_t i = 0; i < final_qubits.size(); ++i) {
     const std::size_t pos = output_pos_map[i];
-    for (const std::string& state : *output_states) {
+    for (const std::string& state : output_states) {
       for (const std::size_t val : output_values_map[i]) {
         std::string partial_state = state;
         partial_state[pos] = std::to_string(val).at(0);
         temp_output_states.push_back(partial_state);
       }
     }
-    *output_states = temp_output_states;
+    output_states = std::move(temp_output_states);
     temp_output_states.clear();
   }
   // Verify that output states have no leftover "x" after replacement.
-  for (std::size_t i = 0; i < output_states->at(0).length(); ++i) {
-    char c = output_states->at(0)[i];
+  for (std::size_t i = 0; i < output_states.at(0).length(); ++i) {
+    char c = output_states.at(0)[i];
     if (c != '0' && c != '1') {
       throw ERROR_MSG("Final state has non-binary character ", c, " at index ",
                       i, "despite having no terminal cut there.");
@@ -104,10 +86,9 @@ std::string get_output_states(
 }
 
 std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
-    QflexInput* input) {
-  if (input == nullptr) {
-    throw ERROR_MSG("Input must be non-null.");
-  }
+    const QflexInput& input) {
+  if (input.initial_state.empty())
+    throw ERROR_MSG("initial_state cannot be empty");
 
   std::chrono::high_resolution_clock::time_point t_output_0, t_output_1;
   if (global::verbose > 0) {
@@ -127,7 +108,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   std::list<ContractionOperation> ordering;
 
   // Parse ordering
-  ordering_data_to_contraction_ordering(*input, &ordering);
+  ordering_data_to_contraction_ordering(input, &ordering);
 
   if (global::verbose > 0) {
     t1 = std::chrono::high_resolution_clock::now();
@@ -137,29 +118,22 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
               << "s" << std::endl;
   }
 
-  std::size_t init_length =
-      input->grid.I * input->grid.J - input->grid.qubits_off.size();
-  if (input->initial_state.empty()) {
-    input->initial_state = std::string(init_length, '0');
-  }
-
   // Get a list of qubits and output states for the final region, and set the
   // final_state if one wasn't provided.
   std::vector<std::vector<std::size_t>> final_qubits;
   std::vector<std::string> output_states;
 
   try {
-    input->final_state =
-        get_output_states(input, ordering, &final_qubits, &output_states);
+    get_output_states(input, ordering, final_qubits, output_states);
   } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call get_output_states(). Error:\n\t[", err_msg,
                     "]");
   }
 
   // Declaring and then filling 2D grid of tensors.
-  std::vector<std::vector<Tensor>> tensor_grid(input->grid.I);
-  for (std::size_t i = 0; i < input->grid.I; ++i) {
-    tensor_grid[i] = std::vector<Tensor>(input->grid.J);
+  std::vector<std::vector<Tensor>> tensor_grid(input.grid.I);
+  for (std::size_t i = 0; i < input.grid.I; ++i) {
+    tensor_grid[i] = std::vector<Tensor>(input.grid.J);
   }
   // Scope so that scratch space and the 3D grid of tensors are destructed.
   {
@@ -171,9 +145,9 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
     // Creating 3D grid of tensors from file.
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
-    circuit_data_to_tensor_network(input->circuit, input->grid.I, input->grid.J,
-                                   input->initial_state, input->final_state,
-                                   final_qubits, input->grid.qubits_off,
+    circuit_data_to_tensor_network(input.circuit, input.grid.I, input.grid.J,
+                                   input.initial_state, input.final_state,
+                                   final_qubits, input.grid.qubits_off,
                                    tensor_grid_3D, scratch_3D);
 
     if (global::verbose > 0) {
@@ -223,8 +197,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
     // Contract 3D grid onto 2D grid of tensors, as usual.
     flatten_grid_of_tensors(tensor_grid_3D, tensor_grid, final_qubits,
-                            input->grid.qubits_off, ordering,
-                            scratch_2D.data());
+                            input.grid.qubits_off, ordering, scratch_2D.data());
     if (global::verbose > 0) {
       t1 = std::chrono::high_resolution_clock::now();
       time_span =
