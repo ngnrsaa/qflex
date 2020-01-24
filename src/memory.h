@@ -89,9 +89,11 @@ inline void print_memory_usage(int unused_signal_number = 0) noexcept {
   const auto [vm_used, vm_peak] = get_memory_usage();
 
   std::time_t t = std::time(nullptr);
-  std::cerr << "[" << strtok(std::ctime(&t), "\n") << "] "
-            << "Memory usage: " << vm_used << " (Peak: " << vm_peak << ")"
-            << std::endl;
+  if (char mbstr[100];
+      std::strftime(mbstr, sizeof(mbstr), "%c", std::localtime(&t)))
+    std::cerr << "[" << mbstr << "] "
+              << "Memory usage: " << vm_used << " (Peak: " << vm_peak << ")"
+              << std::endl;
 
   // Reset alarm
   if (global::track_memory_seconds > 0) alarm(global::track_memory_seconds);
