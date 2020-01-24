@@ -154,8 +154,8 @@ Tensor::Tensor(std::vector<std::string> indices,
 }
 
 Tensor::Tensor(std::vector<std::string> indices,
-               std::vector<std::size_t> dimensions, s_type* data): _data{data}, _user_provided_data{data != nullptr} {
-
+               std::vector<std::size_t> dimensions, s_type* data)
+    : _data{data}, _user_provided_data{data != nullptr} {
   try {
     _init(indices, dimensions);
   } catch (const std::string& err_msg) {
@@ -164,9 +164,7 @@ Tensor::Tensor(std::vector<std::string> indices,
   _capacity = size();
 
   // If data is not provided, allocate it.
-  if(_data == nullptr)
-    _data = new s_type[_capacity];
-
+  if (_data == nullptr) _data = new s_type[_capacity];
 }
 
 Tensor::Tensor(const Tensor& other) { _copy(other); }
@@ -254,7 +252,7 @@ s_type* Tensor::data() { return _data; }
 
 const s_type* Tensor::data() const { return _data; }
 
-void Tensor::project(const std::string &index, std::size_t index_value,
+void Tensor::project(const std::string& index, std::size_t index_value,
                      Tensor& projection_tensor) const {
   if (index != _indices[0]) {
     throw ERROR_MSG("Index: '", index, "' has to be equal to indices[0]: '",
@@ -287,7 +285,8 @@ void Tensor::project(const std::string &index, std::size_t index_value,
     *(projection_data + p) = *(_data + projection_begin + p);
 }
 
-void Tensor::rename_index(const std::string &old_name, const std::string &new_name) {
+void Tensor::rename_index(const std::string& old_name,
+                          const std::string& new_name) {
   auto it = find(_indices.begin(), _indices.end(), old_name);
   if (it == _indices.end()) {
     throw ERROR_MSG("old_name: ", old_name, ", has to be a valid index.");
@@ -302,8 +301,8 @@ void Tensor::rename_index(const std::string &old_name, const std::string &new_na
   _index_to_dimension.erase(old_name);
 }
 
-void Tensor::bundle(const std::vector<std::string> &indices_to_bundle,
-                    const std::string &bundled_index) {
+void Tensor::bundle(const std::vector<std::string>& indices_to_bundle,
+                    const std::string& bundled_index) {
   // Checks.
   bool indices_to_bundle_in_indices =
       _vector_s_in_vector_s(indices_to_bundle, _indices);
@@ -346,7 +345,7 @@ void Tensor::bundle(const std::vector<std::string> &indices_to_bundle,
   _dimensions = new_dimensions;
 }
 
-void Tensor::_naive_reorder(const std::vector<std::string> &new_ordering,
+void Tensor::_naive_reorder(const std::vector<std::string>& new_ordering,
                             s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
     throw ERROR_MSG("Scratch copy must be non-null.");
@@ -459,7 +458,7 @@ void Tensor::_naive_reorder(const std::vector<std::string> &new_ordering,
   scratch_copy = nullptr;
 }
 
-void Tensor::_fast_reorder(const std::vector<std::string> &new_ordering,
+void Tensor::_fast_reorder(const std::vector<std::string>& new_ordering,
                            s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
     throw ERROR_MSG("Scratch copy must be non-null.");
@@ -825,7 +824,7 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
   scratch_copy = nullptr;
 }
 
-void Tensor::reorder(const std::vector<std::string> &new_ordering,
+void Tensor::reorder(const std::vector<std::string>& new_ordering,
                      s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
     throw ERROR_MSG("Scratch copy must be non-null.");
@@ -1159,7 +1158,7 @@ std::size_t result_size(const Tensor& A, const Tensor& B) {
 }
 
 // TODO: write tests for this function.
-void bundle_between(Tensor& A, Tensor& B, const std::string &bundled_index,
+void bundle_between(Tensor& A, Tensor& B, const std::string& bundled_index,
                     s_type* scratch_copy) {
   std::vector<std::string> left_indices =
       _vector_subtraction(A.get_indices(), B.get_indices());
@@ -1251,7 +1250,7 @@ void _generate_binary_reordering_map(
 }
 
 // convert int vector to string
-std::string _int_vector_to_string(const std::vector<std::size_t> &input) {
+std::string _int_vector_to_string(const std::vector<std::size_t>& input) {
   std::ostringstream temp;
   std::string output;
   if (!input.empty()) {
@@ -1264,7 +1263,7 @@ std::string _int_vector_to_string(const std::vector<std::size_t> &input) {
 }
 
 // convert string vector to string
-std::string _string_vector_to_string(const std::vector<std::string> &input) {
+std::string _string_vector_to_string(const std::vector<std::string>& input) {
   std::string output;
   output += "{";
   if (!input.empty()) {
