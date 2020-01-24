@@ -50,15 +50,6 @@ class Tensor {
   Tensor();
 
   /**
-   * Creates a Tensor. New space is allocated.
-   * @param indices std::vector<std::string> with the names of the indices in
-   * order.
-   * @param dimensions std::vector<std::size_t> with the ordered dimensions of
-   * the indices.
-   */
-  Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions);
-
-  /**
    * Creates a Tensor. New space is allocated and filled with a copy of
    * the vector's data. Useful for small tensors where the copying time is
    * negligible.
@@ -79,11 +70,12 @@ class Tensor {
    * order.
    * @param dimensions std::vector<std::size_t> with the ordered dimensions of
    * the indices.
-   * @param data pointer to the data of the tensor. It is responsibility of
-   * the user to provide enough allocated memory to store the Tensor.
+   * @param data pointer to the data of the tensor. If provided, it is responsibility of
+   * the user to provide enough allocated memory to store the Tensor and to deallocate
+   * it after its use.
    */
   Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions,
-         s_type* data);
+         s_type* data = nullptr);
 
   /**
    * Copy constructor: creates a new Tensor that is a copy of another.
@@ -274,6 +266,7 @@ class Tensor {
   std::vector<std::size_t> _dimensions;
   std::unordered_map<std::string, std::size_t> _index_to_dimension;
   s_type* _data{nullptr};
+  bool _user_provided_data{false};
 
   // Allocated data space. This value does not change after initialization.
   std::size_t _capacity{0};

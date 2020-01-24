@@ -89,7 +89,7 @@ void Tensor::_init(const std::vector<std::string>& indices,
 }
 
 void Tensor::_clear() {
-  if (_data != nullptr) {
+  if (!_user_provided_data && _data != nullptr) {
     delete[] _data;
     _data = nullptr;
   }
@@ -139,17 +139,6 @@ void Tensor::_move(Tensor&& other) {
 Tensor::Tensor() {}
 
 Tensor::Tensor(std::vector<std::string> indices,
-               std::vector<std::size_t> dimensions) {
-  try {
-    _init(indices, dimensions);
-  } catch (const std::string& err_msg) {
-    throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
-  }
-  _capacity = size();
-  _data = new s_type[_capacity];
-}
-
-Tensor::Tensor(std::vector<std::string> indices,
                std::vector<std::size_t> dimensions,
                const std::vector<s_type>& data)
     : Tensor(indices, dimensions) {
@@ -175,7 +164,15 @@ Tensor::Tensor(std::vector<std::string> indices,
     throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
   }
   _capacity = size();
-  _data = data;
+
+  // If data is not provided, allocate it
+  if(_data != nullptr) {
+    _data = data;
+    _user_provided_data = true;
+  } else {
+    _data = new s_type[_capacity];
+    _user_provided_data = false;
+  }
 }
 
 Tensor::Tensor(const Tensor& other) { _copy(other); }
