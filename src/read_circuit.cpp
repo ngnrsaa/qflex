@@ -689,7 +689,7 @@ void flatten_grid_of_tensors(
 // This function is currently not being called.
 // TODO: Decide whether or not to deprecate function, also needs to be tested.
 void read_wave_function_evolution(
-    std::string filename, std::size_t I, std::vector<Tensor>& gates,
+    const std::string& filename, std::size_t I, std::vector<Tensor>& gates,
     std::vector<std::vector<std::string>>& inputs,
     std::vector<std::vector<std::string>>& outputs, s_type* scratch) {
   if (scratch == nullptr) {
