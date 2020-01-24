@@ -89,7 +89,7 @@ void Tensor::_init(const std::vector<std::string>& indices,
 }
 
 void Tensor::_clear() {
-  if (!_user_provided_data && _data != nullptr) {
+  if (_data != nullptr) {
     delete[] _data;
     _data = nullptr;
   }
@@ -154,10 +154,8 @@ Tensor::Tensor(std::vector<std::string> indices,
 }
 
 Tensor::Tensor(std::vector<std::string> indices,
-               std::vector<std::size_t> dimensions, s_type* data) {
-  if (data == nullptr) {
-    throw ERROR_MSG("Data must be non-null.");
-  }
+               std::vector<std::size_t> dimensions, s_type* data): _data{data}, _user_provided_data{data != nullptr} {
+
   try {
     _init(indices, dimensions);
   } catch (const std::string& err_msg) {
@@ -165,14 +163,10 @@ Tensor::Tensor(std::vector<std::string> indices,
   }
   _capacity = size();
 
-  // If data is not provided, allocate it
-  if(_data != nullptr) {
-    _data = data;
-    _user_provided_data = true;
-  } else {
+  // If data is not provided, allocate it.
+  if(_data == nullptr)
     _data = new s_type[_capacity];
-    _user_provided_data = false;
-  }
+
 }
 
 Tensor::Tensor(const Tensor& other) { _copy(other); }
