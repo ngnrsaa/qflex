@@ -16,7 +16,7 @@ AC_CONFIG_FILES([Makefile
 
 # Skip all checks
 AC_ARG_ENABLE([all_checks], 
-  AS_HELP_STRING([--disable-all_checks],[Disable Python checks.]), 
+  AS_HELP_STRING([--disable-all_checks],[Disable all the checks.]), 
   [case "${enableval}" in
       yes) all_checks=true  ;;
        no) all_checks=false ;; 
