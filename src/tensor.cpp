@@ -254,7 +254,7 @@ s_type* Tensor::data() { return _data; }
 
 const s_type* Tensor::data() const { return _data; }
 
-void Tensor::project(std::string index, std::size_t index_value,
+void Tensor::project(const std::string &index, std::size_t index_value,
                      Tensor& projection_tensor) const {
   if (index != _indices[0]) {
     throw ERROR_MSG("Index: '", index, "' has to be equal to indices[0]: '",
@@ -287,7 +287,7 @@ void Tensor::project(std::string index, std::size_t index_value,
     *(projection_data + p) = *(_data + projection_begin + p);
 }
 
-void Tensor::rename_index(std::string old_name, std::string new_name) {
+void Tensor::rename_index(const std::string &old_name, const std::string &new_name) {
   auto it = find(_indices.begin(), _indices.end(), old_name);
   if (it == _indices.end()) {
     throw ERROR_MSG("old_name: ", old_name, ", has to be a valid index.");
@@ -302,8 +302,8 @@ void Tensor::rename_index(std::string old_name, std::string new_name) {
   _index_to_dimension.erase(old_name);
 }
 
-void Tensor::bundle(std::vector<std::string> indices_to_bundle,
-                    std::string bundled_index) {
+void Tensor::bundle(const std::vector<std::string> &indices_to_bundle,
+                    const std::string &bundled_index) {
   // Checks.
   bool indices_to_bundle_in_indices =
       _vector_s_in_vector_s(indices_to_bundle, _indices);
@@ -346,7 +346,7 @@ void Tensor::bundle(std::vector<std::string> indices_to_bundle,
   _dimensions = new_dimensions;
 }
 
-void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
+void Tensor::_naive_reorder(const std::vector<std::string> &new_ordering,
                             s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
     throw ERROR_MSG("Scratch copy must be non-null.");
@@ -459,7 +459,7 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
   scratch_copy = nullptr;
 }
 
-void Tensor::_fast_reorder(std::vector<std::string> new_ordering,
+void Tensor::_fast_reorder(const std::vector<std::string> &new_ordering,
                            s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
     throw ERROR_MSG("Scratch copy must be non-null.");
@@ -825,7 +825,7 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
   scratch_copy = nullptr;
 }
 
-void Tensor::reorder(std::vector<std::string> new_ordering,
+void Tensor::reorder(const std::vector<std::string> &new_ordering,
                      s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
     throw ERROR_MSG("Scratch copy must be non-null.");
@@ -1142,7 +1142,7 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
 }
 
 // TODO: write tests for this function.
-std::size_t result_size(Tensor& A, Tensor& B) {
+std::size_t result_size(const Tensor& A, const Tensor& B) {
   std::vector<std::string> left_indices =
       _vector_subtraction(A.get_indices(), B.get_indices());
   std::vector<std::string> right_indices =
@@ -1159,7 +1159,7 @@ std::size_t result_size(Tensor& A, Tensor& B) {
 }
 
 // TODO: write tests for this function.
-void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
+void bundle_between(Tensor& A, Tensor& B, const std::string &bundled_index,
                     s_type* scratch_copy) {
   std::vector<std::string> left_indices =
       _vector_subtraction(A.get_indices(), B.get_indices());
@@ -1251,7 +1251,7 @@ void _generate_binary_reordering_map(
 }
 
 // convert int vector to string
-std::string _int_vector_to_string(std::vector<std::size_t> input) {
+std::string _int_vector_to_string(const std::vector<std::size_t> &input) {
   std::ostringstream temp;
   std::string output;
   if (!input.empty()) {
@@ -1264,7 +1264,7 @@ std::string _int_vector_to_string(std::vector<std::size_t> input) {
 }
 
 // convert string vector to string
-std::string _string_vector_to_string(std::vector<std::string> input) {
+std::string _string_vector_to_string(const std::vector<std::string> &input) {
   std::string output;
   output += "{";
   if (!input.empty()) {

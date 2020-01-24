@@ -199,7 +199,7 @@ class Tensor {
    * with the right amount of allocated space can be passed. The indices and
    * dimensions will be initialized correctly from the project() function.
    */
-  void project(std::string index, std::size_t index_value,
+  void project(const std::string &index, std::size_t index_value,
                Tensor& projection_tensor) const;
 
   /**
@@ -207,7 +207,7 @@ class Tensor {
    * @param old_name std::string with the old name of an index.
    * @param new_name std::string with the new name of an index.
    */
-  void rename_index(std::string old_name, std::string new_name);
+  void rename_index(const std::string &old_name, const std::string &new_name);
 
   /**
    * Bundle indices onto a single big index. The ordering before the bundling
@@ -218,8 +218,8 @@ class Tensor {
    * indices to bundle. They have to be contiguous and on the right order.
    * @param bundled_index std::string with the name of the big new index.
    */
-  void bundle(std::vector<std::string> indices_to_bundle,
-              std::string bundled_index);
+  void bundle(const std::vector<std::string> &indices_to_bundle,
+              const std::string &bundled_index);
 
   /**
    * Reorder the indices of the Tensor. This is an intensive operation,
@@ -230,7 +230,7 @@ class Tensor {
    * @param scratch_copy Pointer to s_type with space allocated for scratch
    * work. Allocate at least as much space as the size of the Tensor.
    */
-  void reorder(std::vector<std::string> new_ordering, s_type* scratch_copy);
+  void reorder(const std::vector<std::string> &new_ordering, s_type* scratch_copy);
 
   /**
    * Multiply Tensor by scalar.
@@ -310,7 +310,7 @@ class Tensor {
    * @param new_ordering std::vector<std::string> with the new ordering.
    * @param scratch_copy Pointer to an s_type array for scracth copying work.
    */
-  void _naive_reorder(std::vector<std::string> new_ordering,
+  void _naive_reorder(const std::vector<std::string> &new_ordering,
                       s_type* scratch_copy);
 
   /**
@@ -319,7 +319,7 @@ class Tensor {
    * @param new_ordering std::vector<std::string> with the new ordering.
    * @param scratch_copy Pointer to an s_type array for scratch copying work.
    */
-  void _fast_reorder(std::vector<std::string> new_ordering,
+  void _fast_reorder(const std::vector<std::string> &new_ordering,
                      s_type* scratch_copy);
 
   /**
@@ -431,7 +431,7 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy);
  * @return std::size_t with the size of the tensor resulting from the
  * multiplication of A and B.
  */
-std::size_t result_size(Tensor& A, Tensor& B);
+std::size_t result_size(const Tensor& A, const Tensor& B);
 
 /**
  * Bundle indices shared by tensors A and B.
@@ -441,7 +441,7 @@ std::size_t result_size(Tensor& A, Tensor& B);
  * reordering. It has to allocate at least as much max(A.size(), B.size())
  * memory.
  */
-void bundle_between(Tensor& A, Tensor& B, std::string bundled_index,
+void bundle_between(Tensor& A, Tensor& B, const std::string &bundled_index,
                     s_type* scratch_copy);
 
 /**
@@ -467,14 +467,14 @@ void _generate_binary_reordering_map(
  * @param input vector<std::size_t> int vector to convert.
  * @return string containing input vector contents
  **/
-std::string _int_vector_to_string(std::vector<std::size_t> input);
+std::string _int_vector_to_string(const std::vector<std::size_t> &input);
 
 /**
  * Converts a string vector into a string
  * @param input vector<string> string vector to convert.
  * @return string containing input vector contents
  **/
-std::string _string_vector_to_string(std::vector<std::string> input);
+std::string _string_vector_to_string(const std::vector<std::string> &input);
 
 /**
  * Generates the standard name of the reordering as a std::string:
