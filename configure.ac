@@ -94,7 +94,7 @@ if test ${all_checks} != "false" && ${brew} != "false"; then
   AS_IF([test x"$BREW_CHECK" != x"yes"], [AC_MSG_ERROR([Please install brew before configuring.])])
 
   # Check if dependencies are installed
-  for pkg in coreutils gsl autoconf automake libomp pybind11; do
+  for pkg in coreutils openblas autoconf automake libomp pybind11; do
     AC_MSG_CHECKING([for ${pkg}])
     if brew ls --versions ${pkg} >/dev/null; then
       AC_MSG_RESULT([yes])
@@ -152,8 +152,16 @@ AC_CHECK_HEADER([vector], [], [AC_MSG_ERROR([Please install vector before config
 AS_IF([test x${CXX} == x"icpc"],
   AC_CHECK_HEADER([mkl.h], [], [AC_MSG_ERROR([Please install mkl.h before configuring.])])
   ,
-  AC_CHECK_HEADER([gsl/gsl_cblas.h], [], [AC_MSG_ERROR([Please install gsl/gsl_cblas.h before configuring.])])
-  AC_CHECK_LIB([gslcblas], [cblas_cgemm], [], [AC_MSG_ERROR([Please install gslcblas before configuring.])])
+  install_openblas=false
+  AC_CHECK_LIB([openblas], [cblas_cgemm], [
+    AC_CHECK_HEADER([cblas.h], [], [
+      AC_MSG_ERROR([OpenBLAS installed but cblas.h not found.])
+    ])
+  ], [
+    AC_MSG_WARN([OpenBLAS not installed. Installing OpenBLAS.])
+    install_openblas=true
+  ])
+  
 )
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -244,5 +252,6 @@ AC_SUBST(openmp, ${openmp})
 AC_SUBST(pybind11, ${pybind11})
 AC_SUBST(python_tests, ${python_tests})
 AC_SUBST(error_on_warnings, ${error_on_warnings})
+AC_SUBST(install_openblas, ${install_openblas})
 
 AC_OUTPUT

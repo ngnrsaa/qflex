@@ -8,6 +8,7 @@ PYBIND11 = @pybind11@
 PYTHON_TESTS = @python_tests@
 OPENMP = @openmp@
 ERROR_ON_WARNINGS = @error_on_warnings@
+INSTALL_OPENBLAS = @install_openblas@
 
 ifeq ($(ERROR_ON_WARNINGS), true)
   CXXFLAGS += -Werror
@@ -16,7 +17,7 @@ endif
 ifeq ($(CXX), icpc)
 	CXXFLAGS += -mkl -DMKL_TENSOR -lpthread
 else
-  CXXFLAGS += -lgslcblas -lpthread
+  CXXFLAGS += -lopenblas -lpthread
 endif
 
 ifeq ($(OPENMP), true)
@@ -33,6 +34,14 @@ ifeq ($(PYBIND11), true)
   TARGETS += pybind
 endif
 
+MODULES = docopt
+TESTS_MODULES = googletest
+
+ifeq ($(INSTALL_OPENBLAS), true)
+	CXXFLAGS += -I./src/OpenBLAS
+	MODULES += openblas
+endif
+
 CXXFLAGS += $(CPPFLAGS)
 
 export CXX
@@ -42,9 +51,21 @@ export FLAGS
 .PHONY: all
 all: $(TARGETS)
 
-.PHONY: qflex
-qflex:
+.PHONY: openblas
+openblas:
+	-git submodule update --init --recursive src/OpenBLAS/
+	make -C src/OpenBLAS/
+
+.PHONY: docopt
+docopt:
 	-git submodule update --init --recursive src/docopt
+
+.PHONY: googletest
+googletest:
+	-git submodule update --init --recursive tests/src/googletest
+
+.PHONY: qflex
+qflex: $(MODULES)
 	$(MAKE) -C src/
 
 .PHONY: pybind
@@ -52,8 +73,7 @@ pybind: qflex
 	$(MAKE) -C src/ pybind
 
 .PHONY: tests
-tests:
-	-git submodule update --init --recursive tests/src/googletest
+tests: $(TESTS_MODULES)
 	$(MAKE) -C tests/src/
 
 .PHONY: run-py-tests
