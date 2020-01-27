@@ -38,7 +38,7 @@ MODULES = docopt
 TESTS_MODULES = googletest
 
 ifeq ($(INSTALL_OPENBLAS), true)
-	CXXFLAGS += -I./src/OpenBLAS
+	CXXFLAGS += -I./OpenBLAS -L./OpenBLAS
 	MODULES += openblas
 endif
 
@@ -54,7 +54,7 @@ all: $(TARGETS)
 .PHONY: openblas
 openblas:
 	-git submodule update --init --recursive src/OpenBLAS/
-	make -C src/OpenBLAS/
+	make -C src/OpenBLAS/ libs
 
 .PHONY: docopt
 docopt:
