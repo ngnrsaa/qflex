@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "circuit.h"
 #include "docopt.h"
 #include "evaluate_circuit.h"
@@ -92,6 +94,12 @@ int main(int argc, char** argv) {
     std::string grid_filename = static_cast<bool>(args["--grid"])
                                     ? args["--grid"].asString()
                                     : args["<grid_filename>"].asString();
+
+    // Print OMP_NUM_THREADS and MKL_NUM_THREADS
+    if (qflex::global::verbose > 0)
+      for(const char *var: {"OMP_NUM_THREADS", "MKL_NUM_THREADS"})
+        if(const char *value = getenv(var); value != nullptr)
+          std::cerr << var << " = " << value << std::endl;
 
     // Print info on maximum memory
     if (qflex::global::verbose > 0)
