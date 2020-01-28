@@ -152,14 +152,12 @@ AC_CHECK_HEADER([vector], [], [AC_MSG_ERROR([Please install vector before config
 AS_IF([test x${CXX} == x"icpc"],
   AC_CHECK_HEADER([mkl.h], [], [AC_MSG_ERROR([Please install mkl.h before configuring.])])
   ,
-  install_openblas=false
   AC_CHECK_LIB([openblas], [cblas_cgemm], [
     AC_CHECK_HEADER([cblas.h], [], [
       AC_MSG_ERROR([OpenBLAS installed but cblas.h not found.])
     ])
   ], [
-    AC_MSG_WARN([OpenBLAS not installed. Installing OpenBLAS.])
-    install_openblas=true
+    AC_MSG_ERROR([Please install OpenBLAS before configuring.])
   ])
   
 )
@@ -252,6 +250,5 @@ AC_SUBST(openmp, ${openmp})
 AC_SUBST(pybind11, ${pybind11})
 AC_SUBST(python_tests, ${python_tests})
 AC_SUBST(error_on_warnings, ${error_on_warnings})
-AC_SUBST(install_openblas, ${install_openblas})
 
 AC_OUTPUT

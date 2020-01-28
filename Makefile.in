@@ -8,7 +8,6 @@ PYBIND11 = @pybind11@
 PYTHON_TESTS = @python_tests@
 OPENMP = @openmp@
 ERROR_ON_WARNINGS = @error_on_warnings@
-USE_OPENBLAS = @install_openblas@
 
 ifeq ($(ERROR_ON_WARNINGS), true)
   CXXFLAGS += -Werror
@@ -37,24 +36,14 @@ endif
 MODULES = docopt
 TESTS_MODULES = googletest
 
-ifeq ($(USE_OPENBLAS), true)
-	MODULES += openblas
-endif
-
 CXXFLAGS += $(CPPFLAGS)
 
 export CXX
 export CXXFLAGS
 export FLAGS
-export USE_OPENBLAS
 
 .PHONY: all
 all: $(TARGETS)
-
-.PHONY: openblas
-openblas:
-	-git submodule update --init --recursive src/OpenBLAS/
-	make -C src/OpenBLAS/ libs
 
 .PHONY: docopt
 docopt:
