@@ -85,16 +85,6 @@ $ make -j8 && make run-tests -j8
 ```
 where `-j8` means that `8` parallel processes are used.
 
-## Install OpenBLAS
-
-To install OpenBLAS from its repository, run the following commands from the
-root folder qFlex repository:
-```
-git clone https://github.com/xianyi/OpenBLAS src/OpenBLAS
-make -j8 -C src/OpenBLAS libs
-autoreconf -i && autoconf && CXXFLAGS="-L$PWD/src/OpenBLAS -I$PWD/src/OpenBLAS" ./configure
-```
-
 ## Running circuits
 
 To run a sample simulation, use the following command:

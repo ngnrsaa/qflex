@@ -69,6 +69,9 @@ folder, use `./configure --prefix=/new/installation/folder/`.
 qFlex provides an experimental support for `OpenMP`. To activate `OpenMP`, run
 `./configure` with the extra-option `--enable-openmp`.
 
+qFlex relies on [OpenBLAS](https://github.com/xianyi/OpenBLAS) for optimized
+matrix operations. 
+
 For more information, see [the installation guide](/docs/install.md).
 
 ### Build Using Docker
