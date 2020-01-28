@@ -543,9 +543,8 @@ void circuit_data_to_tensor_network(
   scratch = NULL;
 }
 
-// TODO: add tests for this function. Optimize contraction procedure; it uses
-// far more memory than needed currently. Compactify code. Use smart pointers
-// where possible.
+// TODO: add tests for this function. Compactify code. Use smart pointers
+// where possible. Improved contraction procedure.
 void flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
@@ -557,35 +556,39 @@ void flatten_grid_of_tensors(
     throw ERROR_MSG("Scratch must be non-null.");
   }
 
-  // Contract vertically and fill grid_of_tensors_2D.
-  std::size_t I = grid_of_tensors.size();
-  for (std::size_t i = 0; i < I; ++i) {
-    std::size_t J = grid_of_tensors[i].size();
-    for (std::size_t j = 0; j < J; ++j) {
+  for (std::size_t i = 0, I = std::size(grid_of_tensors); i < I; ++i) {
+    for (std::size_t j = 0, J = std::size(grid_of_tensors[i]); j < J; ++j) {
+      // Skip if (i,j) doesn't belong to layout
       if (find_grid_coord_in_list(off, i, j)) continue;
-      std::size_t K = grid_of_tensors[i][j].size();
-      std::vector<Tensor> column_of_tensors(K);
-      column_of_tensors[0] = Tensor(grid_of_tensors[i][j][0]);
-      for (std::size_t k = 0; k < K - 1; ++k) {
-        Tensor A(column_of_tensors[k]);
-        Tensor B(grid_of_tensors[i][j][k + 1]);
-        std::size_t result_dimension = result_size(A, B);
-        Tensor C({""}, {result_dimension});
+
+      // Let's check that the K direction is not empty at this point
+      if (std::empty(grid_of_tensors[i][j]))
+        throw ERROR_MSG("Time-direction cannot be empty");
+
+      // Get first tensor in time direction
+      Tensor A = grid_of_tensors[i][j][0];
+
+      for (std::size_t k = 1, K = grid_of_tensors[i][j].size(); k < K; ++k) {
+        Tensor& B = grid_of_tensors[i][j][k];
+        Tensor C({""}, {result_size(A, B)});
         try {
           multiply(A, B, C, scratch);
         } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
                           "]");
         }
-        column_of_tensors[k + 1] = Tensor(C);
+
+        // Move the result of A*B --> A
+        A = std::move(C);
       }
-      grid_of_tensors_2D[i][j] = Tensor(column_of_tensors.back());
+
+      // Move the final tensor to 2D grid of tensors
+      grid_of_tensors_2D[i][j] = std::move(A);
     }
   }
 
-  for (std::size_t i = 0; i < I; ++i) {
-    std::size_t J = grid_of_tensors[i].size();
-    for (std::size_t j = 0; j < J; ++j) {
+  for (std::size_t i = 0, I = std::size(grid_of_tensors); i < I; ++i) {
+    for (std::size_t j = 0, J = std::size(grid_of_tensors[i]); j < J; ++j) {
       if (find_grid_coord_in_list(off, i, j)) {
         continue;
       }
@@ -618,9 +621,8 @@ void flatten_grid_of_tensors(
   }
 
   // Reorder.
-  for (std::size_t i = 0; i < I; ++i) {
-    std::size_t J = grid_of_tensors[i].size();
-    for (std::size_t j = 0; j < J; ++j) {
+  for (std::size_t i = 0, I = std::size(grid_of_tensors); i < I; ++i) {
+    for (std::size_t j = 0, J = std::size(grid_of_tensors[i]); j < J; ++j) {
       if (find_grid_coord_in_list(off, i, j)) {
         continue;
       }
