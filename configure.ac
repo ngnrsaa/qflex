@@ -6,6 +6,9 @@ AC_INIT([qFlex], [0.1], [salvatore.mandra@nasa.gov])
 AC_CONFIG_SRCDIR([src/main.cpp])
 AC_PREFIX_DEFAULT([$HOME/local])
 
+AC_LANG(C++)
+AC_PROG_CXX
+
 # Default CXXFLAGS.
 CXXFLAGS="-O3  -std=c++17  -march=native -Wall -Wpedantic -Wno-unused-command-line-argument "$CXXFLAGS
 
@@ -107,9 +110,6 @@ if test ${all_checks} != "false" && ${brew} != "false"; then
   # Update pre-processor flags
   CPPFLAGS=${CPPFLAGS}" -I$(brew --prefix)/include/ -L$(brew --prefix)/lib/"
 fi
-
-AC_LANG(C++)
-AC_PROG_CXX
 
 if test ${all_checks} != "false"; then
 
