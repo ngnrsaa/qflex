@@ -97,8 +97,8 @@ int main(int argc, char** argv) {
 
     // Print OMP_NUM_THREADS and MKL_NUM_THREADS
     if (qflex::global::verbose > 0)
-      for(const char *var: {"OMP_NUM_THREADS", "MKL_NUM_THREADS"})
-        if(const char *value = getenv(var); value != nullptr)
+      for (const char* var : {"OMP_NUM_THREADS", "MKL_NUM_THREADS"})
+        if (const char* value = getenv(var); value != nullptr)
           std::cerr << var << " = " << value << std::endl;
 
     // Print info on maximum memory
