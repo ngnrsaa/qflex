@@ -543,9 +543,8 @@ void circuit_data_to_tensor_network(
   scratch = NULL;
 }
 
-// TODO: add tests for this function. Optimize contraction procedure; it uses
-// far more memory than needed currently. Compactify code. Use smart pointers
-// where possible. Improved.
+// TODO: add tests for this function. Compactify code. Use smart pointers
+// where possible. Improved contraction procedure.
 void flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
