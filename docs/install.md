@@ -92,7 +92,7 @@ root folder qFlex repository:
 ```
 git clone https://github.com/xianyi/OpenBLAS src/OpenBLAS
 make -j8 -C src/OpenBLAS libs
-autoreconf -i && autoconf && LDFLAGS=-L$PWD/src/OpenBLAS/ ./configure
+autoreconf -i && autoconf && CXXFLAGS="-L$PWD/src/OpenBLAS -I$PWD/src/OpenBLAS" ./configure
 ```
 
 ## Running circuits
