@@ -3,6 +3,8 @@ TARGETS = qflex
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
 PREFIX = @prefix@
 PYBIND11 = @pybind11@
 PYTHON_TESTS = @python_tests@
@@ -14,9 +16,9 @@ ifeq ($(ERROR_ON_WARNINGS), true)
 endif
 
 ifeq ($(CXX), icpc)
-	CXXFLAGS += -mkl -DMKL_TENSOR -lpthread
+	CXXFLAGS += -mkl -DMKL_TENSOR
 else
-  CXXFLAGS += -lopenblas -lpthread
+  LIBS := -lopenblas $(LIBS)
 endif
 
 ifeq ($(OPENMP), true)
@@ -36,10 +38,11 @@ endif
 MODULES = docopt
 TESTS_MODULES = googletest
 
-CXXFLAGS += $(CPPFLAGS)
-
 export CXX
 export CXXFLAGS
+export CPPFLAGS
+export LDFLAGS
+export LIBS
 export FLAGS
 
 .PHONY: all

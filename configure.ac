@@ -12,6 +12,9 @@ AC_PROG_CXX
 # Default CXXFLAGS.
 CXXFLAGS="-O3  -std=c++17  -march=native -Wall -Wpedantic -Wno-unused-command-line-argument "$CXXFLAGS
 
+# Default LIBS
+LIBS="-lpthread "$LIBS
+
 AC_CONFIG_FILES([Makefile
                  src/Makefile
                  tests/src/Makefile
