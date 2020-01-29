@@ -8,6 +8,9 @@
 #include <unordered_set>
 
 #include "errors.h"
+// NEW
+#include "talshxx.hpp"
+// NEW UP TO HERE
 
 namespace qflex {
 
@@ -241,7 +244,12 @@ void ContractionData::ContractGrid(
         std::string result_id = result_space(patch_max_size_[op.expand.id]);
         Tensor& result = get_scratch(result_id);
         try {
-          multiply(prev, next, result, get_scratch(kGeneralSpace).data());
+          // NEW REMOVE
+          //multiply(prev, next, result, get_scratch(kGeneralSpace).data());
+          // NEW REMOVE UP TO HERE
+          // NEW
+          multiply_with_talsh(prev, next, result);
+          // NEW UP TO HERE
         } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
                           "]");
@@ -326,7 +334,12 @@ void ContractionData::ContractGrid(
             result_space(patch_max_size_[op.merge.target_id]);
         Tensor& result = get_scratch(result_id);
         try {
-          multiply(patch_1, patch_2, result, get_scratch(kGeneralSpace).data());
+          // NEW REMOVE
+          //multiply(patch_1, patch_2, result, get_scratch(kGeneralSpace).data());
+          // NEW REMOVE UP TO HERE
+          // NEW
+          multiply_with_talsh(patch_1, patch_2, result);
+          // NEW UP TO HERE
         } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
                           "]");
@@ -630,10 +643,112 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
     active_patches[patch] = false;
   }
   try {
+    // NEW
+    std::size_t init_space(10000000000);
+    talsh::initialize(&init_space);
+    std::cout << "Initialized TALSH.\n";
+    // NEW UP TO HERE
     data.ContractGrid(ordering, /*output_index = */ 0, active_patches);
+    // NEW
+    talsh::shutdown();
+    std::cout << "Shut down TALSH.\n";
+    // NEW UP TO HERE
   } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[", err_msg, "]");
   }
 }
+
+// NEW
+
+// Concatenate strings separated by commas in the result.
+std::string comma_concatenate_reversed(
+    const std::vector<std::string>& strings,
+    const std::unordered_map<std::string, std::string>& index_letter) {
+  std::string result_string = "";
+  if (strings.size() > 0) {
+    for (size_t i = strings.size() - 1; i > 0; --i) {
+      result_string += index_letter.at(strings[i]) + ",";
+    }
+    result_string += index_letter.at(strings[0]);
+  }
+  return result_string;
+}
+
+void multiply_with_talsh(Tensor& A, Tensor& B, Tensor& C) {
+  // Remove this and call _ALPHABET from tensor.cpp
+  const std::vector<std::string> _ALPHABET(
+      {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", 
+       "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", 
+       "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", 
+       "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"});
+  if (A.data() == C.data()) {
+    throw ERROR_MSG("A and C cannot be the same tensor: ",
+                    C.tensor_to_string());
+  }
+  if (B.data() == C.data()) {
+    throw ERROR_MSG("B and C cannot be the same tensor: ",
+                    C.tensor_to_string());
+  }
+
+  // Get unique indices.
+  std::unordered_set<std::string> unique_indices;
+  std::vector<Tensor*> tensors({&A, &B});
+  for (auto T : tensors) {
+    for (const auto& index : T->get_indices()) {
+      unique_indices.insert(index);
+    }
+  }
+  std::unordered_map<std::string, std::string> index_letter;
+  {
+    std::size_t alphabet_pos = 0;
+    for (const auto& index : unique_indices) {
+      index_letter[index] = _ALPHABET[alphabet_pos];
+      ++alphabet_pos;
+    }
+  }
+
+  // Update dimensions and indexes on qFlex tensors
+  multiply(A, B, C, nullptr, true);
+
+  // Create contraction string, reversing each tensors indexes, so that TALSH
+  // contracts properly, since it follows FORTRAN convention.
+  std::string contraction_string = "D(";
+  std::string index;
+  
+  contraction_string += comma_concatenate_reversed(C.get_indices(),
+                                                   index_letter);
+  contraction_string += ")+=L(";
+  contraction_string += comma_concatenate_reversed(A.get_indices(),
+                                                   index_letter);
+  contraction_string += ")*R(";
+  contraction_string += comma_concatenate_reversed(B.get_indices(),
+                                                   index_letter);
+  contraction_string += ")";
+
+  bool done;
+  int errc;
+  std::vector<int> signature_D;
+  for (int i = C.get_dimensions().size() - 1; i >= 0; --i) {
+    size_t dim = C.get_dimensions()[i];
+    signature_D.push_back(dim);
+  }
+  talsh::Tensor D(signature_D, C.data());
+  std::vector<int> signature_L;
+  for (int i = A.get_dimensions().size() - 1; i >= 0; --i) {
+    size_t dim = A.get_dimensions()[i];
+    signature_L.push_back(dim);
+  }
+  talsh::Tensor L(signature_L, A.data());
+  std::vector<int> signature_R;
+  for (int i = B.get_dimensions().size() - 1; i >= 0; --i) {
+    size_t dim = B.get_dimensions()[i];
+    signature_R.push_back(dim);
+  }
+  talsh::Tensor R(signature_R, B.data());
+  errc = D.contractAccumulate(nullptr, contraction_string, L, R, DEV_HOST,
+                              0, s_type(1.0), false);
+  done = D.sync();
+}
+// NEW UP TO HERE
 
 }  // namespace qflex
