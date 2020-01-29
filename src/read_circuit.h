@@ -94,8 +94,12 @@ void circuit_data_to_tensor_network(
  * @param scratch pointer to s_type array with enough space for all scratch
  * work.
  */
-void flatten_grid_of_tensors(
+std::vector<std::vector<Tensor>> flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
+    const std::optional<std::vector<std::vector<std::size_t>>>& off,
+    s_type* scratch);
+
+void reorder_grid_of_tensors(
     std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
     const std::optional<std::vector<std::vector<std::size_t>>>&
         final_qubit_region,

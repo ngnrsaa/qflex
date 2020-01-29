@@ -545,16 +545,21 @@ void circuit_data_to_tensor_network(
 
 // TODO: add tests for this function. Compactify code. Use smart pointers
 // where possible. Improved contraction procedure.
-void flatten_grid_of_tensors(
+std::vector<std::vector<Tensor>> flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
-    std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
-    const std::optional<std::vector<std::vector<std::size_t>>>&
-        final_qubit_region,
     const std::optional<std::vector<std::vector<std::size_t>>>& off,
-    const std::list<ContractionOperation>& ordering, s_type* scratch) {
-  if (scratch == nullptr) {
-    throw ERROR_MSG("Scratch must be non-null.");
-  }
+    s_type* scratch) {
+
+  // Check consistency of grid of tensors
+  if(std::empty(grid_of_tensors)) throw ERROR_MSG("grid_of_tensors cannot be empty");
+  else if(std::empty(grid_of_tensors[0])) throw ERROR_MSG("grid_of_tensors cannot be empty");
+  else for(const auto &v_tensor : grid_of_tensors)
+    if(std::size(v_tensor) != std::size(grid_of_tensors[0]))
+      throw ERROR_MSG("grid_of_tensors is not consistent");
+
+  std::vector<std::vector<Tensor>> grid_of_tensors_2D(std::size(grid_of_tensors));
+  for (auto &v_tensor : grid_of_tensors_2D)
+    v_tensor = std::vector<Tensor>(std::size(grid_of_tensors[0]));
 
   for (std::size_t i = 0, I = std::size(grid_of_tensors); i < I; ++i) {
     for (std::size_t j = 0, J = std::size(grid_of_tensors[i]); j < J; ++j) {
@@ -568,7 +573,7 @@ void flatten_grid_of_tensors(
       // Get first tensor in time direction
       Tensor A = grid_of_tensors[i][j][0];
 
-      for (std::size_t k = 1, K = grid_of_tensors[i][j].size(); k < K; ++k) {
+      for (std::size_t k = 1, K = std::size(grid_of_tensors[i][j]); k < K; ++k) {
         Tensor& B = grid_of_tensors[i][j][k];
         Tensor C({""}, {result_size(A, B)});
         try {
@@ -586,9 +591,21 @@ void flatten_grid_of_tensors(
       grid_of_tensors_2D[i][j] = std::move(A);
     }
   }
+  return grid_of_tensors_2D;
+}
 
-  for (std::size_t i = 0, I = std::size(grid_of_tensors); i < I; ++i) {
-    for (std::size_t j = 0, J = std::size(grid_of_tensors[i]); j < J; ++j) {
+void reorder_grid_of_tensors(
+    std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
+    const std::optional<std::vector<std::vector<std::size_t>>>&
+        final_qubit_region,
+    const std::optional<std::vector<std::vector<std::size_t>>>& off,
+    const std::list<ContractionOperation>& ordering, s_type* scratch) {
+  if (scratch == nullptr) {
+    throw ERROR_MSG("Scratch must be non-null.");
+  }
+
+  for (std::size_t i = 0, I = std::size(grid_of_tensors_2D); i < I; ++i) {
+    for (std::size_t j = 0, J = std::size(grid_of_tensors_2D[i]); j < J; ++j) {
       if (find_grid_coord_in_list(off, i, j)) {
         continue;
       }
@@ -621,8 +638,8 @@ void flatten_grid_of_tensors(
   }
 
   // Reorder.
-  for (std::size_t i = 0, I = std::size(grid_of_tensors); i < I; ++i) {
-    for (std::size_t j = 0, J = std::size(grid_of_tensors[i]); j < J; ++j) {
+  for (std::size_t i = 0, I = std::size(grid_of_tensors_2D); i < I; ++i) {
+    for (std::size_t j = 0, J = std::size(grid_of_tensors_2D[i]); j < J; ++j) {
       if (find_grid_coord_in_list(off, i, j)) {
         continue;
       }

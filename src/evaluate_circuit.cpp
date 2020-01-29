@@ -134,12 +134,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
                     "]");
   }
 
-  // Declaring and then filling 2D grid of tensors.
-  std::vector<std::vector<Tensor>> tensor_grid(input.grid.I);
-  for (std::size_t i = 0; i < input.grid.I; ++i) {
-    tensor_grid[i] = std::vector<Tensor>(input.grid.J);
-  }
   // Scope so that scratch space and the 3D grid of tensors are destructed.
+  std::vector<std::vector<Tensor>> tensor_grid;
   {
     // Scratch space for creating 3D tensor network. The largest single-gate
     // tensor we currently support is rank 4.
@@ -200,8 +196,11 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     }
 
     // Contract 3D grid onto 2D grid of tensors, as usual.
-    flatten_grid_of_tensors(tensor_grid_3D, tensor_grid, final_qubits,
-                            input.grid.qubits_off, ordering, scratch_2D.data());
+    tensor_grid = flatten_grid_of_tensors(tensor_grid_3D, input.grid.qubits_off, scratch_2D.data());
+
+    // Reorder the 2D grid
+    reorder_grid_of_tensors(tensor_grid, final_qubits, input.grid.qubits_off, ordering, scratch_2D.data());
+
     if (global::verbose > 0) {
       t1 = std::chrono::high_resolution_clock::now();
       time_span =
