@@ -67,8 +67,7 @@ std::vector<std::string> LoadStates(const py::dict &options,
       states.push_back(in_state.cast<std::string>());
     } else
       throw ERROR_MSG("states must be strings.");
-  } else
-    states.push_back("");
+  }
   return states;
 }
 
@@ -84,8 +83,20 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     LoadData(options, "grid", input.grid);
     LoadData(options, "circuit", input.circuit);
     LoadData(options, "ordering", input.ordering);
-    const auto initial_states = LoadStates(options, "initial");
-    const auto final_states = LoadStates(options, "final");
+
+    // Load initial/final states
+    const auto initial_states = [&options, &input]() {
+      std::vector<std::string> states = LoadStates(options, "initial");
+      if (std::empty(states))
+        states.push_back(std::string(input.circuit.num_active_qubits, '0'));
+      return states;
+    }();
+    const auto final_states = [&options, &input]() {
+      std::vector<std::string> states = LoadStates(options, "final");
+      if (std::empty(states))
+        states.push_back(std::string(input.circuit.num_active_qubits, '0'));
+      return states;
+    }();
 
     // Define container for amplitudes
     std::vector<std::pair<
