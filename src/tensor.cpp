@@ -960,10 +960,22 @@ void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
   cblas_cdotu_sub(k, A_data, 1, B_data, 1, C_data);
 }
 
-void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
+// NEW ERASES
+//void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
+// NEW ERASES UP TO HERE`
+// NEW
+void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy,
+              bool dry /*= false*/) {
+// NEW UP TO HERE`
+  // NEW
+  if (!dry) {
+  // NEW UP TO HERE
   if (scratch_copy == nullptr) {
     throw ERROR_MSG("Scratch copy must be non-null.");
   }
+  // NEW
+  }
+  // NEW UP TO HERE
 
   if (A.data() == C.data()) {
     throw ERROR_MSG("A and C cannot be the same tensor: ",
@@ -1020,6 +1032,9 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
 
   if (global::verbose > 1) t0 = std::chrono::high_resolution_clock::now();
 
+  // NEW
+  if (!dry) {
+  // NEW UP TO HERE
   // Reorder.
   std::vector<std::string> A_new_ordering =
       _vector_union(left_indices, common_indices);
@@ -1096,6 +1111,9 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     std::cerr << "Time multiplying A*B: " << time_span.count() << "s\n";
     t0 = std::chrono::high_resolution_clock::now();
   }
+  // NEW
+  }
+  // NEW UP TO HERE
 
   // Set indices and dimensions of C.
   std::vector<std::string> C_indices =

@@ -410,7 +410,13 @@ void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
  * reordering. It has to allocate at least as much max(A.size(), B.size())
  * memory.
  */
-void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy);
+// NEW ERASES
+//void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy);
+// NEW ERASES UP TO HERE
+// NEW
+void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy,
+              bool dry = false);
+// NEW UP TO HERE
 
 /**
  * Returns the size of the tensor product of A and B.

@@ -326,7 +326,12 @@ void ContractionData::ContractGrid(
             result_space(patch_max_size_[op.merge.target_id]);
         Tensor& result = get_scratch(result_id);
         try {
-          multiply(patch_1, patch_2, result, get_scratch(kGeneralSpace).data());
+          // NEW REMOVE
+          //multiply(patch_1, patch_2, result, get_scratch(kGeneralSpace).data());
+          // NEW REMOVE UP TO HERE
+          // NEW
+          multiply_with_talsh(patch_1, patch_2, result);
+          // NEW UP TO HERE
         } catch (const std::string& err_msg) {
           throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
                           "]");
@@ -631,7 +636,8 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
   }
   try {
     // NEW
-    talsh::initialize();
+    std::size_t init_space(10000000000);
+    talsh::initialize(&init_space);
     std::cout << "Initialized TALSH.\n";
     // NEW UP TO HERE
     data.ContractGrid(ordering, /*output_index = */ 0, active_patches);
@@ -645,6 +651,21 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
 }
 
 // NEW
+
+// Concatenate strings separated by commas in the result.
+std::string comma_concatenate_reversed(
+    const std::vector<std::string>& strings,
+    const std::unordered_map<std::string, std::string>& index_letter) {
+  std::string result_string = "";
+  if (strings.size() > 0) {
+    for (size_t i = strings.size() - 1; i > 0; --i) {
+      result_string += index_letter.at(strings[i]) + ",";
+    }
+    result_string += index_letter.at(strings[0]);
+  }
+  return result_string;
+}
+
 void multiply_with_talsh(Tensor& A, Tensor& B, Tensor& C) {
   // Remove this and call _ALPHABET from tensor.cpp
   const std::vector<std::string> _ALPHABET(
@@ -663,7 +684,7 @@ void multiply_with_talsh(Tensor& A, Tensor& B, Tensor& C) {
 
   // Get unique indices.
   std::unordered_set<std::string> unique_indices;
-  std::vector<Tensor*> tensors({&A, &B, &C});
+  std::vector<Tensor*> tensors({&A, &B});
   for (auto T : tensors) {
     for (const auto& index : T->get_indices()) {
       unique_indices.insert(index);
@@ -677,42 +698,42 @@ void multiply_with_talsh(Tensor& A, Tensor& B, Tensor& C) {
       ++alphabet_pos;
     }
   }
+
+  // Update dimensions and indexes on qFlex tensors
+  multiply(A, B, C, nullptr, true);
+
   // Create contraction string, reversing each tensors indexes, so that TALSH
   // contracts properly, since it follows FORTRAN convention.
   std::string contraction_string = "D(";
   std::string index;
-  for (int i = C.get_indices().size() - 1; i >= 0; --i) {
-    index = C.get_indices().at(i);
-    contraction_string += index_letter.at(index) + ",";
-  }
-  contraction_string[contraction_string.size() - 1] = ')';
-  contraction_string += "+=L(";
-  for (int i = A.get_indices().size() - 1; i >= 0; --i) {
-    index = A.get_indices().at(i);
-    contraction_string += index_letter.at(index) + ",";
-  }
-  contraction_string[contraction_string.size() - 1] = ')';
-  contraction_string += "*R(";
-  for (int i = B.get_indices().size() - 1; i >= 0; --i) {
-    index = B.get_indices().at(i);
-    contraction_string += index_letter.at(index) + ",";
-  }
-  contraction_string[contraction_string.size() - 1] = ')';
+  
+  contraction_string += comma_concatenate_reversed(C.get_indices(),
+                                                   index_letter);
+  contraction_string += ")+=L(";
+  contraction_string += comma_concatenate_reversed(A.get_indices(),
+                                                   index_letter);
+  contraction_string += ")*R(";
+  contraction_string += comma_concatenate_reversed(B.get_indices(),
+                                                   index_letter);
+  contraction_string += ")";
 
   bool done;
   int errc;
   std::vector<int> signature_D;
-  for (const auto& dim : C.get_dimensions()) {
+  for (int i = C.get_dimensions().size() - 1; i >= 0; --i) {
+    size_t dim = C.get_dimensions()[i];
     signature_D.push_back(dim);
   }
   talsh::Tensor D(signature_D, C.data());
   std::vector<int> signature_L;
-  for (const auto& dim : A.get_dimensions()) {
+  for (int i = A.get_dimensions().size() - 1; i >= 0; --i) {
+    size_t dim = A.get_dimensions()[i];
     signature_L.push_back(dim);
   }
   talsh::Tensor L(signature_L, A.data());
   std::vector<int> signature_R;
-  for (const auto& dim : B.get_dimensions()) {
+  for (int i = B.get_dimensions().size() - 1; i >= 0; --i) {
+    size_t dim = B.get_dimensions()[i];
     signature_R.push_back(dim);
   }
   talsh::Tensor R(signature_R, B.data());
