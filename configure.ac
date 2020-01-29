@@ -6,8 +6,14 @@ AC_INIT([qFlex], [0.1], [salvatore.mandra@nasa.gov])
 AC_CONFIG_SRCDIR([src/main.cpp])
 AC_PREFIX_DEFAULT([$HOME/local])
 
+AC_LANG(C++)
+AC_PROG_CXX
+
 # Default CXXFLAGS.
-: ${CXXFLAGS="-O3  -std=c++17  -march=native -Wall -Wpedantic -Wno-unused-command-line-argument"}
+CXXFLAGS="-O3  -std=c++17  -march=native -Wall -Wpedantic -Wno-unused-command-line-argument "$CXXFLAGS
+
+# Default LIBS
+LIBS="-lpthread "$LIBS
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
@@ -94,7 +100,7 @@ if test ${all_checks} != "false" && ${brew} != "false"; then
   AS_IF([test x"$BREW_CHECK" != x"yes"], [AC_MSG_ERROR([Please install brew before configuring.])])
 
   # Check if dependencies are installed
-  for pkg in coreutils gsl autoconf automake libomp pybind11; do
+  for pkg in coreutils openblas autoconf automake libomp pybind11; do
     AC_MSG_CHECKING([for ${pkg}])
     if brew ls --versions ${pkg} >/dev/null; then
       AC_MSG_RESULT([yes])
@@ -107,9 +113,6 @@ if test ${all_checks} != "false" && ${brew} != "false"; then
   # Update pre-processor flags
   CPPFLAGS=${CPPFLAGS}" -I$(brew --prefix)/include/ -L$(brew --prefix)/lib/"
 fi
-
-AC_LANG(C++)
-AC_PROG_CXX
 
 if test ${all_checks} != "false"; then
 
@@ -152,8 +155,14 @@ AC_CHECK_HEADER([vector], [], [AC_MSG_ERROR([Please install vector before config
 AS_IF([test x${CXX} == x"icpc"],
   AC_CHECK_HEADER([mkl.h], [], [AC_MSG_ERROR([Please install mkl.h before configuring.])])
   ,
-  AC_CHECK_HEADER([gsl/gsl_cblas.h], [], [AC_MSG_ERROR([Please install gsl/gsl_cblas.h before configuring.])])
-  AC_CHECK_LIB([gslcblas], [cblas_cgemm], [], [AC_MSG_ERROR([Please install gslcblas before configuring.])])
+  AC_CHECK_LIB([openblas], [cblas_cgemm], [
+    AC_CHECK_HEADER([cblas.h], [], [
+      AC_MSG_ERROR([OpenBLAS installed but cblas.h not found.])
+    ])
+  ], [
+    AC_MSG_ERROR([Please install OpenBLAS before configuring.])
+  ])
+  
 )
 
 # Checks for typedefs, structures, and compiler characteristics.

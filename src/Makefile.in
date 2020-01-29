@@ -18,13 +18,13 @@ PYBINDFLAGS = -shared `python3 -m pybind11 --includes` `python3-config --ldflags
 #-Ipybind11/include
 
 $(TARGET1): main.cpp $(OBJS1)
-	$(CXX) -o $(@).x $< $(OBJS1) $(CXXFLAGS)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $^ -o $(@).x $(LDFLAGS) $(LIBS) 
 
-pybind: $(OBJS1)
-	$(CXX) pybind_main.cpp -o $(QFLEXLIB) $^ $(CXXFLAGS) $(PYBINDFLAGS)
+pybind: pybind_main.cpp $(OBJS1)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(PYBINDFLAGS) $^ -o $(QFLEXLIB) $(LDFLAGS) $(LIBS)
 
 %.o: %.cpp %.h
-	$(CXX) -c $< $(CXXFLAGS) -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@ $(LDFLAGS) $(LIBS)
 
 .PHONY: clean
 clean:

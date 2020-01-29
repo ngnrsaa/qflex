@@ -3,6 +3,8 @@ TARGETS = qflex
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
 PREFIX = @prefix@
 PYBIND11 = @pybind11@
 PYTHON_TESTS = @python_tests@
@@ -14,9 +16,9 @@ ifeq ($(ERROR_ON_WARNINGS), true)
 endif
 
 ifeq ($(CXX), icpc)
-	CXXFLAGS += -mkl -DMKL_TENSOR -lpthread
+	CXXFLAGS += -mkl -DMKL_TENSOR
 else
-  CXXFLAGS += -lgslcblas -lpthread
+  LIBS := -lopenblas $(LIBS)
 endif
 
 ifeq ($(OPENMP), true)
@@ -33,18 +35,29 @@ ifeq ($(PYBIND11), true)
   TARGETS += pybind
 endif
 
-CXXFLAGS += $(CPPFLAGS)
+MODULES = docopt
+TESTS_MODULES = googletest
 
 export CXX
 export CXXFLAGS
+export CPPFLAGS
+export LDFLAGS
+export LIBS
 export FLAGS
 
 .PHONY: all
 all: $(TARGETS)
 
-.PHONY: qflex
-qflex:
+.PHONY: docopt
+docopt:
 	-git submodule update --init --recursive src/docopt
+
+.PHONY: googletest
+googletest:
+	-git submodule update --init --recursive tests/src/googletest
+
+.PHONY: qflex
+qflex: $(MODULES)
 	$(MAKE) -C src/
 
 .PHONY: pybind
@@ -52,8 +65,7 @@ pybind: qflex
 	$(MAKE) -C src/ pybind
 
 .PHONY: tests
-tests:
-	-git submodule update --init --recursive tests/src/googletest
+tests: $(TESTS_MODULES)
 	$(MAKE) -C tests/src/
 
 .PHONY: run-py-tests

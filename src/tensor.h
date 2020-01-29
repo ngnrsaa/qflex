@@ -20,7 +20,7 @@
 #ifdef MKL_TENSOR
 #include <mkl.h>
 #else
-#include <gsl/gsl_cblas.h>
+#include <cblas.h>
 #endif
 
 #include <complex>

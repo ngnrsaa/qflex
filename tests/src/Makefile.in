@@ -26,7 +26,7 @@ $(GMOCK_DIR)/make/gmock-all.o:
 	$(MAKE) -C $(GMOCK_DIR)/make gmock-all.o
 
 %.x: %.cpp $(OBJS1) $(GMOCK_DIR)/make/gmock-all.o $(GTEST_DIR)/make/gtest-all.o
-	$(CXX) -o ./$@ $< $(OBJS1:%=$(SRC_DIR)/%) $(TESTFLAGS) $(CXXFLAGS) $(GMOCK_DIR)/make/gmock-all.o $(GTEST_DIR)/make/gtest-all.o
+	$(CXX) -o ./$@ $< $(OBJS1:%=$(SRC_DIR)/%) $(TESTFLAGS) $(CXXFLAGS) $(CPPFLAGS) $(GMOCK_DIR)/make/gmock-all.o $(GTEST_DIR)/make/gtest-all.o $(LDFLAGS) $(LIBS)
 
 .PHONY: clean
 clean:

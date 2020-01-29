@@ -8,7 +8,7 @@ any target folder. By default, qFlex installs to `$HOME/local`.
 
 To install qFlex on `Debian/Ubuntu` systems, the following packages must be installed in the system:
 ```
-$ sudo apt-get install autoconf automake make g++ libgsl-dev libgslcblas0
+$ sudo apt-get install autoconf automake make g++ libopenblas-dev
 ```
 followed by the installation of required python modules:
 ```
@@ -58,7 +58,7 @@ qFlex can be natively compiled on Mac OS X by installing few dependencies throug
 `brew` and `pip`. More precisely, the following libraries must be installed
 using `brew`:
 ```
-$ brew install coreutils gsl autoconf automake libomp pybind11
+$ brew install coreutils openblas autoconf automake libomp pybind11
 ```
 and through `pip`:
 ```
