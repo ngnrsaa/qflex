@@ -219,6 +219,10 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
                   std::vector<std::vector<Tensor>>* tensor_grid,
                   std::vector<std::complex<double>>* amplitudes);
 
+// NEW
+void multiply_with_talsh(Tensor& A, Tensor& B, Tensor& C);
+// NEW UP TO HERE
+
 }  // namespace qflex
 
 #endif  // CONTRACTION_UTILS_
