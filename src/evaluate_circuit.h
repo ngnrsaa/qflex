@@ -56,12 +56,11 @@ std::vector<std::vector<std::size_t>> read_grid_layout_from_stream(
  * be populated by this method.
  * @param output_states vector of output states for the given contraction
  * ordering, to be populated by this method.
- * @return the final state vector, with 'x' for cut locations.
  */
-std::string get_output_states(
-    const QflexInput* input, const std::list<ContractionOperation>& ordering,
-    std::vector<std::vector<std::size_t>>* final_qubits,
-    std::vector<std::string>* output_states);
+void get_output_states(const QflexGrid& grid, const std::string& base_state,
+                       const std::list<ContractionOperation>& ordering,
+                       std::vector<std::vector<std::size_t>>* final_qubits,
+                       std::vector<std::string>* output_states);
 
 /**
  * Evaluates a circuit and returns the final amplitudes of each state resulting
@@ -77,7 +76,7 @@ std::string get_output_states(
  * bitstring, in the order of their terminal cuts.
  */
 std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
-    QflexInput* input);
+    const QflexInput& input);
 
 }  // namespace qflex
 

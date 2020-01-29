@@ -32,8 +32,8 @@ tensor network, CPU-based simulator of large quantum circuits.
     qflex::utils::readable_memory_string(qflex::global::memory_limit), R"(].
     -t,--track-memory=<seconds>            If <verbosity_level> > 0, track memory usage [default: )",
     qflex::global::track_memory_seconds, R"(].
-    --initial-conf=<initial_conf>          Initial configuration.
-    --final-conf=<final_conf>              Final configuration.
+    --initial-conf=<initial_conf>          Initial configuration [default: 00...00].
+    --final-conf=<final_conf>              Final configuration [default: 00...00].
     --version                              Show version.
 )");
 
@@ -123,10 +123,16 @@ int main(int argc, char** argv) {
     // Load grid
     input.grid.load(grid_filename);
 
+    // Substitute default initial/final state
+    if (input.initial_state == "00...00")
+      input.initial_state = std::string(input.circuit.num_active_qubits, '0');
+    if (input.final_state == "00...00")
+      input.final_state = std::string(input.circuit.num_active_qubits, '0');
+
     // Evaluating circuit.
     std::vector<std::pair<std::string, std::complex<double>>> amplitudes;
     try {
-      amplitudes = qflex::EvaluateCircuit(&input);
+      amplitudes = qflex::EvaluateCircuit(input);
     } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call EvaluateCircuit(). Error:\n\t[", err_msg,
                       "]");

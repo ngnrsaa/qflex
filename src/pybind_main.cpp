@@ -100,7 +100,7 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
       for (const auto &fs : final_states) {
         input.initial_state = is;
         input.final_state = fs;
-        amplitudes.push_back({is, EvaluateCircuit(&input)});
+        amplitudes.push_back({is, EvaluateCircuit(input)});
       }
     }
 
