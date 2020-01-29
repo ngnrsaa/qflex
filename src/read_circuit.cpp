@@ -295,7 +295,7 @@ order_func(const std::list<ContractionOperation>& ordering,
 // Add depth functionality to read a circuit up to a certain cycle.
 void circuit_data_to_tensor_network(
     const QflexCircuit& circuit, std::size_t I, std::size_t J,
-    const std::string initial_conf, const std::string final_conf,
+    const std::string& initial_conf, const std::string& final_conf,
     const std::optional<std::vector<std::vector<std::size_t>>>&
         final_qubit_region,
     const std::optional<std::vector<std::vector<std::size_t>>>& off,

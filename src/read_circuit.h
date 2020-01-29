@@ -68,7 +68,7 @@ const std::size_t DIM = 2;
  */
 void circuit_data_to_tensor_network(
     const QflexCircuit& circuit, std::size_t I, std::size_t J,
-    const std::string initial_conf, const std::string final_conf,
+    const std::string& initial_conf, const std::string& final_conf,
     const std::optional<std::vector<std::vector<std::size_t>>>&
         final_qubit_region,
     const std::optional<std::vector<std::vector<std::size_t>>>& off,
