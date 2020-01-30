@@ -145,10 +145,9 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
     // Creating 3D grid of tensors from file.
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
-    circuit_data_to_tensor_network(input.circuit, input.grid.I, input.grid.J,
-                                   input.initial_state, input.final_state,
-                                   final_qubits, input.grid.qubits_off,
-                                   tensor_grid_3D, scratch_3D);
+    circuit_data_to_tensor_network(
+        input.circuit, input.grid.I, input.grid.J, input.initial_state,
+        input.final_state, input.grid.qubits_off, tensor_grid_3D, scratch_3D);
 
     if (global::verbose > 0) {
       t1 = std::chrono::high_resolution_clock::now();
@@ -173,15 +172,14 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
             }
           }
         }
+
         std::size_t tensor_size = 1;
-        for (const auto& [index, dim] : index_dim) {
-          tensor_size *= dim;
-        }
-        if (tensor_size > max_size) {
-          max_size = tensor_size;
-        }
+        for (const auto& [index, dim] : index_dim)
+          if (tensor_size *= dim; max_size < tensor_size)
+            max_size = tensor_size;
       }
     }
+
     // Scratch space for contracting 3D to 2D grid. This must have enough space
     // to hold the largest single-qubit tensor in the 2D grid.
     std::vector<s_type> scratch_2D(max_size);
@@ -195,11 +193,74 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
       t0 = std::chrono::high_resolution_clock::now();
     }
 
+    // Rename last index when in final_qubit_region to
+    // "(i,j),(o)".
+    {
+      std::size_t idx = 0;
+      for (std::size_t i = 0; i < input.grid.I; ++i)
+        for (std::size_t j = 0; j < input.grid.J; ++j) {
+          // Skip if (i,j) is off
+          if (find_grid_coord_in_list(input.grid.qubits_off, i, j)) continue;
+
+          std::string last_name = utils::concat(
+              "(", i, ",", j, "),(", std::size(tensor_grid_3D[i][j]) - 1, ")");
+
+          if (find_grid_coord_in_list(final_qubits, i, j)) {
+            std::string output_name = utils::concat("(", i, ",", j, "),(o)");
+
+            try {
+              tensor_grid_3D[i][j].back().rename_index(last_name, output_name);
+            } catch (const std::string& err_msg) {
+              throw ERROR_MSG("Failed to call rename_index(). Error:\n\t[",
+                              err_msg, "]");
+            }
+          }
+
+          ++idx;
+        }
+    }
+
     // Contract 3D grid onto 2D grid of tensors, as usual.
-    tensor_grid = flatten_grid_of_tensors(tensor_grid_3D, input.grid.qubits_off, scratch_2D.data());
+    tensor_grid = flatten_grid_of_tensors(tensor_grid_3D, input.grid.qubits_off,
+                                          scratch_2D.data());
+
+    // Insert deltas to last layer on qubits that are in not in
+    // final_qubit_region.
+    {
+      std::size_t idx = 0;
+      for (std::size_t i = 0; i < input.grid.I; ++i)
+        for (std::size_t j = 0; j < input.grid.J; ++j) {
+          // Skip if (i,j) is off
+          if (find_grid_coord_in_list(input.grid.qubits_off, i, j)) continue;
+
+          std::string last_name = utils::concat(
+              "(", i, ",", j, "),(", std::size(tensor_grid_3D[i][j]) - 1, ")");
+
+          if (!find_grid_coord_in_list(final_qubits, i, j)) {
+            std::string delta_gate =
+                (input.final_state[idx] == '0') ? "delta_0" : "delta_1";
+
+            Tensor& A = tensor_grid[i][j];
+            Tensor B = Tensor({last_name}, {2}, gate_array(delta_gate, {}));
+            Tensor C({""}, {result_size(A, B)});
+            try {
+              multiply(A, B, C, scratch_2D.data());
+            } catch (const std::string& err_msg) {
+              throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
+                              "]");
+            }
+
+            // Move the result of A*B --> A
+            A = std::move(C);
+          }
+
+          ++idx;
+        }
+    }
 
     // Reorder the 2D grid
-    reorder_grid_of_tensors(tensor_grid, final_qubits, input.grid.qubits_off, ordering, scratch_2D.data());
+    reorder_grid_of_tensors(tensor_grid, final_qubits, input.grid.qubits_off,
+                            ordering, scratch_2D.data());
 
     if (global::verbose > 0) {
       t1 = std::chrono::high_resolution_clock::now();
