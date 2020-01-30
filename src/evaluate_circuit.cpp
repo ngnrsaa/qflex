@@ -126,8 +126,11 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // Get a list of qubits and output states for the final region.
   const auto final_qubits = get_final_qubits(input.grid, ordering);
 
+  std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
+  std::vector<std::vector<Tensor>> tensor_grid_orig;
+  std::vector<s_type> scratch_2D;
+
   // Scope so that scratch space and the 3D grid of tensors are destructed.
-  std::vector<std::vector<Tensor>> tensor_grid;
   {
     // Scratch space for creating 3D tensor network. The largest single-gate
     // tensor we currently support is rank 4.
@@ -136,7 +139,6 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     if (global::verbose > 0) t0 = std::chrono::high_resolution_clock::now();
 
     // Creating 3D grid of tensors from file.
-    std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
     circuit_data_to_tensor_network(input.circuit, input.grid.I, input.grid.J,
                                    input.initial_state, input.grid.qubits_off,
                                    tensor_grid_3D, scratch_3D);
@@ -174,7 +176,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
     // Scratch space for contracting 3D to 2D grid. This must have enough space
     // to hold the largest single-qubit tensor in the 2D grid.
-    std::vector<s_type> scratch_2D(max_size);
+    scratch_2D.resize(max_size);
 
     if (global::verbose > 0) {
       t1 = std::chrono::high_resolution_clock::now();
@@ -214,8 +216,31 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
     // Contract 3D grid onto 2D grid of tensors, as usual. At this point,
     // tensor_grid should be independent of the given final_state
-    tensor_grid = flatten_grid_of_tensors(tensor_grid_3D, input.grid.qubits_off,
+    tensor_grid_orig = flatten_grid_of_tensors(tensor_grid_3D, input.grid.qubits_off,
                                           scratch_2D.data());
+
+    if (global::verbose > 0) {
+      t1 = std::chrono::high_resolution_clock::now();
+      time_span =
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+      std::cerr << "Time spent creating 2D grid of tensors from 3D one: "
+        << time_span.count() << "s" << std::endl;
+    }
+  }
+
+  // Perform contraction
+  std::vector<std::pair<std::string, std::complex<double>>> result;
+  for(const auto &final_state : {input.final_state}){
+
+    //const std::string final_state = input.final_state;
+
+    // TODO: fix tensor copy
+    std::vector<std::vector<Tensor>> tensor_grid(std::size(tensor_grid_orig));
+    for(std::size_t i = 0, I = std::size(tensor_grid_orig); i < I; ++i) {
+      tensor_grid[i].resize(std::size(tensor_grid_orig[i]));
+      for(std::size_t j = 0, J = std::size(tensor_grid_orig[i]); j < J; ++j)
+        tensor_grid[i][j] = tensor_grid_orig[i][j];
+    }
 
     // Insert deltas to last layer on qubits that are in not in
     // final_qubit_region.
@@ -231,7 +256,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
           if (!find_grid_coord_in_list(final_qubits.qubits, i, j)) {
             std::string delta_gate =
-                (input.final_state[idx] == '0') ? "delta_0" : "delta_1";
+              (final_state[idx] == '0') ? "delta_0" : "delta_1";
 
             Tensor& A = tensor_grid[i][j];
             Tensor B = Tensor({last_name}, {2}, gate_array(delta_gate, {}));
@@ -240,7 +265,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
               multiply(A, B, C, scratch_2D.data());
             } catch (const std::string& err_msg) {
               throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
-                              "]");
+                  "]");
             }
 
             // Move the result of A*B --> A
@@ -253,36 +278,35 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
     // Reorder the 2D grid
     reorder_grid_of_tensors(tensor_grid, final_qubits.qubits,
-                            input.grid.qubits_off, ordering, scratch_2D.data());
+        input.grid.qubits_off, ordering, scratch_2D.data());
 
     if (global::verbose > 0) {
       t1 = std::chrono::high_resolution_clock::now();
       time_span =
-          std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-      std::cerr << "Time spent creating 2D grid of tensors from 3D one: "
-                << time_span.count() << "s" << std::endl;
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+      std::cerr << "Time spent copying and apply final state: "
+        << time_span.count() << "s" << std::endl;
     }
-  }
 
-  // Perform tensor grid contraction.
-  const auto output_states = get_output_states(input.final_state, final_qubits);
-  std::vector<std::complex<double>> amplitudes(output_states.size());
-  std::vector<std::pair<std::string, std::complex<double>>> result;
-  try {
-    ContractGrid(ordering, &tensor_grid, &amplitudes);
-  } catch (const std::string& err_msg) {
-    throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[", err_msg, "]");
-  }
-  for (std::size_t c = 0; c < amplitudes.size(); ++c) {
-    result.push_back(std::make_pair(output_states[c], amplitudes[c]));
-  }
+    // Perform tensor grid contraction.
+    const auto output_states = get_output_states(final_state, final_qubits);
+    std::vector<std::complex<double>> amplitudes(output_states.size());
+    try {
+      ContractGrid(ordering, &tensor_grid, &amplitudes);
+    } catch (const std::string& err_msg) {
+      throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[", err_msg, "]");
+    }
+    for (std::size_t c = 0; c < amplitudes.size(); ++c) {
+      result.push_back(std::make_pair(output_states[c], amplitudes[c]));
+    }
 
-  // Final time
-  if (global::verbose > 0) {
-    t_output_1 = std::chrono::high_resolution_clock::now();
-    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(
-        t_output_1 - t_output_0);
-    std::cerr << "Total time: " << time_span.count() << "s" << std::endl;
+    // Final time
+    if (global::verbose > 0) {
+      t_output_1 = std::chrono::high_resolution_clock::now();
+      time_span = std::chrono::duration_cast<std::chrono::duration<double>>(
+          t_output_1 - t_output_0);
+      std::cerr << "Total time: " << time_span.count() << "s" << std::endl;
+    }
   }
 
   return result;
