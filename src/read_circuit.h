@@ -71,7 +71,7 @@ std::vector<s_type> gate_array(const std::string& gate_name,
  */
 void circuit_data_to_tensor_network(
     const QflexCircuit& circuit, std::size_t I, std::size_t J,
-    const std::string& initial_conf, const std::string& final_conf,
+    const std::string& initial_conf,
     const std::optional<std::vector<std::vector<std::size_t>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch);

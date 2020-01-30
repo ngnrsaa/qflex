@@ -295,7 +295,7 @@ order_func(const std::list<ContractionOperation>& ordering,
 // Add depth functionality to read a circuit up to a certain cycle.
 void circuit_data_to_tensor_network(
     const QflexCircuit& circuit, std::size_t I, std::size_t J,
-    const std::string& initial_conf, const std::string& final_conf,
+    const std::string& initial_conf,
     const std::optional<std::vector<std::vector<std::size_t>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch) {
@@ -318,18 +318,10 @@ void circuit_data_to_tensor_network(
   }
 
   // Check for the length of initial_conf and final_conf.
-  {
-    // std::size_t off_size = off.has_value() ? off.value().size() : 0;
-    if (initial_conf.size() != num_active_qubits_from_grid) {
-      throw ERROR_MSG("Size of initial_conf: ", initial_conf.size(),
-                      ", must be equal to the number of qubits: ",
-                      num_active_qubits_from_grid, ".");
-    }
-    if (final_conf.size() != initial_conf.size()) {
-      throw ERROR_MSG("Size of final_conf: ", final_conf.size(),
-                      ", must be equal to size of initial_conf: ",
-                      initial_conf.size(), ".");
-    }
+  if (initial_conf.size() != num_active_qubits_from_grid) {
+    throw ERROR_MSG("Size of initial_conf: ", initial_conf.size(),
+                    ", must be equal to the number of qubits: ",
+                    num_active_qubits_from_grid, ".");
   }
 
   // Creating grid variables.

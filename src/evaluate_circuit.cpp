@@ -123,8 +123,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
               << "s" << std::endl;
   }
 
-  // Get a list of qubits and output states for the final region, and set the
-  // final_state if one wasn't provided.
+  // Get a list of qubits and output states for the final region.
   const auto final_qubits = get_final_qubits(input.grid, ordering);
 
   // Scope so that scratch space and the 3D grid of tensors are destructed.
@@ -138,9 +137,9 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
     // Creating 3D grid of tensors from file.
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
-    circuit_data_to_tensor_network(
-        input.circuit, input.grid.I, input.grid.J, input.initial_state,
-        input.final_state, input.grid.qubits_off, tensor_grid_3D, scratch_3D);
+    circuit_data_to_tensor_network(input.circuit, input.grid.I, input.grid.J,
+                                   input.initial_state, input.grid.qubits_off,
+                                   tensor_grid_3D, scratch_3D);
 
     if (global::verbose > 0) {
       t1 = std::chrono::high_resolution_clock::now();
