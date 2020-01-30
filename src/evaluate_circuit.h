@@ -48,6 +48,15 @@ namespace qflex {
 std::vector<std::vector<std::size_t>> read_grid_layout_from_stream(
     std::istream* grid_data, std::size_t I, std::size_t J);
 
+struct QflexFinalQubits {
+  std::vector<std::vector<std::size_t>> qubits;
+  std::vector<std::size_t> output_pos_map;
+  std::vector<std::vector<std::size_t>> output_values_map;
+};
+
+QflexFinalQubits get_final_qubits(
+    const QflexGrid& grid, const std::list<ContractionOperation>& ordering);
+
 /**
  * Determines the final qubit positions and output states for a given ordering.
  * @param input QflexInput generated from the command line.
@@ -57,10 +66,8 @@ std::vector<std::vector<std::size_t>> read_grid_layout_from_stream(
  * @param output_states vector of output states for the given contraction
  * ordering, to be populated by this method.
  */
-void get_output_states(const QflexGrid& grid, const std::string& base_state,
-                       const std::list<ContractionOperation>& ordering,
-                       std::vector<std::vector<std::size_t>>* final_qubits,
-                       std::vector<std::string>* output_states);
+std::vector<std::string> get_output_states(
+    const std::string& base_state, const QflexFinalQubits& final_qubits);
 
 /**
  * Evaluates a circuit and returns the final amplitudes of each state resulting
