@@ -297,15 +297,6 @@ class Tensor {
   void _clear();
 
   /**
-   * Helper function for the copy constructor and the assignment operator.
-   * It is responsibility of the user to copy onto a Tensor with the same
-   * total dimension as other. If there is space allocated, no new space will
-   * be allocated. Changing the size of a Tensor is not allowed.
-   * @param other Tensor to copy into the current Tensor.
-   */
-  void _copy(const Tensor& other);
-
-  /**
    * Helper function for the move constructor.
    * @param other Tensor to move into the current Tensor.
    */
