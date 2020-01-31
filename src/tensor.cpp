@@ -1040,7 +1040,8 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << "Time preparing variables: " << time_span.count() << "s\n";
+    std::cerr << WARN_MSG("Time preparing variables: ", time_span.count(), "s")
+              << std::endl;
   }
 
   // Check.
@@ -1065,8 +1066,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << "R " << time_span.count() << " s\n";
-    std::cerr << "Time reordering A: " << time_span.count() << "s\n";
+    std::cerr << WARN_MSG("R ", time_span.count(), "s") << std::endl;
+    ;
+    std::cerr << WARN_MSG("Time reordering A: ", time_span.count(), "s")
+              << std::endl;
     t0 = std::chrono::high_resolution_clock::now();
   }
 
@@ -1082,8 +1085,9 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << "R " << time_span.count() << " s\n";
-    std::cerr << "Time reordering B: " << time_span.count() << "s\n";
+    std::cerr << WARN_MSG("R ", time_span.count(), "s") << std::endl;
+    std::cerr << WARN_MSG("Time reordering B: ", time_span.count(), "s")
+              << std::endl;
     t0 = std::chrono::high_resolution_clock::now();
   }
 
@@ -1124,8 +1128,9 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << "M " << time_span.count() << " s\n";
-    std::cerr << "Time multiplying A*B: " << time_span.count() << "s\n";
+    std::cerr << WARN_MSG("M ", time_span.count(), "s") << std::endl;
+    std::cerr << WARN_MSG("Time multiplying A*B: ", time_span.count(), "s")
+              << std::endl;
     t0 = std::chrono::high_resolution_clock::now();
   }
 
@@ -1151,7 +1156,9 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << "Time updating C's variables: " << time_span.count() << "s\n";
+    std::cerr << WARN_MSG("Time updating C's variables: ", time_span.count(),
+                          "s")
+              << std::endl;
   }
 }
 

@@ -119,8 +119,9 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     t1 = std::chrono::high_resolution_clock::now();
     time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << "Time spent making contraction ordering: " << time_span.count()
-              << "s" << std::endl;
+    std::cerr << WARN_MSG("Time spent making contraction ordering: ",
+                          time_span.count(), "s")
+              << std::endl;
   }
 
   // Get a list of qubits and output states for the final region.
@@ -147,8 +148,10 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
       t1 = std::chrono::high_resolution_clock::now();
       time_span =
           std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-      std::cerr << "Time spent creating 3D grid of tensors from file: "
-                << time_span.count() << "s" << std::endl;
+      std::cerr << WARN_MSG(
+                       "Time spent creating 3D grid of tensors from file: ",
+                       time_span.count(), "s")
+                << std::endl;
       t0 = std::chrono::high_resolution_clock::now();
     }
 
@@ -182,8 +185,9 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
       t1 = std::chrono::high_resolution_clock::now();
       time_span =
           std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-      std::cerr << "Time spent allocating scratch space for 2D grid: "
-                << time_span.count() << "s" << std::endl;
+      std::cerr << WARN_MSG("Time spent allocating scratch space for 2D grid: ",
+                            time_span.count(), "s")
+                << std::endl;
       t0 = std::chrono::high_resolution_clock::now();
     }
 
@@ -223,23 +227,30 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
       t1 = std::chrono::high_resolution_clock::now();
       time_span =
           std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-      std::cerr << "Time spent creating 2D grid of tensors from 3D one: "
-                << time_span.count() << "s" << std::endl;
+      std::cerr << WARN_MSG(
+                       "Time spent creating 2D grid of tensors from 3D one: ",
+                       time_span.count(), "s")
+                << std::endl;
       t0 = std::chrono::high_resolution_clock::now();
     }
   }
 
   // Perform contraction
   std::vector<std::pair<std::string, std::complex<double>>> result;
-  for (const auto& final_state : {input.final_state}) {
+  std::vector<std::string> final_states = {input.final_state};
+  for (std::size_t k = 0; k < std::size(final_states); ++k) {
     // const std::string final_state = input.final_state;
+    const std::string final_state = final_states[k];
 
     // TODO: fix tensor copy
     std::vector<std::vector<Tensor>> tensor_grid(std::size(tensor_grid_orig));
     for (std::size_t i = 0, I = std::size(tensor_grid_orig); i < I; ++i) {
       tensor_grid[i].resize(std::size(tensor_grid_orig[i]));
       for (std::size_t j = 0, J = std::size(tensor_grid_orig[i]); j < J; ++j)
-        tensor_grid[i][j] = tensor_grid_orig[i][j];
+        if (k < std::size(final_states) - 1)
+          tensor_grid[i][j] = tensor_grid_orig[i][j];
+        else
+          tensor_grid[i][j] = std::move(tensor_grid_orig[i][j]);
     }
 
     // Insert deltas to last layer on qubits that are in not in
@@ -284,8 +295,9 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
       t1 = std::chrono::high_resolution_clock::now();
       time_span =
           std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-      std::cerr << "Time spent copying and apply final state: "
-                << time_span.count() << "s" << std::endl;
+      std::cerr << WARN_MSG("Time spent copying and apply final state: ",
+                            time_span.count(), "s")
+                << std::endl;
       t0 = std::chrono::high_resolution_clock::now();
     }
 
@@ -302,17 +314,24 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
       result.push_back(std::make_pair(output_states[c], amplitudes[c]));
     }
 
-    // Final time
+    // Contracting time
     if (global::verbose > 0) {
       t1 = std::chrono::high_resolution_clock::now();
       time_span =
           std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-      std::cerr << "Time spent in contracting: " << time_span.count() << "s"
+      std::cerr << WARN_MSG("Time spent in contracting: ", time_span.count(),
+                            "s")
                 << std::endl;
-      time_span = std::chrono::duration_cast<std::chrono::duration<double>>(
-          t1 - t_output_0);
-      std::cerr << "Total time: " << time_span.count() << "s" << std::endl;
+      t0 = std::chrono::high_resolution_clock::now();
     }
+  }
+
+  // Final time
+  if (global::verbose > 0) {
+    t1 = std::chrono::high_resolution_clock::now();
+    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(
+        t1 - t_output_0);
+    std::cerr << WARN_MSG("Total time: ", time_span.count(), "s") << std::endl;
   }
 
   return result;
