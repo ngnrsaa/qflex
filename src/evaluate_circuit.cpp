@@ -93,6 +93,35 @@ std::vector<std::string> get_output_states(
   return output_states;
 }
 
+void apply_final_qubits(
+    const QflexGrid& grid, const QflexFinalQubits& final_qubits,
+    std::vector<std::vector<std::vector<Tensor>>>* tensor_grid_3D_ptr) {
+  auto& tensor_grid_3D = *tensor_grid_3D_ptr;
+
+  std::size_t idx = 0;
+  for (std::size_t i = 0; i < grid.I; ++i)
+    for (std::size_t j = 0; j < grid.J; ++j) {
+      // Skip if (i,j) is off
+      if (find_grid_coord_in_list(grid.qubits_off, i, j)) continue;
+
+      std::string last_name = utils::concat(
+          "(", i, ",", j, "),(", std::size(tensor_grid_3D[i][j]) - 1, ")");
+
+      if (find_grid_coord_in_list(final_qubits.qubits, i, j)) {
+        std::string output_name = utils::concat("(", i, ",", j, "),(o)");
+
+        try {
+          tensor_grid_3D[i][j].back().rename_index(last_name, output_name);
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to call rename_index(). Error:\n\t[", err_msg,
+                          "]");
+        }
+      }
+
+      ++idx;
+    }
+}
+
 void apply_delta_output(
     const QflexGrid& grid, const std::string& final_state,
     const QflexFinalQubits& final_qubits,
@@ -220,32 +249,7 @@ EvaluateCircuit(const QflexInput& input) {
 
       // Rename last index when in final_qubit_region to
       // "(i,j),(o)".
-      {
-        std::size_t idx = 0;
-        for (std::size_t i = 0; i < input.grid.I; ++i)
-          for (std::size_t j = 0; j < input.grid.J; ++j) {
-            // Skip if (i,j) is off
-            if (find_grid_coord_in_list(input.grid.qubits_off, i, j)) continue;
-
-            std::string last_name =
-                utils::concat("(", i, ",", j, "),(",
-                              std::size(tensor_grid_3D[i][j]) - 1, ")");
-
-            if (find_grid_coord_in_list(final_qubits.qubits, i, j)) {
-              std::string output_name = utils::concat("(", i, ",", j, "),(o)");
-
-              try {
-                tensor_grid_3D[i][j].back().rename_index(last_name,
-                                                         output_name);
-              } catch (const std::string& err_msg) {
-                throw ERROR_MSG("Failed to call rename_index(). Error:\n\t[",
-                                err_msg, "]");
-              }
-            }
-
-            ++idx;
-          }
-      }
+      apply_final_qubits(input.grid, final_qubits, &tensor_grid_3D);
 
       // Contract 3D grid onto 2D grid of tensors, as usual. At this point,
       // tensor_grid should be independent of the given final_state

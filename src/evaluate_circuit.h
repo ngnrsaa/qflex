@@ -69,6 +69,10 @@ QflexFinalQubits get_final_qubits(
 std::vector<std::string> get_output_states(
     const std::string& base_state, const QflexFinalQubits& final_qubits);
 
+void apply_final_qubits(
+    const QflexGrid& grid, const QflexFinalQubits& final_qubits,
+    std::vector<std::vector<std::vector<Tensor>>>* tensor_grid_3D_ptr);
+
 void apply_delta_output(
     const QflexGrid& grid, const std::string& final_state,
     const QflexFinalQubits& final_qubits,
