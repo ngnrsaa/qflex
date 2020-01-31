@@ -93,7 +93,7 @@ std::vector<std::string> get_output_states(
   return output_states;
 }
 
-void apply_final_qubits(
+void apply_terminal_cuts(
     const QflexGrid& grid, const QflexFinalQubits& final_qubits,
     std::vector<std::vector<std::vector<Tensor>>>* tensor_grid_3D_ptr) {
   auto& tensor_grid_3D = *tensor_grid_3D_ptr;
@@ -249,7 +249,7 @@ EvaluateCircuit(const QflexInput& input) {
 
       // Rename last index when in final_qubit_region to
       // "(i,j),(o)".
-      apply_final_qubits(input.grid, final_qubits, &tensor_grid_3D);
+      apply_terminal_cuts(input.grid, final_qubits, &tensor_grid_3D);
 
       // Contract 3D grid onto 2D grid of tensors, as usual. At this point,
       // tensor_grid should be independent of the given final_state
@@ -275,7 +275,7 @@ EvaluateCircuit(const QflexInput& input) {
                          &tensor_grid, &scratch_2D);
 
       // Reorder the 2D grid
-      reorder_grid_of_tensors(tensor_grid, final_qubits.qubits,
+      reorder_grid_of_tensors(&tensor_grid, final_qubits.qubits,
                               input.grid.qubits_off, ordering,
                               scratch_2D.data());
 
