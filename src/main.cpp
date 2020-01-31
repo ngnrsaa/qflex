@@ -96,32 +96,41 @@ int main(int argc, char** argv) {
     // Get initial/final configurations
     for (const auto& arg : {"--initial-conf", "<initial_conf>"})
       if (static_cast<bool>(args[arg])) {
-        if (std::string val = args[arg].asString(); val == "00...00")
-          input.initial_states.push_back(
-              std::string(input.circuit.num_active_qubits, '0'));
-        else if (val.find_first_not_of("01") != std::string::npos)
-          throw ERROR_MSG(
-              "Initial configurations can only have 0 or 1 characters.");
-        else if (std::size(val) != input.circuit.num_active_qubits)
-          throw ERROR_MSG(
-              "Initial configurations must have the number of active qubits.");
-        else
-          input.initial_states.push_back(val);
+        std::stringstream ss(args[arg].asString());
+        std::string val;
+        while (std::getline(ss, val, ',')) {
+          if (val == "00...00")
+            input.initial_states.push_back(
+                std::string(input.circuit.num_active_qubits, '0'));
+          else if (val.find_first_not_of("01") != std::string::npos)
+            throw ERROR_MSG(
+                "Initial configurations can only have 0 or 1 characters.");
+          else if (std::size(val) != input.circuit.num_active_qubits)
+            throw ERROR_MSG(
+                "Initial configurations must have the number of active "
+                "qubits.");
+          else
+            input.initial_states.push_back(val);
+        }
       }
 
     for (const auto& arg : {"--final-conf", "<final_conf>"})
       if (static_cast<bool>(args[arg])) {
-        if (std::string val = args[arg].asString(); val == "00...00")
-          input.final_states.push_back(
-              std::string(input.circuit.num_active_qubits, '0'));
-        else if (val.find_first_not_of("01") != std::string::npos)
-          throw ERROR_MSG(
-              "Final configurations can only have 0 or 1 characters.");
-        else if (std::size(val) != input.circuit.num_active_qubits)
-          throw ERROR_MSG(
-              "Final configurations must have the number of active qubits.");
-        else
-          input.final_states.push_back(val);
+        std::stringstream ss(args[arg].asString());
+        std::string val;
+        while (std::getline(ss, val, ',')) {
+          if (val == "00...00")
+            input.final_states.push_back(
+                std::string(input.circuit.num_active_qubits, '0'));
+          else if (val.find_first_not_of("01") != std::string::npos)
+            throw ERROR_MSG(
+                "Final configurations can only have 0 or 1 characters.");
+          else if (std::size(val) != input.circuit.num_active_qubits)
+            throw ERROR_MSG(
+                "Final configurations must have the number of active qubits.");
+          else
+            input.final_states.push_back(val);
+        }
       }
 
     // Delete duplicate initial/final configuration
