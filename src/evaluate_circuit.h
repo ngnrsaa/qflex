@@ -69,6 +69,13 @@ QflexFinalQubits get_final_qubits(
 std::vector<std::string> get_output_states(
     const std::string& base_state, const QflexFinalQubits& final_qubits);
 
+void apply_delta_output(
+    const QflexInput& input, const std::string& final_state,
+    const QflexFinalQubits& final_qubits,
+    const std::vector<std::vector<std::vector<Tensor>>>& tensor_grid_3D,
+    std::vector<std::vector<Tensor>>* tensor_grid_prt,
+    std::vector<s_type>* scratch_2D_ptr);
+
 /**
  * Evaluates a circuit and returns the final amplitudes of each state resulting
  * from the provided contraction ordering.

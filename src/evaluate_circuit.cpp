@@ -93,6 +93,46 @@ std::vector<std::string> get_output_states(
   return output_states;
 }
 
+void apply_delta_output(
+    const QflexInput& input, const std::string& final_state,
+    const QflexFinalQubits& final_qubits,
+    const std::vector<std::vector<std::vector<Tensor>>>& tensor_grid_3D,
+    std::vector<std::vector<Tensor>>* tensor_grid_prt,
+    std::vector<s_type>* scratch_2D_ptr) {
+  auto& tensor_grid = *tensor_grid_prt;
+  auto& scratch_2D = *scratch_2D_ptr;
+
+  std::size_t idx = 0;
+  for (std::size_t i = 0; i < input.grid.I; ++i)
+    for (std::size_t j = 0; j < input.grid.J; ++j) {
+      // Skip if (i,j) is off
+      if (find_grid_coord_in_list(input.grid.qubits_off, i, j)) continue;
+
+      std::string last_name = utils::concat(
+          "(", i, ",", j, "),(", std::size(tensor_grid_3D[i][j]) - 1, ")");
+
+      if (!find_grid_coord_in_list(final_qubits.qubits, i, j)) {
+        std::string delta_gate =
+            (final_state[idx] == '0') ? "delta_0" : "delta_1";
+
+        Tensor& A = tensor_grid[i][j];
+        Tensor B = Tensor({last_name}, {2}, gate_array(delta_gate, {}));
+        Tensor C({""}, {result_size(A, B)});
+        try {
+          multiply(A, B, C, scratch_2D.data());
+        } catch (const std::string& err_msg) {
+          throw ERROR_MSG("Failed to call multiply(). Error:\n\t[", err_msg,
+                          "]");
+        }
+
+        // Move the result of A*B --> A
+        A = std::move(C);
+      }
+
+      ++idx;
+    }
+}
+
 std::vector<std::tuple<std::string, std::string, std::complex<double>>>
 EvaluateCircuit(const QflexInput& input) {
   std::chrono::steady_clock::time_point t_output_0;
@@ -227,38 +267,8 @@ EvaluateCircuit(const QflexInput& input) {
 
       // Insert deltas to last layer on qubits that are in not in
       // final_qubit_region.
-      {
-        std::size_t idx = 0;
-        for (std::size_t i = 0; i < input.grid.I; ++i)
-          for (std::size_t j = 0; j < input.grid.J; ++j) {
-            // Skip if (i,j) is off
-            if (find_grid_coord_in_list(input.grid.qubits_off, i, j)) continue;
-
-            std::string last_name =
-                utils::concat("(", i, ",", j, "),(",
-                              std::size(tensor_grid_3D[i][j]) - 1, ")");
-
-            if (!find_grid_coord_in_list(final_qubits.qubits, i, j)) {
-              std::string delta_gate =
-                  (final_state[idx] == '0') ? "delta_0" : "delta_1";
-
-              Tensor& A = tensor_grid[i][j];
-              Tensor B = Tensor({last_name}, {2}, gate_array(delta_gate, {}));
-              Tensor C({""}, {result_size(A, B)});
-              try {
-                multiply(A, B, C, scratch_2D.data());
-              } catch (const std::string& err_msg) {
-                throw ERROR_MSG("Failed to call multiply(). Error:\n\t[",
-                                err_msg, "]");
-              }
-
-              // Move the result of A*B --> A
-              A = std::move(C);
-            }
-
-            ++idx;
-          }
-      }
+      apply_delta_output(input, final_state, final_qubits, tensor_grid_3D,
+                         &tensor_grid, &scratch_2D);
 
       // Reorder the 2D grid
       reorder_grid_of_tensors(tensor_grid, final_qubits.qubits,
