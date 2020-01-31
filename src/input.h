@@ -13,7 +13,7 @@ struct QflexInput {
   QflexCircuit circuit;
   QflexGrid grid;
   std::string initial_state;
-  std::string final_state;
+  std::vector<std::string> final_states;
 };
 
 }  // namespace qflex
