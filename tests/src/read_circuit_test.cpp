@@ -1,6 +1,7 @@
 #include "read_circuit.h"
 
 #include "circuit.h"
+#include "evaluate_circuit.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -277,28 +278,30 @@ constexpr char kSimpleCircuit[] = R"(5
 
 // Verifies that collapsing the 3D tensor network to a 2D grid behaves as
 // expected.
-// TODO: THIS MUST BE REDESIGNED!
-/*
 TEST(ReadCircuitTest, CondenseToGrid) {
   std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
-  std::vector<std::vector<std::size_t>> qubits_A = {{2, 1}};
-  std::vector<std::vector<std::size_t>> qubits_off = {{2, 0}};
-  s_type *scratch = new s_type[256];
+  std::vector<s_type> scratch(256);
 
-  QflexCircuit circuit;
-  circuit.load(std::stringstream(kSimpleCircuit));
-  circuit_data_to_tensor_network(circuit, 3, 2, "00000",
-                                 qubits_off, tensor_grid_3D, scratch);
+  QflexInput input;
 
-  ASSERT_EQ(tensor_grid_3D.size(), 3ul);
-  for (const auto &tensor : tensor_grid_3D) ASSERT_EQ(tensor.size(), 2ul);
+  // Define states
+  input.initial_states = {"00000"};
+  input.final_states = {"00000"};
 
-  // TODO Add check on tensors
+  // Define grid
+  input.grid.qubits_off = {{2, 0}};
+  input.grid.I = 3;
+  input.grid.J = 2;
 
-  std::vector<std::vector<Tensor>> tensor_grid_2D;
-  for (int i = 0; i < 3; ++i) {
-    tensor_grid_2D.push_back(std::vector<Tensor>(2));
-  }
+  // Get circuit
+  input.circuit.load(std::stringstream(kSimpleCircuit));
+
+  circuit_data_to_tensor_network(input.circuit, input.grid.I, input.grid.J, input.initial_states[0],
+                                 input.grid.qubits_off, tensor_grid_3D, scratch.data());
+
+  ASSERT_EQ(tensor_grid_3D.size(), input.grid.I);
+  for (const auto &tensor : tensor_grid_3D) ASSERT_EQ(tensor.size(), input.grid.J);
+
   // Working from either end, create two patches and meet in the middle.
   std::list<ContractionOperation> ordering;
   ordering.emplace_back(CutIndex({{0, 1}, {1, 1}}));
@@ -310,8 +313,20 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   ordering.emplace_back(ExpandPatch("b", {1, 1}));
   ordering.emplace_back(MergePatches("a", "b"));
 
-  flatten_grid_of_tensors(tensor_grid_3D, qubits_off,
-                          scratch);
+  const auto final_qubits = get_final_qubits(input.grid, ordering);
+
+  // Apply the terminal cuts
+  apply_terminal_cuts(input.grid, final_qubits, &tensor_grid_3D);
+
+  // Flatten the tensor up to the last layer
+  auto tensor_grid_2D = flatten_grid_of_tensors(tensor_grid_3D, input.grid.qubits_off,
+                          scratch.data());
+
+  // Apply last layer of delta's
+  apply_delta_output(input.grid, input.final_states[0], final_qubits, tensor_grid_3D, &tensor_grid_2D, &scratch);
+
+  // Reorder the 2D grid
+  reorder_grid_of_tensors(&tensor_grid_2D, final_qubits.qubits, input.grid.qubits_off, ordering, scratch.data());
 
   // Verify that index ordering follows this pattern:
   //   1) Final-region indices ("<index>,(o)")
@@ -322,7 +337,7 @@ TEST(ReadCircuitTest, CondenseToGrid) {
       {
           // qubit (0,0) - normal
           {"(0,0),(0,1)", "(0,0),(1,0)"},
-          // qubit (0,1) - cut index
+          // qubit (0,1) - cut index (but not affected because last layer not included)
           {"(0,1),(1,1)", "(0,0),(0,1)"},
       },
       {
@@ -344,7 +359,6 @@ TEST(ReadCircuitTest, CondenseToGrid) {
     }
   }
 }
-*/
 
 TEST(ReadCircuitExceptionTest, CircuitDataToGridOfTensorsInvalidInput) {
   std::vector<std::vector<std::vector<Tensor>>> grid_of_tensors;
@@ -373,6 +387,7 @@ TEST(ReadCircuitExceptionTest, CircuitDataToGridOfTensorsInvalidInput) {
     EXPECT_THAT(msg, testing::HasSubstr("Size of initial_conf: 3, must be "
                                         "equal to the number of qubits: 2."));
   }
+
 }
 
 TEST(ReadCircuitExceptionTest, GridOfTensors3DTo2DInvalidInput) {
