@@ -95,7 +95,7 @@ std::vector<std::string> get_output_states(
 
 std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     const QflexInput& input) {
-  std::chrono::high_resolution_clock::time_point t_output_0, t_output_1;
+  std::chrono::high_resolution_clock::time_point t_output_0;
   if (global::verbose > 0) {
     // Set precision for the printed floats.
     std::cerr.precision(12);
@@ -304,9 +304,13 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
     // Final time
     if (global::verbose > 0) {
-      t_output_1 = std::chrono::high_resolution_clock::now();
+      t1 = std::chrono::high_resolution_clock::now();
+      time_span =
+          std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
+      std::cerr << "Time spent in contracting: " << time_span.count() << "s"
+                << std::endl;
       time_span = std::chrono::duration_cast<std::chrono::duration<double>>(
-          t_output_1 - t_output_0);
+          t1 - t_output_0);
       std::cerr << "Total time: " << time_span.count() << "s" << std::endl;
     }
   }
