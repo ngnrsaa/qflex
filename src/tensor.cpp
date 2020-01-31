@@ -15,6 +15,11 @@
 
 #include "tensor.h"
 
+#include <immintrin.h>
+
+#include <cassert>
+#include <cstdint>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -115,9 +120,8 @@ void Tensor::_copy(const Tensor& other) {
     throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
   }
 
-#pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
-  for (std::size_t p = 0; p < other.size(); ++p)
-    *(_data + p) = *(other.data() + p);
+  // Copy memory
+  std::copy(other.data(), other.data() + std::size(other), _data);
 }
 
 void Tensor::_move(Tensor&& other) {
@@ -160,8 +164,9 @@ Tensor::Tensor(std::vector<std::string> indices,
                     ", has to match the size of the Tensor: ", this_size);
   }
   _capacity = this_size;
+
   // Fill in the _data.
-  for (std::size_t i = 0; i < this_size; ++i) *(_data + i) = data[i];
+  std::copy(std::begin(data), std::end(data), _data);
 }
 
 Tensor::Tensor(std::vector<std::string> indices,
