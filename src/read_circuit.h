@@ -101,7 +101,7 @@ std::vector<std::vector<Tensor>> flatten_grid_of_tensors(
     s_type* scratch);
 
 void reorder_grid_of_tensors(
-    std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
+    std::vector<std::vector<Tensor>>* grid_of_tensors_2D_ptr,
     const std::optional<std::vector<std::vector<std::size_t>>>&
         final_qubit_region,
     const std::optional<std::vector<std::vector<std::size_t>>>& off,
