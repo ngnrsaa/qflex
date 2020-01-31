@@ -296,11 +296,13 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   // Get circuit
   input.circuit.load(std::stringstream(kSimpleCircuit));
 
-  circuit_data_to_tensor_network(input.circuit, input.grid.I, input.grid.J, input.initial_states[0],
-                                 input.grid.qubits_off, tensor_grid_3D, scratch.data());
+  circuit_data_to_tensor_network(input.circuit, input.grid.I, input.grid.J,
+                                 input.initial_states[0], input.grid.qubits_off,
+                                 tensor_grid_3D, scratch.data());
 
   ASSERT_EQ(tensor_grid_3D.size(), input.grid.I);
-  for (const auto &tensor : tensor_grid_3D) ASSERT_EQ(tensor.size(), input.grid.J);
+  for (const auto &tensor : tensor_grid_3D)
+    ASSERT_EQ(tensor.size(), input.grid.J);
 
   // Working from either end, create two patches and meet in the middle.
   std::list<ContractionOperation> ordering;
@@ -319,14 +321,16 @@ TEST(ReadCircuitTest, CondenseToGrid) {
   apply_terminal_cuts(input.grid, final_qubits, &tensor_grid_3D);
 
   // Flatten the tensor up to the last layer
-  auto tensor_grid_2D = flatten_grid_of_tensors(tensor_grid_3D, input.grid.qubits_off,
-                          scratch.data());
+  auto tensor_grid_2D = flatten_grid_of_tensors(
+      tensor_grid_3D, input.grid.qubits_off, scratch.data());
 
   // Apply last layer of delta's
-  apply_delta_output(input.grid, input.final_states[0], final_qubits, tensor_grid_3D, &tensor_grid_2D, &scratch);
+  apply_delta_output(input.grid, input.final_states[0], final_qubits,
+                     tensor_grid_3D, &tensor_grid_2D, &scratch);
 
   // Reorder the 2D grid
-  reorder_grid_of_tensors(&tensor_grid_2D, final_qubits.qubits, input.grid.qubits_off, ordering, scratch.data());
+  reorder_grid_of_tensors(&tensor_grid_2D, final_qubits.qubits,
+                          input.grid.qubits_off, ordering, scratch.data());
 
   // Verify that index ordering follows this pattern:
   //   1) Final-region indices ("<index>,(o)")
@@ -337,7 +341,8 @@ TEST(ReadCircuitTest, CondenseToGrid) {
       {
           // qubit (0,0) - normal
           {"(0,0),(0,1)", "(0,0),(1,0)"},
-          // qubit (0,1) - cut index (but not affected because last layer not included)
+          // qubit (0,1) - cut index (but not affected because last layer not
+          // included)
           {"(0,1),(1,1)", "(0,0),(0,1)"},
       },
       {
@@ -387,7 +392,6 @@ TEST(ReadCircuitExceptionTest, CircuitDataToGridOfTensorsInvalidInput) {
     EXPECT_THAT(msg, testing::HasSubstr("Size of initial_conf: 3, must be "
                                         "equal to the number of qubits: 2."));
   }
-
 }
 
 TEST(ReadCircuitExceptionTest, GridOfTensors3DTo2DInvalidInput) {

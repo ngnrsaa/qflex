@@ -565,8 +565,7 @@ void reorder_grid_of_tensors(
         final_qubit_region,
     const std::optional<std::vector<std::vector<std::size_t>>>& off,
     const std::list<ContractionOperation>& ordering, s_type* scratch) {
-
-  if(grid_of_tensors_2D_ptr == nullptr) {
+  if (grid_of_tensors_2D_ptr == nullptr) {
     throw ERROR_MSG("grid_of_tensors_2D_prt must be non-null.");
   }
 
@@ -574,7 +573,7 @@ void reorder_grid_of_tensors(
     throw ERROR_MSG("Scratch must be non-null.");
   }
 
-  auto &grid_of_tensors_2D = *grid_of_tensors_2D_ptr;
+  auto& grid_of_tensors_2D = *grid_of_tensors_2D_ptr;
 
   for (std::size_t i = 0, I = std::size(grid_of_tensors_2D); i < I; ++i) {
     for (std::size_t j = 0, J = std::size(grid_of_tensors_2D[i]); j < J; ++j) {
