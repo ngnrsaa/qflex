@@ -9,15 +9,18 @@ namespace {
 class GetOutputStatesTest : public testing::Test {
  public:
   void TestOutputExpectations() {
-    get_output_states(&input_, ordering_, &final_qubits_, &output_states_);
-    EXPECT_EQ(final_qubits_, expected_final_qubits_);
-    EXPECT_EQ(output_states_, expected_output_states_);
+    const auto final_state =
+        std::empty(input_.final_states) ? "" : input_.final_states[0];
+    const auto final_qubits = get_final_qubits(input_.grid, ordering_);
+    const auto output_states = get_output_states(final_state, final_qubits);
+    EXPECT_EQ(final_qubits.qubits, expected_final_qubits_);
+    EXPECT_EQ(output_states, expected_output_states_);
   }
 
  protected:
   QflexInput input_;
-  std::vector<std::vector<std::size_t>> final_qubits_, expected_final_qubits_;
-  std::vector<std::string> output_states_, expected_output_states_;
+  std::vector<std::vector<std::size_t>> expected_final_qubits_;
+  std::vector<std::string> expected_output_states_;
   std::list<ContractionOperation> ordering_;
 };
 
@@ -52,7 +55,7 @@ TEST_F(GetOutputStatesTest, IgnoresNonTerminalCuts) {
 TEST_F(GetOutputStatesTest, TerminalCutsOrderedNormally) {
   input_.grid.I = 3;
   input_.grid.J = 2;
-  input_.final_state = "xx00x0";
+  input_.final_states = {"xx00x0"};
   ordering_.emplace_back(CutIndex({{0, 1}}, {0}));
   ordering_.emplace_back(CutIndex({{0, 0}}, {0, 1}));
   ordering_.emplace_back(CutIndex({{2, 0}}, {1}));
@@ -66,7 +69,7 @@ TEST_F(GetOutputStatesTest, TerminalCutsOrderedNormally) {
 TEST_F(GetOutputStatesTest, BlankCutValuesEvaluateBothStates) {
   input_.grid.I = 2;
   input_.grid.J = 2;
-  input_.final_state = "xxx";
+  input_.final_states = {"xxx"};
   ordering_.emplace_back(CutIndex({{0, 1}}));
   ordering_.emplace_back(CutIndex({{0, 0}}));
   ordering_.emplace_back(CutIndex({{1, 0}}));
@@ -82,7 +85,7 @@ TEST_F(GetOutputStatesTest, OnlyUseTerminalCuts) {
   input_.grid.I = 3;
   input_.grid.J = 2;
   input_.grid.qubits_off.push_back({2, 0});
-  input_.final_state = "0000x";
+  input_.final_states = {"0000x"};
   ordering_.emplace_back(CutIndex({{0, 1}, {1, 1}}, {1, 2}));
   ordering_.emplace_back(ExpandPatch("a", {0, 1}));
   ordering_.emplace_back(ExpandPatch("a", {0, 0}));
@@ -94,41 +97,6 @@ TEST_F(GetOutputStatesTest, OnlyUseTerminalCuts) {
   expected_final_qubits_ = {{2, 1}};
   expected_output_states_ = {"00000", "00001"};
   TestOutputExpectations();
-}
-
-// Nullptr input in get_output_states()
-TEST(GetOutputStatesExceptionTest, InvalidInput) {
-  QflexInput input;
-  std::list<ContractionOperation> ordering;
-  std::vector<std::vector<std::size_t>> final_qubits;
-  std::vector<std::string> output_states;
-
-  // Input cannot be null pointer.
-  try {
-    get_output_states(nullptr, ordering, &final_qubits, &output_states);
-    FAIL()
-        << "Expected get_output_states() to throw an exception, but it didn't";
-  } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Input must be non-null."));
-  }
-
-  // Final qubits cannot be null pointer.
-  try {
-    get_output_states(&input, ordering, nullptr, &output_states);
-    FAIL()
-        << "Expected get_output_states() to throw an exception, but it didn't";
-  } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Final qubits must be non-null"));
-  }
-
-  // Output states cannot be null pointer.
-  try {
-    get_output_states(&input, ordering, &final_qubits, nullptr);
-    FAIL()
-        << "Expected get_output_states() to throw an exception, but it didn't";
-  } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Output states must be non-null"));
-  }
 }
 
 // Below are config strings for a simple grid with one "off" qubit and one cut:
@@ -191,30 +159,19 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
   input.circuit.load(circuit_data);
   input.ordering.load(ordering_data);
   input.grid.load(grid_data);
-  input.initial_state = "00000";
-  input.final_state = "1100x";
+  input.initial_states = {"00000"};
+  input.final_states = {"1100x"};
 
-  std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
-      EvaluateCircuit(&input);
+  std::vector<std::tuple<std::string, std::string, std::complex<double>>>
+      amplitudes = EvaluateCircuit(input);
 
   ASSERT_EQ(amplitudes.size(), 2ul);
-  EXPECT_EQ(amplitudes[0].first, "11000");
-  EXPECT_EQ(amplitudes[1].first, "11001");
-  EXPECT_NEAR(amplitudes[0].second.real(), 0.10669, 1e-5);
-  EXPECT_NEAR(amplitudes[0].second.imag(), 0.04419, 1e-5);
-  EXPECT_NEAR(amplitudes[1].second.real(), -0.01831, 1e-5);
-  EXPECT_NEAR(amplitudes[1].second.imag(), -0.25758, 1e-5);
-}
-
-// Nullptr input in EvaluateCircuit()
-TEST(EvaluateCircuitExceptionTest, InvalidInput) {
-  // Input cannot be null pointer.
-  try {
-    EvaluateCircuit(nullptr);
-    FAIL() << "Expected EvaluateCircuit() to throw an exception.";
-  } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Input must be non-null"));
-  }
+  EXPECT_EQ(std::get<1>(amplitudes[0]), "11000");
+  EXPECT_EQ(std::get<1>(amplitudes[1]), "11001");
+  EXPECT_NEAR(std::get<2>(amplitudes[0]).real(), 0.10669, 1e-5);
+  EXPECT_NEAR(std::get<2>(amplitudes[0]).imag(), 0.04419, 1e-5);
+  EXPECT_NEAR(std::get<2>(amplitudes[1]).real(), -0.01831, 1e-5);
+  EXPECT_NEAR(std::get<2>(amplitudes[1]).imag(), -0.25758, 1e-5);
 }
 
 }  // namespace
