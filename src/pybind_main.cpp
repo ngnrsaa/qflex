@@ -85,7 +85,7 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     LoadData(options, "ordering", input.ordering);
 
     // Load initial/final states
-    auto initial_states = [&options, &input]() {
+    input.initial_states = [&options, &input]() {
       std::vector<std::string> states = LoadStates(options, "initial");
       if (std::empty(states))
         states.push_back(std::string(input.circuit.num_active_qubits, '0'));
@@ -98,28 +98,25 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
       return states;
     }();
 
+    // TODO: Not yet supported in Cirq
+    if (std::size(input.initial_states) != 1 ||
+        std::size(input.final_states) != 1)
+      throw ERROR_MSG("Not yet supported");
+
     // Remove duplicate initial/final states
-    initial_states.erase(
-        std::unique(std::begin(initial_states), std::end(initial_states)),
-        std::end(initial_states));
+    input.initial_states.erase(std::unique(std::begin(input.initial_states),
+                                           std::end(input.initial_states)),
+                               std::end(input.initial_states));
     input.final_states.erase(std::unique(std::begin(input.final_states),
                                          std::end(input.final_states)),
                              std::end(input.final_states));
 
     // Define container for amplitudes
-    std::vector<std::pair<
-        std::string, std::vector<std::pair<std::string, std::complex<double>>>>>
-        amplitudes;
+    std::vector<std::tuple<std::string, std::string, std::complex<double>>>
+        amplitudes = EvaluateCircuit(input);
 
-    // TODO: Pybind11 does not allow multiple types as output
-    if (std::size(initial_states) != 1) throw ERROR_MSG("Not yet supported");
-
-    for (const auto &is : initial_states) {
-      input.initial_state = is;
-      amplitudes.push_back({is, EvaluateCircuit(input)});
-    }
-
-    return std::get<1>(amplitudes[0]);
+    return {{std::get<1>(amplitudes[0]),
+             std::get<2>(amplitudes[0])}};  // std::get<2>(amplitudes[0]);
 
     // Gently return an error msg if exception is known. Otherwise, rethrow
     // exception.

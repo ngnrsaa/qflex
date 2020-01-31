@@ -82,8 +82,8 @@ std::vector<std::string> get_output_states(
  * States for qubits with terminal cuts are listed at the end of the state
  * bitstring, in the order of their terminal cuts.
  */
-std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
-    const QflexInput& input);
+std::vector<std::tuple<std::string, std::string, std::complex<double>>>
+EvaluateCircuit(const QflexInput& input);
 
 }  // namespace qflex
 

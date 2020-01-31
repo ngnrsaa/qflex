@@ -97,10 +97,10 @@ int main(int argc, char** argv) {
     for (const auto& arg : {"--initial-conf", "<initial_conf>"})
       if (static_cast<bool>(args[arg])) {
         if (std::string val = args[arg].asString(); val == "00...00")
-          input.initial_state =
-              std::string(input.circuit.num_active_qubits, '0');
+          input.initial_states.push_back(
+              std::string(input.circuit.num_active_qubits, '0'));
         else
-          input.initial_state = val;
+          input.initial_states.push_back(val);
       }
 
     for (const auto& arg : {"--final-conf", "<final_conf>"})
@@ -112,7 +112,10 @@ int main(int argc, char** argv) {
           input.final_states.push_back(val);
       }
 
-    // Delete duplicate final configuration
+    // Delete duplicate initial/final configuration
+    input.initial_states.erase(std::unique(std::begin(input.initial_states),
+                                           std::end(input.initial_states)),
+                               std::end(input.initial_states));
     input.final_states.erase(std::unique(std::begin(input.final_states),
                                          std::end(input.final_states)),
                              std::end(input.final_states));
@@ -137,7 +140,8 @@ int main(int argc, char** argv) {
     }
 
     // Evaluating circuit.
-    std::vector<std::pair<std::string, std::complex<double>>> amplitudes;
+    std::vector<std::tuple<std::string, std::string, std::complex<double>>>
+        amplitudes;
     try {
       amplitudes = qflex::EvaluateCircuit(input);
     } catch (const std::string& err_msg) {
@@ -150,13 +154,9 @@ int main(int argc, char** argv) {
       qflex::memory::print_memory_usage();
 
     // Printing output.
-    for (std::size_t c = 0; c < amplitudes.size(); ++c) {
-      const auto& state = amplitudes[c].first;
-      const auto& amplitude = amplitudes[c].second;
-      std::cout << input.initial_state << " --> " << state << ": "
-                << std::real(amplitude) << " " << std::imag(amplitude)
+    for (const auto& [initial_state, final_state, amplitude] : amplitudes)
+      std::cout << initial_state << " --> " << final_state << ": " << amplitude
                 << std::endl;
-    }
 
   } catch (const std::exception& ex) {
     std::cerr << ex.what() << std::endl;

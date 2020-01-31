@@ -12,7 +12,7 @@ struct QflexInput {
   QflexOrdering ordering;
   QflexCircuit circuit;
   QflexGrid grid;
-  std::string initial_state;
+  std::vector<std::string> initial_states;
   std::vector<std::string> final_states;
 };
 
