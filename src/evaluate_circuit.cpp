@@ -94,7 +94,7 @@ std::vector<std::string> get_output_states(
 }
 
 void apply_delta_output(
-    const QflexInput& input, const std::string& final_state,
+    const QflexGrid& grid, const std::string& final_state,
     const QflexFinalQubits& final_qubits,
     const std::vector<std::vector<std::vector<Tensor>>>& tensor_grid_3D,
     std::vector<std::vector<Tensor>>* tensor_grid_prt,
@@ -103,10 +103,10 @@ void apply_delta_output(
   auto& scratch_2D = *scratch_2D_ptr;
 
   std::size_t idx = 0;
-  for (std::size_t i = 0; i < input.grid.I; ++i)
-    for (std::size_t j = 0; j < input.grid.J; ++j) {
+  for (std::size_t i = 0; i < grid.I; ++i)
+    for (std::size_t j = 0; j < grid.J; ++j) {
       // Skip if (i,j) is off
-      if (find_grid_coord_in_list(input.grid.qubits_off, i, j)) continue;
+      if (find_grid_coord_in_list(grid.qubits_off, i, j)) continue;
 
       std::string last_name = utils::concat(
           "(", i, ",", j, "),(", std::size(tensor_grid_3D[i][j]) - 1, ")");
@@ -267,7 +267,7 @@ EvaluateCircuit(const QflexInput& input) {
 
       // Insert deltas to last layer on qubits that are in not in
       // final_qubit_region.
-      apply_delta_output(input, final_state, final_qubits, tensor_grid_3D,
+      apply_delta_output(input.grid, final_state, final_qubits, tensor_grid_3D,
                          &tensor_grid, &scratch_2D);
 
       // Reorder the 2D grid

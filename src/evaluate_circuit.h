@@ -70,7 +70,7 @@ std::vector<std::string> get_output_states(
     const std::string& base_state, const QflexFinalQubits& final_qubits);
 
 void apply_delta_output(
-    const QflexInput& input, const std::string& final_state,
+    const QflexGrid& grid, const std::string& final_state,
     const QflexFinalQubits& final_qubits,
     const std::vector<std::vector<std::vector<Tensor>>>& tensor_grid_3D,
     std::vector<std::vector<Tensor>>* tensor_grid_prt,
