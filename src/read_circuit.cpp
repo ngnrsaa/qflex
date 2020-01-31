@@ -505,6 +505,11 @@ std::vector<std::vector<Tensor>> flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     const std::optional<std::vector<std::vector<std::size_t>>>& off,
     s_type* scratch) {
+  // Scratch cannot be empty
+  if (scratch == nullptr) {
+    throw ERROR_MSG("Scratch must be non-null.");
+  }
+
   // Check consistency of grid of tensors
   if (std::empty(grid_of_tensors))
     throw ERROR_MSG("grid_of_tensors cannot be empty");
