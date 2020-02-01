@@ -23,6 +23,10 @@
 #include <cblas.h>
 #endif
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include <complex>
 #include <iostream>
 #include <string>

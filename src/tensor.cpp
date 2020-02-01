@@ -20,10 +20,6 @@
 #include <cassert>
 #include <cstdint>
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 #include <algorithm>
 #include <cmath>
 #include <iterator>

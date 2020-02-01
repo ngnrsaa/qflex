@@ -15,7 +15,9 @@
 #ifndef EVALUATE_CIRCUIT_
 #define EVALUATE_CIRCUIT_
 
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 #include <algorithm>
 #include <chrono>
