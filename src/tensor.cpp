@@ -17,11 +17,10 @@
 
 #include <immintrin.h>
 
-#include <cassert>
-#include <cstdint>
-
 #include <algorithm>
+#include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <iterator>
 
 // Time
