@@ -15,9 +15,6 @@
 
 #include "tensor.h"
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #include <algorithm>
 #include <cmath>
@@ -95,31 +92,6 @@ void Tensor::_clear() {
   }
 }
 
-void Tensor::_copy(const Tensor& other) {
-  if (_indices.empty()) {
-    _capacity = other.size();
-    _data = new s_type[_capacity];
-  } else {
-    // The line "set_dimensions(other.get_dimensions());" takes care of the
-    // total size of the dimensions.
-    try {
-      set_dimensions(other.get_dimensions());
-    } catch (const std::string& err_msg) {
-      throw ERROR_MSG("Failed to call set_dimensions(). Error:\n\t[", err_msg,
-                      "]");
-    }
-  }
-  try {
-    _init(other.get_indices(), other.get_dimensions());
-  } catch (const std::string& err_msg) {
-    throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
-  }
-
-#pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
-  for (std::size_t p = 0; p < other.size(); ++p)
-    *(_data + p) = *(other.data() + p);
-}
-
 void Tensor::_move(Tensor&& other) {
   // Clear this tensor before moving the other
   _clear();
@@ -160,8 +132,9 @@ Tensor::Tensor(std::vector<std::string> indices,
                     ", has to match the size of the Tensor: ", this_size);
   }
   _capacity = this_size;
+
   // Fill in the _data.
-  for (std::size_t i = 0; i < this_size; ++i) *(_data + i) = data[i];
+  std::copy(std::begin(data), std::end(data), _data);
 }
 
 Tensor::Tensor(std::vector<std::string> indices,
@@ -178,7 +151,17 @@ Tensor::Tensor(std::vector<std::string> indices,
   _data = data;
 }
 
-Tensor::Tensor(const Tensor& other) { _copy(other); }
+Tensor::Tensor(const Tensor& other)
+    : _indices{other._indices},
+      _dimensions{other._dimensions},
+      _index_to_dimension{other._index_to_dimension},
+      _capacity{other._capacity} {
+  // Allocate space
+  _data = new s_type[_capacity];
+
+  // Copy data
+  std::copy(other._data, other._data + other._capacity, _data);
+}
 
 Tensor::Tensor(Tensor&& other) { _move(std::move(other)); }
 
@@ -186,8 +169,33 @@ Tensor::~Tensor() { _clear(); }
 
 const Tensor& Tensor::operator=(const Tensor& other) {
   if (other._data != nullptr && this != &other) {
-    _copy(other);
+    // Check indices
+    if (_indices.empty()) {
+      _capacity = other.size();
+      _data = new s_type[_capacity];
+
+    } else {
+      // The line "set_dimensions(other.get_dimensions());" takes care of the
+      // total size of the dimensions.
+      try {
+        set_dimensions(other.get_dimensions());
+      } catch (const std::string& err_msg) {
+        throw ERROR_MSG("Failed to call set_dimensions(). Error:\n\t[", err_msg,
+                        "]");
+      }
+    }
+
+    // Initialize copy
+    try {
+      _init(other.get_indices(), other.get_dimensions());
+    } catch (const std::string& err_msg) {
+      throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
+    }
+
+    // Copy memory
+    std::copy(other.data(), other.data() + std::size(other), _data);
   }
+
   return *this;
 }
 
