@@ -12,7 +12,7 @@ std::string get_date_time() {
       std::strftime(mbstr, sizeof(mbstr), "%c", std::localtime(&t)))
     return mbstr;
   else
-    return "n/a";
+    return "[time-readout error]";
 }
 
 // Convert more readable strings into 'memory' bytes.
