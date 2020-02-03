@@ -159,7 +159,7 @@ Tensor::Tensor(const Tensor& other)
   _data = new s_type[_capacity];
 
   // Copy data
-  std::copy(other._data, other._data + other._capacity, _data);
+  std::copy(other._data, other._data + std::size(other), _data);
 }
 
 Tensor::Tensor(Tensor&& other) { _move(std::move(other)); }
