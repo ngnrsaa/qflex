@@ -109,19 +109,26 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     throw ERROR_MSG("Input must be non-null.");
   }
 
-  std::chrono::high_resolution_clock::time_point t_output_0, t_output_1;
+  std::chrono::steady_clock::time_point t_output_0;
+  std::chrono::steady_clock::time_point t0, t1;
+
+  // Print difference in time
+  auto print_diff_time = [&t0, &t1](const std::string& msg) {
+    const double delta_time_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            (t1 = std::chrono::steady_clock::now()) - t0)
+            .count() /
+        1000.;
+    std::cerr << WARN_MSG(msg, delta_time_ms, "s") << std::endl;
+    t0 = std::move(t1);
+  };
+
+  // First initialization
   if (global::verbose > 0) {
-    // Set precision for the printed floats.
-    std::cerr.precision(12);
-
     // Timing variables.
-    t_output_0 = std::chrono::high_resolution_clock::now();
+    t_output_0 = std::chrono::steady_clock::now();
+    t0 = std::chrono::steady_clock::now();
   }
-
-  std::chrono::high_resolution_clock::time_point t0, t1;
-  std::chrono::duration<double> time_span;
-
-  if (global::verbose > 0) t0 = std::chrono::high_resolution_clock::now();
 
   // Create the ordering for this tensor contraction from file.
   std::list<ContractionOperation> ordering;
@@ -129,13 +136,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // Parse ordering
   ordering_data_to_contraction_ordering(*input, &ordering);
 
-  if (global::verbose > 0) {
-    t1 = std::chrono::high_resolution_clock::now();
-    time_span =
-        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << "Time spent making contraction ordering: " << time_span.count()
-              << "s" << std::endl;
-  }
+  if (global::verbose > 0)
+    print_diff_time("Time spent making contraction ordering: ");
 
   std::size_t init_length =
       input->grid.I * input->grid.J - input->grid.qubits_off.size();
@@ -167,8 +169,6 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     // tensor we currently support is rank 4.
     s_type scratch_3D[16];
 
-    if (global::verbose > 0) t0 = std::chrono::high_resolution_clock::now();
-
     // Creating 3D grid of tensors from file.
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
     circuit_data_to_tensor_network(input->circuit, input->grid.I, input->grid.J,
@@ -176,14 +176,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
                                    final_qubits, input->grid.qubits_off,
                                    tensor_grid_3D, scratch_3D);
 
-    if (global::verbose > 0) {
-      t1 = std::chrono::high_resolution_clock::now();
-      time_span =
-          std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-      std::cerr << "Time spent creating 3D grid of tensors from file: "
-                << time_span.count() << "s" << std::endl;
-      t0 = std::chrono::high_resolution_clock::now();
-    }
+    if (global::verbose > 0)
+      print_diff_time("Time spent creating 3D grid of tensors from file: ");
 
     std::size_t max_size = 0;
     for (std::size_t i = 0; i < tensor_grid_3D.size(); ++i) {
@@ -212,26 +206,16 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     // to hold the largest single-qubit tensor in the 2D grid.
     std::vector<s_type> scratch_2D(max_size);
 
-    if (global::verbose > 0) {
-      t1 = std::chrono::high_resolution_clock::now();
-      time_span =
-          std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-      std::cerr << "Time spent allocating scratch space for 2D grid: "
-                << time_span.count() << "s" << std::endl;
-      t0 = std::chrono::high_resolution_clock::now();
-    }
+    if (global::verbose > 0)
+      print_diff_time("Time spent allocating scratch space for 2D grid: ");
 
     // Contract 3D grid onto 2D grid of tensors, as usual.
     flatten_grid_of_tensors(tensor_grid_3D, tensor_grid, final_qubits,
                             input->grid.qubits_off, ordering,
                             scratch_2D.data());
-    if (global::verbose > 0) {
-      t1 = std::chrono::high_resolution_clock::now();
-      time_span =
-          std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-      std::cerr << "Time spent creating 2D grid of tensors from 3D one: "
-                << time_span.count() << "s" << std::endl;
-    }
+
+    if (global::verbose > 0)
+      print_diff_time("Time spent creating 2D grid of tensors from 3D one: ");
   }
 
   // Perform tensor grid contraction.
@@ -248,10 +232,12 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
 
   // Final time
   if (global::verbose > 0) {
-    t_output_1 = std::chrono::high_resolution_clock::now();
-    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(
-        t_output_1 - t_output_0);
-    std::cerr << "Total time: " << time_span.count() << "s" << std::endl;
+    t1 = std::chrono::steady_clock::now();
+    const auto time_span =
+        std::chrono::duration_cast<std::chrono::duration<double>>(t1 -
+                                                                  t_output_0);
+    std::cerr << WARN_MSG("Total time: ", time_span.count(), "s")
+              << std::endl;
   }
 
   return result;

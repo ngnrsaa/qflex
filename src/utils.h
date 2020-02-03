@@ -25,6 +25,9 @@ std::string concat(const T& x, const Q&... y) {
   return ss.str() + concat(y...);
 }
 
+// Return date and time in the representation: Thu Aug 23 14:55:02 2001
+std::string get_date_time();
+
 // Convert more readable strings into 'memory' bytes.
 std::size_t from_readable_memory_string(std::string memory);
 
