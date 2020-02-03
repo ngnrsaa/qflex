@@ -3,8 +3,6 @@
 
 #include <chrono>
 
-#include "errors.h"
-
 namespace qflex::utils {
 
 using nanoseconds = std::chrono::nanoseconds;
@@ -14,9 +12,8 @@ using seconds = std::chrono::seconds;
 using minutes = std::chrono::minutes;
 using hours = std::chrono::hours;
 
-template <typename _clock = std::chrono::steady_clock>
 struct Stopwatch {
-  using clock = _clock;
+  using clock = std::chrono::steady_clock;
 
   /**
    * Initialize Stopwatch
@@ -38,47 +35,24 @@ struct Stopwatch {
   /**
    * Start Stopwatch
    */
-  void start() {
-    if (_started) throw ERROR_MSG("Stopwatch already started.");
-
-    if (_running) throw ERROR_MSG("Stopwatch already running.");
-
-    _start = _latest = _split = clock::now();
-    _started = _running = true;
-  }
+  void start();
 
   /**
    * Stop Stopwatch
    */
-  void stop() {
-    if (!_started) throw ERROR_MSG("Stopwatch never started.");
-
-    if (!_running) throw ERROR_MSG("Stopwatch is not running.");
-
-    _latest = clock::now();
-    _running = false;
-  }
+  void stop();
 
   /**
    * Reset Stopwatch
    */
-  void reset() { _started = _running = false; }
+  void reset();
 
   /**
    * Compute the difference in time between clock::now() and the last _split.
    * @return a difference in time in number (std::size_t) of units
    */
   template <typename unit>
-  std::size_t split() {
-    if (!_started) throw ERROR_MSG("Stopwatch never started.");
-
-    if (!_running) throw ERROR_MSG("Stopwatch is not running.");
-
-    auto _now = clock::now();
-    auto _delta_time = std::chrono::duration_cast<unit>(_now - _split);
-    _split = _now;
-    return _delta_time.count();
-  }
+  std::size_t split();
 
   /**
    * Compute the difference in time between _start and _latest. If _latest <=
@@ -87,15 +61,7 @@ struct Stopwatch {
    * @return a difference in time in number (std::size_t) of units
    */
   template <typename unit>
-  std::size_t time_passed() const {
-    if (!_started) throw ERROR_MSG("Stopwatch never started.");
-
-    if (_running) throw ERROR_MSG("Stopwatch is still running.");
-
-    return std::chrono::duration_cast<unit>(
-               (_latest > _start ? _latest : clock::now()) - _start)
-        .count();
-  }
+  std::size_t time_passed() const;
 
  private:
   bool _started{false};
