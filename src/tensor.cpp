@@ -15,7 +15,6 @@
 
 #include "tensor.h"
 
-
 #include <algorithm>
 #include <cmath>
 #include <iterator>

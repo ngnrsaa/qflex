@@ -236,8 +236,7 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     const auto time_span =
         std::chrono::duration_cast<std::chrono::duration<double>>(t1 -
                                                                   t_output_0);
-    std::cerr << WARN_MSG("Total time: ", time_span.count(), "s")
-              << std::endl;
+    std::cerr << WARN_MSG("Total time: ", time_span.count(), "s") << std::endl;
   }
 
   return result;
