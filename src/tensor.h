@@ -45,7 +45,8 @@ class Tensor {
    * @param dimensions std::vector<std::size_t> with the ordered dimensions of
    * the indices.
    */
-  Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions);
+  Tensor(const std::vector<std::string>& indices,
+         const std::vector<std::size_t>& dimensions);
 
   /**
    * Creates a Tensor. New space is allocated and filled with a copy of
@@ -59,20 +60,10 @@ class Tensor {
    * match in length the dimension of the Tensor, as given by the
    * dimensions.
    */
-  Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions,
+  Tensor(const std::vector<std::string>& indices,
+         const std::vector<std::size_t>& dimensions,
          const std::vector<s_type>& data);
 
-  /**
-   * Creates a Tensor. A pointer to the data is passed.
-   * @param indices std::vector<std::string> with the names of the indices in
-   * order.
-   * @param dimensions std::vector<std::size_t> with the ordered dimensions of
-   * the indices.
-   * @param data pointer to the data of the tensor. It is responsibility of
-   * the user to provide enough allocated memory to store the Tensor.
-   */
-  Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions,
-         s_type* data);
 
   /**
    * Copy constructor: creates a new Tensor that is a copy of another.
@@ -284,6 +275,15 @@ class Tensor {
    * Helper function for the destructor. Clear memory.
    */
   void _clear();
+
+  /**
+   * Helper function for the copy constructor and the assignment operator.
+   * It is responsibility of the user to copy onto a Tensor with the same
+   * total dimension as other. If there is space allocated, no new space will
+   * be allocated. Changing the size of a Tensor is not allowed.
+   * @param other Tensor to copy into the current Tensor.
+   */
+  void _copy(const Tensor& other);
 
   /**
    * Helper function for the move constructor.

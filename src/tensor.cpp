@@ -24,6 +24,8 @@
 #include <cblas.h>
 #endif
 
+#include "stopwatch.h"
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -33,10 +35,6 @@
 #include <iostream>
 #include <iterator>
 #include <string>
-
-// Time
-#include <chrono>
-#include <ctime>
 
 /**
  * Cache friendly size (for complex<float>) to move things around.
@@ -106,6 +104,39 @@ void Tensor::_clear() {
   }
 }
 
+void Tensor::_copy(const Tensor& other) {
+  if (_indices.empty()) {
+    if (_data != nullptr) throw ERROR_MSG("Potential memory leak");
+
+    _capacity = other.size();
+    _data = new s_type[_capacity];
+
+  } else {
+    // The line "set_dimensions(other.get_dimensions());" takes care of the
+    // total size of the dimensions.
+    try {
+      set_dimensions(other.get_dimensions());
+    } catch (const std::string& err_msg) {
+      throw ERROR_MSG("Failed to call set_dimensions(). Error:\n\t[", err_msg,
+                      "]");
+    }
+  }
+  try {
+    _init(other.get_indices(), other.get_dimensions());
+  } catch (const std::string& err_msg) {
+    throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
+  }
+
+  if (other._data != nullptr)
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
+    for (std::size_t p = 0; p < std::size(other); ++p)
+      *(_data + p) = *(other._data + p);
+#else
+    std::copy(other._data, other._data + std::size(other), _data);
+#endif
+}
+
 void Tensor::_move(Tensor&& other) {
   // Clear this tensor before moving the other
   _clear();
@@ -124,8 +155,8 @@ void Tensor::_move(Tensor&& other) {
 
 Tensor::Tensor() {}
 
-Tensor::Tensor(std::vector<std::string> indices,
-               std::vector<std::size_t> dimensions) {
+Tensor::Tensor(const std::vector<std::string>& indices,
+               const std::vector<std::size_t>& dimensions) {
   try {
     _init(indices, dimensions);
   } catch (const std::string& err_msg) {
@@ -135,8 +166,8 @@ Tensor::Tensor(std::vector<std::string> indices,
   _data = new s_type[_capacity];
 }
 
-Tensor::Tensor(std::vector<std::string> indices,
-               std::vector<std::size_t> dimensions,
+Tensor::Tensor(const std::vector<std::string>& indices,
+               const std::vector<std::size_t>& dimensions,
                const std::vector<s_type>& data)
     : Tensor(indices, dimensions) {
   // Check that the data has the same length as this Tensor's size().
@@ -148,75 +179,36 @@ Tensor::Tensor(std::vector<std::string> indices,
   _capacity = this_size;
 
   // Fill in the _data.
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
+  for (std::size_t i = 0; i < this_size; ++i) *(_data + i) = data[i];
+#else
   std::copy(std::begin(data), std::end(data), _data);
+#endif
 }
 
-Tensor::Tensor(std::vector<std::string> indices,
-               std::vector<std::size_t> dimensions, s_type* data) {
-  if (data == nullptr) {
-    throw ERROR_MSG("Data must be non-null.");
-  }
-  try {
-    _init(indices, dimensions);
-  } catch (const std::string& err_msg) {
-    throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
-  }
-  _capacity = size();
-  _data = data;
-}
 
-Tensor::Tensor(const Tensor& other)
-    : _indices{other._indices},
-      _dimensions{other._dimensions},
-      _index_to_dimension{other._index_to_dimension},
-      _capacity{other._capacity} {
-  // Allocate space
-  _data = new s_type[_capacity];
-
-  // Copy data
-  std::copy(other._data, other._data + std::size(other), _data);
-}
+Tensor::Tensor(const Tensor& other) { _copy(other); }
 
 Tensor::Tensor(Tensor&& other) { _move(std::move(other)); }
 
 Tensor::~Tensor() { _clear(); }
 
 const Tensor& Tensor::operator=(const Tensor& other) {
-  if (other._data != nullptr && this != &other) {
-    // Check indices
-    if (_indices.empty()) {
-      _capacity = other.size();
-      _data = new s_type[_capacity];
-
-    } else {
-      // The line "set_dimensions(other.get_dimensions());" takes care of the
-      // total size of the dimensions.
-      try {
-        set_dimensions(other.get_dimensions());
-      } catch (const std::string& err_msg) {
-        throw ERROR_MSG("Failed to call set_dimensions(). Error:\n\t[", err_msg,
-                        "]");
-      }
-    }
-
-    // Initialize copy
-    try {
-      _init(other.get_indices(), other.get_dimensions());
-    } catch (const std::string& err_msg) {
-      throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
-    }
-
-    // Copy memory
-    std::copy(other.data(), other.data() + std::size(other), _data);
-  }
+  if (other._data != nullptr && this != &other)
+    _copy(other);
+  else
+    throw ERROR_MSG("Cannot copy tensor.");
 
   return *this;
 }
 
 const Tensor& Tensor::operator=(Tensor&& other) {
-  if (other._data != nullptr && this != &other) {
+  if (other._data != nullptr && this != &other)
     _move(std::move(other));
-  }
+  else
+    throw ERROR_MSG("Cannot move tensor.");
+
   return *this;
 }
 
@@ -313,9 +305,14 @@ void Tensor::project(std::string index, std::size_t index_value,
   s_type* projection_data = projection_tensor.data();
   std::size_t projection_size = projection_tensor.size();
   std::size_t projection_begin = projection_size * index_value;
+#ifdef _OPENMP
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
   for (std::size_t p = 0; p < projection_size; ++p)
     *(projection_data + p) = *(_data + projection_begin + p);
+#else
+  std::copy(_data + projection_begin,
+            _data + projection_begin + projection_size, projection_data);
+#endif
 }
 
 void Tensor::rename_index(std::string old_name, std::string new_name) {
@@ -422,9 +419,13 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
 
 // Start moving data around.
 // First copy all data into scratch.
+#ifdef _OPENMP
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
   for (std::size_t p = 0; p < total_dim; ++p)
     *(scratch_copy + p) = *(_data + p);
+#else
+  std::copy(_data, _data + total_dim, scratch_copy);
+#endif
 
   // No combined efficient mapping from old to new positions with actual
   // copies in memory, all in small cache friendly (for old data, not new,
@@ -766,9 +767,6 @@ void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
     s_type* temp_data = new s_type[dim_right];
 #pragma omp for schedule(static)
     for (std::size_t pl = 0; pl < dim_left; ++pl) {
-#ifdef _OPENMP
-      std::size_t current_thread = omp_get_thread_num();
-#endif
       std::size_t offset = pl * dim_right;
       for (std::size_t pr = 0; pr < dim_right; ++pr)
         *(temp_data + pr) = *(_data + offset + pr);
@@ -837,10 +835,14 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
   std::size_t dim_right = tensor_dim / dim_left;  // Remember, it's all powers
                                                   // of 2, so OK.
 // Copy.
+#ifdef _OPENMP
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
   for (std::size_t p = 0; p < tensor_dim; ++p) {
     *(scratch_copy + p) = *(_data + p);
   }
+#else
+  std::copy(_data, _data + tensor_dim, scratch_copy);
+#endif
 // Move back.
 #pragma omp parallel
   {
@@ -848,9 +850,14 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
     for (std::size_t pl = 0; pl < dim_left; ++pl) {
       std::size_t old_offset = pl * dim_right;
       std::size_t new_offset = map_old_to_new_position[pl] * dim_right;
+#ifdef _OPENMP
       for (std::size_t pr = 0; pr < dim_right; ++pr) {
         *(_data + new_offset + pr) = *(scratch_copy + old_offset + pr);
       }
+#else
+      std::copy(scratch_copy + old_offset,
+                scratch_copy + old_offset + dim_right, _data + new_offset);
+#endif
     }
   }
   scratch_copy = nullptr;
@@ -1023,9 +1030,9 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
                     C.tensor_to_string());
   }
 
-  std::chrono::high_resolution_clock::time_point t0, t1;
-  std::chrono::duration<double> time_span;
-  if (global::verbose > 1) t0 = std::chrono::high_resolution_clock::now();
+  utils::Stopwatch stopwatch;
+
+  if (global::verbose > 1) stopwatch.start();
 
   // Define left_indices, left_dim, right_indices, right_dim, and
   // common_indices, common_dim. Also C_size.
@@ -1053,13 +1060,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     common_dim *= a_dim;
   }
 
-  if (global::verbose > 1) {
-    t1 = std::chrono::high_resolution_clock::now();
-    time_span =
-        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << WARN_MSG("Time preparing variables: ", time_span.count(), "s")
+  if (global::verbose > 1)
+    std::cerr << WARN_MSG("Time preparing variables: ",
+                          stopwatch.split<utils::milliseconds>() / 1000., "s")
               << std::endl;
-  }
 
   // Check.
   if (left_dim * right_dim > C.capacity()) {
@@ -1067,8 +1071,6 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
                     " doesn't have enough space for the product of A*B: ",
                     (left_dim * right_dim), ".");
   }
-
-  if (global::verbose > 1) t0 = std::chrono::high_resolution_clock::now();
 
   // Reorder.
   std::vector<std::string> A_new_ordering =
@@ -1079,16 +1081,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     throw ERROR_MSG("Failed to call reorder(). Error:\n\t[", err_msg, "]");
   }
 
-  if (global::verbose > 1) {
-    t1 = std::chrono::high_resolution_clock::now();
-    time_span =
-        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << WARN_MSG("R ", time_span.count(), "s") << std::endl;
-    ;
-    std::cerr << WARN_MSG("Time reordering A: ", time_span.count(), "s")
+  if (global::verbose > 1)
+    std::cerr << WARN_MSG("[R] Time reordering A: ",
+                          stopwatch.split<utils::milliseconds>() / 1000., "s")
               << std::endl;
-    t0 = std::chrono::high_resolution_clock::now();
-  }
 
   std::vector<std::string> B_new_ordering =
       _vector_union(common_indices, right_indices);
@@ -1098,15 +1094,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     throw ERROR_MSG("Failed to call reorder(). Error:\n\t[", err_msg, "]");
   }
 
-  if (global::verbose > 1) {
-    t1 = std::chrono::high_resolution_clock::now();
-    time_span =
-        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << WARN_MSG("R ", time_span.count(), "s") << std::endl;
-    std::cerr << WARN_MSG("Time reordering B: ", time_span.count(), "s")
+  if (global::verbose > 1)
+    std::cerr << WARN_MSG("[R] Time reordering B: ",
+                          stopwatch.split<utils::milliseconds>() / 1000., "s")
               << std::endl;
-    t0 = std::chrono::high_resolution_clock::now();
-  }
 
   // Multiply. Four cases: MxM, Mxv, vxM, vxv.
   if (left_indices.size() > 0 && right_indices.size() > 0) {
@@ -1141,15 +1132,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     }
   }
 
-  if (global::verbose > 1) {
-    t1 = std::chrono::high_resolution_clock::now();
-    time_span =
-        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << WARN_MSG("M ", time_span.count(), "s") << std::endl;
-    std::cerr << WARN_MSG("Time multiplying A*B: ", time_span.count(), "s")
+  if (global::verbose > 1)
+    std::cerr << WARN_MSG("[M] Time multiplying A*B: ",
+                          stopwatch.split<utils::milliseconds>() / 1000., "s")
               << std::endl;
-    t0 = std::chrono::high_resolution_clock::now();
-  }
 
   // Set indices and dimensions of C.
   std::vector<std::string> C_indices =
@@ -1170,11 +1156,13 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   C.generate_index_to_dimension();
 
   if (global::verbose > 1) {
-    t1 = std::chrono::high_resolution_clock::now();
-    time_span =
-        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << WARN_MSG("Time updating C's variables: ", time_span.count(),
-                          "s")
+    std::cerr << WARN_MSG("Time updating C's variables: ",
+                          stopwatch.split<utils::milliseconds>() / 1000., "s")
+              << std::endl;
+
+    stopwatch.stop();
+    std::cerr << WARN_MSG("Total time: ",
+                          stopwatch.time_passed<utils::milliseconds>(), "s")
               << std::endl;
   }
 }
