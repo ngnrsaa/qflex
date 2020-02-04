@@ -1,6 +1,8 @@
 #ifndef GLOBAL__H
 #define GLOBAL__H
 
+#include <cstddef>
+
 namespace qflex::global {
 
 // Default verbose level
