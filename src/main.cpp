@@ -99,13 +99,13 @@ int main(int argc, char** argv) {
     if (qflex::global::verbose > 0)
       for (const char* var : {"OMP_NUM_THREADS", "MKL_NUM_THREADS"})
         if (const char* value = getenv(var); value != nullptr)
-          std::cerr << var << " = " << value << std::endl;
+          std::cerr << WARN_MSG(var, " = ", value) << std::endl;
 
     // Print info on maximum memory
     if (qflex::global::verbose > 0)
-      std::cerr << "Maximum allowed memory: "
-                << qflex::utils::readable_memory_string(
-                       qflex::global::memory_limit)
+      std::cerr << WARN_MSG("Maximum allowed memory: ",
+                            qflex::utils::readable_memory_string(
+                                qflex::global::memory_limit))
                 << std::endl;
 
     // set alarms to get memory usage in real time

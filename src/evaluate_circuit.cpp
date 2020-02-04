@@ -14,7 +14,7 @@
 
 #include "evaluate_circuit.h"
 
-#include <set>
+#include "stopwatch.h"
 
 namespace qflex {
 
@@ -109,19 +109,10 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     throw ERROR_MSG("Input must be non-null.");
   }
 
-  std::chrono::high_resolution_clock::time_point t_output_0, t_output_1;
-  if (global::verbose > 0) {
-    // Set precision for the printed floats.
-    std::cerr.precision(12);
+  utils::Stopwatch stopwatch;
 
-    // Timing variables.
-    t_output_0 = std::chrono::high_resolution_clock::now();
-  }
-
-  std::chrono::high_resolution_clock::time_point t0, t1;
-  std::chrono::duration<double> time_span;
-
-  if (global::verbose > 0) t0 = std::chrono::high_resolution_clock::now();
+  // Start stopwatch
+  if (global::verbose > 0) stopwatch.start();
 
   // Create the ordering for this tensor contraction from file.
   std::list<ContractionOperation> ordering;
@@ -129,13 +120,10 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   // Parse ordering
   ordering_data_to_contraction_ordering(*input, &ordering);
 
-  if (global::verbose > 0) {
-    t1 = std::chrono::high_resolution_clock::now();
-    time_span =
-        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << "Time spent making contraction ordering: " << time_span.count()
-              << "s" << std::endl;
-  }
+  if (global::verbose > 0)
+    std::cerr << WARN_MSG("Time spent making contraction ordering: ",
+                          stopwatch.split<utils::milliseconds>() / 1000., "s")
+              << std::endl;
 
   std::size_t init_length =
       input->grid.I * input->grid.J - input->grid.qubits_off.size();
@@ -161,13 +149,17 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   for (std::size_t i = 0; i < input->grid.I; ++i) {
     tensor_grid[i] = std::vector<Tensor>(input->grid.J);
   }
+
+  if (global::verbose > 0)
+    std::cerr << WARN_MSG("Time spent allocating 2D grid of tensors: ",
+                          stopwatch.split<utils::milliseconds>() / 1000., "s")
+              << std::endl;
+
   // Scope so that scratch space and the 3D grid of tensors are destructed.
   {
     // Scratch space for creating 3D tensor network. The largest single-gate
     // tensor we currently support is rank 4.
     s_type scratch_3D[16];
-
-    if (global::verbose > 0) t0 = std::chrono::high_resolution_clock::now();
 
     // Creating 3D grid of tensors from file.
     std::vector<std::vector<std::vector<Tensor>>> tensor_grid_3D;
@@ -176,14 +168,11 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
                                    final_qubits, input->grid.qubits_off,
                                    tensor_grid_3D, scratch_3D);
 
-    if (global::verbose > 0) {
-      t1 = std::chrono::high_resolution_clock::now();
-      time_span =
-          std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-      std::cerr << "Time spent creating 3D grid of tensors from file: "
-                << time_span.count() << "s" << std::endl;
-      t0 = std::chrono::high_resolution_clock::now();
-    }
+    if (global::verbose > 0)
+      std::cerr << WARN_MSG(
+                       "Time spent creating 3D grid of tensors from file: ",
+                       stopwatch.split<utils::milliseconds>() / 1000., "s")
+                << std::endl;
 
     std::size_t max_size = 0;
     for (std::size_t i = 0; i < tensor_grid_3D.size(); ++i) {
@@ -208,30 +197,32 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
         }
       }
     }
+
+    if (global::verbose > 0)
+      std::cerr << WARN_MSG(
+                       "Time spent to determine maximum size for tensors: ",
+                       stopwatch.split<utils::milliseconds>() / 1000., "s")
+                << std::endl;
+
     // Scratch space for contracting 3D to 2D grid. This must have enough space
     // to hold the largest single-qubit tensor in the 2D grid.
     std::vector<s_type> scratch_2D(max_size);
 
-    if (global::verbose > 0) {
-      t1 = std::chrono::high_resolution_clock::now();
-      time_span =
-          std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-      std::cerr << "Time spent allocating scratch space for 2D grid: "
-                << time_span.count() << "s" << std::endl;
-      t0 = std::chrono::high_resolution_clock::now();
-    }
+    if (global::verbose > 0)
+      std::cerr << WARN_MSG("Time spent allocating scratch space for 2D grid: ",
+                            stopwatch.split<utils::milliseconds>() / 1000., "s")
+                << std::endl;
 
     // Contract 3D grid onto 2D grid of tensors, as usual.
     flatten_grid_of_tensors(tensor_grid_3D, tensor_grid, final_qubits,
                             input->grid.qubits_off, ordering,
                             scratch_2D.data());
-    if (global::verbose > 0) {
-      t1 = std::chrono::high_resolution_clock::now();
-      time_span =
-          std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-      std::cerr << "Time spent creating 2D grid of tensors from 3D one: "
-                << time_span.count() << "s" << std::endl;
-    }
+
+    if (global::verbose > 0)
+      std::cerr << WARN_MSG(
+                       "Time spent creating 2D grid of tensors from 3D one: ",
+                       stopwatch.split<utils::milliseconds>() / 1000., "s")
+                << std::endl;
   }
 
   // Perform tensor grid contraction.
@@ -246,12 +237,18 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
     result.push_back(std::make_pair(output_states[c], amplitudes[c]));
   }
 
+  if (global::verbose > 0)
+    std::cerr << WARN_MSG("Time spent contracting tensors: ",
+                          stopwatch.split<utils::milliseconds>() / 1000., "s")
+              << std::endl;
+
   // Final time
   if (global::verbose > 0) {
-    t_output_1 = std::chrono::high_resolution_clock::now();
-    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(
-        t_output_1 - t_output_0);
-    std::cerr << "Total time: " << time_span.count() << "s" << std::endl;
+    stopwatch.stop();
+    std::cerr << WARN_MSG("Total time: ",
+                          stopwatch.time_passed<utils::milliseconds>() / 1000.,
+                          "s")
+              << std::endl;
   }
 
   return result;

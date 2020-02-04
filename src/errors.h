@@ -8,4 +8,7 @@
   qflex::utils::concat("ERROR (" __FILE__ ": ", __FUNCTION__, ":", __LINE__, \
                        ") --> ", __VA_ARGS__)
 
+#define WARN_MSG(...) \
+  qflex::utils::concat("[", qflex::utils::get_date_time(), "] ", __VA_ARGS__)
+
 #endif

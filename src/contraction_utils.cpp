@@ -159,8 +159,10 @@ ContractionData ContractionData::Initialize(
   // significantly from this value.
   if (global::verbose > 0) {
     std::size_t old_precision = std::cerr.precision(6);
-    std::cerr << "Allocating " << utils::readable_memory_string(alloc_size)
-              << " for this simulation." << std::endl;
+    std::cerr << WARN_MSG("Allocating ",
+                          utils::readable_memory_string(alloc_size),
+                          " for this simulation.")
+              << std::endl;
     std::cerr.precision(old_precision);
   }
 

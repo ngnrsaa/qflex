@@ -15,6 +15,8 @@
 
 #include "tensor.h"
 
+#include "stopwatch.h"
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -22,10 +24,6 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
-
-// Time
-#include <chrono>
-#include <ctime>
 
 /**
  * Cache friendly size (for complex<float>) to move things around.
@@ -1001,9 +999,9 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
                     C.tensor_to_string());
   }
 
-  std::chrono::high_resolution_clock::time_point t0, t1;
-  std::chrono::duration<double> time_span;
-  if (global::verbose > 1) t0 = std::chrono::high_resolution_clock::now();
+  utils::Stopwatch stopwatch;
+
+  if (global::verbose > 1) stopwatch.start();
 
   // Define left_indices, left_dim, right_indices, right_dim, and
   // common_indices, common_dim. Also C_size.
@@ -1031,12 +1029,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     common_dim *= a_dim;
   }
 
-  if (global::verbose > 1) {
-    t1 = std::chrono::high_resolution_clock::now();
-    time_span =
-        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << "Time preparing variables: " << time_span.count() << "s\n";
-  }
+  if (global::verbose > 1)
+    std::cerr << WARN_MSG("Time preparing variables: ",
+                          stopwatch.split<utils::milliseconds>() / 1000., "s")
+              << std::endl;
 
   // Check.
   if (left_dim * right_dim > C.capacity()) {
@@ -1044,8 +1040,6 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
                     " doesn't have enough space for the product of A*B: ",
                     (left_dim * right_dim), ".");
   }
-
-  if (global::verbose > 1) t0 = std::chrono::high_resolution_clock::now();
 
   // Reorder.
   std::vector<std::string> A_new_ordering =
@@ -1056,14 +1050,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     throw ERROR_MSG("Failed to call reorder(). Error:\n\t[", err_msg, "]");
   }
 
-  if (global::verbose > 1) {
-    t1 = std::chrono::high_resolution_clock::now();
-    time_span =
-        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << "R " << time_span.count() << " s\n";
-    std::cerr << "Time reordering A: " << time_span.count() << "s\n";
-    t0 = std::chrono::high_resolution_clock::now();
-  }
+  if (global::verbose > 1)
+    std::cerr << WARN_MSG("[R] Time reordering A: ",
+                          stopwatch.split<utils::milliseconds>() / 1000., "s")
+              << std::endl;
 
   std::vector<std::string> B_new_ordering =
       _vector_union(common_indices, right_indices);
@@ -1073,14 +1063,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     throw ERROR_MSG("Failed to call reorder(). Error:\n\t[", err_msg, "]");
   }
 
-  if (global::verbose > 1) {
-    t1 = std::chrono::high_resolution_clock::now();
-    time_span =
-        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << "R " << time_span.count() << " s\n";
-    std::cerr << "Time reordering B: " << time_span.count() << "s\n";
-    t0 = std::chrono::high_resolution_clock::now();
-  }
+  if (global::verbose > 1)
+    std::cerr << WARN_MSG("[R] Time reordering B: ",
+                          stopwatch.split<utils::milliseconds>() / 1000., "s")
+              << std::endl;
 
   // Multiply. Four cases: MxM, Mxv, vxM, vxv.
   if (left_indices.size() > 0 && right_indices.size() > 0) {
@@ -1115,14 +1101,10 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
     }
   }
 
-  if (global::verbose > 1) {
-    t1 = std::chrono::high_resolution_clock::now();
-    time_span =
-        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << "M " << time_span.count() << " s\n";
-    std::cerr << "Time multiplying A*B: " << time_span.count() << "s\n";
-    t0 = std::chrono::high_resolution_clock::now();
-  }
+  if (global::verbose > 1)
+    std::cerr << WARN_MSG("[M] Time multiplying A*B: ",
+                          stopwatch.split<utils::milliseconds>() / 1000., "s")
+              << std::endl;
 
   // Set indices and dimensions of C.
   std::vector<std::string> C_indices =
@@ -1143,10 +1125,14 @@ void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   C.generate_index_to_dimension();
 
   if (global::verbose > 1) {
-    t1 = std::chrono::high_resolution_clock::now();
-    time_span =
-        std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    std::cerr << "Time updating C's variables: " << time_span.count() << "s\n";
+    std::cerr << WARN_MSG("Time updating C's variables: ",
+                          stopwatch.split<utils::milliseconds>() / 1000., "s")
+              << std::endl;
+
+    stopwatch.stop();
+    std::cerr << WARN_MSG("Total time: ",
+                          stopwatch.time_passed<utils::milliseconds>(), "s")
+              << std::endl;
   }
 }
 

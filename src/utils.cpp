@@ -5,6 +5,16 @@
 
 namespace qflex::utils {
 
+// Return date and time in the representation: Thu Aug 23 14:55:02 2001
+std::string get_date_time() {
+  std::time_t t = std::time(nullptr);
+  if (char mbstr[100];
+      std::strftime(mbstr, sizeof(mbstr), "%c", std::localtime(&t)))
+    return mbstr;
+  else
+    return "[time-readout error]";
+}
+
 // Convert more readable strings into 'memory' bytes.
 std::size_t from_readable_memory_string(std::string memory) {
   // Remove any special character
