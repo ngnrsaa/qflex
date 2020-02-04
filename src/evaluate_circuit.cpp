@@ -182,6 +182,7 @@ EvaluateCircuit(const QflexInput& input) {
 
   std::vector<std::tuple<std::string, std::string, std::complex<double>>>
       results;
+  std::size_t count = 0;
   for (const auto& initial_state : input.initial_states) {
     // Get a list of qubits and output states for the final region.
     const auto final_qubits = get_final_qubits(input.grid, ordering);
@@ -195,6 +196,12 @@ EvaluateCircuit(const QflexInput& input) {
       // Scratch space for creating 3D tensor network. The largest single-gate
       // tensor we currently support is rank 4.
       s_type scratch_3D[16];
+
+      if (global::verbose > 0)
+        std::cerr << WARN_MSG(
+                         "Time spent allocating scratch space for 3D grid: ",
+                         stopwatch.split<utils::milliseconds>() / 1000., "s")
+                  << std::endl;
 
       // Creating 3D grid of tensors from file.
       circuit_data_to_tensor_network(input.circuit, input.grid.I, input.grid.J,
@@ -229,6 +236,12 @@ EvaluateCircuit(const QflexInput& input) {
         }
       }
 
+      if (global::verbose > 0)
+        std::cerr << WARN_MSG("Time spent computing maximum tensor size: ",
+                              stopwatch.split<utils::milliseconds>() / 1000.,
+                              "s")
+                  << std::endl;
+
       // Scratch space for contracting 3D to 2D grid. This must have enough
       // space to hold the largest single-qubit tensor in the 2D grid.
       scratch_2D.resize(max_size);
@@ -257,6 +270,12 @@ EvaluateCircuit(const QflexInput& input) {
 
     // Perform contraction
     for (std::size_t k = std::size(input.final_states); k--;) {
+      if (global::verbose > 0)
+        std::cerr << WARN_MSG("Compute amplitude: ", ++count, " of ",
+                              std::size(input.initial_states) *
+                                  std::size(input.final_states))
+                  << std::endl;
+
       const std::string final_state = input.final_states[k];
 
       std::vector<std::vector<Tensor>> tensor_grid;
@@ -273,13 +292,19 @@ EvaluateCircuit(const QflexInput& input) {
       apply_delta_output(input.grid, final_state, final_qubits, tensor_grid_3D,
                          &tensor_grid, &scratch_2D);
 
+      if (global::verbose > 0)
+        std::cerr << WARN_MSG("Time spent applying final state: ",
+                              stopwatch.split<utils::milliseconds>() / 1000.,
+                              "s")
+                  << std::endl;
+
       // Reorder the 2D grid
       reorder_grid_of_tensors(&tensor_grid, final_qubits.qubits,
                               input.grid.qubits_off, ordering,
                               scratch_2D.data());
 
       if (global::verbose > 0)
-        std::cerr << WARN_MSG("Time spent applying final state: ",
+        std::cerr << WARN_MSG("Time spent reordering tensors: ",
                               stopwatch.split<utils::milliseconds>() / 1000.,
                               "s")
                   << std::endl;
@@ -305,16 +330,15 @@ EvaluateCircuit(const QflexInput& input) {
                               "s")
                   << std::endl;
     }
+  }
 
-    // Final time
-    if (global::verbose > 0) {
-      stopwatch.stop();
-      std::cerr << WARN_MSG(
-                       "Total time: ",
-                       stopwatch.time_passed<utils::milliseconds>() / 1000.,
-                       "s")
-                << std::endl;
-    }
+  // Final time
+  if (global::verbose > 0) {
+    stopwatch.stop();
+    std::cerr << WARN_MSG("Total time: ",
+                          stopwatch.time_passed<utils::milliseconds>() / 1000.,
+                          "s")
+              << std::endl;
   }
 
   return results;
