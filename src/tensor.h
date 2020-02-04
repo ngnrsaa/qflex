@@ -17,20 +17,9 @@
 #ifndef TENSOR_H
 #define TENSOR_H
 
-#ifdef MKL_TENSOR
-#include <mkl.h>
-#else
-#include <cblas.h>
-#endif
-
 #include <complex>
-#include <iostream>
-#include <string>
 #include <unordered_map>
 #include <vector>
-
-#include "errors.h"
-#include "global.h"
 
 namespace qflex {
 
@@ -56,7 +45,8 @@ class Tensor {
    * @param dimensions std::vector<std::size_t> with the ordered dimensions of
    * the indices.
    */
-  Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions);
+  Tensor(const std::vector<std::string>& indices,
+         const std::vector<std::size_t>& dimensions);
 
   /**
    * Creates a Tensor. New space is allocated and filled with a copy of
@@ -70,20 +60,9 @@ class Tensor {
    * match in length the dimension of the Tensor, as given by the
    * dimensions.
    */
-  Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions,
+  Tensor(const std::vector<std::string>& indices,
+         const std::vector<std::size_t>& dimensions,
          const std::vector<s_type>& data);
-
-  /**
-   * Creates a Tensor. A pointer to the data is passed.
-   * @param indices std::vector<std::string> with the names of the indices in
-   * order.
-   * @param dimensions std::vector<std::size_t> with the ordered dimensions of
-   * the indices.
-   * @param data pointer to the data of the tensor. It is responsibility of
-   * the user to provide enough allocated memory to store the Tensor.
-   */
-  Tensor(std::vector<std::string> indices, std::vector<std::size_t> dimensions,
-         s_type* data);
 
   /**
    * Copy constructor: creates a new Tensor that is a copy of another.

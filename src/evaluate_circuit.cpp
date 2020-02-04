@@ -145,10 +145,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
   }
 
   // Declaring and then filling 2D grid of tensors.
-  std::vector<std::vector<Tensor>> tensor_grid(input->grid.I);
-  for (std::size_t i = 0; i < input->grid.I; ++i) {
-    tensor_grid[i] = std::vector<Tensor>(input->grid.J);
-  }
+  std::vector<std::vector<Tensor>> tensor_grid(
+      input->grid.I, std::vector<Tensor>(input->grid.J));
 
   if (global::verbose > 0)
     std::cerr << WARN_MSG("Time spent allocating 2D grid of tensors: ",

@@ -15,6 +15,15 @@
 
 #include "tensor.h"
 
+#include "errors.h"
+#include "global.h"
+
+#ifdef MKL_TENSOR
+#include <mkl.h>
+#else
+#include <cblas.h>
+#endif
+
 #include "stopwatch.h"
 
 #ifdef _OPENMP
@@ -23,7 +32,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 #include <iterator>
+#include <string>
 
 /**
  * Cache friendly size (for complex<float>) to move things around.
@@ -95,8 +106,11 @@ void Tensor::_clear() {
 
 void Tensor::_copy(const Tensor& other) {
   if (_indices.empty()) {
-    _capacity = other.size();
+    if (_data != nullptr) throw ERROR_MSG("Potential memory leak");
+
+    _capacity = other._capacity;
     _data = new s_type[_capacity];
+
   } else {
     // The line "set_dimensions(other.get_dimensions());" takes care of the
     // total size of the dimensions.
@@ -113,9 +127,14 @@ void Tensor::_copy(const Tensor& other) {
     throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
   }
 
+  if (other._data != nullptr)
+#ifdef _OPENMP
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
-  for (std::size_t p = 0; p < other.size(); ++p)
-    *(_data + p) = *(other.data() + p);
+    for (std::size_t p = 0; p < std::size(other); ++p)
+      *(_data + p) = *(other._data + p);
+#else
+    std::copy(other._data, other._data + std::size(other), _data);
+#endif
 }
 
 void Tensor::_move(Tensor&& other) {
@@ -136,8 +155,8 @@ void Tensor::_move(Tensor&& other) {
 
 Tensor::Tensor() {}
 
-Tensor::Tensor(std::vector<std::string> indices,
-               std::vector<std::size_t> dimensions) {
+Tensor::Tensor(const std::vector<std::string>& indices,
+               const std::vector<std::size_t>& dimensions) {
   try {
     _init(indices, dimensions);
   } catch (const std::string& err_msg) {
@@ -147,8 +166,8 @@ Tensor::Tensor(std::vector<std::string> indices,
   _data = new s_type[_capacity];
 }
 
-Tensor::Tensor(std::vector<std::string> indices,
-               std::vector<std::size_t> dimensions,
+Tensor::Tensor(const std::vector<std::string>& indices,
+               const std::vector<std::size_t>& dimensions,
                const std::vector<s_type>& data)
     : Tensor(indices, dimensions) {
   // Check that the data has the same length as this Tensor's size().
@@ -158,22 +177,14 @@ Tensor::Tensor(std::vector<std::string> indices,
                     ", has to match the size of the Tensor: ", this_size);
   }
   _capacity = this_size;
-  // Fill in the _data.
-  for (std::size_t i = 0; i < this_size; ++i) *(_data + i) = data[i];
-}
 
-Tensor::Tensor(std::vector<std::string> indices,
-               std::vector<std::size_t> dimensions, s_type* data) {
-  if (data == nullptr) {
-    throw ERROR_MSG("Data must be non-null.");
-  }
-  try {
-    _init(indices, dimensions);
-  } catch (const std::string& err_msg) {
-    throw ERROR_MSG("Failed to call _init(). Error:\n\t[", err_msg, "]");
-  }
-  _capacity = size();
-  _data = data;
+  // Fill in the _data.
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
+  for (std::size_t i = 0; i < this_size; ++i) *(_data + i) = data[i];
+#else
+  std::copy(std::begin(data), std::end(data), _data);
+#endif
 }
 
 Tensor::Tensor(const Tensor& other) { _copy(other); }
@@ -183,16 +194,20 @@ Tensor::Tensor(Tensor&& other) { _move(std::move(other)); }
 Tensor::~Tensor() { _clear(); }
 
 const Tensor& Tensor::operator=(const Tensor& other) {
-  if (other._data != nullptr && this != &other) {
+  if (other._data != nullptr && this != &other)
     _copy(other);
-  }
+  else
+    throw ERROR_MSG("Cannot copy tensor.");
+
   return *this;
 }
 
 const Tensor& Tensor::operator=(Tensor&& other) {
-  if (other._data != nullptr && this != &other) {
+  if (other._data != nullptr && this != &other)
     _move(std::move(other));
-  }
+  else
+    throw ERROR_MSG("Cannot move tensor.");
+
   return *this;
 }
 
@@ -289,9 +304,14 @@ void Tensor::project(std::string index, std::size_t index_value,
   s_type* projection_data = projection_tensor.data();
   std::size_t projection_size = projection_tensor.size();
   std::size_t projection_begin = projection_size * index_value;
+#ifdef _OPENMP
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
   for (std::size_t p = 0; p < projection_size; ++p)
     *(projection_data + p) = *(_data + projection_begin + p);
+#else
+  std::copy(_data + projection_begin,
+            _data + projection_begin + projection_size, projection_data);
+#endif
 }
 
 void Tensor::rename_index(std::string old_name, std::string new_name) {
@@ -398,9 +418,13 @@ void Tensor::_naive_reorder(std::vector<std::string> new_ordering,
 
 // Start moving data around.
 // First copy all data into scratch.
+#ifdef _OPENMP
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
   for (std::size_t p = 0; p < total_dim; ++p)
     *(scratch_copy + p) = *(_data + p);
+#else
+  std::copy(_data, _data + total_dim, scratch_copy);
+#endif
 
   // No combined efficient mapping from old to new positions with actual
   // copies in memory, all in small cache friendly (for old data, not new,
@@ -742,9 +766,6 @@ void Tensor::_right_reorder(const std::vector<std::string>& old_ordering,
     s_type* temp_data = new s_type[dim_right];
 #pragma omp for schedule(static)
     for (std::size_t pl = 0; pl < dim_left; ++pl) {
-#ifdef _OPENMP
-      std::size_t current_thread = omp_get_thread_num();
-#endif
       std::size_t offset = pl * dim_right;
       for (std::size_t pr = 0; pr < dim_right; ++pr)
         *(temp_data + pr) = *(_data + offset + pr);
@@ -813,10 +834,14 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
   std::size_t dim_right = tensor_dim / dim_left;  // Remember, it's all powers
                                                   // of 2, so OK.
 // Copy.
+#ifdef _OPENMP
 #pragma omp parallel for schedule(static, MAX_RIGHT_DIM)
   for (std::size_t p = 0; p < tensor_dim; ++p) {
     *(scratch_copy + p) = *(_data + p);
   }
+#else
+  std::copy(_data, _data + tensor_dim, scratch_copy);
+#endif
 // Move back.
 #pragma omp parallel
   {
@@ -824,9 +849,14 @@ void Tensor::_left_reorder(const std::vector<std::string>& old_ordering,
     for (std::size_t pl = 0; pl < dim_left; ++pl) {
       std::size_t old_offset = pl * dim_right;
       std::size_t new_offset = map_old_to_new_position[pl] * dim_right;
+#ifdef _OPENMP
       for (std::size_t pr = 0; pr < dim_right; ++pr) {
         *(_data + new_offset + pr) = *(scratch_copy + old_offset + pr);
       }
+#else
+      std::copy(scratch_copy + old_offset,
+                scratch_copy + old_offset + dim_right, _data + new_offset);
+#endif
     }
   }
   scratch_copy = nullptr;

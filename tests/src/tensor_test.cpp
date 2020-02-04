@@ -511,14 +511,6 @@ TEST(TensorExceptionTest, InvalidInput) {
             "The vector data size: 8, has to match the size of the Tensor: 4"));
   }
 
-  // Data passed into Tensor cannot be null pointer.
-  try {
-    Tensor({"a", "b"}, {2, 2}, nullptr);
-    FAIL() << "Expected Tensor() to throw an exception.";
-  } catch (std::string msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Data must be non-null."));
-  }
-
   Tensor tensor_abc({"a", "b", "c"}, {2, 2, 2});
   Tensor tensor_ac({"a", "c"}, {2, 2});
 
