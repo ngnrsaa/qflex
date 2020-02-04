@@ -57,6 +57,7 @@ struct Stopwatch {
 
   /**
    * Compute the difference in time between clock::now() and the last _split.
+   * _split is updated everytime this function is called.
    * @return a difference in time in number (std::size_t) of units
    */
   template <typename unit>
