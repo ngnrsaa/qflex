@@ -3,6 +3,8 @@
 
 #include <chrono>
 
+#include "errors.h"
+
 namespace qflex::utils {
 
 using nanoseconds = std::chrono::nanoseconds;
@@ -27,10 +29,16 @@ struct Stopwatch {
   Stopwatch &operator=(Stopwatch &&) = delete;
 
   /**
-   * Check if the stopwatch is running
+   * Check if stopwatch is running
    * @return true if stopwatch is running, false otherwise.
    */
-  bool running() const { return _running; }
+  bool is_running() const;
+
+  /**
+   * Check if stopwatch has started
+   * @return true id stopwatch has already started, false otherwise.
+   */
+  bool has_started() const;
 
   /**
    * Start Stopwatch
@@ -52,7 +60,16 @@ struct Stopwatch {
    * @return a difference in time in number (std::size_t) of units
    */
   template <typename unit>
-  std::size_t split();
+  std::size_t split() {
+    if (!has_started()) throw ERROR_MSG("Stopwatch never started.");
+
+    if (!is_running()) throw ERROR_MSG("Stopwatch is not running.");
+
+    auto _now = clock::now();
+    auto _delta_time = std::chrono::duration_cast<unit>(_now - _split);
+    _split = _now;
+    return _delta_time.count();
+  }
 
   /**
    * Compute the difference in time between _start and _latest. If _latest <=
@@ -61,7 +78,15 @@ struct Stopwatch {
    * @return a difference in time in number (std::size_t) of units
    */
   template <typename unit>
-  std::size_t time_passed() const;
+  std::size_t time_passed() const {
+    if (!has_started()) throw ERROR_MSG("Stopwatch never started.");
+
+    if (is_running()) throw ERROR_MSG("Stopwatch is still running.");
+
+    return std::chrono::duration_cast<unit>(
+               (_latest > _start ? _latest : clock::now()) - _start)
+        .count();
+  }
 
  private:
   bool _started{false};
