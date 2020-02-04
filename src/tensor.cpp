@@ -108,7 +108,7 @@ void Tensor::_copy(const Tensor& other) {
   if (_indices.empty()) {
     if (_data != nullptr) throw ERROR_MSG("Potential memory leak");
 
-    _capacity = other.size();
+    _capacity = other._capacity;
     _data = new s_type[_capacity];
 
   } else {
