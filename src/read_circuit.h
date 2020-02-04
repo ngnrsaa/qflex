@@ -49,6 +49,9 @@ namespace qflex {
 const std::size_t SUPER_CYCLE_DEPTH = 8;
 const std::size_t DIM = 2;
 
+std::vector<s_type> gate_array(const std::string& gate_name,
+                               const std::vector<double>& params);
+
 /**
  * Read circuit from stream and fill in a 2D grid of vectors of tensors.
  * @param qflex::QflexCircuit containing circuit information.
@@ -68,9 +71,7 @@ const std::size_t DIM = 2;
  */
 void circuit_data_to_tensor_network(
     const QflexCircuit& circuit, std::size_t I, std::size_t J,
-    const std::string initial_conf, const std::string final_conf,
-    const std::optional<std::vector<std::vector<std::size_t>>>&
-        final_qubit_region,
+    const std::string& initial_conf,
     const std::optional<std::vector<std::vector<std::size_t>>>& off,
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
     s_type* scratch);
@@ -94,9 +95,13 @@ void circuit_data_to_tensor_network(
  * @param scratch pointer to s_type array with enough space for all scratch
  * work.
  */
-void flatten_grid_of_tensors(
+std::vector<std::vector<Tensor>> flatten_grid_of_tensors(
     std::vector<std::vector<std::vector<Tensor>>>& grid_of_tensors,
-    std::vector<std::vector<Tensor>>& grid_of_tensors_2D,
+    const std::optional<std::vector<std::vector<std::size_t>>>& off,
+    s_type* scratch);
+
+void reorder_grid_of_tensors(
+    std::vector<std::vector<Tensor>>* grid_of_tensors_2D_ptr,
     const std::optional<std::vector<std::vector<std::size_t>>>&
         final_qubit_region,
     const std::optional<std::vector<std::vector<std::size_t>>>& off,

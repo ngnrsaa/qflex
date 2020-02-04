@@ -32,8 +32,8 @@ tensor network, CPU-based simulator of large quantum circuits.
     qflex::utils::readable_memory_string(qflex::global::memory_limit), R"(].
     -t,--track-memory=<seconds>            If <verbosity_level> > 0, track memory usage [default: )",
     qflex::global::track_memory_seconds, R"(].
-    --initial-conf=<initial_conf>          Initial configuration.
-    --final-conf=<final_conf>              Final configuration.
+    --initial-conf=<initial_conf>          Initial configuration [default: 00...00].
+    --final-conf=<final_conf>              Final configuration [default: 00...00].
     --version                              Show version.
 )");
 
@@ -72,17 +72,6 @@ int main(int argc, char** argv) {
       qflex::global::track_memory_seconds =
           args["<track_memory_seconds>"].asLong();
 
-    // Get initial/final configurations
-    if (static_cast<bool>(args["--initial-conf"]))
-      input.initial_state = args["--initial-conf"].asString();
-    else if (static_cast<bool>(args["<initial_conf>"]))
-      input.initial_state = args["<initial_conf>"].asString();
-
-    if (static_cast<bool>(args["--final-conf"]))
-      input.final_state = args["--final-conf"].asString();
-    else if (static_cast<bool>(args["<final_conf>"]))
-      input.final_state = args["<final_conf>"].asString();
-
     // Getting filenames
     std::string circuit_filename = static_cast<bool>(args["--circuit"])
                                        ? args["--circuit"].asString()
@@ -94,6 +83,63 @@ int main(int argc, char** argv) {
     std::string grid_filename = static_cast<bool>(args["--grid"])
                                     ? args["--grid"].asString()
                                     : args["<grid_filename>"].asString();
+
+    // Load circuit
+    input.circuit.load(std::ifstream(circuit_filename));
+
+    // Load ordering
+    input.ordering.load(std::ifstream(ordering_filename));
+
+    // Load grid
+    input.grid.load(grid_filename);
+
+    // Get initial/final configurations
+    for (const auto& arg : {"--initial-conf", "<initial_conf>"})
+      if (static_cast<bool>(args[arg])) {
+        std::stringstream ss(args[arg].asString());
+        std::string val;
+        while (std::getline(ss, val, ',')) {
+          if (val == "00...00")
+            input.initial_states.push_back(
+                std::string(input.circuit.num_active_qubits, '0'));
+          else if (val.find_first_not_of("01") != std::string::npos)
+            throw ERROR_MSG(
+                "Initial configurations can only have 0 or 1 characters.");
+          else if (std::size(val) != input.circuit.num_active_qubits)
+            throw ERROR_MSG(
+                "Initial configurations must have the number of active "
+                "qubits.");
+          else
+            input.initial_states.push_back(val);
+        }
+      }
+
+    for (const auto& arg : {"--final-conf", "<final_conf>"})
+      if (static_cast<bool>(args[arg])) {
+        std::stringstream ss(args[arg].asString());
+        std::string val;
+        while (std::getline(ss, val, ',')) {
+          if (val == "00...00")
+            input.final_states.push_back(
+                std::string(input.circuit.num_active_qubits, '0'));
+          else if (val.find_first_not_of("01") != std::string::npos)
+            throw ERROR_MSG(
+                "Final configurations can only have 0 or 1 characters.");
+          else if (std::size(val) != input.circuit.num_active_qubits)
+            throw ERROR_MSG(
+                "Final configurations must have the number of active qubits.");
+          else
+            input.final_states.push_back(val);
+        }
+      }
+
+    // Delete duplicate initial/final configuration
+    input.initial_states.erase(std::unique(std::begin(input.initial_states),
+                                           std::end(input.initial_states)),
+                               std::end(input.initial_states));
+    input.final_states.erase(std::unique(std::begin(input.final_states),
+                                         std::end(input.final_states)),
+                             std::end(input.final_states));
 
     // Print OMP_NUM_THREADS and MKL_NUM_THREADS
     if (qflex::global::verbose > 0)
@@ -114,19 +160,11 @@ int main(int argc, char** argv) {
       alarm(qflex::global::track_memory_seconds);
     }
 
-    // Load circuit
-    input.circuit.load(std::ifstream(circuit_filename));
-
-    // Load ordering
-    input.ordering.load(std::ifstream(ordering_filename));
-
-    // Load grid
-    input.grid.load(grid_filename);
-
     // Evaluating circuit.
-    std::vector<std::pair<std::string, std::complex<double>>> amplitudes;
+    std::vector<std::tuple<std::string, std::string, std::complex<double>>>
+        amplitudes;
     try {
-      amplitudes = qflex::EvaluateCircuit(&input);
+      amplitudes = qflex::EvaluateCircuit(input);
     } catch (const std::string& err_msg) {
       throw ERROR_MSG("Failed to call EvaluateCircuit(). Error:\n\t[", err_msg,
                       "]");
@@ -137,13 +175,9 @@ int main(int argc, char** argv) {
       qflex::memory::print_memory_usage();
 
     // Printing output.
-    for (std::size_t c = 0; c < amplitudes.size(); ++c) {
-      const auto& state = amplitudes[c].first;
-      const auto& amplitude = amplitudes[c].second;
-      std::cout << input.initial_state << " --> " << state << ": "
-                << std::real(amplitude) << " " << std::imag(amplitude)
+    for (const auto& [initial_state, final_state, amplitude] : amplitudes)
+      std::cout << initial_state << " --> " << final_state << ": " << amplitude
                 << std::endl;
-    }
 
   } catch (const std::exception& ex) {
     std::cerr << ex.what() << std::endl;
