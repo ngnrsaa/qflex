@@ -64,7 +64,6 @@ class Tensor {
          const std::vector<std::size_t>& dimensions,
          const std::vector<s_type>& data);
 
-
   /**
    * Copy constructor: creates a new Tensor that is a copy of another.
    * @param other Tensor to be copied.

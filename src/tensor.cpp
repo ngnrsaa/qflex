@@ -187,7 +187,6 @@ Tensor::Tensor(const std::vector<std::string>& indices,
 #endif
 }
 
-
 Tensor::Tensor(const Tensor& other) { _copy(other); }
 
 Tensor::Tensor(Tensor&& other) { _move(std::move(other)); }
