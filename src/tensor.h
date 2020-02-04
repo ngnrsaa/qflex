@@ -17,8 +17,8 @@
 #ifndef TENSOR_H
 #define TENSOR_H
 
-#include <unordered_map>
 #include <complex>
+#include <unordered_map>
 #include <vector>
 
 namespace qflex {

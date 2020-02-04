@@ -14,6 +14,7 @@
  */
 
 #include "tensor.h"
+
 #include "errors.h"
 #include "global.h"
 
@@ -28,10 +29,10 @@
 #endif
 
 #include <algorithm>
-#include <iterator>
-#include <iostream>
-#include <string>
 #include <cmath>
+#include <iostream>
+#include <iterator>
+#include <string>
 
 // Time
 #include <chrono>
