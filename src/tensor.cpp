@@ -14,10 +14,24 @@
  */
 
 #include "tensor.h"
+#include "errors.h"
+#include "global.h"
+
+#ifdef MKL_TENSOR
+#include <mkl.h>
+#else
+#include <cblas.h>
+#endif
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include <algorithm>
-#include <cmath>
 #include <iterator>
+#include <iostream>
+#include <string>
+#include <cmath>
 
 // Time
 #include <chrono>

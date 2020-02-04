@@ -17,24 +17,9 @@
 #ifndef TENSOR_H
 #define TENSOR_H
 
-#ifdef MKL_TENSOR
-#include <mkl.h>
-#else
-#include <cblas.h>
-#endif
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
-#include <complex>
-#include <iostream>
-#include <string>
 #include <unordered_map>
+#include <complex>
 #include <vector>
-
-#include "errors.h"
-#include "global.h"
 
 namespace qflex {
 
