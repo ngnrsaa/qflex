@@ -35,6 +35,9 @@ ifeq ($(PYBIND11), true)
   TARGETS += pybind
 endif
 
+OBJS = ordering.o grid.o circuit.o evaluate_circuit.o tensor.o contraction_utils.o \
+    stopwatch.o read_circuit.o utils.o 
+
 MODULES = docopt
 TESTS_MODULES = googletest
 
@@ -44,6 +47,7 @@ export CPPFLAGS
 export LDFLAGS
 export LIBS
 export FLAGS
+export OBJS
 
 .PHONY: all
 all: $(TARGETS)
