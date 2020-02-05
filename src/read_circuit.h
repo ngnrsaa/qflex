@@ -49,6 +49,12 @@ namespace qflex {
 const std::size_t SUPER_CYCLE_DEPTH = 8;
 const std::size_t DIM = 2;
 
+/**
+ * Return gate as an array.
+ * @param name of the gate.
+ * @param parameters for the gate.
+ * @return an s_type array corresponding to the gate.
+ */
 std::vector<s_type> gate_array(const std::string& gate_name,
                                const std::vector<double>& params);
 
