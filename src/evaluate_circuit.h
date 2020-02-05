@@ -39,17 +39,6 @@
 
 namespace qflex {
 
-/**
- * Reads in grid layout from a file, which should be formatted as an I x J grid
- * of zeroes (for "off" qubits) and ones (for "on" qubits).\
- * @param grid_data std::istream* containing grid layout stored as a string.
- * @param I std::size_t with the first spatial dimension of the grid of qubits.
- * @param J std::size_t with the second spatial dimension of the grid of qubits.
- * @return a list of coordinates for "off" qubits in the I x J grid provided.
- */
-std::vector<std::vector<std::size_t>> read_grid_layout_from_stream(
-    std::istream* grid_data, std::size_t I, std::size_t J);
-
 struct QflexFinalQubits {
   std::vector<std::vector<std::size_t>> qubits;
   std::vector<std::size_t> output_pos_map;
