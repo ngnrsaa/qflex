@@ -56,6 +56,12 @@ struct QflexFinalQubits {
   std::vector<std::vector<std::size_t>> output_values_map;
 };
 
+/**
+ * Returns final qubits when cuts are speficied for the terminal qubits.
+ * @param grid representing the circuit.
+ * @param ordering of the contraction.
+ * @return return set of final qubits and their map.
+ */
 QflexFinalQubits get_final_qubits(
     const QflexGrid& grid, const std::list<ContractionOperation>& ordering);
 
