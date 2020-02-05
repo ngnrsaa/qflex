@@ -77,7 +77,7 @@ void apply_terminal_cuts(
     const QflexGrid& grid, const QflexFinalQubits& final_qubits,
     std::vector<std::vector<std::vector<Tensor>>>* tensor_grid_3D_ptr);
 
-/** 
+/**
  * Apply the final delta-tensors to the 3D grid of tensors.
  * @param QflexGrid representing the circuit layout.
  * @param final state.
