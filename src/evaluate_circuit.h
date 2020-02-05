@@ -47,9 +47,9 @@ struct QflexFinalQubits {
 
 /**
  * Returns final qubits when cuts are speficied for the terminal qubits.
- * @param grid representing the circuit.
+ * @param QflexGrid representing the circuit layout.
  * @param ordering of the contraction.
- * @return return set of final qubits and their map.
+ * @return set of final qubits and their map.
  */
 QflexFinalQubits get_final_qubits(
     const QflexGrid& grid, const std::list<ContractionOperation>& ordering);
@@ -62,14 +62,27 @@ QflexFinalQubits get_final_qubits(
  * be populated by this method.
  * @param output_states vector of output states for the given contraction
  * ordering, to be populated by this method.
+ * @return a vector of strings representing the final output states.
  */
 std::vector<std::string> get_output_states(
     const std::string& base_state, const QflexFinalQubits& final_qubits);
 
+/**
+ * Given a grid of 3D tensors, rename indexes of the terminal tensors to
+ * reflect terminal qubits.
+ * @param QflexFinalQubits representing the final qubits.
+ * @param 3D grid of tensors.
+ */
 void apply_terminal_cuts(
     const QflexGrid& grid, const QflexFinalQubits& final_qubits,
     std::vector<std::vector<std::vector<Tensor>>>* tensor_grid_3D_ptr);
 
+/** 
+ * Apply the final delta-tensors to the 3D grid of tensors.
+ * @param QflexGrid representing the circuit layout.
+ * @param final state.
+ * @param 3D grid of tensors.
+ */
 void apply_delta_output(
     const QflexGrid& grid, const std::string& final_state,
     const QflexFinalQubits& final_qubits,
