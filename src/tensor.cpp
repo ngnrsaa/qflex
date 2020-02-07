@@ -1024,8 +1024,8 @@ void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
   }
 
   cblas_cdotu_sub(k, reinterpret_cast<const float*>(A_data), 1,
-                     reinterpret_cast<const float*>(B_data), 1,
-                     reinterpret_cast<openblas_complex_float*>(C_data));
+                  reinterpret_cast<const float*>(B_data), 1,
+                  reinterpret_cast<openblas_complex_float*>(C_data));
 }
 #endif
 
