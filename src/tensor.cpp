@@ -960,12 +960,13 @@ void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
   }
   s_type alpha = 1.0;
   s_type beta = 0.0;
-  cblas_cgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k,
-              reinterpret_cast<const s_type::value_type*>(&alpha),
-              reinterpret_cast<const s_type::value_type*>(A_data), std::max(1ul, k),
-              reinterpret_cast<const s_type::value_type*>(B_data), std::max(1ul, n),
-              reinterpret_cast<const s_type::value_type*>(&beta),
-              reinterpret_cast<s_type::value_type*>(C_data), std::max(1ul, n));
+  cblas_cgemm(
+      CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k,
+      reinterpret_cast<const s_type::value_type*>(&alpha),
+      reinterpret_cast<const s_type::value_type*>(A_data), std::max(1ul, k),
+      reinterpret_cast<const s_type::value_type*>(B_data), std::max(1ul, n),
+      reinterpret_cast<const s_type::value_type*>(&beta),
+      reinterpret_cast<s_type::value_type*>(C_data), std::max(1ul, n));
 }
 
 void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
@@ -983,7 +984,8 @@ void _multiply_Mv(const s_type* A_data, const s_type* B_data, s_type* C_data,
   s_type beta = 0.0;
   cblas_cgemv(CblasRowMajor, CblasNoTrans, m, k,
               reinterpret_cast<const s_type::value_type*>(&alpha),
-              reinterpret_cast<const s_type::value_type*>(A_data), std::max(1ul, k),
+              reinterpret_cast<const s_type::value_type*>(A_data),
+              std::max(1ul, k),
               reinterpret_cast<const s_type::value_type*>(B_data), 1,
               reinterpret_cast<const s_type::value_type*>(&beta),
               reinterpret_cast<s_type::value_type*>(C_data), 1);
@@ -1005,7 +1007,8 @@ void _multiply_vM(const s_type* A_data, const s_type* B_data, s_type* C_data,
   s_type beta = 0.0;
   cblas_cgemv(CblasRowMajor, CblasTrans, k, n,
               reinterpret_cast<const s_type::value_type*>(&alpha),
-              reinterpret_cast<const s_type::value_type*>(A_data), std::max(1ul, n),
+              reinterpret_cast<const s_type::value_type*>(A_data),
+              std::max(1ul, n),
               reinterpret_cast<const s_type::value_type*>(B_data), 1,
               reinterpret_cast<const s_type::value_type*>(&beta),
               reinterpret_cast<s_type::value_type*>(C_data), 1);
