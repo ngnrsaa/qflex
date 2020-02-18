@@ -413,6 +413,30 @@ TEST(TensorTest, WorstCaseIndexReordering) {
   }
 }
 
+// Tests that "reordering" a scalar does not crash.
+TEST(TensorTest, ReorderScalar) {
+  std::vector<std::string> indices = {};
+  std::vector<size_t> dimensions = {};
+  std::vector<std::complex<float>> data;
+  data.push_back(std::complex<float>(0, 0));
+
+  Tensor tensor(indices, dimensions, data);
+  std::vector<std::string> expected_indices = {};
+  std::array<std::complex<float>, 1> scratch;
+  try {
+    tensor.reorder(expected_indices, scratch.data());
+  } catch (std::string msg) {
+    FAIL()
+        << "Expected tensor.reorder() to succeed but failed with error msg:  "
+        << msg << std::endl;
+  }
+  ASSERT_EQ(tensor.get_indices(), expected_indices);
+  ASSERT_EQ(tensor.get_dimensions(), dimensions);
+
+  // "Reordering" a scalar should not affect it.
+  ASSERT_EQ(data[0], tensor.data()[0]);
+}
+
 // Multiplies two tensors and verify shape, indices, and data of the result.
 TEST(TensorTest, Multiply) {
   std::vector<std::string> indices_a = {"a", "b", "c"};

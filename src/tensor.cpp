@@ -867,6 +867,15 @@ void Tensor::reorder(std::vector<std::string> new_ordering,
   if (scratch_copy == nullptr) {
     throw ERROR_MSG("Scratch copy must be non-null.");
   }
+  if (new_ordering.empty() && _indices.empty()) {
+    // Scalars do not require reordering, but may indicate user input error.
+    std::cerr << WARN_MSG(
+                     "Warning: encountered rank-zero tensor during reorder "
+                     "step. This suggests that a qubit is fully disconnected ",
+                     "from the rest of the device.")
+              << std::endl;
+    return;
+  }
 
   // Checks.
   bool new_ordering_in_indices = _vector_s_in_vector_s(new_ordering, _indices);
