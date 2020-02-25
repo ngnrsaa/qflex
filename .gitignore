@@ -35,3 +35,5 @@ configure
 .venv/
 .idea/
 .vscode/
+
+*.plist
