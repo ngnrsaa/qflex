@@ -210,6 +210,6 @@ void QflexCircuit::load(const std::string &filename) {
     this->load(in);
   else
     throw ERROR_MSG("Cannot open circuit file ", filename, ".");
-};
+}
 
 }  // namespace qflex

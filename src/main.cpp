@@ -1,19 +1,23 @@
+#include <stdlib.h>
+
 #include "circuit.h"
 #include "docopt.h"
 #include "evaluate_circuit.h"
 #include "global.h"
 #include "grid.h"
 #include "input.h"
+#include "memory.h"
 #include "ordering.h"
+#include "utils.h"
 
 static const char VERSION[] = "qFlex v0.1";
-static const char USAGE[] =
+const std::string USAGE = qflex::utils::concat(
     R"(Flexible Quantum Circuit Simulator (qFlex) implements an efficient
 tensor network, CPU-based simulator of large quantum circuits.
 
   Usage:
-    qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf> --verbosity <verbosity_level> --memory <memory_limit>]
-    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf <initial_conf> --final-conf <final_conf> --verbosity <verbosity_level> --memory <memory_limit>]
+    qflex <circuit_filename> <ordering_filename> <grid_filename> [<initial_conf> <final_conf> <verbosity_level> <memory_limit> <track_memory_seconds>]
+    qflex -c <circuit_filename> -o <ordering_filename> -g <grid_filename> [--initial-conf=<initial_conf> --final-conf=<final_conf> --verbosity=<verbosity_level> --memory=<memory_limit> --track-memory=<seconds>]
     qflex (-h | --help)
     qflex --version
 
@@ -22,23 +26,28 @@ tensor network, CPU-based simulator of large quantum circuits.
     -c,--circuit=<circuit_filename>        Circuit filename.
     -o,--ordering=<ordering_filename>      Ordering filename.
     -g,--grid=<grid_filename>              Grid filename.
-    -v,--verbosity=<verbosity_level>       Verbosity level.
-    -m,--memory=<memory_limit>             Memory limit (default 1GB).
+    -v,--verbosity=<verbosity_level>       Verbosity level [default: )",
+    qflex::global::verbose, R"(].
+    -m,--memory=<memory_limit>             Memory limit [default: )",
+    qflex::utils::readable_memory_string(qflex::global::memory_limit), R"(].
+    -t,--track-memory=<seconds>            If <verbosity_level> > 0, track memory usage [default: )",
+    qflex::global::track_memory_seconds, R"(].
     --initial-conf=<initial_conf>          Initial configuration.
     --final-conf=<final_conf>              Final configuration.
     --version                              Show version.
+)");
 
-)";
-
-// Example:
-// $ src/qflex.x config/circuits/bristlecone_48_1-24-1_0.txt \
-//               config/ordering/bristlecone_48.txt \
-//               config/grid/bristlecone_48.txt
-//
+/*
+ * Example:
+ * $ src/qflex.x config/circuits/bristlecone_48_1-24-1_0.txt \
+ *               config/ordering/bristlecone_48.txt \
+ *               config/grid/bristlecone_48.txt
+ *
+ */
 int main(int argc, char** argv) {
   try {
     std::map<std::string, docopt::value> args =
-        docopt::docopt(USAGE, {argv + 1, argv + argc}, true, VERSION);
+        docopt::docopt(USAGE.c_str(), {argv + 1, argv + argc}, true, VERSION);
 
     // Reading input
     qflex::QflexInput input;
@@ -48,17 +57,20 @@ int main(int argc, char** argv) {
       qflex::global::verbose = args["--verbosity"].asLong();
     else if (static_cast<bool>(args["<verbosity_level>"]))
       qflex::global::verbose = args["<verbosity_level>"].asLong();
-    else
-      qflex::global::verbose = 0;
 
     // Update global qflex::global::memory_limit
     if (static_cast<bool>(args["--memory"]))
-      qflex::global::memory_limit = args["--memory"].asLong();
+      qflex::global::memory_limit = qflex::utils::from_readable_memory_string(
+          args["--memory"].asString());
     else if (static_cast<bool>(args["<memory_limit>"]))
-      qflex::global::memory_limit = args["<memory_limit>"].asLong();
-    else
-      // Default limit of one gigabyte.
-      qflex::global::memory_limit = 1L << 30;
+      qflex::global::memory_limit = qflex::utils::from_readable_memory_string(
+          args["<memory_limit>"].asString());
+
+    if (static_cast<bool>(args["--track-memory"]))
+      qflex::global::track_memory_seconds = args["--track-memory"].asLong();
+    else if (static_cast<bool>(args["<track_memory_seconds>"]))
+      qflex::global::track_memory_seconds =
+          args["<track_memory_seconds>"].asLong();
 
     // Get initial/final configurations
     if (static_cast<bool>(args["--initial-conf"]))
@@ -83,6 +95,25 @@ int main(int argc, char** argv) {
                                     ? args["--grid"].asString()
                                     : args["<grid_filename>"].asString();
 
+    // Print OMP_NUM_THREADS and MKL_NUM_THREADS
+    if (qflex::global::verbose > 0)
+      for (const char* var : {"OMP_NUM_THREADS", "MKL_NUM_THREADS"})
+        if (const char* value = getenv(var); value != nullptr)
+          std::cerr << WARN_MSG(var, " = ", value) << std::endl;
+
+    // Print info on maximum memory
+    if (qflex::global::verbose > 0)
+      std::cerr << WARN_MSG("Maximum allowed memory: ",
+                            qflex::utils::readable_memory_string(
+                                qflex::global::memory_limit))
+                << std::endl;
+
+    // set alarms to get memory usage in real time
+    if (qflex::global::verbose > 0 && qflex::global::track_memory_seconds > 0) {
+      signal(SIGALRM, qflex::memory::print_memory_usage);
+      alarm(qflex::global::track_memory_seconds);
+    }
+
     // Load circuit
     input.circuit.load(std::ifstream(circuit_filename));
 
@@ -102,8 +133,11 @@ int main(int argc, char** argv) {
     }
     // If no error is caught, amplitudes will be initialized.
 
+    if (qflex::global::verbose > 0 && qflex::global::track_memory_seconds > 0)
+      qflex::memory::print_memory_usage();
+
     // Printing output.
-    for (int c = 0; c < amplitudes.size(); ++c) {
+    for (std::size_t c = 0; c < amplitudes.size(); ++c) {
       const auto& state = amplitudes[c].first;
       const auto& amplitude = amplitudes[c].second;
       std::cout << input.initial_state << " --> " << state << ": "

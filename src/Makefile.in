@@ -6,8 +6,7 @@ CIRQ_IF_DIR = ../python/
 # The name of the shared library that results after compiling QFlex for Pybind11
 QFLEXLIB = $(CIRQ_IF_DIR)/$(TARGET1)`python3-config --extension-suffix`
 
-OBJS1 = ordering.o grid.o circuit.o evaluate_circuit.o tensor.o contraction_utils.o \
-    read_circuit.o docopt/docopt.o
+OBJS1 = $(OBJS) docopt/docopt.o
 
 CXXFLAGS += -Idocopt/ -fPIC
 
@@ -18,13 +17,13 @@ PYBINDFLAGS = -shared `python3 -m pybind11 --includes` `python3-config --ldflags
 #-Ipybind11/include
 
 $(TARGET1): main.cpp $(OBJS1)
-	$(CXX) -o $(@).x $< $(OBJS1) $(CXXFLAGS)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $^ -o $(@).x $(LDFLAGS) $(LIBS) 
 
-pybind: $(OBJS1)
-	$(CXX) pybind_main.cpp -o $(QFLEXLIB) $^ $(CXXFLAGS) $(PYBINDFLAGS)
+pybind: pybind_main.cpp $(OBJS1)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(PYBINDFLAGS) $^ -o $(QFLEXLIB) $(LDFLAGS) $(LIBS)
 
 %.o: %.cpp %.h
-	$(CXX) -c $< $(CXXFLAGS) -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@ $(LDFLAGS) $(LIBS)
 
 .PHONY: clean
 clean:

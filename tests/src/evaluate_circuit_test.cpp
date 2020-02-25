@@ -16,7 +16,7 @@ class GetOutputStatesTest : public testing::Test {
 
  protected:
   QflexInput input_;
-  std::vector<std::vector<int>> final_qubits_, expected_final_qubits_;
+  std::vector<std::vector<std::size_t>> final_qubits_, expected_final_qubits_;
   std::vector<std::string> output_states_, expected_output_states_;
   std::list<ContractionOperation> ordering_;
 };
@@ -100,7 +100,7 @@ TEST_F(GetOutputStatesTest, OnlyUseTerminalCuts) {
 TEST(GetOutputStatesExceptionTest, InvalidInput) {
   QflexInput input;
   std::list<ContractionOperation> ordering;
-  std::vector<std::vector<int>> final_qubits;
+  std::vector<std::vector<std::size_t>> final_qubits;
   std::vector<std::string> output_states;
 
   // Input cannot be null pointer.
@@ -197,7 +197,7 @@ TEST(EvaluateCircuitTest, SimpleCircuit) {
   std::vector<std::pair<std::string, std::complex<double>>> amplitudes =
       EvaluateCircuit(&input);
 
-  ASSERT_EQ(amplitudes.size(), 2);
+  ASSERT_EQ(amplitudes.size(), 2ul);
   EXPECT_EQ(amplitudes[0].first, "11000");
   EXPECT_EQ(amplitudes[1].first, "11001");
   EXPECT_NEAR(amplitudes[0].second.real(), 0.10669, 1e-5);

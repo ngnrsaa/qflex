@@ -48,22 +48,22 @@ TEST(GridTest, ReadValidGrid3x4) {
   std::stringstream stream(kTestGrid_3x4);
   QflexGrid grid;
   grid.load(stream);
-  std::vector<std::vector<int>> expected_off = {
+  std::vector<std::vector<std::size_t>> expected_off = {
       {0, 0}, {0, 3}, {2, 0}, {2, 2}, {2, 3}};
   EXPECT_EQ(grid.qubits_off, expected_off);
-  EXPECT_EQ(grid.I, 3);
-  EXPECT_EQ(grid.J, 4);
+  EXPECT_EQ(grid.I, 3ull);
+  EXPECT_EQ(grid.J, 4ull);
 }
 
 TEST(GridTest, ReadValidGrid6x2) {
   std::stringstream stream(kTestGrid_6x2);
   QflexGrid grid;
   grid.load(stream);
-  std::vector<std::vector<int>> expected_off = {
+  std::vector<std::vector<std::size_t>> expected_off = {
       {0, 0}, {1, 1}, {4, 0}, {5, 0}, {5, 1}};
   EXPECT_EQ(grid.qubits_off, expected_off);
-  EXPECT_EQ(grid.I, 6);
-  EXPECT_EQ(grid.J, 2);
+  EXPECT_EQ(grid.I, 6ull);
+  EXPECT_EQ(grid.J, 2ull);
 }
 
 TEST(GridTest, ClearGridTest) {
@@ -72,9 +72,9 @@ TEST(GridTest, ClearGridTest) {
   grid.J = 8;
   grid.qubits_off = {{0, 0}, {1, 0}, {0, 1}};
   grid.clear();
-  EXPECT_EQ(grid.I, 0);
-  EXPECT_EQ(grid.J, 0);
-  EXPECT_EQ(grid.qubits_off.size(), 0);
+  EXPECT_EQ(grid.I, 0ull);
+  EXPECT_EQ(grid.J, 0ull);
+  EXPECT_EQ(grid.qubits_off.size(), 0ull);
 }
 
 }  // namespace
