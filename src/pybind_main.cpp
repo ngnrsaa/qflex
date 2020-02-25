@@ -67,8 +67,7 @@ std::vector<std::string> LoadStates(const py::dict &options,
       states.push_back(in_state.cast<std::string>());
     } else
       throw ERROR_MSG("states must be strings.");
-  } else
-    states.push_back("");
+  }
   return states;
 }
 
@@ -84,27 +83,39 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     LoadData(options, "grid", input.grid);
     LoadData(options, "circuit", input.circuit);
     LoadData(options, "ordering", input.ordering);
-    const auto initial_states = LoadStates(options, "initial");
-    const auto final_states = LoadStates(options, "final");
 
-    // Define container for amplitudes
-    std::vector<std::pair<
-        std::string, std::vector<std::pair<std::string, std::complex<double>>>>>
-        amplitudes;
+    // Load initial/final states
+    input.initial_states = [&options, &input]() {
+      std::vector<std::string> states = LoadStates(options, "initial");
+      if (std::empty(states))
+        states.push_back(std::string(input.circuit.num_active_qubits, '0'));
+      return states;
+    }();
+    input.final_states = [&options, &input]() {
+      std::vector<std::string> states = LoadStates(options, "final");
+      if (std::empty(states))
+        states.push_back(std::string(input.circuit.num_active_qubits, '0'));
+      return states;
+    }();
 
-    // TODO: Pybind11 does not allow multiple types as output
-    if (std::size(initial_states) != 1 or std::size(final_states) != 1)
+    // TODO: Not yet supported in Cirq
+    if (std::size(input.initial_states) != 1 ||
+        std::size(input.final_states) != 1)
       throw ERROR_MSG("Not yet supported");
 
-    for (const auto &is : initial_states) {
-      for (const auto &fs : final_states) {
-        input.initial_state = is;
-        input.final_state = fs;
-        amplitudes.push_back({is, EvaluateCircuit(&input)});
-      }
-    }
+    // Remove duplicate initial/final states
+    input.initial_states.erase(std::unique(std::begin(input.initial_states),
+                                           std::end(input.initial_states)),
+                               std::end(input.initial_states));
+    input.final_states.erase(std::unique(std::begin(input.final_states),
+                                         std::end(input.final_states)),
+                             std::end(input.final_states));
 
-    return std::get<1>(amplitudes[0]);
+    // Define container for amplitudes
+    std::vector<std::tuple<std::string, std::string, std::complex<double>>>
+        amplitudes = EvaluateCircuit(input);
+
+    return {{std::get<1>(amplitudes[0]), std::get<2>(amplitudes[0])}};
 
     // Gently return an error msg if exception is known. Otherwise, rethrow
     // exception.
