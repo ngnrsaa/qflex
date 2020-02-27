@@ -1,28 +1,14 @@
 #ifndef ERROR__H
 #define ERROR__H
 
-#include <sstream>
-#include <stdexcept>
-#include <string>
-
 #include "global.h"
+#include "utils.h"
 
-template <typename T>
-std::string concat(const T& x) {
-  std::stringstream ss;
-  ss << x;
-  return ss.str();
-}
+#define ERROR_MSG(...)                                                       \
+  qflex::utils::concat("ERROR (" __FILE__ ": ", __FUNCTION__, ":", __LINE__, \
+                       ") --> ", __VA_ARGS__)
 
-template <typename T, typename... Q>
-std::string concat(const T& x, const Q&... y) {
-  std::stringstream ss;
-  ss << x;
-  return ss.str() + concat(y...);
-}
-
-#define ERROR_MSG(...)                                                   \
-  concat("ERROR (" __FILE__ ": ", __FUNCTION__, ":", __LINE__, ") --> ", \
-         __VA_ARGS__)
+#define WARN_MSG(...) \
+  qflex::utils::concat("[", qflex::utils::get_date_time(), "] ", __VA_ARGS__)
 
 #endif

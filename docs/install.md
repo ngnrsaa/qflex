@@ -8,11 +8,11 @@ any target folder. By default, qFlex installs to `$HOME/local`.
 
 To install qFlex on `Debian/Ubuntu` systems, the following packages must be installed in the system:
 ```
-$ sudo apt-get install autoconf automake make g++ libgsl-dev libgslcblas0
+$ sudo apt-get install autoconf automake make g++ libopenblas-dev
 ```
 followed by the installation of required python modules:
 ```
-# python3 -m pip install -r scripts/requirements.txt
+$ python3 -m pip install --user -r scripts/requirements.txt
 ```
 
 ## Check prerequisites
@@ -42,10 +42,11 @@ $ autoreconf -i && autoconf && ./configure --help
 
 The following options for `configure` are also available:
 ```
---enable-openmp           Enable experimental support for OpenMP
---disable-python_checks   Disable python checks while configuring
---disable-pybind11        Disable installation of Python porting of qFlex
---disable-python_tests    Disable python tests
+--enable-openmp               Enable experimental support for OpenMP
+--disable-python_checks       Disable python checks while configuring
+--disable-pybind11            Disable installation of Python porting of qFlex
+--disable-python_tests        Disable python tests
+--disable-error_on_warnings   Warnings are not considered as errors
 ```
 *Note: If you are using ICPC to build qFlex, you **must** specify
 --disable-pybind11 in this step. Construction of the python wrappers with ICPC
@@ -54,14 +55,14 @@ is currently unsupported.*
 ## Prerequisites on Mac OS X
 
 qFlex can be natively compiled on Mac OS X by installing few dependencies through
-`brew` and `pip3`. More precisely, the following libraries must be installed
+`brew` and `pip`. More precisely, the following libraries must be installed
 using `brew`:
 ```
-$ brew install coreutils gsl autoconf automake libomp pybind11
+$ brew install coreutils openblas autoconf automake libomp pybind11
 ```
-and through `pip3`:
+and through `pip`:
 ```
-# python3 -m pip install -r scripts/requirements.txt
+$ python3 -m pip install --user -r scripts/requirements.txt
 ```
 followed by:
 ```
@@ -72,7 +73,7 @@ $ autoreconf -i && autoconf && ./configure
 
 To compile qFlex, it suffices to run:
 ```
-make && make run-tests
+$ make && make run-tests
 ```
 The first command will compile a qFlex executable (`src/qflex.x`) that can be
 directly used without installation. The second command will run all the
@@ -80,7 +81,7 @@ available tests. While not required, it is suggested to make sure that qFlex has
 been properly compiled. To speed-up the compilation, it is possible to specify
 the number of parallel processes as:
 ```
-make -j8 && make run-tests -j8
+$ make -j8 && make run-tests -j8
 ```
 where `-j8` means that `8` parallel processes are used.
 
@@ -89,7 +90,7 @@ where `-j8` means that `8` parallel processes are used.
 To run a sample simulation, use the following command:
 
 ```
-./src/qflex.x config/circuits/bristlecone_48_1-24-1_0.txt \
+$ ./src/qflex.x config/circuits/bristlecone_48_1-24-1_0.txt \
 config/ordering/bristlecone_48.txt config/grid/bristlecone_48.txt
 ```
 
@@ -97,7 +98,7 @@ config/ordering/bristlecone_48.txt config/grid/bristlecone_48.txt
 
 Finally, qFlex can be installed as:
 ```
-make install
+$ make install
 ```
 By default, qFlex is installed in `$HOME/local`. See
 ["Check prerequisites"](#check-prerequisites) to change the default folder.
@@ -106,5 +107,5 @@ By default, qFlex is installed in `$HOME/local`. See
 
 All the installation files can be cleaned-up by running:
 ```
-make clean-all
+$ make clean-all
 ```

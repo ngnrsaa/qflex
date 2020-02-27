@@ -4,13 +4,15 @@ Provides a method for converting Cirq circuits to qFlex simulation order.
 
 Usage:
   order_circuit_simulation.py (-h | --help)
-  order_circuit_simulation.py <grid_filename> <circuit_filename>
-  order_circuit_simulation.py -g <grid_filename> -c <circuit_filename> [-v -o <output_file>]
+  order_circuit_simulation.py <grid_filename> <circuit_filename> [-v -x <cut_count> -f <fidelity_ratio> -o <output_file>]
+  order_circuit_simulation.py -g <grid_filename> -c <circuit_filename> [-v -x <cut_count> -f <fidelity_ratio> -o <output_file>]
 
 Options:
   -h, --help                           Show this help
   -g, --grid=<grid_filename>           Grid filename
   -c, --circuit=<circuit_filename>     Circuit filename
+  -x, --max_cuts=<cut_count>           Number of cuts to attempt [default: 2]
+  -f, --fidelity=<fidelity_ratio>      Circuit fidelity (enforced with cuts)
   -o, --output-file=<output_file>      Print on <output_file> instead of stdout
   -v, --verbose                        Verbose output
 """
@@ -18,7 +20,7 @@ Options:
 import itertools
 import math
 
-from typing import Iterable, Tuple
+from typing import Dict, Iterable, Tuple
 
 import cirq
 import os, sys
@@ -286,11 +288,56 @@ def get_steps_for_graph(g: Graph):
     return (time_cost, contraction_steps)
 
 
+def match_fidelity(target_fidelity: float, cuts: Dict[frozenset, int]):
+    """Determines the "width" of each cut (what values to evaluate over) to
+    match the target fidelity as closely as possible.
+
+  Args:
+    target_fidelity: the requested fidelity. The final fidelity must be
+      greater than this, but should otherwise be as close as possible.
+    cuts: a dict of (cut_qubits, bond_dim) for all cuts.
+
+  Returns:
+    The final fidelity approximation and a list of tuples
+      (cut qubits, cut width, cut_dimension).
+  """
+    if (target_fidelity == 1.0):
+        return (1.0,
+                zip(list(cuts.keys()), list(cuts.values()),
+                    list(cuts.values())))
+
+    value_sets = []
+    denominator = 1.0
+    for cut, dim in cuts.items():
+        # Using min() prevents float math from producing dim+1.
+        min_width = min(dim, math.ceil(dim * target_fidelity))
+        value_sets.append(list(range(min_width, dim + 1)))
+        denominator *= dim
+
+    combinations = itertools.product(*value_sets)
+    closest_set = []
+    closest_fidelity = 1.0
+    for width_set in combinations:
+        fidelity = 1.0
+        for width in width_set:
+            fidelity *= width
+        fidelity /= denominator
+        if fidelity >= target_fidelity and fidelity < closest_fidelity:
+            closest_set = width_set
+            closest_fidelity = fidelity
+            if fidelity == target_fidelity:
+                break
+
+    return (closest_fidelity,
+            zip(list(cuts.keys()), closest_set, list(cuts.values())))
+
+
 def circuit_to_ordering(
     circuit: cirq.circuits.Circuit,
     qubit_names: Iterable[int] = None,
     qubit_order_method: cirq.ops.QubitOrderOrList = cirq.ops.QubitOrder.DEFAULT,
-    max_cuts: int = 2):
+    max_cuts: int = 2,
+    fidelity: float = 1.0):
     """Generates a qFlex circuit ordering (with cuts) from a Cirq circuit.
 
   Args:
@@ -302,6 +349,9 @@ def circuit_to_ordering(
     max_cuts: Maximum number of cuts attempted. Cuts are made using a greedy
       algorithm; making one or more cuts multiplies the time cost of this method
       by O(# of edges in circuit).
+    fidelity: If this is less than 1.0, cuts generated will only be evaluated
+      on a subset of the possible values. Subset size is controlled to provide
+      closest fidelity greater than the provided number.
 
   Returns:
     A list of string-formatted qFlex contraction commands (e.g. 'expand 1 2')
@@ -333,14 +383,16 @@ def circuit_to_ordering(
 
     qubit_order = qubit_order_method.order_for(circuit.all_qubits())
 
-    cut_indices = set()
+    cut_indices = {}
     min_cost = math.inf
     min_steps = []
     for _ in range(max_cuts):
         # Loop over possible cuts.
         min_cut = None
         tested_pairs = set()
+        min_cut_dim = 1
         for cut_op in circuit.all_operations():
+            cut_dim = 1
             cut_index = frozenset(cut_op.qubits)
             if cut_index in tested_pairs or cut_index in cut_indices:
                 continue
@@ -351,20 +403,31 @@ def circuit_to_ordering(
                 index = frozenset(op.qubits)
                 if index != cut_index and index not in cut_indices:
                     g.add_bond(op.qubits, op)
+                elif index == cut_index:
+                    cut_dim *= utils.ComputeSchmidtRank(op)
             cost, steps = get_steps_for_graph(g)
             if cost < min_cost:
                 min_cost = cost
                 min_cut = cut_op.qubits
+                min_cut_dim = cut_dim
                 min_steps = steps
         if min_cut:
-            cut_indices.add(frozenset(min_cut))
+            cut_indices[frozenset(min_cut)] = min_cut_dim
         else:  # Cut failed to reduce contraction cost; stop early.
             break
     order_data = []
-    for cut in cut_indices:
-        order_data.append('cut () %d %d' %
-                          tuple(qubit_names[qubit_order.index(c)] for c in cut))
+    final_fidelity, cut_ratios = match_fidelity(fidelity, cut_indices)
+    for cut, width, dim in cut_ratios:
+        cut_qubits = tuple(cut)
+        cut_ids = tuple(qubit_names[qubit_order.index(c)] for c in cut)
+        order_data.append('# cut bond {} of dim={}'.format(cut_qubits, dim))
+        # If cut evaluates all values, value list can be removed.
+        cut_values = tuple(range(width)) if width < dim else tuple()
+        order_data.append('cut {} {} {}'.format(cut_values, cut_ids[0],
+                                                cut_ids[1]))
+    order_data.append('# approximate fidelity: {}'.format(final_fidelity))
     order_data += create_ordering_data(min_steps, qubit_names, qubit_order)
+
     return order_data
 
 
@@ -379,6 +442,8 @@ if __name__ == "__main__":
         '<grid_filename>']
     circuit_filename = args['--circuit'] if args['--circuit'] != None else args[
         '<circuit_filename>']
+    max_cuts = int(args['--max_cuts']) if args['--max_cuts'] != None else 2
+    fidelity = float(args['--fidelity']) if args['--fidelity'] != None else 1.0
     output_filename = args['--output-file']
     verbose = args['--verbose']
 
@@ -395,7 +460,10 @@ if __name__ == "__main__":
     if verbose:
         print('Compute ordering.', file=stderr)
 
-    ordering = circuit_to_ordering(circuit, qubit_names=sorted(qubits))
+    ordering = circuit_to_ordering(circuit=circuit,
+                                   qubit_names=sorted(qubits),
+                                   max_cuts=max_cuts,
+                                   fidelity=fidelity)
     with (stdout
           if output_filename is None else open(output_filename, 'w')) as f:
         print('\n'.join(ordering), file=f)

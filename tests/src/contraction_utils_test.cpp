@@ -8,7 +8,7 @@ namespace {
 
 TEST(ContractionTest, IndexNaming) {
   // Standard two-qubit index.
-  std::vector<std::vector<int>> index = {{1, 2}, {3, 4}};
+  std::vector<std::vector<std::size_t>> index = {{1, 2}, {3, 4}};
   EXPECT_EQ(index_name(index), "(1,2),(3,4)");
 
   // Virtual index.
@@ -22,7 +22,7 @@ TEST(ContractionTest, IndexNaming) {
 
 TEST(ContractionExceptionTest, IndexNamingFailures) {
   // Empty input.
-  std::vector<std::vector<int>> index = {};
+  std::vector<std::vector<std::size_t>> index = {};
   try {
     index_name(index);
     FAIL() << "Expected index_name() to throw an exception.";
@@ -81,14 +81,14 @@ TEST(ContractionExceptionTest, IndexNamingFailures) {
 
 TEST(ContractionTest, OperationHandling) {
   std::list<ContractionOperation> ordering;
-  std::vector<std::vector<int>> index = {{1, 2}, {3, 4}};
-  std::vector<int> cut_values = {5, 6};
+  std::vector<std::vector<std::size_t>> index = {{1, 2}, {3, 4}};
+  std::vector<std::size_t> cut_values = {5, 6};
   ordering.emplace_back(CutIndex(index, cut_values));
   ASSERT_EQ(ordering.back().op_type, ContractionOperation::CUT);
   EXPECT_EQ(ordering.back().cut.tensors, index);
   EXPECT_EQ(ordering.back().cut.values, cut_values);
 
-  std::vector<int> expand_tensor = {7, 8};
+  std::vector<std::size_t> expand_tensor = {7, 8};
   ordering.emplace_back(ExpandPatch("a", expand_tensor));
   ASSERT_EQ(ordering.back().op_type, ContractionOperation::EXPAND);
   EXPECT_EQ(ordering.back().expand.id, "a");
@@ -115,7 +115,7 @@ TEST(ContractionTest, RepeatedOperations) {
 
   // Cannot cut the same index twice.
   ordering.clear();
-  std::vector<std::vector<int>> index = {{1, 2}, {1, 3}};
+  std::vector<std::vector<std::size_t>> index = {{1, 2}, {1, 3}};
   ordering.emplace_back(CutIndex(index, {0, 1}));
   ordering.emplace_back(CutIndex(index, {2, 3}));
   try {
@@ -168,8 +168,8 @@ TEST(ContractionTest, MergeSafety) {
 TEST(ContractionTest, CutSafety) {
   // Cannot expand the same patch before and after a cut.
   std::list<ContractionOperation> ordering;
-  std::vector<std::vector<int>> index = {{1, 2}, {1, 3}};
-  std::vector<int> cut_values = {0, 1};
+  std::vector<std::vector<std::size_t>> index = {{1, 2}, {1, 3}};
+  std::vector<std::size_t> cut_values = {0, 1};
   ordering.emplace_back(ExpandPatch("a", {1, 2}));
   ordering.emplace_back(CutIndex(index, cut_values));
   ordering.emplace_back(ExpandPatch("a", {2, 2}));
@@ -291,7 +291,7 @@ TEST(ContractionTest, SimpleInitializeData) {
     active_patches[patch] = false;
   }
   data.ContractGrid(ordering, /*output_index=*/0, active_patches);
-  ASSERT_EQ(amplitudes.size(), 2);
+  ASSERT_EQ(amplitudes.size(), 2ul);
   // amplitudes[0] represents <00000|U|00000>, and should return 1.
   EXPECT_FLOAT_EQ(amplitudes[0].real(), 1.0);
   EXPECT_FLOAT_EQ(amplitudes[0].imag(), 0.0);
@@ -305,28 +305,29 @@ TEST(ContractionTest, SimpleInitializeData) {
 // defined in this paper: https://arxiv.org/pdf/1811.09599.pdf
 TEST(ContractionTest, ExampleOrdering) {
   std::list<ContractionOperation> ordering;
-  const std::vector<std::vector<int>> order_A = {
+  const std::vector<std::vector<std::size_t>> order_A = {
       {0, 0}, {0, 1}, {1, 0}, {1, 1}, {0, 2}, {2, 0}, {1, 2}, {2, 1}, {2, 2}};
   for (const auto& coord : order_A) {
     ordering.emplace_back(ExpandPatch("A", coord));
   }
-  const std::vector<std::vector<int>> order_pB = {
+  const std::vector<std::vector<std::size_t>> order_pB = {
       {6, 0}, {5, 0}, {4, 0}, {3, 0}, {6, 1}, {5, 1}, {4, 1}, {3, 1}};
   for (const auto& coord : order_pB) {
     ordering.emplace_back(ExpandPatch("pB", coord));
   }
-  const std::vector<std::vector<int>> order_ppD = {
+  const std::vector<std::vector<std::size_t>> order_ppD = {
       {6, 6}, {6, 5}, {5, 6}, {5, 5}, {6, 4}, {4, 6}, {5, 4}, {4, 5}, {4, 4}};
   for (const auto& coord : order_ppD) {
     ordering.emplace_back(ExpandPatch("ppD", coord));
   }
-  const std::vector<std::vector<std::vector<int>>> cuts_1 = {{{6, 2}, {6, 3}}};
+  const std::vector<std::vector<std::vector<std::size_t>>> cuts_1 = {
+      {{6, 2}, {6, 3}}};
   for (const auto& cut : cuts_1) {
     ordering.emplace_back(CutIndex(cut));
   }
   // Copies tensor "pB" to "B" for reuse.
   ordering.emplace_back(MergePatches("pB", "B"));
-  const std::vector<std::vector<int>> order_B = {
+  const std::vector<std::vector<std::size_t>> order_B = {
       {6, 2}, {5, 2}, {4, 2}, {3, 2}};
   for (const auto& coord : order_B) {
     ordering.emplace_back(ExpandPatch("B", coord));
@@ -334,29 +335,31 @@ TEST(ContractionTest, ExampleOrdering) {
   ordering.emplace_back(MergePatches("A", "B"));
   // Copies tensor "ppD" to "pD" for reuse.
   ordering.emplace_back(MergePatches("ppD", "pD"));
-  const std::vector<std::vector<int>> order_pD = {{6, 3}, {5, 3}, {4, 3}};
+  const std::vector<std::vector<std::size_t>> order_pD = {
+      {6, 3}, {5, 3}, {4, 3}};
   for (const auto& coord : order_pD) {
     ordering.emplace_back(ExpandPatch("pD", coord));
   }
-  const std::vector<std::vector<int>> order_pC = {{0, 6}, {1, 6}, {2, 6},
-                                                  {0, 5}, {1, 5}, {2, 5}};
+  const std::vector<std::vector<std::size_t>> order_pC = {
+      {0, 6}, {1, 6}, {2, 6}, {0, 5}, {1, 5}, {2, 5}};
   for (const auto& coord : order_pC) {
     ordering.emplace_back(ExpandPatch("pC", coord));
   }
-  const std::vector<std::vector<std::vector<int>>> cuts_2 = {{{2, 6}, {3, 6}}};
+  const std::vector<std::vector<std::vector<std::size_t>>> cuts_2 = {
+      {{2, 6}, {3, 6}}};
   for (const auto& cut : cuts_2) {
     ordering.emplace_back(CutIndex(cut));
   }
   // Copies tensor "pD" to "D" for reuse.
   ordering.emplace_back(MergePatches("pD", "D"));
-  const std::vector<std::vector<int>> order_D = {
+  const std::vector<std::vector<std::size_t>> order_D = {
       {3, 6}, {3, 5}, {3, 4}, {3, 3}};
   for (const auto& coord : order_D) {
     ordering.emplace_back(ExpandPatch("D", coord));
   }
   ordering.emplace_back(MergePatches("B", "D"));
-  const std::vector<std::vector<int>> order_C = {{0, 4}, {1, 4}, {2, 4},
-                                                 {0, 3}, {1, 3}, {2, 3}};
+  const std::vector<std::vector<std::size_t>> order_C = {
+      {0, 4}, {1, 4}, {2, 4}, {0, 3}, {1, 3}, {2, 3}};
   // These are "terminal cuts" for fast sampling over output values of C.
   for (const auto& tensor : order_C) {
     ordering.emplace_back(CutIndex({tensor}));
@@ -400,9 +403,9 @@ TEST(OrderingParserTest, ParseSimpleOrdering) {
   expected_ordering.emplace_back(ExpandPatch("b", {1, 1}));
   expected_ordering.emplace_back(MergePatches("a", "b"));
 
-  int op_count = expected_ordering.size();
+  std::size_t op_count = expected_ordering.size();
   ASSERT_EQ(ordering.size(), op_count);
-  for (int i = 0; i < op_count; ++i) {
+  for (std::size_t i = 0; i < op_count; ++i) {
     const auto op = ordering.front();
     const auto expected_op = expected_ordering.front();
     ASSERT_EQ(op.op_type, expected_op.op_type);
@@ -438,7 +441,7 @@ TEST(OrderingParserTest, ParseCutReordering) {
 
   ContractionOperation expected_op(CutIndex({{0, 0}, {0, 1}}, {1, 2}));
 
-  ASSERT_EQ(ordering.size(), 1);
+  ASSERT_EQ(ordering.size(), 1ul);
   const auto& op = ordering.front();
   EXPECT_EQ(op.cut.tensors, expected_op.cut.tensors);
   EXPECT_EQ(op.cut.values, expected_op.cut.values);
@@ -471,7 +474,7 @@ TEST(OrderingParserTest, ParserFailures) {
               "expection.";
   } catch (const std::string& msg) {
     EXPECT_THAT(msg,
-                testing::HasSubstr("Index must be within grid boundaries."));
+                testing::HasSubstr("Index 8 must be within grid boundaries."));
   }
   input.ordering.load(std::stringstream("expand a -2"));
   try {
@@ -479,7 +482,8 @@ TEST(OrderingParserTest, ParserFailures) {
     FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
               "expection.";
   } catch (const std::string& msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Index cannot be negative."));
+    EXPECT_THAT(msg,
+                testing::HasSubstr("Index -2 must be within grid boundaries."));
   }
   input.ordering.load(std::stringstream("cut () 1 7"));
   try {
@@ -488,7 +492,7 @@ TEST(OrderingParserTest, ParserFailures) {
               "expection.";
   } catch (const std::string& msg) {
     EXPECT_THAT(msg,
-                testing::HasSubstr("Index 2 must be within grid boundaries."));
+                testing::HasSubstr("Index 7 must be within grid boundaries."));
   }
   input.ordering.load(std::stringstream("cut () -1 4"));
   try {
@@ -496,7 +500,8 @@ TEST(OrderingParserTest, ParserFailures) {
     FAIL() << "Expected ordering_data_to_contration_ordering to throw an "
               "expection.";
   } catch (const std::string& msg) {
-    EXPECT_THAT(msg, testing::HasSubstr("Index 1 cannot be negative."));
+    EXPECT_THAT(msg,
+                testing::HasSubstr("Index -1 must be within grid boundaries."));
   }
 
   // Cuts must receive a valid value list.
