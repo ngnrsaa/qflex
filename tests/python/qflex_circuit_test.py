@@ -8,7 +8,7 @@ import numpy as np
 import sys
 sys.path.insert(1, '../../')
 
-from python.interface.qflex_circuit import QFlexCircuit
+from python import QFlexCircuit
 
 
 def test_qflexcircuit_equality():

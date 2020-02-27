@@ -13,16 +13,19 @@ sys.path.insert(
     1,
     os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../../'))
 from python.ordering import order_circuit_simulation as auto_order
+
 from python import utils
 from python import qflex
 
-import python.interface.qflex_simulator as qsim
-import python.interface.qflex_virtual_device as qdevice
-import python.interface.qflex_grid as qgrid
-import python.interface.qflex_circuit as qcirc
-import python.interface.qflex_order as qorder
+# import python.interface.qflex_simulator as qsim
+# import python.interface.qflex_virtual_device as qdevice
+# import python.interface.qflex_grid as qgrid
+# import python.interface.qflex_circuit as qcirc
+# import python.interface.qflex_order as qorder
 
 import python.utils as qflexutils
+
+import python as qflexcirq
 
 num_runs = 20
 
@@ -542,15 +545,15 @@ with open(grid_2x2_filename[1], 'w') as f:
 with open(ordering_2x2_filename[1], 'w') as f:
     print(ordering_2x2_test, file=f)
 
-qdev = qdevice.QFlexVirtualDevice(
-    qflex_grid=qgrid.QFlexGrid.from_existing_file(grid_2x2_filename[1]))
+qdev = qflexcirq.QFlexVirtualDevice(
+    qflex_grid=qflexcirq.QFlexGrid.from_existing_file(grid_2x2_filename[1]))
 
 qqubits = qdev.get_grid_qubits_as_keys()
 
-qord = qorder.QFlexOrder.from_existing_file(ordering_2x2_filename[1])
+qord = qflexcirq.QFlexOrder.from_existing_file(ordering_2x2_filename[1])
 mycirc = qflexutils.GetCircuitOfMoments(circuit_fsim_filename[1],
                                         qdev.get_indexed_grid_qubits())
-qcir = qcirc.QFlexCircuit(cirq_circuit=mycirc, device=qdev, qflex_order=qord)
+qcir = qflexcirq.QFlexCircuit(cirq_circuit=mycirc, device=qdev, qflex_order=qord)
 
 results_fsim = cirq.Simulator().simulate(mycirc)
 
@@ -577,7 +580,7 @@ def test_simulation_with_fsim_gates(x):
     qflex_amplitude1 = qflex.simulate(options)[0][1]
 
     # Cirq: Get output from qFlex
-    sim = qsim.QFlexSimulator()
+    sim = qflexcirq.QFlexSimulator()
     qflex_amplitude2 = sim.compute_amplitudes(qcir, bitstrings=[final_conf])
 
     # Compare the amplitudes
