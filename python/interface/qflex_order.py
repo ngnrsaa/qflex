@@ -1,6 +1,6 @@
 import cirq
 
-import python.cirq_interface.data_storage_interface as tmpi
+import python.interface.data_storage_interface as tmpi
 
 from python.ordering import order_circuit_simulation as auto_order
 

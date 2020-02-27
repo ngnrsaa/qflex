@@ -29,7 +29,7 @@ setuptools.setup(
     install_requires=requirements,
     license='Apache 2',
 
-    ext_modules=[CMakeExtension('qflexcirq/qflex')],
+    ext_modules=[CMakeExtension('qflexcirq/interface')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
 )

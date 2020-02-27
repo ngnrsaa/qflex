@@ -4,8 +4,8 @@ from cirq import study, schedules, ops, circuits, SimulatesAmplitudes
 
 from python import qflex
 
-import python.cirq_interface.qflex_virtual_device as qdevice
-import python.cirq_interface.qflex_circuit as qcirc
+import python.interface.qflex_virtual_device as qdevice
+import python.interface.qflex_circuit as qcirc
 
 
 class QFlexSimulator(SimulatesAmplitudes):

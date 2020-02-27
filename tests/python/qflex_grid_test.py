@@ -3,7 +3,7 @@
 import sys
 sys.path.insert(1, '../../')
 
-from python.cirq_interface.qflex_grid import QFlexGrid
+from python.interface.qflex_grid import QFlexGrid
 
 
 def test_create_rectangular():

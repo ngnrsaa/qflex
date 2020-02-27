@@ -1,4 +1,4 @@
-import python.cirq_interface.data_storage_interface as tmpi
+import python.interface.data_storage_interface as tmpi
 
 
 class QFlexGrid():
