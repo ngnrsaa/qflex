@@ -2,11 +2,11 @@ import numpy as np
 
 import cirq
 
-import python.interface.qflex_virtual_device as qdevice
-import python.interface.qflex_order as qorder
-import python.interface.data_storage_interface as tmpi
+import qflexcirq.interface.qflex_virtual_device as qdevice
+import qflexcirq.interface.qflex_order as qorder
+import qflexcirq.interface.data_storage_interface as tmpi
 
-import python.utils as qflexutils
+import qflexcirq.utils as qflexutils
 
 
 class QFlexCircuit(cirq.Circuit):

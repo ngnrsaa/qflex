@@ -2,15 +2,15 @@
 import sys, os
 sys.path.insert(
     1, os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../'))
-import python.interface.qflex_simulator as qsim
-import python.interface.qflex_virtual_device as qdevice
-import python.interface.qflex_grid as qgrid
-import python.interface.qflex_circuit as qcirc
-import python.interface.qflex_order as qorder
+import qflexcirq.interface.qflex_simulator as qsim
+import qflexcirq.interface.qflex_virtual_device as qdevice
+import qflexcirq.interface.qflex_grid as qgrid
+import qflexcirq.interface.qflex_circuit as qcirc
+import qflexcirq.interface.qflex_order as qorder
 
-import python.utils as qflexutils
+import qflexcirq.utils as qflexutils
 
-from python import qflex
+from qflexcirq import qflex
 
 config_small = {
     'circuit_filename': 'config/circuits/rectangular_2x2_1-2-1_0.txt',

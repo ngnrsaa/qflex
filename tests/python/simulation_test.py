@@ -12,10 +12,10 @@ import sys, os
 sys.path.insert(
     1,
     os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../../'))
-from python.ordering import order_circuit_simulation as auto_order
+from qflexcirq.ordering import order_circuit_simulation as auto_order
 
-from python import utils
-from python import qflex
+from qflexcirq import utils
+from qflexcirq import qflex
 
 # import python.interface.qflex_simulator as qsim
 # import python.interface.qflex_virtual_device as qdevice
@@ -23,9 +23,9 @@ from python import qflex
 # import python.interface.qflex_circuit as qcirc
 # import python.interface.qflex_order as qorder
 
-import python.utils as qflexutils
+import qflexcirq.utils as qflexutils
 
-import python as qflexcirq
+import qflexcirq as qflexcirq
 
 num_runs = 20
 
