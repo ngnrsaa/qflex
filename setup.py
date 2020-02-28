@@ -102,7 +102,7 @@ class AutoconfigCommand(build_ext):
 
 setuptools.setup(
     name="qflexcirq",
-    version="0.0.4",
+    version="0.0.5",
     author="The QFlex Contributors",
     description="A Google Cirq interface for QFlex",
     long_description=long_description,
