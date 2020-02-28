@@ -58,6 +58,18 @@ class AutoconfigCommand(build_ext):
           Run configure.
         """
         self.runcommand(['./configure'])
+        """
+        Git
+        """
+        try:
+            # I am putting this in a try
+            self.runcommand(['git', 'init', '.'])
+            self.runcommand(['git', 'submodule', 'add',
+                             'https://github.com/docopt/docopt.cpp.git',
+                             'src/docopt'])
+        except:
+            e = sys.exc_info()[0]
+            print("SUBMODULE ERROR...", e)
 
     def make(self):
         # The destination should not be the one specified in the Makefile
@@ -81,7 +93,7 @@ class AutoconfigCommand(build_ext):
 
 setuptools.setup(
     name="qflexcirq",
-    version="0.0.1",
+    version="0.0.4",
     author="The QFlex Contributors",
     description="A Google Cirq interface for QFlex",
     long_description=long_description,

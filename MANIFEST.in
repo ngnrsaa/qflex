@@ -1,5 +1,6 @@
 include configure.ac
 include Makefile.in
+include .gitmodules
 
 include src/*
 exclude src/docopt/*
