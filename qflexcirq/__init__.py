@@ -3,25 +3,19 @@ Module for the QFlexCirq interface
 """
 
 from .interface.data_storage_interface import (
-    DataStorageInterface,
-)
+    DataStorageInterface,)
 
 from .interface.qflex_circuit import (
-    QFlexCircuit,
-)
+    QFlexCircuit,)
 
 from .interface.qflex_grid import (
-    QFlexGrid,
-)
+    QFlexGrid,)
 
 from .interface.qflex_order import (
-    QFlexOrder,
-)
+    QFlexOrder,)
 
 from .interface.qflex_simulator import (
-    QFlexSimulator,
-)
+    QFlexSimulator,)
 
 from .interface.qflex_virtual_device import (
-    QFlexVirtualDevice,
-)
+    QFlexVirtualDevice,)

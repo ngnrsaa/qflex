@@ -553,7 +553,9 @@ qqubits = qdev.get_grid_qubits_as_keys()
 qord = qflexcirq.QFlexOrder.from_existing_file(ordering_2x2_filename[1])
 mycirc = qflexutils.GetCircuitOfMoments(circuit_fsim_filename[1],
                                         qdev.get_indexed_grid_qubits())
-qcir = qflexcirq.QFlexCircuit(cirq_circuit=mycirc, device=qdev, qflex_order=qord)
+qcir = qflexcirq.QFlexCircuit(cirq_circuit=mycirc,
+                              device=qdev,
+                              qflex_order=qord)
 
 results_fsim = cirq.Simulator().simulate(mycirc)
 
