@@ -21,7 +21,7 @@ WORKDIR /qflex/
 RUN autoreconf -i && autoconf && ./configure --disable-all_checks
 
 # Copy python modules
-COPY ./python/ /qflex/python/
+COPY ./qflexcirq/ /qflex/qflexcirq/
 
 # Copy src files for qflex
 COPY ./src/ /qflex/src/
