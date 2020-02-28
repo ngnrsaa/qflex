@@ -7,8 +7,6 @@ import setuptools
 
 from distutils.core import Extension
 from setuptools.command.build_ext import build_ext
-
-
 """
 setup.py support multiple commands. The default for building C/C++ code is
 build_ext, and we need to overload it in order to call the build chain
