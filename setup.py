@@ -17,76 +17,66 @@ with open("README.md", "r") as fh:
 requirements = open('scripts/requirements.txt').readlines()
 requirements = [r.strip() for r in requirements]
 
-# HOWTO
+
+# HOWTO and why
 # https://jichu4n.com/posts/how-to-add-custom-build-steps-and-commands-to-setuppy/
 
-# class AutoconfigCommand(distutils.cmd.Command):
 class AutoconfigCommand(build_ext):
-  """A custom command to compile qflex"""
+    """A custom command to compile qFlex"""
 
-  description = 'Compile qflex python binary'
+    description = 'Compile qFlex python binary'
 
-  def run(self):
+    def run(self):
 
-    # Compile before install
-    self.autoconf()
+        # Compile before install
+        self.autoconf()
 
-    # This fake call will generate a lib, but the next method will overwrite it
-    build_ext.run(self)
+        # This fake call will generate a lib, but the next method will overwrite it
+        build_ext.run(self)
 
-    # Make the pybind11 interface
-    self.make()
+        # Make the pybind11 interface
+        self.make()
 
+    def autoconf(self):
+        try:
+            out = subprocess.check_output(['autoconf', '--version'])
+        except OSError:
+            raise RuntimeError(
+                'Autoconf must be installed to build the following extensions: ' +
+                ', '.join(e.name for e in self.extensions))
+        if platform.system() == 'Windows':
+            raise RuntimeError('For Windows use Docker image of QFlex.')
+        """
+          Run autoreconf.
+        """
+        self.runcommand(['autoreconf', '-i'])
+        """
+          Run autoconf.
+        """
+        self.runcommand(['autoconf'])
+        """
+          Run configure.
+        """
+        self.runcommand(['./configure'])
 
-  def autoconf(self):
-      try:
-          out = subprocess.check_output(['autoconf', '--version'])
-      except OSError:
-          raise RuntimeError(
-              'Autoconf must be installed to build the following extensions: ' +
-              ', '.join(e.name for e in self.extensions))
-      if platform.system() == 'Windows':
-          raise RuntimeError('For Windows use Docker image of QFlex.')
-      """
-        Run autoreconf.
-      """
-      command = ['autoreconf', '-i']
-      self.announce(
-          'Running command: %s' % str(command),
-          level=distutils.log.INFO)
-      subprocess.check_call(command)
-      """
-        Run autoconf.
-      """
-      command = ['autoconf']
-      self.announce(
-          'Running command: %s' % str(command),
-          level=distutils.log.INFO)
-      subprocess.check_call(command)
-      """
-        Run configure.
-      """
-      command = ['./configure']
-      self.announce(
-          'Running command: %s' % str(command),
-          level=distutils.log.INFO)
-      subprocess.check_call(command)
+    def make(self):
+        # The destination should not be the one specified in the Makefile
+        # but the one necessary to get the SO in the wheel
+        destination_lib = "CIRQ_IF_DIR=\'../"+self.build_lib+"/qflexcirq/\'"
 
+        # Override the destination path
+        # http://www.gnu.org/software/make/manual/make.html#Overriding
+        command = ['make',
+                   destination_lib,
+                   'pybind']
 
-  def make(self):
-      # The destination should not be the one specified in the Makefile
-      # but the one necessary to get the SO in the wheel
-      destination_lib = 'QFLEXLIB=\'../{}\''.format(
-          "build/lib.linux-x86_64-3.6/qflexcirq/qflex.cpython-36m-x86_64-linux-gnu.so"
-      )
+        self.runcommand(command)
 
-      command = ['make', destination_lib , 'pybind']
-
-      # command.append(os.getcwd())
-      self.announce(
-          'Running command: %s' % str(command),
-          level=distutils.log.INFO)
-      subprocess.check_call(command)
+    def runcommand(self, command):
+        self.announce(
+            'Running command: %s' % str(command),
+            level=distutils.log.INFO)
+        subprocess.check_call(command)
 
 
 setuptools.setup(
@@ -105,8 +95,8 @@ setuptools.setup(
     install_requires=requirements,
     license='Apache 2',
 
-    # This is just to mock setuptools to start build_ext
-    ext_modules=[Extension('qflexcirq.qflex', sources = [])],
+    # This is just to fool setuptools to start build_ext
+    ext_modules=[Extension('qflexcirq.qflex', sources=[])],
 
     # A customised command to start the compilation
     cmdclass={
