@@ -8,6 +8,14 @@ import setuptools
 
 from distutils.core import Extension
 
+"""
+setup.py support multiple commands. The default for building C/C++ code is
+build_ext, and we need to overload it in order to call the build chain
+
+There are some so-called Extensions to handle Makefiles etc., but setuptools
+is such a voodoo piece of code difficult to debug, understand and use, that for
+our case it is easier to call the automated chain from processes
+"""
 from setuptools.command.build_ext import build_ext
 
 with open("README.md", "r") as fh:
@@ -17,9 +25,6 @@ with open("README.md", "r") as fh:
 requirements = open('scripts/requirements.txt').readlines()
 requirements = [r.strip() for r in requirements]
 
-
-# HOWTO and why
-# https://jichu4n.com/posts/how-to-add-custom-build-steps-and-commands-to-setuppy/
 
 class AutoconfigCommand(build_ext):
     """A custom command to compile qFlex"""
@@ -31,7 +36,8 @@ class AutoconfigCommand(build_ext):
         # Compile before install
         self.autoconf()
 
-        # This fake call will generate a lib, but the next method will overwrite it
+        # This fake call will generate a so lib,
+        # but the next method will overwrite it
         build_ext.run(self)
 
         # Make the pybind11 interface
@@ -62,8 +68,9 @@ class AutoconfigCommand(build_ext):
         Git
         """
         try:
-            # I am putting this in a try
+            # After pip install the folder is not a git repo
             self.runcommand(['git', 'init', '.'])
+            # Add the docopt submodule
             self.runcommand(['git', 'submodule', 'add',
                              'https://github.com/docopt/docopt.cpp.git',
                              'src/docopt'])
@@ -71,9 +78,11 @@ class AutoconfigCommand(build_ext):
             e = sys.exc_info()[0]
             print("SUBMODULE ERROR...", e)
 
+
     def make(self):
         # The destination should not be the one specified in the Makefile
-        # but the one necessary to get the SO in the wheel
+        # but the one necessary to get the .so in the wheel
+        # CIRQ_IF_DIR is defined in src/Makefile.in
         destination_lib = "CIRQ_IF_DIR=\'../"+self.build_lib+"/qflexcirq/\'"
 
         # Override the destination path
@@ -83,6 +92,7 @@ class AutoconfigCommand(build_ext):
                    'pybind']
 
         self.runcommand(command)
+
 
     def runcommand(self, command):
         self.announce(
@@ -99,18 +109,24 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ngnrsaa/qflex",
-    packages=['qflexcirq',
-              'qflexcirq/interface',
-              'qflexcirq/circuits',
-              'qflexcirq/ordering'],
+
     python_requires=('>=3.6'),
     install_requires=requirements,
     license='Apache 2',
 
+    # Consider these directories as parts of the package
+    # Will be copied to the wheel
+    packages=['qflexcirq',
+              'qflexcirq/interface',
+              'qflexcirq/circuits',
+              'qflexcirq/ordering'],
+
     # This is just to fool setuptools to start build_ext
+    # The compiled library will be called 'qflex'
+    # and will be copied in 'qflexcirq'
     ext_modules=[Extension('qflexcirq.qflex', sources=[])],
 
-    # A customised command to start the compilation
+    # A customised command to start the C++ compilation
     cmdclass={
         'build_ext': AutoconfigCommand,
     },
