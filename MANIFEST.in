@@ -1,2 +1,9 @@
-configure.ac
-Makefile.in
+include configure.ac
+include Makefile.in
+
+include src/*
+exclude src/docopt/*
+
+graft config
+graft tests
+graft scripts

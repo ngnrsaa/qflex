@@ -1,14 +1,14 @@
-import setuptools
-
 import os
-import re
 import sys
 import platform
 import subprocess
 
-from setuptools import setup, Extension
+import distutils
+import setuptools
+
+from distutils.core import Extension
+
 from setuptools.command.build_ext import build_ext
-from distutils.version import LooseVersion
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -17,80 +17,77 @@ with open("README.md", "r") as fh:
 requirements = open('scripts/requirements.txt').readlines()
 requirements = [r.strip() for r in requirements]
 
-class CMakeExtension(Extension):
+# HOWTO
+# https://jichu4n.com/posts/how-to-add-custom-build-steps-and-commands-to-setuppy/
 
-  def __init__(self, name, sourcedir=''):
-    Extension.__init__(self, name, sources=[])
-    self.sourcedir = os.path.abspath(sourcedir)
+# class AutoconfigCommand(distutils.cmd.Command):
+class AutoconfigCommand(build_ext):
+  """A custom command to compile qflex"""
 
-class CMakeBuild(build_ext):
+  description = 'Compile qflex python binary'
 
   def run(self):
-    try:
-      out = subprocess.check_output(['autoconf', '--version'])
-    except OSError:
-      raise RuntimeError(
-          'Autoconf must be installed to build the following extensions: ' +
-          ', '.join(e.name for e in self.extensions))
 
-    if platform.system() == 'Windows':
-        raise RuntimeError('For Windows use Docker image of QFlex.')
+    # Compile before install
+    self.autoconf()
 
-    for ext in self.extensions:
-      self.build_extension(ext)
+    # This fake call will generate a lib, but the next method will overwrite it
+    build_ext.run(self)
 
-  def build_extension(self, ext):
-    extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-    # cmake_args = [
-    #     '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-    #     '-DPYTHON_EXECUTABLE=' + sys.executable
-    # ]
-    #
-    # cfg = 'Debug' if self.debug else 'Release'
-    # build_args = ['--config', cfg]
-    #
-    # if platform.system() == 'Windows':
-    #   cmake_args += [
-    #       '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)
-    #   ]
-    #   if sys.maxsize > 2**32:
-    #     cmake_args += ['-A', 'x64']
-    #   build_args += ['--', '/m']
-    # else:
-    #   cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
-    #   build_args += ['--', '-j2']
-    #
-    env = os.environ.copy()
-    # env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(
-    #     env.get('CXXFLAGS', ''), self.distribution.get_version())
+    # Make the pybind11 interface
+    self.make()
 
 
-    if not os.path.exists(self.build_temp):
-      os.makedirs(self.build_temp)
+  def autoconf(self):
+      try:
+          out = subprocess.check_output(['autoconf', '--version'])
+      except OSError:
+          raise RuntimeError(
+              'Autoconf must be installed to build the following extensions: ' +
+              ', '.join(e.name for e in self.extensions))
+      if platform.system() == 'Windows':
+          raise RuntimeError('For Windows use Docker image of QFlex.')
+      """
+        Run autoreconf.
+      """
+      command = ['autoreconf', '-i']
+      self.announce(
+          'Running command: %s' % str(command),
+          level=distutils.log.INFO)
+      subprocess.check_call(command)
+      """
+        Run autoconf.
+      """
+      command = ['autoconf']
+      self.announce(
+          'Running command: %s' % str(command),
+          level=distutils.log.INFO)
+      subprocess.check_call(command)
+      """
+        Run configure.
+      """
+      command = ['./configure']
+      self.announce(
+          'Running command: %s' % str(command),
+          level=distutils.log.INFO)
+      subprocess.check_call(command)
 
-    # subprocess.check_call(
-    #     ['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
-    # subprocess.check_call(
-    #     ['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
-    print("SELF SELF", self.build_temp)
+  def make(self):
+      # The destination should not be the one specified in the Makefile
+      # but the one necessary to get the SO in the wheel
+      destination_lib = 'QFLEXLIB=\'../{}\''.format(
+          "build/lib.linux-x86_64-3.6/qflexcirq/qflex.cpython-36m-x86_64-linux-gnu.so"
+      )
 
+      command = ['make', destination_lib , 'pybind']
 
-    subprocess.check_call(
-        ['autoreconf', '-i'],
-        cwd=self.build_temp, env=env
-    )
-    subprocess.check_call(
-        ['autoconf'],
-        cwd=self.build_temp, env=env
-    )
-    subprocess.check_call(
-        ['./configure'],
-        cwd=self.build_temp, env=env
-    )
-    subprocess.check_call(
-        ['make'], cwd=self.build_temp
-    )
+      # command.append(os.getcwd())
+      self.announce(
+          'Running command: %s' % str(command),
+          level=distutils.log.INFO)
+      subprocess.check_call(command)
+
 
 setuptools.setup(
     name="qflexcirq",
@@ -100,12 +97,19 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ngnrsaa/qflex",
-    packages=['qflexcirq'],
+    packages=['qflexcirq',
+              'qflexcirq/interface',
+              'qflexcirq/circuits',
+              'qflexcirq/ordering'],
     python_requires=('>=3.6'),
     install_requires=requirements,
     license='Apache 2',
 
-    ext_modules=[CMakeExtension('qflexcirq')],
-    cmdclass=dict(build_ext=CMakeBuild),
-    zip_safe=False,
+    # This is just to mock setuptools to start build_ext
+    ext_modules=[Extension('qflexcirq.qflex', sources = [])],
+
+    # A customised command to start the compilation
+    cmdclass={
+        'build_ext': AutoconfigCommand,
+    },
 )
