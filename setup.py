@@ -1,4 +1,3 @@
-import os
 import sys
 import platform
 import subprocess
@@ -7,15 +6,23 @@ import distutils
 import setuptools
 
 from distutils.core import Extension
+from setuptools.command.build_ext import build_ext
+
+
 """
 setup.py support multiple commands. The default for building C/C++ code is
 build_ext, and we need to overload it in order to call the build chain
 
 There are some so-called Extensions to handle Makefiles etc., but setuptools
 is such a voodoo piece of code difficult to debug, understand and use, that for
-our case it is easier to call the automated chain from processes
+our case it is easier and safer to call the automated chain from processes.
+
+In order to not confuse the installation procedures between usual repository 
+clone and "pip install", the goal is to keep the toolchain as much as possible
+unchanged. For that reason the AutoconfiCommand class is just a way to step into
+the extensions building process of setup.py and follow afterwards step-by-step
+the usual installation instructions.
 """
-from setuptools.command.build_ext import build_ext
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -31,7 +38,6 @@ class AutoconfigCommand(build_ext):
     description = 'Compile qFlex python binary'
 
     def run(self):
-
         # Compile before install
         self.autoconf()
 
