@@ -1,6 +1,6 @@
 # Random Quantum Circuit (RQC) Generator
 
-A Python-based RQC generator is provided in [generator.py](/python/circuits/generator.py).
+A Python-based RQC generator is provided in [generator.py](/qflexcirq/circuits/generator.py).
 
 The purpose of this document is to provide information on how to use the provided
 RQC generator.

@@ -1,7 +1,7 @@
 TARGET1 = qflex
 
 # The folder where the Python interface is stored
-CIRQ_IF_DIR = ../python/
+CIRQ_IF_DIR = ../qflexcirq/
 
 # The name of the shared library that results after compiling QFlex for Pybind11
 QFLEXLIB = $(CIRQ_IF_DIR)/$(TARGET1)`python3-config --extension-suffix`

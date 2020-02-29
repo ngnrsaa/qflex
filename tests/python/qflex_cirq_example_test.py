@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(1, '../../')
 
-from python import qflex_cirq_example as qce
+from qflexcirq import qflex_cirq_example as qce
 
 
 def test_example():

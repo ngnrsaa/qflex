@@ -6,7 +6,7 @@ import cirq
 import sys
 sys.path.insert(1, '../../')
 
-from python import utils
+from qflexcirq import utils
 
 
 def test_GetNrQubits():

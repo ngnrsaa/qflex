@@ -1,7 +1,7 @@
 import cirq
 import cirq.ops as ops
 
-from python.cirq_interface.qflex_grid import QFlexGrid
+from qflexcirq.interface.qflex_grid import QFlexGrid
 
 
 class QFlexVirtualDevice(cirq.Device):

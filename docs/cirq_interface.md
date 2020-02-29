@@ -179,7 +179,7 @@ A simulator and a device are necessary:
 
 * The Device is a virtual device which ensures that circuit gates are decomposed
 into qFlex-supported gate types. For the moment this is a restricted gate set;
-for a full listing of valid gates see [QflexVirtualDevice](/python/cirq_interface/qflex_virtual_device.py).
+for a full listing of valid gates see [QflexVirtualDevice](/qflexcirq/interface/qflex_virtual_device.py).
 
 * The Simulator calls the Python pybind11-based interface and checks that the
 circuit to simulate was compiled (validated) against the device.
