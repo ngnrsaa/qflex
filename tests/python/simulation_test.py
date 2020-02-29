@@ -17,12 +17,6 @@ from qflexcirq.ordering import order_circuit_simulation as auto_order
 from qflexcirq import utils
 from qflexcirq import qflex
 
-# import python.interface.qflex_simulator as qsim
-# import python.interface.qflex_virtual_device as qdevice
-# import python.interface.qflex_grid as qgrid
-# import python.interface.qflex_circuit as qcirc
-# import python.interface.qflex_order as qorder
-
 import qflexcirq.utils as qflexutils
 
 import qflexcirq as qflexcirq
