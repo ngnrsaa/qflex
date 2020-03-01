@@ -382,6 +382,25 @@ results = cirq.Simulator().simulate(circuit)
 results_no_h_and_sparse = cirq.Simulator().simulate(circuit_no_h_and_sparse)
 
 
+@pytest.mark.parametrize('m', ['1kB', '10B', '1', 1 << 10, 10, 1, '1kMB'])
+@pytest.mark.xfail
+def test_memory_limit(m):
+
+    # Get configuration as a string
+    final_conf = '0' * len(qubits)
+
+    options = {
+        'circuit': circuit_test.split('\n'),
+        'ordering': ordering_test.split('\n'),
+        'grid': grid_test.split('\n'),
+        'final_state': final_conf,
+        'memory_limit': m
+    }
+
+    # Get output from qFlex
+    qflex_amplitude = qflex.simulate(options)[0][1]
+
+
 @pytest.mark.parametrize(
     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
 def test_simulation(x):
