@@ -1,5 +1,5 @@
 # Base OS
-FROM ngnrsaa/cirq-alpine:0.6
+FROM ngnrsaa/cirq-alpine:latest
 
 # Install baseline
 RUN apk update
