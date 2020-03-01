@@ -1,11 +1,11 @@
-from typing import Union, Sequence
+from typing import Sequence
 
-from cirq import study, schedules, ops, circuits, SimulatesAmplitudes
+from cirq import study, ops, circuits, SimulatesAmplitudes
 
-from python import qflex
+from qflexcirq import qflex
 
-import python.cirq_interface.qflex_virtual_device as qdevice
-import python.cirq_interface.qflex_circuit as qcirc
+import qflexcirq.interface.qflex_virtual_device as qdevice
+import qflexcirq.interface.qflex_circuit as qcirc
 
 
 class QFlexSimulator(SimulatesAmplitudes):
@@ -15,7 +15,7 @@ class QFlexSimulator(SimulatesAmplitudes):
 
     def compute_amplitudes_sweep(
         self,
-        program: Union[circuits.Circuit, schedules.Schedule],
+        program: circuits.Circuit,
         bitstrings: Sequence[int],
         params: study.Sweepable,
         qubit_order: ops.QubitOrderOrList = ops.QubitOrder.DEFAULT,
