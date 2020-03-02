@@ -17,8 +17,8 @@
 # TODO
 todo.txt
 
-# Python cache
-__pycache__
+# temporary files
+__*__
 .ipynb_checkpoints
 
 # mypy typechecker

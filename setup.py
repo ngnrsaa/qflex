@@ -90,7 +90,7 @@ class AutoconfigCommand(build_ext):
 
         # Override the destination path
         # http://www.gnu.org/software/make/manual/make.html#Overriding
-        command = ['make', destination_lib, 'pybind']
+        command = ['make', '-j8', destination_lib, 'pybind']
 
         self.runcommand(command)
 

@@ -80,6 +80,22 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
     // Get qFlex input
     qflex::QflexInput input;
 
+    // Set memory limit
+    if (options.contains("memory_limit")) {
+      if (const auto &memory_limit = options["memory_limit"];
+          py::isinstance<py::int_>(memory_limit)) {
+        if (const auto ml = memory_limit.cast<long int>(); ml > 0)
+          qflex::global::memory_limit = ml;
+        else
+          throw ERROR_MSG("'memory_limit' must be positive.");
+      } else if (py::isinstance<py::str>(memory_limit)) {
+        qflex::global::memory_limit = qflex::utils::from_readable_memory_string(
+            memory_limit.cast<std::string>());
+      } else
+        ERROR_MSG("'memory_limit' must be valid.");
+    } else
+      qflex::global::memory_limit = 1L << 30;
+
     // Load grid, circuit and ordering
     LoadData(options, "grid", input.grid);
     LoadData(options, "circuit", input.circuit);
