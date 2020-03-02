@@ -8,18 +8,18 @@ import numpy as np
 import sys
 sys.path.insert(1, '../../')
 
-from python.cirq_interface.qflex_circuit import QFlexCircuit
+from qflexcirq import QFlexCircuit
 
 
 def test_qflexcircuit_equality():
     qubit_1 = cirq.GridQubit(0, 0)
     qubit_2 = cirq.GridQubit(0, 1)
 
-    from python.cirq_interface.qflex_virtual_device import QFlexVirtualDevice
+    from qflexcirq.interface.qflex_virtual_device import QFlexVirtualDevice
     dummy_device_1 = QFlexVirtualDevice()
     dummy_device_1.get_grid_qubits_as_keys = lambda: {qubit_1: 1, qubit_2: 2}
 
-    from python.cirq_interface.qflex_order import QFlexOrder
+    from qflexcirq.interface.qflex_order import QFlexOrder
     dummy_order = QFlexOrder("This is dummy order")
 
     circuit = cirq.Circuit()
@@ -54,11 +54,11 @@ def test_constructor_decomposition():
     circuit = cirq.Circuit()
     circuit.append(cirq.Moment([cirq.ops.SWAP.on(qubit_1, qubit_2)]))
 
-    from python.cirq_interface.qflex_virtual_device import QFlexVirtualDevice
+    from qflexcirq.interface.qflex_virtual_device import QFlexVirtualDevice
     dummy_device_1 = QFlexVirtualDevice()
     dummy_device_1.get_grid_qubits_as_keys = lambda: {qubit_1: 1, qubit_2: 2}
 
-    from python.cirq_interface.qflex_order import QFlexOrder
+    from qflexcirq.interface.qflex_order import QFlexOrder
     dummy_order = QFlexOrder("This is dummy order")
 
     qcircuit1 = QFlexCircuit(circuit,
@@ -95,7 +95,7 @@ def test_resolve_parameters():
                                           cirq.GridQubit(0, 1))
     circuit.append(operation2)
 
-    from python.cirq_interface.qflex_virtual_device import QFlexVirtualDevice
+    from qflexcirq.interface.qflex_virtual_device import QFlexVirtualDevice
     dummy_device = QFlexVirtualDevice()
 
     # Override the function to accept anything
@@ -106,7 +106,7 @@ def test_resolve_parameters():
         cirq.GridQubit(0, 1): 2
     }
 
-    from python.cirq_interface.qflex_order import QFlexOrder
+    from qflexcirq.interface.qflex_order import QFlexOrder
     dummy_order = QFlexOrder("This is a dummy order")
 
     # save the translator
@@ -171,11 +171,11 @@ def test_supported_gate_set():
     Is the circuit validated correctly on append?
     """
 
-    import python.cirq_interface.qflex_simulator as qsim
-    import python.cirq_interface.qflex_virtual_device as qdevice
-    import python.cirq_interface.qflex_grid as qgrid
-    import python.cirq_interface.qflex_circuit as qcirc
-    import python.cirq_interface.qflex_order as qorder
+    import qflexcirq.interface.qflex_simulator as qsim
+    import qflexcirq.interface.qflex_virtual_device as qdevice
+    import qflexcirq.interface.qflex_grid as qgrid
+    import qflexcirq.interface.qflex_circuit as qcirc
+    import qflexcirq.interface.qflex_order as qorder
 
     qdev = qdevice.QFlexVirtualDevice(
         qflex_grid=qgrid.QFlexGrid.create_rectangular(4, 4))

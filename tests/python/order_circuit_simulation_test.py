@@ -8,7 +8,7 @@ import pytest
 import sys
 sys.path.insert(1, '../../')
 
-from python.ordering import order_circuit_simulation as order_lib
+from qflexcirq.ordering import order_circuit_simulation as order_lib
 
 
 def test_circuit_to_ordering():

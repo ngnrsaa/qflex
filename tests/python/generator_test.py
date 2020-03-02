@@ -9,7 +9,7 @@ from typing import Dict, Set, Tuple
 import sys
 sys.path.insert(1, '../../')
 
-from python.circuits import generator
+from qflexcirq.circuits import generator
 
 
 def GetDevice(pattern_filename):

@@ -187,8 +187,8 @@ std::vector<std::pair<std::string, std::complex<double>>> EvaluateCircuit(
           }
         }
         std::size_t tensor_size = 1;
-        for (const auto& [index, dim] : index_dim) {
-          tensor_size *= dim;
+        for (const auto& pair : index_dim) {
+          tensor_size *= pair.second;
         }
         if (tensor_size > max_size) {
           max_size = tensor_size;

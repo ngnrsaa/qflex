@@ -1,8 +1,8 @@
 import cirq
 
-import python.cirq_interface.data_storage_interface as tmpi
+import qflexcirq.interface.data_storage_interface as tmpi
 
-from python.ordering import order_circuit_simulation as auto_order
+from qflexcirq.ordering import order_circuit_simulation as auto_order
 
 
 class QFlexOrder():

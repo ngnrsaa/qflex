@@ -1,4 +1,4 @@
-import python.cirq_interface.data_storage_interface as tmpi
+import qflexcirq.interface.data_storage_interface as tmpi
 
 
 class QFlexGrid():
@@ -53,7 +53,7 @@ class QFlexGrid():
                 print(line.strip(), file=f)
 
     def get_grid_qubits(self):
-        import python.utils as qflexutils
+        import qflexcirq.utils as qflexutils
         from io import StringIO
         return qflexutils.GetGridQubits(StringIO("\n".join(self._grid_data)))
 
