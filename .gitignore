@@ -17,7 +17,7 @@
 # TODO
 todo.txt
 
-# Python cache
+# temporary files
 __*__
 .ipynb_checkpoints
 
