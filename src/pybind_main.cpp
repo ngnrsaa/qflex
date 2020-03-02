@@ -92,7 +92,7 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
         qflex::global::memory_limit = qflex::utils::from_readable_memory_string(
             memory_limit.cast<std::string>());
       } else
-        ERROR_MSG("'memory_limit' must be a valid.");
+        ERROR_MSG("'memory_limit' must be valid.");
     } else
       qflex::global::memory_limit = 1L << 30;
 
