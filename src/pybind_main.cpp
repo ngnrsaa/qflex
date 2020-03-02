@@ -91,7 +91,8 @@ std::vector<std::pair<std::string, std::complex<double>>> simulate(
       } else if (py::isinstance<py::str>(memory_limit)) {
         qflex::global::memory_limit = qflex::utils::from_readable_memory_string(
             memory_limit.cast<std::string>());
-      }
+      } else
+        ERROR_MSG("'memory_limit' must be a valid.");
     } else
       qflex::global::memory_limit = 1L << 30;
 
