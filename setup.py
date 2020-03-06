@@ -21,7 +21,7 @@ This command will create a tar.gz file in a `build` directory. Uploading will be
 performed by twine (in case needed `pip install twine`)
 
 * When the pypi server complains that the package already exists, most probably
-the version number below nees to be incremented.
+the version number below needs to be incremented.
 
 * Pypi allows uploading precompiled binaries packaged as wheels, but it is 
 a real pain to compile multi-platform. Because qflex is based on autotools, and
