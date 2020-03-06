@@ -38,10 +38,13 @@ sources on their machine QFlex.
 
 
 * When testing from the test pypi, most of prerequisites of qflexcirq will not
-be available for pip install in a clean environment. Therefore, it is easier to
-run first `pip install -r scripts/requirements.txt` and then pip installing from
-test.pypi
+be available for pip install in a clean environment.
 
+* Adding the "--no-deps" flag to the setup.py command should prevent the error
+about missing packages. However, see next instruction. 
+
+* It is easier to run first `pip install -r scripts/requirements.txt` and then 
+pip installing from test.pypi
 
 """
 
