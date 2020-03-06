@@ -20,6 +20,29 @@ clone and "pip install", the goal is to keep the toolchain as much as possible
 unchanged. For that reason the AutoconfiCommand class is just a way to step into
 the extensions building process of setup.py and follow afterwards step-by-step
 the usual installation instructions.
+
+Mini HOWTO:
+
+* To upload to the pypi server the most simple way is to call
+```
+    python3 setup.by sdist
+```
+This command will create a tar.gz file in a `build` directory. Uploading will be
+performed by twine (in case needed `pip install twine`)
+
+* Pypi allows uploading precompiled binaries packaged as wheels, but it is 
+a real pain to compile multi-platform. Because qflex is based on autotools, and
+the qflex-native compilation process is really streamlined, it makes no real 
+sense to complicate the installation. Users of qflexcirq will compile from
+sources on their machine QFlex.
+
+
+* When testing from the test pypi, most of prerequisites of qflexcirq will not
+be available for pip install in a clean environment. Therefore, it is easier to
+run first `pip install -r scripts/requirements.txt` and then pip installing from
+test.pypi
+
+
 """
 
 with open("README.md", "r") as fh:
