@@ -23,11 +23,9 @@ performed by twine (in case needed `pip install twine`)
 * When the pypi server complains that the package already exists, most probably
 the version number below needs to be incremented.
 
-* Pypi allows uploading precompiled binaries packaged as wheels, but it is 
-a real pain to compile multi-platform. Because qflex is based on autotools, and
-the qflex-native compilation process is really streamlined, it makes no real 
-sense to complicate the installation. Users of qflexcirq will compile from
-sources on their machine QFlex.
+* QFlex is based on autotools, and the compilation process is very streamlined.
+For the moment, users of qflexcirq will compile Qflex from sources on their 
+machine. Binary Python wheels are not available, unfortunately.
 
 * When testing from the test pypi, most of prerequisites of qflexcirq will not
 be available for pip install in a clean environment.
@@ -48,17 +46,15 @@ mentioned in the MANIFEST.in file, which is used by setup.py.
 setup.py support multiple commands. The default for building C/C++ code is
 build_ext, and we need to overload it in order to call the build chain.
 
-The web has many examples on how to script so-called Extensions to handle 
-Makefiles etc.. However, setuptools is a voodoo piece of code difficult to 
-debug, understand and use. For Qflex it is easier and safer to call the 
-automated compilation chain using external subprocesses.
-
 In order to not confuse the installation procedures between usual repository 
 clone and "pip install", the goal is to keep the toolchain as much as possible
-unchanged. For that reason, the `AutoconfiCommand` class is used to step into 
+unchanged. For that reason, the `AutoconfigCommand` class is used to step into 
 the extensions building process of setup.py and follow afterwards step-by-step
 the usual installation instructions from README.md.
 
+For the moment, the easiest solution has been to call the automated 
+compilation chain using external subprocesses. A less client-heavy install 
+process would be desirable, and would imply distributing a Python wheel.
 """
 
 with open("README.md", "r") as fh:
