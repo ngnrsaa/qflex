@@ -93,7 +93,7 @@ Rootless containers are an alternative to Docker targeted at users who may not
 have `root` privileges on their machine.
 
 To run qFlex in a rootless container, see
-[qflex/docs/rootless-container.md](/docs/rootless-container.md).
+[qflex/docs/rootless_container.md](/docs/rootless_container.md).
 
 ## Using Google Cirq
 
