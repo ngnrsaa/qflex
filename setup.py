@@ -30,12 +30,14 @@ Mini HOWTO:
 This command will create a tar.gz file in a `build` directory. Uploading will be
 performed by twine (in case needed `pip install twine`)
 
+* When the pypi server complains that the package already exists, most probably
+the version number below nees to be incremented.
+
 * Pypi allows uploading precompiled binaries packaged as wheels, but it is 
 a real pain to compile multi-platform. Because qflex is based on autotools, and
 the qflex-native compilation process is really streamlined, it makes no real 
 sense to complicate the installation. Users of qflexcirq will compile from
 sources on their machine QFlex.
-
 
 * When testing from the test pypi, most of prerequisites of qflexcirq will not
 be available for pip install in a clean environment.
@@ -46,6 +48,8 @@ about missing packages. However, see next instruction.
 * It is easier to run first `pip install -r scripts/requirements.txt` and then 
 pip installing from test.pypi
 
+* If anything new needs to be packaged (e.g. file or folder), it should be
+mentioned in the MANIFEST.in file, which is used by setup.py.
 """
 
 with open("README.md", "r") as fh:
