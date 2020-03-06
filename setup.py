@@ -8,20 +8,10 @@ import setuptools
 from distutils.core import Extension
 from setuptools.command.build_ext import build_ext
 """
-setup.py support multiple commands. The default for building C/C++ code is
-build_ext, and we need to overload it in order to call the build chain
 
-There are some so-called Extensions to handle Makefiles etc., but setuptools
-is such a voodoo piece of code difficult to debug, understand and use, that for
-our case it is easier and safer to call the automated chain from processes.
-
-In order to not confuse the installation procedures between usual repository 
-clone and "pip install", the goal is to keep the toolchain as much as possible
-unchanged. For that reason the AutoconfiCommand class is just a way to step into
-the extensions building process of setup.py and follow afterwards step-by-step
-the usual installation instructions.
-
-Mini HOWTO:
+#### 
+#### Mini HOWTO
+#### 
 
 * To upload to the pypi server the most simple way is to call
 ```
@@ -50,6 +40,25 @@ pip installing from test.pypi
 
 * If anything new needs to be packaged (e.g. file or folder), it should be
 mentioned in the MANIFEST.in file, which is used by setup.py.
+
+#### 
+#### Technical Details
+#### 
+
+setup.py support multiple commands. The default for building C/C++ code is
+build_ext, and we need to overload it in order to call the build chain.
+
+The web has many examples on how to script so-called Extensions to handle 
+Makefiles etc.. However, setuptools is a voodoo piece of code difficult to 
+debug, understand and use. For Qflex it is easier and safer to call the 
+automated compilation chain using external subprocesses.
+
+In order to not confuse the installation procedures between usual repository 
+clone and "pip install", the goal is to keep the toolchain as much as possible
+unchanged. For that reason, the `AutoconfiCommand` class is used to step into 
+the extensions building process of setup.py and follow afterwards step-by-step
+the usual installation instructions from README.md.
+
 """
 
 with open("README.md", "r") as fh:
