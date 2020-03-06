@@ -8,7 +8,7 @@ containers that do not require `root` privileges.
 To build a rootless qFlex image and run all tests in it, run:
 
 ```
-$ bash scripts/create-rootless-container.sh (-|image_folder) [-h -j <p> -x -r -c]
+$ bash scripts/create_rootless_container.sh (-|image_folder) [-h -j <p> -x -r -c]
 ```
 The script will create a container in `image_folder`, or in a temporary
 directory if `-` is specified. The script also supports the following options:
@@ -32,7 +32,7 @@ $ sudo echo 1 > /proc/sys/kernel/unprivileged_userns_clone
 
 To run the rootless image:
 ```
-$ bash scripts/run-rootless-container.sh image_folder
+$ bash scripts/run_rootless_container.sh image_folder
 ```
 
 Inside the rootless image, qFlex can be installed by executing:

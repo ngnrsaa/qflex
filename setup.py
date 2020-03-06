@@ -8,18 +8,53 @@ import setuptools
 from distutils.core import Extension
 from setuptools.command.build_ext import build_ext
 """
-setup.py support multiple commands. The default for building C/C++ code is
-build_ext, and we need to overload it in order to call the build chain
 
-There are some so-called Extensions to handle Makefiles etc., but setuptools
-is such a voodoo piece of code difficult to debug, understand and use, that for
-our case it is easier and safer to call the automated chain from processes.
+#### 
+#### Mini HOWTO
+#### 
+
+* To upload to the pypi server the most simple way is to call
+```
+    python3 setup.py sdist
+```
+This command will create a tar.gz file in a `build` directory. Uploading will be
+performed by twine (in case needed `pip install twine`)
+
+* When the pypi server complains that the package already exists, most probably
+the version number below needs to be incremented.
+
+* QFlex is based on autotools, and the compilation process is very streamlined.
+For the moment, users of qflexcirq will compile Qflex from sources on their 
+machine. Binary Python wheels are not available, unfortunately.
+
+* When testing from the test pypi, most of prerequisites of qflexcirq will not
+be available for pip install in a clean environment.
+
+* Adding the "--no-deps" flag to the setup.py command should prevent the error
+about missing packages. However, see next instruction. 
+
+* It is easier to run first `pip install -r scripts/requirements.txt` and then 
+pip installing from test.pypi
+
+* If anything new needs to be packaged (e.g. file or folder), it should be
+mentioned in the MANIFEST.in file, which is used by setup.py.
+
+#### 
+#### Technical Details
+#### 
+
+setup.py support multiple commands. The default for building C/C++ code is
+build_ext, and we need to overload it in order to call the build chain.
 
 In order to not confuse the installation procedures between usual repository 
 clone and "pip install", the goal is to keep the toolchain as much as possible
-unchanged. For that reason the AutoconfiCommand class is just a way to step into
+unchanged. For that reason, the `AutoconfigCommand` class is used to step into 
 the extensions building process of setup.py and follow afterwards step-by-step
-the usual installation instructions.
+the usual installation instructions from README.md.
+
+For the moment, the easiest solution has been to call the automated 
+compilation chain using external subprocesses. A less client-heavy install 
+process would be desirable, and would imply distributing a Python wheel.
 """
 
 with open("README.md", "r") as fh:
