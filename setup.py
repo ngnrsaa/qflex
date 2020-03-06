@@ -15,7 +15,7 @@ from setuptools.command.build_ext import build_ext
 
 * To upload to the pypi server the most simple way is to call
 ```
-    python3 setup.by sdist
+    python3 setup.py sdist
 ```
 This command will create a tar.gz file in a `build` directory. Uploading will be
 performed by twine (in case needed `pip install twine`)
