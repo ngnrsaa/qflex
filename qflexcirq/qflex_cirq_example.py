@@ -11,7 +11,6 @@ import qflexcirq.interface.qflex_order as qorder
 import qflexcirq.utils as qflexutils
 
 from qflexcirq import qflex
-
 """
 Example HOWTO
 
