@@ -301,7 +301,7 @@ def match_fidelity(target_fidelity: float, cuts: Dict[frozenset, int]):
     The final fidelity approximation and a list of tuples
       (cut qubits, cut width, cut_dimension).
   """
-    if (target_fidelity == 1.0):
+    if (target_fidelity == 1.0 or not cuts):
         return (1.0,
                 zip(list(cuts.keys()), list(cuts.values()),
                     list(cuts.values())))
@@ -384,9 +384,13 @@ def circuit_to_ordering(
     qubit_order = qubit_order_method.order_for(circuit.all_qubits())
 
     cut_indices = {}
-    min_cost = math.inf
-    min_steps = []
-    for _ in range(max_cuts):
+    # Make initial pass prior to cuts.
+    g = Graph(circuit.all_qubits())
+    for op in circuit.all_operations():
+        g.add_bond(op.qubits, op)
+    min_cost, min_steps = get_steps_for_graph(g)
+
+    for cut_num in range(max_cuts):
         # Loop over possible cuts.
         min_cut = None
         tested_pairs = set()
