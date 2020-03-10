@@ -136,6 +136,22 @@ def test_max_cuts_negative_fails():
         order_lib.circuit_to_ordering(circuit=circuit, max_cuts=-1)
 
 
+def test_max_cuts_zero_succeeds():
+    """Tests the circuit-to-ordering conversion."""
+    qubits = [cirq.GridQubit(0, 0), cirq.GridQubit(0, 1)]
+    size = 4
+    for x in range(size):
+        qubits.append([cirq.GridQubit(x, y) for y in range(size)])
+
+    moments = (cirq.Moment([cirq.CZ(qubits[0], qubits[1])]),
+               cirq.Moment([cirq.CZ(qubits[0], qubits[1])]))
+    circuit = cirq.Circuit(moments)
+
+    # max_cuts of zero will generate an ordering.
+    order = order_lib.circuit_to_ordering(circuit=circuit, max_cuts=0)
+    assert len(order) > 1
+
+
 def test_match_fidelity():
     """Tests the fidelity-matching method."""
     qubits = [
