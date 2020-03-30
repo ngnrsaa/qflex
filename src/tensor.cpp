@@ -105,7 +105,8 @@ void Tensor::_clear() {
 }
 
 void Tensor::_copy(const Tensor& other) {
-  if (_indices.empty()) {
+  if (_capacity == 0) {
+    // This tensor is uninitialized.
     if (_data != nullptr) throw ERROR_MSG("Potential memory leak");
 
     _capacity = other._capacity;

@@ -338,6 +338,9 @@ class Tensor {
   void _left_reorder(const std::vector<std::string>& old_ordering,
                      const std::vector<std::string>& new_ordering,
                      std::size_t num_indices_right, s_type* scratch_copy);
+
+  // Required for unit-testing invalid tensors.
+  friend class TensorTest_InvalidTensor_Test;
 };
 
 /**

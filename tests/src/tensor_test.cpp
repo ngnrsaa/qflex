@@ -6,6 +6,28 @@
 #include "gtest/gtest.h"
 
 namespace qflex {
+
+// Verify that if *something bad* happens, a memory leak is reported.
+// This test has access to private fields of the Tensor class in order to
+// simulate *something bad* - in practice, users should not be able to do this.
+// (This access requires the test to live in the ::qflex namespace.)
+TEST(TensorTest, InvalidTensor) {
+  Tensor uninit;
+  // Create a bad state with evil pointer manipulation.
+  uninit._data = new s_type[1];
+
+  std::vector<std::string> indices = {"a", "b"};
+  std::vector<size_t> dimensions = {2, 2};
+  Tensor valid_tensor(indices, dimensions);
+
+  try {
+    uninit = valid_tensor;
+    FAIL() << "Expected failure when copying into invalid tensor!";
+  } catch (std::string msg) {
+    EXPECT_THAT(msg, testing::HasSubstr("Potential memory leak"));
+  }
+}
+
 namespace {
 
 using ::testing::Eq;
@@ -79,6 +101,39 @@ TEST(TensorTest, EmptyTensor) {
   tensor.rename_index("a", "c");
   std::vector<std::string> expected_indices = {"c", "b"};
   ASSERT_EQ(tensor.get_indices(), expected_indices);
+}
+
+// Creates a rank-0 tensor (a scalar) and runs basic sanity checks on it.
+TEST(TensorTest, ScalarTensor) {
+  std::vector<std::string> indices = {};
+  std::vector<size_t> dimensions = {};
+
+  Tensor tensor(indices, dimensions);
+  ASSERT_EQ(tensor.get_indices(), indices);
+  ASSERT_EQ(tensor.get_dimensions(), dimensions);
+  ASSERT_EQ(tensor.size(), 1ul);
+  ASSERT_EQ(tensor.num_zeros(), 1ul);
+
+  ASSERT_EQ(tensor.get_index_to_dimension().size(), 0ul);
+
+  // Check that the scalar can be copied.
+  Tensor tcopy;
+  try {
+    tcopy = tensor;
+    ASSERT_EQ(tcopy.get_indices(), indices);
+    ASSERT_EQ(tcopy.get_dimensions(), dimensions);
+  } catch (std::string msg) {
+    FAIL() << "Copying scalar experienced error: " << msg;
+  }
+
+  // And that other scalars can be copied into it.
+  try {
+    tensor = tcopy;
+    ASSERT_EQ(tensor.get_indices(), indices);
+    ASSERT_EQ(tensor.get_dimensions(), dimensions);
+  } catch (std::string msg) {
+    FAIL() << "Copy into scalar experienced error: " << msg;
+  }
 }
 
 // Loads a tensor from data and runs basic sanity checks on it.
