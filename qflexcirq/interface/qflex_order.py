@@ -40,13 +40,13 @@ class QFlexOrder():
         # Behind the scene, this class creates a temporary file for each object
         self.temp_file_if = tmpi.DataStorageInterface()
 
-        with open(self.temp_file_if._file_handle[1], "w") as f:
+        with open(self.temp_file_if.fullpath, "w") as f:
             # I do have the file handle anyway...
             print(_local_order_string, file=f)
 
     @property
     def order_data(self):
-        return self.temp_file_if._file_handle[1]
+        return self.temp_file_if.fullpath
 
     @staticmethod
     def from_existing_file(file_path):

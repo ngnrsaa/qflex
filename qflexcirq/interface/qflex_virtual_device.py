@@ -17,7 +17,7 @@ class QFlexVirtualDevice(cirq.Device):
 
     @property
     def grid_data(self):
-        return self._qflex_grid.temp_file_if._file_handle[1]
+        return self._qflex_grid.temp_file_if.fullpath
 
     def duration_of(self, operation: 'cirq.Operation'):
         # No duration

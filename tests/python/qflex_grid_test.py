@@ -15,7 +15,7 @@ def test_get_qflex_file_contents():
     sgrid = "  101   \n   110  "
 
     qgrid = QFlexGrid(qflex_grid_strings=sgrid)
-    with open(qgrid.temp_file_if._file_handle[1], "r") as file:
+    with open(qgrid.temp_file_if.fullpath, "r") as file:
         fcont = "".join(file.readlines()).strip()
 
     assert (fcont == "".join(["1 0 1\n", "1 1 0\n"]).strip())

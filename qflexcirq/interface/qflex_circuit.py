@@ -45,7 +45,7 @@ class QFlexCircuit(cirq.Circuit):
         # Behind the scene, this class creates a temporary file for each object
         self.temp_file_if = tmpi.DataStorageInterface()
 
-        with open(self.temp_file_if._file_handle[1], "w") as f:
+        with open(self.temp_file_if.fullpath, "w") as f:
             # The cirq_circuit has QFlexVirtualDevice
             qubit_to_index_dict = self.device.get_grid_qubits_as_keys()
             print(QFlexCircuit.translate_cirq_to_qflex(self,
@@ -60,11 +60,11 @@ class QFlexCircuit(cirq.Circuit):
 
     @property
     def circuit_data(self):
-        return self.temp_file_if._file_handle[1]
+        return self.temp_file_if.fullpath
 
     @property
     def ordering_data(self):
-        return self._own_order.temp_file_if._file_handle[1]
+        return self._own_order.temp_file_if.fullpath
 
     def _resolve_parameters_(self, param_resolver: cirq.study.ParamResolver):
 

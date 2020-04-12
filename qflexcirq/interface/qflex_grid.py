@@ -47,7 +47,7 @@ class QFlexGrid():
         # Behind the scene, this class creates a temporary file for each object
         self.temp_file_if = tmpi.DataStorageInterface()
 
-        with open(self.temp_file_if._file_handle[1], "w") as f:
+        with open(self.temp_file_if.fullpath, "w") as f:
             # I do have the file handle anyway...
             for line in self._grid_data:
                 print(line.strip(), file=f)
