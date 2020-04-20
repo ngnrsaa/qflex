@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 from subprocess import Popen, PIPE
-from tempfile import mkstemp
+from tempfile import NamedTemporaryFile
+from os import remove
 from io import StringIO
 from warnings import warn
 import numpy as np
@@ -547,29 +548,31 @@ expand B 3
 merge A B
 """
 
-circuit_fsim_filename = mkstemp()
-grid_2x2_filename = mkstemp()
-ordering_2x2_filename = mkstemp()
+circuit_fsim_filename = NamedTemporaryFile(mode='w', delete=False)
+grid_2x2_filename = NamedTemporaryFile(mode='w', delete=False)
+ordering_2x2_filename = NamedTemporaryFile(mode='w', delete=False)
 
-with open(circuit_fsim_filename[1], 'w') as f:
+with open(circuit_fsim_filename.name, 'w') as f:
     print(circuit_test_fsim, file=f)
-with open(grid_2x2_filename[1], 'w') as f:
+with open(grid_2x2_filename.name, 'w') as f:
     print(grid_2x2_test, file=f)
-with open(ordering_2x2_filename[1], 'w') as f:
+with open(ordering_2x2_filename.name, 'w') as f:
     print(ordering_2x2_test, file=f)
 
 qdev = qflexcirq.QFlexVirtualDevice(
-    qflex_grid=qflexcirq.QFlexGrid.from_existing_file(grid_2x2_filename[1]))
+    qflex_grid=qflexcirq.QFlexGrid.from_existing_file(grid_2x2_filename.name))
 
 qqubits = qdev.get_grid_qubits_as_keys()
 
-qord = qflexcirq.QFlexOrder.from_existing_file(ordering_2x2_filename[1])
-mycirc = qflexutils.GetCircuitOfMoments(circuit_fsim_filename[1],
+qord = qflexcirq.QFlexOrder.from_existing_file(ordering_2x2_filename.name)
+mycirc = qflexutils.GetCircuitOfMoments(circuit_fsim_filename.name,
                                         qdev.get_indexed_grid_qubits())
 qcir = qflexcirq.QFlexCircuit(cirq_circuit=mycirc,
                               device=qdev,
                               qflex_order=qord)
-
+remove(grid_2x2_filename.name)
+remove(ordering_2x2_filename.name)
+remove(circuit_fsim_filename.name)
 results_fsim = cirq.Simulator().simulate(mycirc)
 
 
