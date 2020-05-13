@@ -49,7 +49,7 @@ def test_cirquit_without_qubits():
     """
     with pytest.raises(ValueError):
         assert QFlexOrder(qflex_order_strings=None,
-                          cirq_circuit=cirq.Circuit.from_ops([]))
+                          cirq_circuit=cirq.Circuit([]))
 
 
 def test_automatic_ordering():

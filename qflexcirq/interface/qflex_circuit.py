@@ -33,14 +33,14 @@ class QFlexCircuit(cirq.Circuit):
             raise ValueError("{!r} is not of a QFlexOrder!")
 
         if allow_decomposition:
-            super().__init__([], device)
+            super(QFlexCircuit, self).__init__([], device=device)
             for moment in cirq_circuit:
                 for op in moment:
                     # This should call decompose on the gates
                     self.append(op)
         else:
             # This super constructor does not call decompose?
-            super().__init__(cirq_circuit, device)
+            super(QFlexCircuit, self).__init__(cirq_circuit, device=device)
 
         # Behind the scene, this class creates a temporary file for each object
         self.temp_file_if = tmpi.DataStorageInterface()

@@ -3,10 +3,10 @@
 HOWTO use qFlex from Google [Cirq](https://github.com/quantumlib/cirq).
 * Note: For the moment, the Cirq-qFlex integration is experimental code.
 
-The currently supported version of Cirq is 0.5.0, and newer stable
+The currently supported version of Cirq is 0.8.0, and newer stable
 versions will be supported, once they are available. Therefore, the
-prerequisites are:
-- Cirq 0.6.0 or later
+prerequisites for running qFlex via Cirq are:
+- Cirq 0.8.0 or later
 - qFlex C++ code (the code from this repo)
 
 This file is an example of how to use the qFlex Python interface with Cirq.
