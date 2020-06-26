@@ -5,7 +5,7 @@
 <br>
 [![Nature](https://img.shields.io/static/v1?label=Nature&message=doi:10.5061/dryad.k6t1rj8&color=success)](https://www.nature.com/articles/s41586-019-1666-5)
 [![NPJ Quantum Information](https://img.shields.io/static/v1?label=NPJ-QI&message=doi:10.1038/s41534-019-0196-1&color=success)](https://doi.org/10.1038/s41534-019-0196-1)
-[![arXiv](https://img.shields.io/static/v1?label=arXiv&message=1905.00444&color=inactive)](https://arxiv.org/abs/1905.00444)
+[![Quantum Science and Technology](https://img.shields.io/static/v1?label=QST&message=doi:10.1088/2058-9565/ab7eeb&color=success)](https://iopscience.iop.org/article/10.1088/2058-9565/ab7eeb/meta)
 
 # qFlex: A flexible high-performance simulator for verifying and benchmarking quantum circuits implemented on real hardware
 
