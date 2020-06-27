@@ -34,7 +34,7 @@ implemented on real hardware"**, NPJ Quantum Information 5, 86 (2019)
 
 [[2]](https://arxiv.org/abs/1905.00444) B. Villalonga, *et al.*, **"Establishing
 the Quantum Supremacy Frontier with a 281 Pflop/s Simulation"**,
-arXiv:1905.00444 (2019)
+Quantum Science and Technology 5 (3), 034003 (2020)
 
 [[3]](https://www.nature.com/articles/s41586-019-1666-5) **"Quantum supremacy
 using a programmable superconducting processor"**,
