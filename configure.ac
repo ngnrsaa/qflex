@@ -10,7 +10,12 @@ AC_LANG(C++)
 AC_PROG_CXX
 
 # Default CXXFLAGS.
-CXXFLAGS="-O3  -std=c++17  -march=native -Wall -Wpedantic -Wno-unused-command-line-argument "$CXXFLAGS
+CXXFLAGS="-O3  -std=c++17  -Wall -Wpedantic -Wno-unused-command-line-argument "$CXXFLAGS
+if test $(uname -m) == "ppc64le" || test $(uname -m) == "ppc64"; then
+  CXXFLAGS="-mcpu=native "$CXXFLAGS
+else
+  CXXFLAGS="-march=native "$CXXFLAGS
+fi
 
 # Default LIBS
 LIBS="-lpthread "$LIBS
