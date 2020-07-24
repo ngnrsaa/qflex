@@ -13,7 +13,7 @@ AC_PROG_CXX
 CXXFLAGS="-O3  -std=c++17  -Wall -Wpedantic -Wno-unused-command-line-argument "$CXXFLAGS
 if test $(uname -m) == "x86_64"; then
   CXXFLAGS="-march=native "$CXXFLAGS
-elif test $(uname -m) == "ppc64le"; then
+elif test $(uname -m) == "ppc64le" || test $(uname -m) == "ppc64"; then
   CXXFLAGS="-mcpu=native "$CXXFLAGS
 fi
 
