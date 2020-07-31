@@ -103,6 +103,16 @@ AC_ARG_ENABLE([openmp],
    esac], [openmp=false]
 )
 
+# Add extra param for MKL instead of OpenBLAS
+AC_ARG_ENABLE([mkl],
+  AS_HELP_STRING([--enable-mkl],[Use MKL instead of OpenBLAS.]),
+  [case "${enableval}" in
+      yes) usemkl=true  ;;
+       no) usemkl=false ;;
+        *) AC_MSG_ERROR([bad value ${enableval} for --enable-mkl])
+   esac], [usemkl=false]
+)
+
 # Check for BREW.
 if test ${all_checks} != "false" && ${brew} != "false"; then
   AC_CHECK_PROG(BREW_CHECK,brew,yes)
@@ -161,7 +171,7 @@ AC_CHECK_HEADER([unordered_set], [], [AC_MSG_ERROR([Please install unordered_set
 AC_CHECK_HEADER([vector], [], [AC_MSG_ERROR([Please install vector before configuring.])])
 
 # Checks for libraries.
-AS_IF([test x${CXX} == x"icpc"],
+AS_IF([test ${usemkl} == "true"], 
   AC_CHECK_HEADER([mkl.h], [], [AC_MSG_ERROR([Please install mkl.h before configuring.])])
   ,
   AC_CHECK_LIB([openblas], [cblas_cgemm], [
@@ -171,7 +181,6 @@ AS_IF([test x${CXX} == x"icpc"],
   ], [
     AC_MSG_ERROR([Please install OpenBLAS before configuring.])
   ])
-  
 )
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -259,6 +268,7 @@ AS_IF([test ${pybind11} == "false"],
 fi
 
 AC_SUBST(openmp, ${openmp})
+AC_SUBST(usemkl, ${usemkl})
 AC_SUBST(pybind11, ${pybind11})
 AC_SUBST(python_tests, ${python_tests})
 AC_SUBST(error_on_warnings, ${error_on_warnings})

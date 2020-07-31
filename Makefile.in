@@ -9,14 +9,20 @@ PREFIX = @prefix@
 PYBIND11 = @pybind11@
 PYTHON_TESTS = @python_tests@
 OPENMP = @openmp@
+USEMKL = @usemkl@
 ERROR_ON_WARNINGS = @error_on_warnings@
 
 ifeq ($(ERROR_ON_WARNINGS), true)
   CXXFLAGS += -Werror
 endif
 
-ifeq ($(CXX), icpc)
-	CXXFLAGS += -mkl -DMKL_TENSOR
+ifeq ($(USEMKL), true)
+  ifeq ($(CXX), icpc)
+	CXXFLAGS += -mkl=parallel -DMKL_TENSOR
+  else
+	CXXFLAGS += -m64 -I${MKLROOT}/include -DMKL_TENSOR
+        LIBS := -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl $(LIBS)
+  endif
 else
   LIBS := -lopenblas $(LIBS)
 endif
