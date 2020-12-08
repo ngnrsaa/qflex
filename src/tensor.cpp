@@ -955,7 +955,6 @@ void Tensor::print_data() const {
 }
 
 /////////////////////////// EXTERNAL FUNCTIONS ////////////////////////////////
-#ifndef MKL_TENSOR
 // use  if complexity < some value.
 void _multiply_MM(const s_type* A_data, const s_type* B_data, s_type* C_data,
                   std::size_t m, std::size_t n, std::size_t k) {
@@ -1038,9 +1037,8 @@ void _multiply_vv(const s_type* A_data, const s_type* B_data, s_type* C_data,
 
   cblas_cdotu_sub(k, reinterpret_cast<const s_type::value_type*>(A_data), 1,
                   reinterpret_cast<const s_type::value_type*>(B_data), 1,
-                  reinterpret_cast<openblas_complex_float*>(C_data));
+                  reinterpret_cast<s_type::value_type**>(C_data));
 }
-#endif
 
 void multiply(Tensor& A, Tensor& B, Tensor& C, s_type* scratch_copy) {
   if (scratch_copy == nullptr) {
