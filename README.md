@@ -51,15 +51,15 @@ using one of the other methods listed.
 To build qFlex on your machine, simply run:
 
 ```
-$ autoreconf -i && autoconf && ./configure
-$ make && make run-tests
+autoreconf -i && autoconf && ./configure
+make && make run-tests
 ```
 
 To disable qFlex python interface, use `./configure --disable-pybind11`.
 
 If missing, python modules can be installed as follows:
 ```
-$ python3 -m pip install -r scripts/requirements.txt
+python3 -m pip install -r scripts/requirements.txt
 ```
 
 After running these commands, qFlex can be installed by running `make install`.
@@ -84,7 +84,7 @@ To build qFlex with Docker, see [the Docker guide](/docs/docker.md).
 An automated qFlex Docker container, synced with the `master` branch, can be
 pulled from Docker Hub as:
 ```
-$ docker pull ngnrsaa/qflex
+docker pull ngnrsaa/qflex
 ```
 
 ### Build Using Rootless Containers
